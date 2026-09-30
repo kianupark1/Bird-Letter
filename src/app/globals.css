@@ -1,0 +1,44 @@
+:root {
+  --dahong: #C1481F;
+  --namsaek: #1E3A5C;
+  --hwangto: #E0A83C;
+  --cheongrok: #1B6E5C;
+  --bg: #FBF3E4;
+  --text: #2A2118;
+  --card: #FFFFFF;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dahong: #E8683F;
+    --namsaek: #5C8AB8;
+    --hwangto: #F0BC5C;
+    --cheongrok: #3EA890;
+    --bg: #1A1613;
+    --text: #F3E9D8;
+    --card: #262019;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+}
+.app { max-width: 380px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+.sub { opacity: .7; font-size: 14px; margin: 0 0 20px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { border: 1px solid var(--namsaek); background: transparent; color: var(--namsaek);
+  padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--namsaek); color: var(--bg); }
+.card { width: 100%; text-align: left; background: var(--card); color: inherit;
+  border: 2px solid transparent; border-radius: 14px; padding: 14px; margin-bottom: 10px;
+  font: inherit; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.card[aria-pressed="true"] { border-color: var(--dahong); }
+.card .name { font-weight: 700; font-size: 17px; }
+.card .note { font-size: 13px; opacity: .7; margin-top: 2px; }
+.badge { font-size: 11px; background: var(--hwangto); color: #2A2118; padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
+.time { font-weight: 700; color: var(--dahong); white-space: nowrap; }
+.cta { width: 100%; margin-top: 8px; padding: 14px; border: 0; border-radius: 14px;
+  background: var(--dahong); color: #fff; font: inherit; font-weight: 700; font-size: 16px; }
