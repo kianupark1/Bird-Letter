@@ -6,6 +6,7 @@
   --bg: #FBF3E4;
   --text: #2A2118;
   --card: #FFFFFF;
+  --line: rgba(42, 33, 24, 0.12);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -16,6 +17,7 @@
     --bg: #1A1613;
     --text: #F3E9D8;
     --card: #262019;
+    --line: rgba(243, 233, 216, 0.14);
   }
 }
 * { box-sizing: border-box; }
@@ -25,20 +27,59 @@ body {
   color: var(--text);
   font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
-.app { max-width: 380px; margin: 0 auto; padding: 24px 16px 48px; }
+a { color: inherit; text-decoration: none; }
+.app { max-width: 380px; margin: 0 auto; padding: 24px 16px 96px; }
 h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 15px; margin: 24px 0 10px; opacity: .8; }
 .sub { opacity: .7; font-size: 14px; margin: 0 0 20px; }
-.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .chip { border: 1px solid var(--namsaek); background: transparent; color: var(--namsaek);
   padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--namsaek); color: var(--bg); }
+
 .card { width: 100%; text-align: left; background: var(--card); color: inherit;
   border: 2px solid transparent; border-radius: 14px; padding: 14px; margin-bottom: 10px;
-  font: inherit; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  font: inherit; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+button.card { cursor: pointer; }
 .card[aria-pressed="true"] { border-color: var(--dahong); }
 .card .name { font-weight: 700; font-size: 17px; }
 .card .note { font-size: 13px; opacity: .7; margin-top: 2px; }
+.emoji { font-size: 28px; line-height: 1; }
+.row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.grow { flex: 1; min-width: 0; }
+.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .badge { font-size: 11px; background: var(--hwangto); color: #2A2118; padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
 .time { font-weight: 700; color: var(--dahong); white-space: nowrap; }
-.cta { width: 100%; margin-top: 8px; padding: 14px; border: 0; border-radius: 14px;
-  background: var(--dahong); color: #fff; font: inherit; font-weight: 700; font-size: 16px; }
+
+.cta { display: block; width: 100%; margin-top: 8px; padding: 14px; border: 0; border-radius: 14px; text-align: center;
+  background: var(--dahong); color: #fff; font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; }
+.cta:disabled { opacity: .4; cursor: not-allowed; }
+.ghost { display: block; width: 100%; margin-top: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 14px;
+  background: transparent; color: inherit; font: inherit; font-size: 14px; text-align: center; cursor: pointer; }
+
+.progress { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+.progress > i { display: block; height: 100%; background: var(--hwangto); border-radius: 999px; }
+.small { font-size: 12px; opacity: .7; margin-top: 6px; }
+.empty { text-align: center; opacity: .65; padding: 28px 8px; font-size: 14px; background: var(--card); border-radius: 14px; }
+
+.field { display: block; width: 100%; margin-bottom: 12px; padding: 12px; font: inherit; font-size: 15px; color: inherit;
+  background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+textarea.field { min-height: 140px; resize: vertical; }
+.steps { display: flex; gap: 6px; margin-bottom: 18px; }
+.steps i { flex: 1; height: 4px; border-radius: 999px; background: var(--line); }
+.steps i.on { background: var(--dahong); }
+
+.map { width: 100%; background: var(--card); border-radius: 14px; }
+.route-line { stroke: var(--namsaek); stroke-width: 2; stroke-dasharray: 5 5; fill: none; opacity: .6; }
+.route-done { stroke: var(--dahong); stroke-width: 3; fill: none; }
+.map text { font-size: 10px; fill: var(--text); }
+.arrived { text-align: center; padding: 20px 12px; background: var(--card); border-radius: 14px; margin-top: 12px; }
+.arrived .big { font-size: 44px; }
+.paper { background: var(--card); border-radius: 14px; padding: 16px; margin-top: 12px; white-space: pre-wrap; line-height: 1.6; border-left: 4px solid var(--dahong); }
+
+.bottomnav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px;
+  padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
+.bottomnav a { flex: 1; max-width: 180px; text-align: center; font-size: 12px; padding: 6px 0; border-radius: 10px; opacity: .6; }
+.bottomnav a span { display: block; font-size: 20px; }
+.bottomnav a[aria-current="page"] { opacity: 1; color: var(--dahong); font-weight: 700; }

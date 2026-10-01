@@ -102,7 +102,17 @@
 - [x] Next.js 프로젝트 뼈대 (`src/app`, `src/lib`, `src/components`)
 - [x] 6종 새 스펙(`src/lib/birds.ts`), 3개 노선(`src/lib/routes.ts`), 하버사인(`src/lib/geo.ts`)
 - [x] 오방색 토큰 + 라이트/다크 (`src/app/globals.css`), Pretendard 번들(npm `pretendard`)
-- [x] 노선/새 선택 화면 첫 버전 (`src/components/BirdPicker.tsx`)
-- [ ] 아직 `npm install`/빌드로 검증 안 됨 — 첫 작업은 `npm install && npm run dev`로 실행 확인
-- [ ] 홈, 여정 지도, 도착 알림, 붕붕이, 보내기 플로우, 온보딩, 설정 화면 이전
-- [ ] Kakao Maps SDK, Firebase 연동
+- [x] `npm install` / `npm run build` / 브라우저 동작 확인 완료
+- [x] 홈 (`src/app/page.tsx`): 날아가는 편지(진행바·남은 시간), 도착한 편지, 받은 편지함(샘플)
+- [x] 편지 쓰기 3단계 (`src/app/send/page.tsx`): 받는 사람·노선 → 새 고르기 → 메시지
+- [x] 여정 지도 + 도착 화면 (`src/app/letter/[id]/page.tsx`, `src/components/JourneyMap.tsx`): 임시 SVG 지도, 진행률에 따라 새 이동, "데모: 시간 빨리 감기" 버튼
+- [x] 편지 데이터는 브라우저 localStorage에 저장 (`src/lib/letters.ts`) — Firestore 연동 전 임시
+- [ ] 붕붕이 전용 화면, 도착 알림(푸시), 까치 특별 도착 연출, 온보딩 3장, 설정/프로필 화면
+- [ ] 초대 링크로 계정 없이 편지 보기 (Firestore 필요)
+- [ ] Kakao Maps SDK 교체(`JourneyMap.tsx`의 `xy` 좌표 제거), Firebase(Firestore + FCM) 연동
+
+## 알려진 사항
+
+- GitHub 레포 `Bird-Letter`(공개 상태)에는 첫 버전만 올라가 있음. 비공개 전환은 Firebase/Kakao 키를 넣기 전에 할 것.
+- Windows에서 폴더 경로가 길면 git/npm이 실패함 — 프로젝트는 짧은 경로(예: `C:\bl`)에서 작업.
+- 사용자는 비개발자: 로그인·업로드 등 사용자 몫인 단계는 한 번에 한 동작씩, 쉬운 말로 안내.
