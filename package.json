@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "check": "node scripts/check.mjs",
+    "cards": "node promo/build-cards.js",
+    "icons": "node promo/build-icons.js"
   },
   "dependencies": {
     "next": "^15.0.0",

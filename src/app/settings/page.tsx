@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
@@ -98,6 +99,9 @@ export default function Settings() {
 
       <h2>정보</h2>
       <div className="list">
+        <Link href="/privacy" className="listrow action">
+          <span>개인정보 처리방침</span><span aria-hidden>›</span>
+        </Link>
         <div className="listrow"><span>버전</span><span className="note">0.1.0 (테스트)</span></div>
       </div>
     </main>
