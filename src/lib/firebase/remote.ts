@@ -37,11 +37,12 @@ function toMeta(id: string, d: DocumentData): Meta {
 }
 
 /** 편지 보내기: 겉정보와 내용을 한 번에 저장하고 편지 ID(= 초대 링크 주소)를 돌려줍니다. */
-export async function sendLetter(p: { toName: string; fromName: string; routeId: string; birdId: string; message: string }) {
+export async function sendLetter(p: { toName: string; fromName: string; routeId: string; birdId: string; message: string; speed?: number }) {
   const user = await ensureUser();
   const d = db();
   const ref = doc(collection(d, "letters"));
-  const minutes = travelMinutes(getBird(p.birdId), getRoute(p.routeId).km);
+  // speed: 테스트용 배속(주소에 ?test=1을 붙였을 때만 60배). 평소에는 1
+  const minutes = travelMinutes(getBird(p.birdId), getRoute(p.routeId).km) / (p.speed ?? 1);
   const batch = writeBatch(d);
   batch.set(ref, {
     fromUid: user.uid,

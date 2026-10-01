@@ -20,7 +20,10 @@ function SendForm() {
   const router = useRouter();
   const { add } = useLetters();
   // ?bird=bungbungi 처럼 새를 미리 골라서 들어올 수 있음
-  const preset = useSearchParams().get("bird");
+  const params = useSearchParams();
+  const preset = params.get("bird");
+  // 주소 끝에 ?test=1을 붙이면 60배 빠르게 날아가요(직접 써 보는 시험용)
+  const speed = params.get("test") ? 60 : 1;
   const [step, setStep] = useState(1);
   const [to, setTo] = useState("");
   const [routeId, setRouteId] = useState(ROUTES[0].id);
@@ -29,7 +32,8 @@ function SendForm() {
 
   const route = getRoute(routeId);
   const bird = getBird(birdId);
-  const minutes = travelMinutes(bird, route.km);
+  const minutes = travelMinutes(bird, route.km) / speed;
+  const whenText = speed > 1 ? `테스트 속도로 약 ${Math.max(1, Math.round(minutes * 60))}초` : `${formatMinutes(minutes)}`;
 
   const { profile } = useProfile();
   const [busy, setBusy] = useState(false);
@@ -39,7 +43,7 @@ function SendForm() {
     setBusy(true);
     setError("");
     try {
-      const id = await add({ to: to.trim(), routeId, birdId, message: message.trim(), fromName: profile.nickname });
+      const id = await add({ to: to.trim(), routeId, birdId, message: message.trim(), fromName: profile.nickname, speed });
       router.push(`/letter/${id}`);
     } catch {
       setError("편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
@@ -93,7 +97,7 @@ function SendForm() {
 
       {step === 3 && (
         <>
-          <p className="sub">{to}에게 · {bird.emoji} {bird.name} · {formatMinutes(minutes)} 뒤 도착 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</p>
+          <p className="sub">{to}에게 · {bird.emoji} {bird.name} · {whenText} 뒤 도착 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</p>
           <textarea className="field" placeholder="마음을 적어 보세요" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500} />
           <div className="small">{message.length}/500</div>
           {error && <div className="small" role="alert" style={{ color: "var(--dahong)", opacity: 1 }}>{error}</div>}

@@ -122,11 +122,11 @@ export function useLetters() {
 
   /** 편지 보내기. 서버 저장이 실패하면 오류를 그대로 던져서 화면이 알려주게 한다(조용히 내 폰에만 저장하지 않음). */
   const add = useCallback(
-    async (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string }) => {
+    async (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number }) => {
       await settled.current!.promise; // 서버 연결 확인이 끝날 때까지 기다림
       if (backendRef.current === "firebase") {
         const id = await remote.sendLetter({
-          toName: l.to, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, message: l.message,
+          toName: l.to, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, message: l.message, speed: l.speed,
         });
         const meta = await remote.getMeta(id);
         const letter: Letter = {
@@ -136,9 +136,11 @@ export function useLetters() {
         setLetters((prev) => [letter, ...prev]);
         return id;
       }
+      const sentAt = Date.now();
+      const minutes = travelMinutes(getBird(l.birdId), getRoute(l.routeId).km) / (l.speed ?? 1);
       const letter: Letter = {
         id: Math.random().toString(36).slice(2, 9), to: l.to, routeId: l.routeId, birdId: l.birdId,
-        message: l.message, sentAt: Date.now(),
+        message: l.message, sentAt, arriveAt: sentAt + minutes * 60000,
       };
       persist([letter, ...letters]);
       return letter.id;
