@@ -113,8 +113,10 @@
 - [x] 까치 특별 도착 연출 (`src/app/letter/[id]/page.tsx`): 금색 테두리 + 반짝이/꽃잎 낙하, 전용 문구. `prefers-reduced-motion`이면 애니메이션 끔
 - [x] 소개 페이지 (`src/app/welcome/page.tsx`): 외부 방문자용, "출시 준비 중 · 체험판" 표시. 하단 메뉴 숨김
 - [x] 홍보 문구 모음 (`promo/launch-kit.md`): 한 줄 소개, 슬로건, 인스타/스레드 글, 15초 숏폼 대본 2개, 스토어 설명, 출시 전 체크리스트
+- [x] 홍보 이미지 5장 (`promo/cards/*.png`, 원본 HTML은 `promo/cards-src`): 인스타 카드 4장(컨셉/새 6종/까치/서울→제주) + 링크 미리보기 `public/og.png`(/welcome에 연결). `node promo/build-cards.js`로 다시 만들 수 있음(Windows Edge 필요). 소요 시간은 앱과 같은 계산식
 - [ ] 도착 알림(푸시, FCM 필요)
-- [ ] 홍보 이미지/영상 제작(AI 생성 크레딧이 들 수 있어 사용자 확인 후), 배포(Vercel 등, 사용자 계정 필요), 개인정보 처리방침
+- [ ] 홍보 영상: AI 생성 서비스(Everygen, 연결된 다른 생성 서비스) 크레딧이 0이라 못 만듦. 대안은 폰 화면 녹화(`promo/launch-kit.md` 5번 대본)
+- [ ] 배포(Vercel 등, 사용자 계정 필요), 배포 후 `NEXT_PUBLIC_SITE_URL` 설정, 개인정보 처리방침
 - [ ] 초대 링크로 계정 없이 편지 보기 (Firestore 필요)
 - [ ] Kakao Maps SDK 교체(`JourneyMap.tsx`의 `xy` 좌표 제거), Firebase(Firestore + FCM) 연동
 

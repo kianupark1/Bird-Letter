@@ -5,6 +5,13 @@ import { Magpie } from "@/components/Illustrations";
 export const metadata = {
   title: "새 편지 — 소식은 날아서 와요",
   description: "실제 거리와 새의 비행 속도만큼 걸려 도착하는 한국형 슬로우 메시징. 체험판 공개 중.",
+  openGraph: {
+    title: "새 편지 — 소식은 날아서 와요",
+    description: "실제 거리만큼 걸려 도착하는 느린 편지. 체험판 공개 중.",
+    images: [{ url: "/og.png", width: 1200, height: 630 }],
+    locale: "ko_KR",
+    type: "website" as const,
+  },
 };
 
 const STEPS = [
