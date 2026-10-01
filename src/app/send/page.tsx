@@ -1,18 +1,28 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BIRDS, getBird } from "@/lib/birds";
 import { ROUTES, getRoute } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
 
 export default function Send() {
+  return (
+    <Suspense fallback={<main className="app" />}>
+      <SendForm />
+    </Suspense>
+  );
+}
+
+function SendForm() {
   const router = useRouter();
   const { add } = useLetters();
+  // ?bird=bungbungi 처럼 새를 미리 골라서 들어올 수 있음
+  const preset = useSearchParams().get("bird");
   const [step, setStep] = useState(1);
   const [to, setTo] = useState("");
   const [routeId, setRouteId] = useState(ROUTES[0].id);
-  const [birdId, setBirdId] = useState("swallow");
+  const [birdId, setBirdId] = useState(BIRDS.some((b) => b.id === preset) ? (preset as string) : "swallow");
   const [message, setMessage] = useState("");
 
   const route = getRoute(routeId);

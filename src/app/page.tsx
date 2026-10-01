@@ -68,6 +68,17 @@ export default function Home() {
         </>
       )}
 
+      <Link href="/bungbungi" className="card promo">
+        <div className="row grow">
+          <span className="emoji">🚁</span>
+          <div className="grow">
+            <div className="name">붕붕이를 만나보세요</div>
+            <div className="note">프로펠러 달린 드론 새 마스코트</div>
+          </div>
+        </div>
+        <span aria-hidden>›</span>
+      </Link>
+
       <h2>받은 편지함 (예시)</h2>
       {SAMPLE_INBOX.map((m) => (
         <div key={m.id} className="card">

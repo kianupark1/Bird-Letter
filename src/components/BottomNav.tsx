@@ -10,7 +10,7 @@ const TABS = [
 
 export default function BottomNav() {
   const path = usePathname();
-  if (path.startsWith("/onboarding")) return null;
+  if (path.startsWith("/onboarding") || path.startsWith("/welcome")) return null;
   return (
     <nav className="bottomnav" aria-label="메뉴">
       {TABS.map((t) => (

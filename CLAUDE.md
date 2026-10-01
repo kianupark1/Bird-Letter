@@ -109,7 +109,12 @@
 - [x] 편지 데이터는 브라우저 localStorage에 저장 (`src/lib/letters.ts`) — Firestore 연동 전 임시
 - [x] 온보딩 3장 (`src/app/onboarding/page.tsx`, `src/components/Illustrations.tsx`): 컨셉+까치 / 새 6종 소개 / 첫 편지 쓰기. 첫 방문 시 홈이 자동 이동(`localStorage`의 `saepyeonji.onboarded.v1`). 일러스트는 임시 SVG
 - [x] 설정/프로필 (`src/app/settings/page.tsx`, `src/lib/settings.ts`): 닉네임 편집(아바타는 청록 원+첫 글자), 보낸/받은 통계, 알림 토글 3개(도착·중간 지점·답장), 온보딩 다시 보기, 보낸 편지 모두 지우기. 값은 `localStorage`(`saepyeonji.profile.v1`)에 저장. 알림은 설정만 저장하고 실제 푸시는 FCM 연동 후. 언어 설정·차단 목록은 보류 결정대로 제외. 하단 메뉴는 홈/편지 쓰기/설정 3개
-- [ ] 붕붕이 전용 화면, 도착 알림(푸시), 까치 특별 도착 연출
+- [x] 붕붕이 전용 화면 (`src/app/bungbungi/page.tsx`): 프로펠러 흔들림 애니메이션, 노선별 도착 시간, "붕붕이로 편지 보내기" → `/send?bird=bungbungi`로 새 미리 선택. 홈에 입구 카드
+- [x] 까치 특별 도착 연출 (`src/app/letter/[id]/page.tsx`): 금색 테두리 + 반짝이/꽃잎 낙하, 전용 문구. `prefers-reduced-motion`이면 애니메이션 끔
+- [x] 소개 페이지 (`src/app/welcome/page.tsx`): 외부 방문자용, "출시 준비 중 · 체험판" 표시. 하단 메뉴 숨김
+- [x] 홍보 문구 모음 (`promo/launch-kit.md`): 한 줄 소개, 슬로건, 인스타/스레드 글, 15초 숏폼 대본 2개, 스토어 설명, 출시 전 체크리스트
+- [ ] 도착 알림(푸시, FCM 필요)
+- [ ] 홍보 이미지/영상 제작(AI 생성 크레딧이 들 수 있어 사용자 확인 후), 배포(Vercel 등, 사용자 계정 필요), 개인정보 처리방침
 - [ ] 초대 링크로 계정 없이 편지 보기 (Firestore 필요)
 - [ ] Kakao Maps SDK 교체(`JourneyMap.tsx`의 `xy` 좌표 제거), Firebase(Firestore + FCM) 연동
 

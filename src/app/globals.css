@@ -112,6 +112,28 @@ textarea.field { min-height: 140px; resize: vertical; }
 .switch[aria-checked="true"] { background: var(--cheongrok); }
 .switch[aria-checked="true"]::after { transform: translateX(18px); }
 
+.card.promo { margin-top: 18px; border: 1px dashed var(--hwangto); }
+.bung-hero { display: grid; place-items: center; height: 150px; margin-top: 8px; background: var(--card); border-radius: 14px; }
+.bung-copter { font-size: 84px; display: inline-block; animation: bob 1.6s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(3deg); } }
+.arrived { position: relative; overflow: hidden; }
+.arrived.special { border: 2px solid var(--hwangto); }
+.sparkles { position: absolute; inset: 0; pointer-events: none; }
+.sparkles span { position: absolute; top: -20px; font-size: 18px; animation: fall 2.8s ease-in infinite; }
+@keyframes fall { 0% { transform: translateY(0) rotate(0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(190px) rotate(240deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bung-copter, .sparkles span { animation: none; } .sparkles { display: none; } }
+
+.welcome { text-align: center; padding-bottom: 48px; }
+.welcome h1 { font-size: 26px; margin: 12px 0 8px; }
+.welcome h2 { text-align: left; }
+.welcome .sub { line-height: 1.6; }
+.beta { display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--hwangto); color: var(--hwangto); margin-bottom: 4px; }
+.steplist { list-style: none; margin: 0; padding: 0; text-align: left; display: grid; gap: 10px; }
+.steplist li { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border-radius: 14px; padding: 14px; }
+.steplist .name { font-weight: 700; margin-bottom: 2px; }
+.steplist .note { line-height: 1.5; }
+.steplist li > b { flex: none; width: 28px; height: 28px; border-radius: 999px; background: var(--dahong); color: #fff; display: grid; place-items: center; font-size: 14px; }
+
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
 .bottomnav a { flex: 1; max-width: 180px; text-align: center; font-size: 12px; padding: 6px 0; border-radius: 10px; opacity: .6; }

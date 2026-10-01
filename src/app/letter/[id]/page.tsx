@@ -38,10 +38,23 @@ export default function LetterPage() {
 
       {pr.done ? (
         <>
-          <div className="arrived">
+          <div className={`arrived ${bird.id === "magpie" ? "special" : ""}`}>
+            {bird.id === "magpie" && (
+              <div className="sparkles" aria-hidden>
+                {["✨", "💛", "✨", "🌸", "✨", "💛", "🌸", "✨"].map((s, n) => (
+                  <span key={n} style={{ left: `${8 + n * 12}%`, animationDelay: `${n * 0.25}s` }}>{s}</span>
+                ))}
+              </div>
+            )}
             <div className="big">{bird.emoji}</div>
-            <h2 style={{ margin: "8px 0 0", opacity: 1 }}>편지가 도착했어요!</h2>
-            <div className="small">{bird.name}가 {route.title.split("→")[1].trim()}에 내려앉았어요.</div>
+            <h2 style={{ margin: "8px 0 0", opacity: 1 }}>
+              {bird.id === "magpie" ? "반가운 소식이 도착했어요!" : "편지가 도착했어요!"}
+            </h2>
+            <div className="small">
+              {bird.id === "magpie"
+                ? `까치가 ${route.title.split("→")[1].trim()}에서 반갑게 울었어요. 아침 까치가 울면 반가운 손님이 온다더니!`
+                : `${bird.name}가 ${route.title.split("→")[1].trim()}에 내려앉았어요.`}
+            </div>
           </div>
           <div className="paper">{letter.message}</div>
         </>
