@@ -78,6 +78,19 @@ textarea.field { min-height: 140px; resize: vertical; }
 .arrived .big { font-size: 44px; }
 .paper { background: var(--card); border-radius: 14px; padding: 16px; margin-top: 12px; white-space: pre-wrap; line-height: 1.6; border-left: 4px solid var(--dahong); }
 
+.onboarding { min-height: 100dvh; display: flex; flex-direction: column; padding-bottom: 32px; }
+.onboarding .skip { align-self: flex-end; background: none; border: 0; color: inherit; opacity: .6; font: inherit; font-size: 13px; cursor: pointer; padding: 4px 0; }
+.onboarding .slide { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; gap: 4px; padding: 12px 0; }
+.onboarding h1 { font-size: 24px; margin: 12px 0 8px; }
+.illust { width: 100%; max-width: 240px; align-self: center; }
+.proverb { color: var(--dahong); font-weight: 700; font-size: 15px; margin: 0 0 12px; }
+.birdgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+.birdcell { background: var(--card); border-radius: 14px; padding: 14px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.birdcell small { opacity: .65; font-size: 11px; }
+.dots { display: flex; justify-content: center; gap: 6px; margin: 8px 0 12px; }
+.dots i { width: 7px; height: 7px; border-radius: 999px; background: var(--line); }
+.dots i.on { width: 20px; background: var(--dahong); }
+
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
 .bottomnav a { flex: 1; max-width: 180px; text-align: center; font-size: 12px; padding: 6px 0; border-radius: 10px; opacity: .6; }

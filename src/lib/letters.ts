@@ -15,6 +15,7 @@ export type Letter = {
 };
 
 const KEY = "saepyeonji.letters.v1";
+export const ONBOARDED_KEY = "saepyeonji.onboarded.v1";
 
 /** 받은 편지함 샘플. Firestore 연동 전까지 화면 확인용 */
 export const SAMPLE_INBOX = [

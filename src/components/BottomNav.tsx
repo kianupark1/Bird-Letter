@@ -9,6 +9,7 @@ const TABS = [
 
 export default function BottomNav() {
   const path = usePathname();
+  if (path.startsWith("/onboarding")) return null;
   return (
     <nav className="bottomnav" aria-label="메뉴">
       {TABS.map((t) => (

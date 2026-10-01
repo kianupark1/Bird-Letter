@@ -1,12 +1,23 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
-import { SAMPLE_INBOX, letterProgress, useLetters, useNow } from "@/lib/letters";
+import { ONBOARDED_KEY, SAMPLE_INBOX, letterProgress, useLetters, useNow } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
 
 export default function Home() {
+  const router = useRouter();
   const { letters, ready } = useLetters();
+
+  // 처음 방문한 사람은 온보딩으로 보낸다
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem(ONBOARDED_KEY)) router.replace("/onboarding");
+    } catch {}
+  }, [router]);
+
   const now = useNow();
   const flying = letters.filter((l) => !letterProgress(l, now).done);
   const arrived = letters.filter((l) => letterProgress(l, now).done);
