@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// 새 편지 보안 규칙 (초안 · 아직 Firebase에 적용 전)
+// 새 편지 보안 규칙
 // 원칙: 계정 없이(익명 로그인) 쓰되, 편지는 "보낸 사람"과 "도착 시각이 지난 뒤의 받는 사람"만 읽는다.
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -21,7 +21,7 @@ service cloud.firestore {
     }
 
     // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
-    // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다(목록 조회는 막음).
+    // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다.
     match /letters/{letterId} {
       allow get: if signedIn();
 

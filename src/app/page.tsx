@@ -9,7 +9,7 @@ import { formatMinutes } from "@/lib/geo";
 
 export default function Home() {
   const router = useRouter();
-  const { letters, ready } = useLetters();
+  const { letters, received, ready, backend } = useLetters();
 
   // 처음 방문한 사람은 온보딩으로 보낸다
   useEffect(() => {
@@ -79,19 +79,45 @@ export default function Home() {
         <span aria-hidden>›</span>
       </Link>
 
-      <h2>받은 편지함 (예시)</h2>
-      {SAMPLE_INBOX.map((m) => (
-        <div key={m.id} className="card">
-          <div className="row grow">
-            <span className="emoji">{getBird(m.birdId).emoji}</span>
-            <div className="grow">
-              <div className="name">{m.from}</div>
-              <div className="note ellipsis">{m.preview}</div>
+      {backend === "firebase" ? (
+        <>
+          <h2>받은 편지함</h2>
+          {received.length === 0 && (
+            <div className="empty">아직 받은 편지가 없어요.<br />친구가 보낸 링크를 열면 여기에 모여요.</div>
+          )}
+          {received.map((m) => {
+            const done = letterProgress(m, now).done;
+            return (
+              <Link key={m.id} href={`/letter/${m.id}`} className="card">
+                <div className="row grow">
+                  <span className="emoji">{getBird(m.birdId).emoji}</span>
+                  <div className="grow">
+                    <div className="name ellipsis">{m.fromName || "누군가"}</div>
+                    <div className="note">{getRoute(m.routeId).title} · {getBird(m.birdId).name}</div>
+                  </div>
+                </div>
+                <div className={done ? "time" : "note"}>{done ? "도착 ✓" : "오는 중"}</div>
+              </Link>
+            );
+          })}
+        </>
+      ) : (
+        <>
+          <h2>받은 편지함 (예시)</h2>
+          {SAMPLE_INBOX.map((m) => (
+            <div key={m.id} className="card">
+              <div className="row grow">
+                <span className="emoji">{getBird(m.birdId).emoji}</span>
+                <div className="grow">
+                  <div className="name">{m.from}</div>
+                  <div className="note ellipsis">{m.preview}</div>
+                </div>
+              </div>
+              <div className="note">{m.when}</div>
             </div>
-          </div>
-          <div className="note">{m.when}</div>
-        </div>
-      ))}
+          ))}
+        </>
+      )}
     </main>
   );
 }

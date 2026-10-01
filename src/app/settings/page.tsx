@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
+import * as remote from "@/lib/firebase/remote";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -15,7 +16,7 @@ const NOTIFY_ROWS: { key: NotifyKey; title: string; desc: string }[] = [
 
 export default function Settings() {
   const router = useRouter();
-  const { letters } = useLetters();
+  const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
 
@@ -29,13 +30,21 @@ export default function Settings() {
     router.push("/onboarding");
   };
 
-  const clearLetters = () => {
-    if (!window.confirm("보낸 편지를 모두 지울까요? 되돌릴 수 없어요.")) return;
+  const clearLetters = async () => {
+    const server = backend === "firebase";
+    const ask = server
+      ? "서버에 저장된 내 편지와 차단 목록, 내 계정을 모두 삭제할까요? 되돌릴 수 없어요."
+      : "보낸 편지를 모두 지울까요? 되돌릴 수 없어요.";
+    if (!window.confirm(ask)) return;
     try {
+      if (server) await remote.deleteMyData();
       localStorage.removeItem(LETTERS_KEY);
-    } catch {}
-    setMsg("보낸 편지를 모두 지웠어요.");
-    setTimeout(() => window.location.assign("/"), 700);
+    } catch {
+      setMsg("삭제하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.");
+      return;
+    }
+    setMsg(server ? "내 편지와 데이터를 모두 삭제했어요." : "보낸 편지를 모두 지웠어요.");
+    setTimeout(() => window.location.assign("/"), 900);
   };
 
   if (!ready) return <main className="app" />;
@@ -63,7 +72,10 @@ export default function Settings() {
 
       <div className="stats">
         <div><b>{letters.length}</b><span>보낸 편지</span></div>
-        <div><b>{SAMPLE_INBOX.length}</b><span>받은 편지(예시)</span></div>
+        <div>
+          <b>{backend === "firebase" ? received.length : SAMPLE_INBOX.length}</b>
+          <span>{backend === "firebase" ? "받은 편지" : "받은 편지(예시)"}</span>
+        </div>
       </div>
 
       <h2>알림</h2>
@@ -92,7 +104,7 @@ export default function Settings() {
           <span>온보딩 다시 보기</span><span aria-hidden>›</span>
         </button>
         <button className="listrow action danger" onClick={clearLetters}>
-          <span>보낸 편지 모두 지우기</span><span aria-hidden>›</span>
+          <span>{backend === "firebase" ? "내 편지와 데이터 모두 삭제" : "보낸 편지 모두 지우기"}</span><span aria-hidden>›</span>
         </button>
       </div>
       {msg && <div className="small" role="status">{msg}</div>}

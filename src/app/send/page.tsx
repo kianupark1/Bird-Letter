@@ -5,6 +5,7 @@ import { BIRDS, getBird } from "@/lib/birds";
 import { ROUTES, getRoute } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
+import { useProfile } from "@/lib/settings";
 import JourneyMap from "@/components/JourneyMap";
 
 export default function Send() {
@@ -30,9 +31,20 @@ function SendForm() {
   const bird = getBird(birdId);
   const minutes = travelMinutes(bird, route.km);
 
-  const send = () => {
-    const id = add({ to: to.trim(), routeId, birdId, message: message.trim() });
-    router.push(`/letter/${id}`);
+  const { profile } = useProfile();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const send = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const id = await add({ to: to.trim(), routeId, birdId, message: message.trim(), fromName: profile.nickname });
+      router.push(`/letter/${id}`);
+    } catch {
+      setError("편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
+      setBusy(false);
+    }
   };
 
   return (
@@ -84,7 +96,8 @@ function SendForm() {
           <p className="sub">{to}에게 · {bird.emoji} {bird.name} · {formatMinutes(minutes)} 뒤 도착 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</p>
           <textarea className="field" placeholder="마음을 적어 보세요" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500} />
           <div className="small">{message.length}/500</div>
-          <button className="cta" disabled={!message.trim()} onClick={send}>{bird.name}로 보내기</button>
+          {error && <div className="small" role="alert" style={{ color: "var(--dahong)", opacity: 1 }}>{error}</div>}
+          <button className="cta" disabled={!message.trim() || busy} onClick={send}>{busy ? "보내는 중..." : `${bird.name}로 보내기`}</button>
           <button className="ghost" onClick={() => setStep(2)}>이전</button>
         </>
       )}
