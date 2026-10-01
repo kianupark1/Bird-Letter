@@ -1,0 +1,19 @@
+{
+  "_설명": "날짜(date, 한국 시간)가 오늘인 글만 올라가요. image는 promo/cards 안의 파일 이름(없으면 글만). to: threads, instagram 중 올릴 곳. 인스타는 사진이 꼭 있어야 해요. 숫자(이용자 수 등)는 실제 값이 생기기 전에는 쓰지 마세요.",
+  "posts": [
+    { "date": "2026-10-02", "to": ["threads", "instagram"], "image": "01-concept.png",
+      "text": "메신저는 바로 도착하잖아요.\n새 편지는 새가 날아서 도착해요. 🕊️\n서울에서 부산까지 제비로 약 30분, 두루미로 약 90분.\n기다린 만큼 반가운 편지.\n\n출시 준비 중 · 체험판 공개\nhttps://bird-letter.vercel.app/welcome\n#새편지 #슬로우메시징 #편지 #감성앱" },
+    { "date": "2026-10-03", "to": ["threads"],
+      "text": "편지를 보냈는데 새가 날아가고 있다. 도착까지 41분. 이게 은근히 설렌다.\n\n새 편지 · 체험판 https://bird-letter.vercel.app/welcome" },
+    { "date": "2026-10-05", "to": ["threads", "instagram"], "image": "02-birds.png",
+      "text": "어떤 새에게 편지를 맡길까요?\n🦅 매 15분 · 🐦 제비 30분 · 🕊️ 비둘기 40분\n🐦‍⬛ 까치 55분 · 🚁 붕붕이 20분 · 🦢 두루미 90분\n(서울 → 부산 기준)\n\n#새편지 #까치 #두루미" },
+    { "date": "2026-10-07", "to": ["threads", "instagram"], "image": "04-jeju.png",
+      "text": "서울 → 제주는 452km. 매는 21분, 두루미는 2시간 5분.\n어떤 새로 보낼까요?\n\n체험판 https://bird-letter.vercel.app/welcome\n#새편지 #제주" },
+    { "date": "2026-10-09", "to": ["threads", "instagram"], "image": "03-magpie.png",
+      "text": "아침 까치가 울면 반가운 손님이 온다더니.\n까치로 보낸 편지는 도착할 때 반짝이가 내려와요. ✨\n\n#새편지 #까치" },
+    { "date": "2026-10-10", "to": ["threads"],
+      "text": "중요한 소식은 두루미에게. 급한 소식은 매에게. 장난은 붕붕이에게. 🚁\n\n새 편지 · 체험판 https://bird-letter.vercel.app/welcome" },
+    { "date": "2026-10-12", "to": ["threads"],
+      "text": "즉시 도착하는 메신저 말고, 실제 거리만큼 걸리는 편지 앱을 만들고 있어요. 이름은 새 편지.\n\n체험판 https://bird-letter.vercel.app/welcome" }
+  ]
+}
