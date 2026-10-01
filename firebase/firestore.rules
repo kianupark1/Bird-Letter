@@ -1,0 +1,75 @@
+rules_version = '2';
+
+// 새 편지 보안 규칙 (초안 · 아직 Firebase에 적용 전)
+// 원칙: 계정 없이(익명 로그인) 쓰되, 편지는 "보낸 사람"과 "도착 시각이 지난 뒤의 받는 사람"만 읽는다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function isSender(letterId) {
+      return signedIn() && get(/databases/$(database)/documents/letters/$(letterId)).data.fromUid == request.auth.uid;
+    }
+
+    // 내 정보(닉네임)와 내 차단 목록: 본인만
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+      match /blocks/{blockedUid} {
+        allow read, write: if signedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
+    // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다(목록 조회는 막음).
+    match /letters/{letterId} {
+      allow get: if signedIn();
+
+      // 목록은 내가 보낸 편지, 또는 내가 받는 사람으로 등록된 편지만
+      allow list: if signedIn() &&
+        (resource.data.fromUid == request.auth.uid || resource.data.recipientUid == request.auth.uid);
+
+      allow create: if signedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.sentAt == request.time
+        && request.resource.data.arriveAt > request.time
+        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid'])
+        && request.resource.data.recipientUid == null
+        && request.resource.data.toName is string && request.resource.data.toName.size() <= 20
+        && request.resource.data.fromName is string && request.resource.data.fromName.size() <= 12;
+
+      // 링크를 연 사람이 "받는 사람"으로 한 번만 등록할 수 있다(보낸 사람 본인은 불가)
+      allow update: if signedIn()
+        && resource.data.fromUid != request.auth.uid
+        && resource.data.recipientUid == null
+        && request.resource.data.recipientUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['recipientUid']);
+
+      // 보낸 사람은 자기 편지를 지울 수 있다(탈퇴 시 삭제에도 사용)
+      allow delete: if signedIn() && resource.data.fromUid == request.auth.uid;
+
+      // 편지 내용: 보낸 사람은 언제나, 그 밖의 사람은 도착 시각이 지난 뒤에만 읽는다
+      match /private/{docId} {
+        allow read: if signedIn() && (
+          isSender(letterId) ||
+          get(/databases/$(database)/documents/letters/$(letterId)).data.arriveAt <= request.time
+        );
+        allow create: if signedIn()
+          && getAfter(/databases/$(database)/documents/letters/$(letterId)).data.fromUid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['message'])
+          && request.resource.data.message is string
+          && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 500;
+        allow delete: if isSender(letterId);
+      }
+    }
+
+    // 신고: 쓰기만 가능(읽기는 운영자가 콘솔에서)
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['reporterUid', 'letterId', 'reason', 'createdAt'])
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if false;
+    }
+  }
+}
