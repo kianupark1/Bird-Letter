@@ -1,0 +1,31 @@
+# 매일 아침 9시(한국 시간)에 공개 사이트를 사람처럼 써 보고 점검해요.
+# 내 컴퓨터가 꺼져 있어도 GitHub 서버에서 돌아요. 실패하면 GitHub가 이메일로 알려 줘요.
+name: 매일 사이트 점검
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # UTC 00:00 = 한국 시간 09:00
+  workflow_dispatch: # 손으로 지금 실행하기
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 핵심 계산 시험
+        run: npm run test:core
+      - name: 공개 사이트 두 사용자 전체 흐름 시험
+        run: npm run e2e
+      - name: 실패하면 화면 캡처 남기기
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-output
+          path: qa-output/
+          if-no-files-found: ignore

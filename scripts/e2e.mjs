@@ -7,7 +7,14 @@ import { existsSync } from "node:fs";
 import puppeteer from "puppeteer-core";
 
 const BASE = (process.argv[2] ?? "https://bird-letter.vercel.app").replace(/\/$/, "");
-const EDGE = ["C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Microsoft/Edge/Application/msedge.exe", "C:/Program Files/Google/Chrome/Application/chrome.exe"].find(existsSync);
+const EDGE = [
+  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+  "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "/usr/bin/google-chrome", // GitHub 서버(리눅스)
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser",
+].find(existsSync);
 if (!EDGE) throw new Error("Edge/Chrome을 찾을 수 없어요");
 mkdirSync("qa-output", { recursive: true });
 
