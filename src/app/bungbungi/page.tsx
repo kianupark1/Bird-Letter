@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IS_TOSS } from "@/lib/target";
 import { BIRDS, REFERENCE_KM } from "@/lib/birds";
 import { ROUTES } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
@@ -37,7 +38,7 @@ export default function Bungbungi() {
       </div>
 
       <Link href="/send?bird=bungbungi" className="cta">붕붕이로 편지 보내기</Link>
-      <Link href="/" className="ghost">홈으로</Link>
+      {!IS_TOSS && <Link href="/" className="ghost">홈으로</Link>}
     </main>
   );
 }

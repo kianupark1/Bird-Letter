@@ -1,0 +1,39 @@
+/* 앱인토스 전용: 라이트 모드 고정 (공식: 미니앱은 라이트 모드로 구현, 다크 모드 미지원).
+   웹의 globals.css 는 건드리지 않고, 다크 블록이 켜져도 같은 라이트 값으로 덮어쓴다.
+   아래 값은 src/app/globals.css 첫 :root 와 같아야 하며, npm run check:toss 가 같은지 검사한다. */
+:root {
+  color-scheme: light;
+  --dahong: #C1481F;
+  --namsaek: #1E3A5C;
+  --hwangto: #E0A83C;
+  --cheongrok: #1B6E5C;
+  --bg: #FBF3E4;
+  --text: #2A2118;
+  --card: #FFFFFF;
+  --line: rgba(42, 33, 24, 0.12);
+  --land: #EFE3CC;
+  --sky: #FFFFFF;
+  --on-dahong: #FFFFFF;
+  --on-cheong: #FFFFFF;
+  --hwangto-text: #8A5A06;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+    --dahong: #C1481F;
+    --namsaek: #1E3A5C;
+    --hwangto: #E0A83C;
+    --cheongrok: #1B6E5C;
+    --bg: #FBF3E4;
+    --text: #2A2118;
+    --card: #FFFFFF;
+    --line: rgba(42, 33, 24, 0.12);
+    --land: #EFE3CC;
+    --sky: #FFFFFF;
+    --on-dahong: #FFFFFF;
+    --on-cheong: #FFFFFF;
+    --hwangto-text: #8A5A06;
+  }
+}
+/* 토스 내비게이션 바가 위에 있으므로 화면 아래쪽 여백(하단 메뉴 자리)을 줄인다 */
+.app { padding-bottom: 32px; }

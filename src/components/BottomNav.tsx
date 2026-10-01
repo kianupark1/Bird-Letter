@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IS_TOSS } from "@/lib/target";
 
 const TABS = [
   { href: "/", label: "홈", icon: "🏠" },
@@ -10,6 +11,7 @@ const TABS = [
 
 export default function BottomNav() {
   const path = usePathname();
+  if (IS_TOSS) return null; // 토스 빌드는 토스 내비게이션 바를 쓴다
   if (path.startsWith("/onboarding") || path.startsWith("/welcome")) return null;
   return (
     <nav className="bottomnav" aria-label="메뉴">

@@ -7,6 +7,7 @@ import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
 import JourneyMap from "@/components/JourneyMap";
+import { IS_TOSS, letterHref } from "@/lib/target";
 
 export default function Send() {
   return (
@@ -23,7 +24,7 @@ function SendForm() {
   const params = useSearchParams();
   const preset = params.get("bird");
   // 주소 끝에 ?test=1을 붙이면 60배 빠르게 날아가요(직접 써 보는 시험용)
-  const speed = params.get("test") ? 60 : 1;
+  const speed = !IS_TOSS && params.get("test") ? 60 : 1;
   const [step, setStep] = useState(1);
   const [to, setTo] = useState("");
   const [routeId, setRouteId] = useState(ROUTES[0].id);
@@ -44,7 +45,7 @@ function SendForm() {
     setError("");
     try {
       const id = await add({ to: to.trim(), routeId, birdId, message: message.trim(), fromName: profile.nickname, speed });
-      router.push(`/letter/${id}`);
+      router.push(letterHref(id));
     } catch {
       setError("편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
       setBusy(false);

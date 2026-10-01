@@ -6,6 +6,7 @@ import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { ONBOARDED_KEY, SAMPLE_INBOX, letterProgress, useLetters, useNow } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
+import { IS_TOSS, letterHref } from "@/lib/target";
 
 export default function Home() {
   const router = useRouter();
@@ -27,16 +28,24 @@ export default function Home() {
       <h1>새 편지</h1>
       <p className="sub">새를 골라 편지를 보내요. 실제 거리만큼 날아가요.</p>
 
+      {/* 토스 빌드에는 자체 하단 메뉴가 없어서(토스 내비게이션 바 사용) 홈에서 바로 이동하는 버튼을 둔다 */}
+      {IS_TOSS && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <Link href="/send" className="cta" style={{ flex: 2 }}>편지 쓰기</Link>
+          <Link href="/settings" className="ghost" style={{ flex: 1 }}>설정</Link>
+        </div>
+      )}
+
       <h2>날아가는 중</h2>
       {ready && flying.length === 0 && (
-        <div className="empty">아직 날아가는 편지가 없어요.<br />아래 ‘편지 쓰기’로 첫 편지를 보내 보세요.</div>
+        <div className="empty">아직 날아가는 편지가 없어요.<br />{IS_TOSS ? "위의 ‘편지 쓰기’ 버튼으로" : "아래 ‘편지 쓰기’로"} 첫 편지를 보내 보세요.</div>
       )}
       {flying.map((l) => {
         const bird = getBird(l.birdId);
         const route = getRoute(l.routeId);
         const pr = letterProgress(l, now);
         return (
-          <Link key={l.id} href={`/letter/${l.id}`} className="card">
+          <Link key={l.id} href={letterHref(l.id)} className="card">
             <div className="row grow">
               <span className="emoji bob">{bird.emoji}</span>
               <div className="grow">
@@ -54,7 +63,7 @@ export default function Home() {
         <>
           <h2>도착한 편지</h2>
           {arrived.map((l) => (
-            <Link key={l.id} href={`/letter/${l.id}`} className="card">
+            <Link key={l.id} href={letterHref(l.id)} className="card">
               <div className="row grow">
                 <span className="emoji">{getBird(l.birdId).emoji}</span>
                 <div className="grow">
@@ -88,7 +97,7 @@ export default function Home() {
           {received.map((m) => {
             const done = letterProgress(m, now).done;
             return (
-              <Link key={m.id} href={`/letter/${m.id}`} className="card">
+              <Link key={m.id} href={letterHref(m.id)} className="card">
                 <div className="row grow">
                   <span className="emoji">{getBird(m.birdId).emoji}</span>
                   <div className="grow">
@@ -101,7 +110,7 @@ export default function Home() {
             );
           })}
         </>
-      ) : (
+      ) : IS_TOSS ? null : (
         <>
           <h2>받은 편지함 (예시)</h2>
           {SAMPLE_INBOX.map((m) => (

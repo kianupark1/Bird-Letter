@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "check": "node scripts/check.mjs",
+    "build:toss": "next build toss",
+    "check:toss": "node scripts/check-toss.mjs",
     "test:rules": "node scripts/rules-test.mjs",
     "e2e": "node scripts/e2e.mjs",
     "test:core": "tsx scripts/test-core.mts",
@@ -21,6 +23,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@apps-in-toss/web-framework": "^3.7.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

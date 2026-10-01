@@ -5,6 +5,7 @@ import { useState } from "react";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
+import { IS_TOSS } from "@/lib/target";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -78,6 +79,8 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* 알림은 설정만 저장하고 실제 푸시가 없어서, 토스 빌드에서는 보여 주지 않는다 */}
+      {!IS_TOSS && (<>
       <h2>알림</h2>
       <div className="list">
         {NOTIFY_ROWS.map((r) => (
@@ -97,6 +100,7 @@ export default function Settings() {
         ))}
       </div>
       <div className="small">실제 푸시 알림은 서버(Firebase)를 연결한 뒤부터 와요. 지금은 설정만 저장돼요.</div>
+      </>)}
 
       <h2>계정</h2>
       <div className="list">
@@ -111,10 +115,13 @@ export default function Settings() {
 
       <h2>정보</h2>
       <div className="list">
-        <Link href="/privacy" className="listrow action">
-          <span>개인정보 처리방침</span><span aria-hidden>›</span>
-        </Link>
-        <div className="listrow"><span>버전</span><span className="note">0.1.0 (테스트)</span></div>
+        {/* 토스 빌드용 처리방침은 아직 없어서(별도 작업) 연결하지 않는다 */}
+        {!IS_TOSS && (
+          <Link href="/privacy" className="listrow action">
+            <span>개인정보 처리방침</span><span aria-hidden>›</span>
+          </Link>
+        )}
+        <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>
   );
