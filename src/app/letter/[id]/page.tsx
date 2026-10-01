@@ -7,6 +7,7 @@ import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
 import { letterProgress, useLetters, useNow, type Letter } from "@/lib/letters";
+import { withIGa } from "@/lib/korean";
 import { ensureUser } from "@/lib/firebase/client";
 import * as remote from "@/lib/firebase/remote";
 
@@ -121,7 +122,7 @@ export default function LetterPage() {
 
   return (
     <main className="app">
-      <h1>{isRecipient ? `${view.fromName || "누군가"}가 보낸 편지` : `${view.to}에게 가는 편지`}</h1>
+      <h1>{isRecipient ? `${withIGa(view.fromName || "누군가")} 보낸 편지` : `${view.to}에게 가는 편지`}</h1>
       <p className="sub">{bird.emoji} {bird.name} · {route.title} · {route.km}km</p>
 
       <JourneyMap route={route} p={pr.p} emoji={bird.emoji} />

@@ -27,6 +27,15 @@ const PAGES = [
 let failed = 0;
 const fail = (msg) => { failed++; console.log("  ✗ " + msg); };
 
+console.log("0/3 핵심 계산 시험 중...");
+const core = spawnSync(process.execPath, [path.join(root, "node_modules", "tsx", "dist", "cli.mjs"), "scripts/test-core.mts"], { cwd: root, encoding: "utf8" });
+if (core.status !== 0) {
+  console.log(core.stdout + core.stderr);
+  console.log("✗ 핵심 계산 시험 실패");
+  process.exit(1);
+}
+console.log("  ✓ " + core.stdout.trim().split("\n").pop());
+
 console.log("1/3 빌드 중...");
 const build = spawnSync(process.execPath, [nextBin, "build"], { cwd: root, stdio: "pipe", encoding: "utf8" });
 if (build.status !== 0) {
