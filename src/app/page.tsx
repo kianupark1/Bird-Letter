@@ -38,7 +38,7 @@ export default function Home() {
         return (
           <Link key={l.id} href={`/letter/${l.id}`} className="card">
             <div className="row grow">
-              <span className="emoji">{bird.emoji}</span>
+              <span className="emoji bob">{bird.emoji}</span>
               <div className="grow">
                 <div className="name ellipsis">{l.to}에게</div>
                 <div className="note">{route.title} · {bird.name}</div>

@@ -114,6 +114,10 @@
 - [x] 소개 페이지 (`src/app/welcome/page.tsx`): 외부 방문자용, "출시 준비 중 · 체험판" 표시. 하단 메뉴 숨김
 - [x] 홍보 문구 모음 (`promo/launch-kit.md`): 한 줄 소개, 슬로건, 인스타/스레드 글, 15초 숏폼 대본 2개, 스토어 설명, 출시 전 체크리스트
 - [x] 홍보 이미지 5장 (`promo/cards/*.png`, 원본 HTML은 `promo/cards-src`): 인스타 카드 4장(컨셉/새 6종/까치/서울→제주) + 링크 미리보기 `public/og.png`(/welcome에 연결). `node promo/build-cards.js`로 다시 만들 수 있음(Windows Edge 필요). 소요 시간은 앱과 같은 계산식
+- [x] 디자인 점검 1차 (2026-10-01): 대비 미달 3곳 수정(`--hwangto-text`, `--on-dahong`, `--on-cheong` 변수), 터치 영역 44px(노선 칩·닉네임·스위치), 여정 지도 재설계(한반도·제주·울릉도 배경, 구름, 새 흔들림, 도착 시각·경유지별 예상 시각), "데모: 빨리 감기"는 주소에 `?demo=1`을 붙였을 때만 보임, 편지 쓰기 첫 화면에 노선 미리보기 지도. 대비 계산 기준은 WCAG AA(본문 4.5)
+- [ ] 디자인 점검 2차 후보: 홈 상단 브랜드 영역(로고·인사), 붕붕이 소개 카드 위치, 지도를 실제 Kakao Maps로 교체, 받은 편지 열람 화면, 빈 화면(첫 방문) 일러스트
+- [x] 배포: https://bird-letter.vercel.app (Vercel, 로그인 없이 공개 확인). 배포 명령 `npx vercel deploy --prod --yes`(C:\bl, Vercel 로그인됨). GitHub 연동(자동 배포)은 Vercel 계정에 GitHub 로그인 연결이 필요해서 아직 안 됨
+- [x] GitHub `kianupark1/Bird-Letter`에 최신 코드 올라가 있고, 올라갈 때마다 자동 점검(`.github/workflows/check.yml`) 동작. gh 로그인 완료
 - [ ] 도착 알림(푸시, FCM 필요)
 - [ ] 홍보 영상: AI 생성 서비스(Everygen, 연결된 다른 생성 서비스) 크레딧이 0이라 못 만듦. 대안은 폰 화면 녹화(`promo/launch-kit.md` 5번 대본)
 - [ ] 배포(Vercel 등, 사용자 계정 필요), 배포 후 `NEXT_PUBLIC_SITE_URL` 설정, 개인정보 처리방침

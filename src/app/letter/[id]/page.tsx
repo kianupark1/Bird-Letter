@@ -1,17 +1,26 @@
 "use client";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import JourneyMap from "@/components/JourneyMap";
 import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
 import { letterProgress, useLetters, useNow } from "@/lib/letters";
 
+const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
+
 export default function LetterPage() {
   const { id } = useParams<{ id: string }>();
   const { letters, ready, fastForward } = useLetters();
   const now = useNow(5000);
+  const [demo, setDemo] = useState(false);
   const letter = letters.find((l) => l.id === id);
+
+  // 주소 끝에 ?demo=1을 붙였을 때만 "빨리 감기"를 보여준다(일반 사용자에게는 숨김)
+  useEffect(() => {
+    setDemo(new URLSearchParams(window.location.search).has("demo"));
+  }, []);
 
   if (!ready) return <main className="app" />;
   if (!letter)
@@ -26,8 +35,10 @@ export default function LetterPage() {
   const route = getRoute(letter.routeId);
   const pr = letterProgress(letter, now);
   const remainMin = Math.max(1, Math.ceil(pr.total - pr.elapsed));
-  const passed = route.points.filter((_, i) => pr.p >= i / (route.points.length - 1));
-  const here = passed[passed.length - 1];
+  const last = route.points.length - 1;
+  const nextIdx = route.points.findIndex((_, i) => pr.p < i / last);
+  const arriveAt = letter.sentAt + pr.total * 60000;
+  const dest = route.title.split("→")[1].trim();
 
   return (
     <main className="app">
@@ -52,21 +63,41 @@ export default function LetterPage() {
             </h2>
             <div className="small">
               {bird.id === "magpie"
-                ? `까치가 ${route.title.split("→")[1].trim()}에서 반갑게 울었어요. 아침 까치가 울면 반가운 손님이 온다더니!`
-                : `${bird.name}가 ${route.title.split("→")[1].trim()}에 내려앉았어요.`}
+                ? `까치가 ${dest}에서 반갑게 울었어요. 아침 까치가 울면 반가운 손님이 온다더니!`
+                : `${bird.name}가 ${dest}에 내려앉았어요.`}
             </div>
           </div>
           <div className="paper">{letter.message}</div>
         </>
       ) : (
         <>
-          <div className="progress"><i style={{ width: `${pr.p * 100}%` }} /></div>
-          <div className="small">
-            {Math.round(pr.p * 100)}% · 도착까지 {formatMinutes(remainMin)} · 지금 {here?.name ?? route.points[0].name} 근처
+          <div className="eta">
+            <div className="top">
+              <span>도착까지</span>
+              <b>{formatMinutes(remainMin)}</b>
+            </div>
+            <div className="progress"><i style={{ width: `${pr.p * 100}%` }} /></div>
+            <div className="meta">{clock(arriveAt)} 도착 예정 · {Math.round(pr.p * 100)}% 날아왔어요</div>
           </div>
-          <button className="ghost" onClick={() => fastForward(letter.id, Math.max(5, Math.ceil(pr.total / 4)))}>
-            데모: 시간 빨리 감기
-          </button>
+          <ol className="timeline" aria-label="경유지">
+            {route.points.map((pt, i) => {
+              const passed = pr.p >= i / last;
+              const at = letter.sentAt + pr.total * (i / last) * 60000;
+              const label = i === 0 ? `출발 ${clock(at)}` : i === last ? `도착 예정 ${clock(at)}` : `${passed ? "지남" : "예상"} ${clock(at)}`;
+              return (
+                <li key={pt.name} className={passed ? "passed" : i === nextIdx ? "next" : ""}>
+                  <span className="tdot" aria-hidden />
+                  <span>{pt.name}</span>
+                  <span className="t">{label}</span>
+                </li>
+              );
+            })}
+          </ol>
+          {demo && (
+            <button className="linkbtn" onClick={() => fastForward(letter.id, Math.max(5, Math.ceil(pr.total / 4)))}>
+              데모: 시간 빨리 감기
+            </button>
+          )}
         </>
       )}
       <Link href="/" className="ghost">홈으로</Link>

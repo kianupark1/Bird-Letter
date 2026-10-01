@@ -5,6 +5,7 @@ import { BIRDS, getBird } from "@/lib/birds";
 import { ROUTES, getRoute } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
+import JourneyMap from "@/components/JourneyMap";
 
 export default function Send() {
   return (
@@ -52,7 +53,8 @@ function SendForm() {
               </button>
             ))}
           </div>
-          <p className="sub">{route.points.map((p) => p.name).join(" → ")} · {route.km}km</p>
+          <JourneyMap route={route} p={0} emoji={bird.emoji} />
+          <p className="sub" style={{ marginTop: 12 }}>{route.points.map((p) => p.name).join(" → ")} · {route.km}km</p>
           <button className="cta" disabled={!to.trim()} onClick={() => setStep(2)}>다음: 새 고르기</button>
         </>
       )}
@@ -79,7 +81,7 @@ function SendForm() {
 
       {step === 3 && (
         <>
-          <p className="sub">{to}에게 · {bird.emoji} {bird.name} · {formatMinutes(minutes)} 뒤 도착</p>
+          <p className="sub">{to}에게 · {bird.emoji} {bird.name} · {formatMinutes(minutes)} 뒤 도착 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</p>
           <textarea className="field" placeholder="마음을 적어 보세요" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500} />
           <div className="small">{message.length}/500</div>
           <button className="cta" disabled={!message.trim()} onClick={send}>{bird.name}로 보내기</button>

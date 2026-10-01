@@ -7,6 +7,11 @@
   --text: #2A2118;
   --card: #FFFFFF;
   --line: rgba(42, 33, 24, 0.12);
+  --land: #EFE3CC;
+  --sky: #FFFFFF;
+  --on-dahong: #FFFFFF;
+  --on-cheong: #FFFFFF;
+  --hwangto-text: #8A5A06;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -18,6 +23,11 @@
     --text: #F3E9D8;
     --card: #262019;
     --line: rgba(243, 233, 216, 0.14);
+    --land: #352C22;
+    --sky: #221C16;
+    --on-dahong: #1A1613;
+    --on-cheong: #10201B;
+    --hwangto-text: #F0BC5C;
   }
 }
 * { box-sizing: border-box; }
@@ -35,7 +45,7 @@ h2 { font-size: 15px; margin: 24px 0 10px; opacity: .8; }
 
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 .chip { border: 1px solid var(--namsaek); background: transparent; color: var(--namsaek);
-  padding: 6px 12px; border-radius: 999px; font: inherit; font-size: 13px; cursor: pointer; }
+  padding: 0 16px; min-height: 44px; border-radius: 999px; font: inherit; font-size: 14px; cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--namsaek); color: var(--bg); }
 
 .card { width: 100%; text-align: left; background: var(--card); color: inherit;
@@ -53,7 +63,7 @@ button.card { cursor: pointer; }
 .time { font-weight: 700; color: var(--dahong); white-space: nowrap; }
 
 .cta { display: block; width: 100%; margin-top: 8px; padding: 14px; border: 0; border-radius: 14px; text-align: center;
-  background: var(--dahong); color: #fff; font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; }
+  background: var(--dahong); color: var(--on-dahong); font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; }
 .cta:disabled { opacity: .4; cursor: not-allowed; }
 .ghost { display: block; width: 100%; margin-top: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 14px;
   background: transparent; color: inherit; font: inherit; font-size: 14px; text-align: center; cursor: pointer; }
@@ -92,10 +102,10 @@ textarea.field { min-height: 140px; resize: vertical; }
 .dots i.on { width: 20px; background: var(--dahong); }
 
 .profilecard { display: flex; align-items: center; gap: 14px; background: var(--card); border-radius: 14px; padding: 16px; margin-top: 12px; }
-.avatar { width: 56px; height: 56px; border-radius: 999px; background: var(--cheongrok); color: #fff;
+.avatar { width: 56px; height: 56px; border-radius: 999px; background: var(--cheongrok); color: var(--on-cheong);
   display: grid; place-items: center; font-size: 24px; font-weight: 700; flex: none; }
 .nick { width: 100%; font: inherit; font-size: 18px; font-weight: 700; color: inherit; background: transparent;
-  border: 0; border-bottom: 1px dashed var(--line); padding: 2px 0; outline: none; }
+  border: 0; border-bottom: 1px dashed var(--line); padding: 10px 0; min-height: 44px; outline: none; }
 .nick:focus { border-bottom-color: var(--dahong); }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .stats div { background: var(--card); border-radius: 14px; padding: 14px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
@@ -127,12 +137,39 @@ textarea.field { min-height: 140px; resize: vertical; }
 .welcome h1 { font-size: 26px; margin: 12px 0 8px; }
 .welcome h2 { text-align: left; }
 .welcome .sub { line-height: 1.6; }
-.beta { display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--hwangto); color: var(--hwangto); margin-bottom: 4px; }
+.beta { display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--hwangto); color: var(--hwangto-text); font-weight: 600; margin-bottom: 4px; }
 .steplist { list-style: none; margin: 0; padding: 0; text-align: left; display: grid; gap: 10px; }
 .steplist li { display: flex; gap: 12px; align-items: flex-start; background: var(--card); border-radius: 14px; padding: 14px; }
 .steplist .name { font-weight: 700; margin-bottom: 2px; }
 .steplist .note { line-height: 1.5; }
 .steplist li > b { flex: none; width: 28px; height: 28px; border-radius: 999px; background: var(--dahong); color: #fff; display: grid; place-items: center; font-size: 14px; }
+
+.map { background: var(--sky); }
+.land { fill: var(--land); stroke: var(--line); stroke-width: 1; }
+.cloud { fill: var(--line); opacity: .7; animation: drift 14s ease-in-out infinite alternate; }
+@keyframes drift { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+.mapbird { animation: mapbob 2.2s ease-in-out infinite; }
+@keyframes mapbob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.map text.lbl { font-size: 11px; font-weight: 600; paint-order: stroke; stroke: var(--sky); stroke-width: 3px; stroke-linejoin: round; }
+.bob { display: inline-block; animation: mapbob 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .cloud, .mapbird, .bob { animation: none; } }
+
+.eta { background: var(--card); border-radius: 14px; padding: 16px; margin-top: 12px; }
+.eta .top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.eta .top span { font-size: 14px; opacity: .7; }
+.eta .top b { font-size: 30px; color: var(--dahong); letter-spacing: -1px; }
+.eta .meta { font-size: 13px; opacity: .7; margin-top: 4px; }
+.timeline { list-style: none; margin: 12px 0 0; padding: 0; background: var(--card); border-radius: 14px; overflow: hidden; }
+.timeline li { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-top: 1px solid var(--line); font-size: 14px; }
+.timeline li:first-child { border-top: 0; }
+.tdot { width: 12px; height: 12px; border-radius: 999px; border: 2px solid var(--hwangto); flex: none; }
+.timeline li.passed .tdot { background: var(--dahong); border-color: var(--dahong); }
+.timeline li.passed { opacity: .65; }
+.timeline li.next .tdot { box-shadow: 0 0 0 4px rgba(224, 168, 60, .3); }
+.timeline li.next { font-weight: 700; }
+.timeline .t { margin-left: auto; opacity: .75; font-variant-numeric: tabular-nums; font-weight: 400; }
+.linkbtn { display: block; margin: 8px auto 0; background: none; border: 0; color: inherit; opacity: .55; font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; padding: 0 12px; min-height: 44px; }
+.switch::before { content: ""; position: absolute; inset: -8px -4px; }
 
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
