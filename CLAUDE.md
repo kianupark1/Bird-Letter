@@ -108,7 +108,8 @@
 - [x] 여정 지도 + 도착 화면 (`src/app/letter/[id]/page.tsx`, `src/components/JourneyMap.tsx`): 임시 SVG 지도, 진행률에 따라 새 이동, "데모: 시간 빨리 감기" 버튼
 - [x] 편지 데이터는 브라우저 localStorage에 저장 (`src/lib/letters.ts`) — Firestore 연동 전 임시
 - [x] 온보딩 3장 (`src/app/onboarding/page.tsx`, `src/components/Illustrations.tsx`): 컨셉+까치 / 새 6종 소개 / 첫 편지 쓰기. 첫 방문 시 홈이 자동 이동(`localStorage`의 `saepyeonji.onboarded.v1`). 일러스트는 임시 SVG
-- [ ] 붕붕이 전용 화면, 도착 알림(푸시), 까치 특별 도착 연출, 설정/프로필 화면(온보딩 다시 보기 포함)
+- [x] 설정/프로필 (`src/app/settings/page.tsx`, `src/lib/settings.ts`): 닉네임 편집(아바타는 청록 원+첫 글자), 보낸/받은 통계, 알림 토글 3개(도착·중간 지점·답장), 온보딩 다시 보기, 보낸 편지 모두 지우기. 값은 `localStorage`(`saepyeonji.profile.v1`)에 저장. 알림은 설정만 저장하고 실제 푸시는 FCM 연동 후. 언어 설정·차단 목록은 보류 결정대로 제외. 하단 메뉴는 홈/편지 쓰기/설정 3개
+- [ ] 붕붕이 전용 화면, 도착 알림(푸시), 까치 특별 도착 연출
 - [ ] 초대 링크로 계정 없이 편지 보기 (Firestore 필요)
 - [ ] Kakao Maps SDK 교체(`JourneyMap.tsx`의 `xy` 좌표 제거), Firebase(Firestore + FCM) 연동
 

@@ -14,7 +14,8 @@ export type Letter = {
   sentAt: number;
 };
 
-const KEY = "saepyeonji.letters.v1";
+export const LETTERS_KEY = "saepyeonji.letters.v1";
+const KEY = LETTERS_KEY;
 export const ONBOARDED_KEY = "saepyeonji.onboarded.v1";
 
 /** 받은 편지함 샘플. Firestore 연동 전까지 화면 확인용 */

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 const TABS = [
   { href: "/", label: "홈", icon: "🏠" },
   { href: "/send", label: "편지 쓰기", icon: "✉️" },
+  { href: "/settings", label: "설정", icon: "⚙️" },
 ];
 
 export default function BottomNav() {
