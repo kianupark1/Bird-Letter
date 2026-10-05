@@ -171,6 +171,11 @@ textarea.field { min-height: 140px; resize: vertical; }
 .linkbtn { display: block; margin: 8px auto 0; background: none; border: 0; color: inherit; opacity: .55; font: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; padding: 0 12px; min-height: 44px; }
 .switch::before { content: ""; position: absolute; inset: -8px -4px; }
 
+/* 편지 쓰기의 "다음/보내기" 버튼: 하단 메뉴 바로 위에 붙어 있어서 목록이 길어도 가려지지 않아요 */
+.dock { position: sticky; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 5; background: var(--bg); padding: 4px 0 8px; margin-top: 8px; }
+.dock .cta { margin-top: 0; }
+.card { scroll-margin-bottom: 220px; } /* 자동 스크롤·키보드 이동 때 붙어 있는 버튼 뒤로 숨지 않게 */
+
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
 .bottomnav a { flex: 1; max-width: 180px; text-align: center; font-size: 12px; padding: 6px 0; border-radius: 10px; opacity: .6; }

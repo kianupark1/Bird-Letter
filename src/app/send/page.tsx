@@ -72,7 +72,9 @@ function SendForm() {
           </div>
           <JourneyMap route={route} p={0} emoji={bird.emoji} />
           <p className="sub" style={{ marginTop: 12 }}>{route.points.map((p) => p.name).join(" → ")} · {route.km}km</p>
-          <button className="cta" disabled={!to.trim()} onClick={() => setStep(2)}>다음: 새 고르기</button>
+          <div className="dock">
+            <button className="cta" disabled={!to.trim()} onClick={() => setStep(2)}>다음: 새 고르기</button>
+          </div>
         </>
       )}
 
@@ -91,8 +93,10 @@ function SendForm() {
               <div className="time">{formatMinutes(travelMinutes(b, route.km))}</div>
             </button>
           ))}
-          <button className="cta" onClick={() => setStep(3)}>다음: 편지 쓰기</button>
-          <button className="ghost" onClick={() => setStep(1)}>이전</button>
+          <div className="dock">
+            <button className="cta" onClick={() => setStep(3)}>다음: 편지 쓰기</button>
+            <button className="ghost" onClick={() => setStep(1)}>이전</button>
+          </div>
         </>
       )}
 
@@ -102,8 +106,10 @@ function SendForm() {
           <textarea className="field" placeholder="마음을 적어 보세요" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500} />
           <div className="small">{message.length}/500</div>
           {error && <div className="small" role="alert" style={{ color: "var(--dahong)", opacity: 1 }}>{error}</div>}
-          <button className="cta" disabled={!message.trim() || busy} onClick={send}>{busy ? "보내는 중..." : `${bird.name}로 보내기`}</button>
-          <button className="ghost" onClick={() => setStep(2)}>이전</button>
+          <div className="dock">
+            <button className="cta" disabled={!message.trim() || busy} onClick={send}>{busy ? "보내는 중..." : `${bird.name}로 보내기`}</button>
+            <button className="ghost" onClick={() => setStep(2)}>이전</button>
+          </div>
         </>
       )}
     </main>
