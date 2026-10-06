@@ -220,3 +220,7 @@ textarea.field { min-height: 140px; resize: vertical; }
   background-image: repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--line) 55%, transparent) 31px 32px); background-color: var(--card); background-position: 0 6px; }
 .paper.letter .msg { font-size: 16px; line-height: 32px; min-height: 96px; }
 .paper.letter .seal { position: absolute; right: 12px; bottom: 10px; width: 44px; height: 44px; border: 2px solid var(--dahong); color: var(--dahong); border-radius: 8px; font-size: 12px; font-weight: 800; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-8deg); }
+
+/* 약관·방침 바로가기 */
+.legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 4px; margin-top: 16px; font-size: 13px; }
+.legal-links a { opacity: .8; text-decoration: underline; padding: 0 8px; min-height: 44px; display: inline-flex; align-items: center; }

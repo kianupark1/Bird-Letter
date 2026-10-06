@@ -18,6 +18,8 @@ const PAGES = [
   ["/welcome", "소식은 날아서 와요"],
   ["/bungbungi", "붕붕이"],
   ["/privacy", "개인정보 처리방침"],
+  ["/terms", "이용약관"],
+  ["/policy", "운영정책"],
   ["/manifest.webmanifest", '"name":"새 편지"'],
   ["/og.png", null],
   ["/icon-192.png", null],

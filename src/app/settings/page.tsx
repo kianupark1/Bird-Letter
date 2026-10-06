@@ -115,12 +115,15 @@ export default function Settings() {
 
       <h2>정보</h2>
       <div className="list">
-        {/* 토스 빌드용 처리방침은 아직 없어서(별도 작업) 연결하지 않는다 */}
-        {!IS_TOSS && (
-          <Link href="/privacy" className="listrow action">
-            <span>개인정보 처리방침</span><span aria-hidden>›</span>
-          </Link>
-        )}
+        <Link href="/privacy" className="listrow action">
+          <span>개인정보 처리방침</span><span aria-hidden>›</span>
+        </Link>
+        <Link href="/terms" className="listrow action">
+          <span>이용약관</span><span aria-hidden>›</span>
+        </Link>
+        <Link href="/policy" className="listrow action">
+          <span>운영정책 · 신고 처리</span><span aria-hidden>›</span>
+        </Link>
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>

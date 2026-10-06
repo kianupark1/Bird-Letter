@@ -42,10 +42,10 @@ pass("next build toss 성공 (output: export, 서버 없이 정적 파일만)");
 
 // ---------- 2. 구조 ----------
 console.log("2/7 결과 구조 확인...");
-for (const f of ["index.html", "letter/index.html", "send/index.html", "settings/index.html", "onboarding/index.html", "bungbungi/index.html"]) {
+for (const f of ["index.html", "letter/index.html", "send/index.html", "settings/index.html", "onboarding/index.html", "bungbungi/index.html", "privacy/index.html", "terms/index.html", "policy/index.html"]) {
   check(existsSync(path.join(OUT, f)), `${f} 있음`, `${f} 없음`);
 }
-for (const f of ["welcome", "privacy", "letter/[id]"]) {
+for (const f of ["welcome", "letter/[id]"]) {
   check(!existsSync(path.join(OUT, f)), `${f} 은(는) 토스 빌드에 없음(의도)`, `${f} 이(가) 토스 빌드에 들어 있음`);
 }
 

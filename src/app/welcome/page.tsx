@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BIRDS, REFERENCE_KM } from "@/lib/birds";
 import { Magpie } from "@/components/Illustrations";
 import BirdIcon from "@/components/BirdIcon";
+import { IS_BETA } from "@/lib/release";
 
 export const metadata = {
   title: "새 편지 — 소식은 날아서 와요",
@@ -25,7 +26,7 @@ const STEPS = [
 export default function Welcome() {
   return (
     <main className="app welcome">
-      <span className="beta">출시 준비 중 · 체험판</span>
+      {IS_BETA && <span className="beta">출시 준비 중 · 체험판</span>}
       <Magpie />
       <h1>소식은 날아서 와요</h1>
       <p className="proverb">“아침 까치가 울면 반가운 손님이 온다”</p>
@@ -69,7 +70,14 @@ export default function Welcome() {
       </div>
 
       <Link href="/" className="cta" style={{ marginTop: 24 }}>첫 편지 보내 보기</Link>
-      <p className="small" style={{ textAlign: "center" }}>지금은 체험판이라 편지가 내 기기에만 저장돼요.</p>
+      <p className="small" style={{ textAlign: "center" }}>
+        {IS_BETA ? "지금은 체험판이에요. " : ""}편지는 서버에 저장되고, 받는 사람은 링크로 열어요.
+      </p>
+      <div className="legal-links">
+        <Link href="/privacy">개인정보 처리방침</Link>
+        <Link href="/terms">이용약관</Link>
+        <Link href="/policy">운영정책</Link>
+      </div>
     </main>
   );
 }
