@@ -13,3 +13,6 @@ toss/out/
 toss/.next/
 toss/next-env.d.ts
 *.ait
+
+# 타입 검사 임시 파일
+*.tsbuildinfo
