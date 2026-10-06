@@ -10,6 +10,7 @@ import { withIGa } from "@/lib/korean";
 import { ensureUser } from "@/lib/firebase/client";
 import * as remote from "@/lib/firebase/remote";
 import { IS_TOSS, letterHref } from "@/lib/target";
+import BirdIcon from "@/components/BirdIcon";
 
 const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
 
@@ -124,22 +125,22 @@ export default function LetterView({ id }: { id: string }) {
   return (
     <main className="app">
       <h1>{isRecipient ? `${withIGa(view.fromName || "누군가")} 보낸 편지` : `${view.to}에게 가는 편지`}</h1>
-      <p className="sub">{bird.emoji} {bird.name} · {route.title} · {route.km}km</p>
+      <p className="sub"><BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {route.title} · {route.km}km</p>
 
-      <JourneyMap route={route} p={pr.p} emoji={bird.emoji} />
+      <JourneyMap route={route} p={pr.p} birdId={bird.id} />
 
       {pr.done ? (
         <>
           <div className={`arrived ${bird.id === "magpie" ? "special" : ""}`}>
             {bird.id === "magpie" && (
-              <div className="sparkles" aria-hidden>
-                {["✨", "💛", "✨", "🌸", "✨", "💛", "🌸", "✨"].map((s, n) => (
-                  <span key={n} style={{ left: `${8 + n * 12}%`, animationDelay: `${n * 0.25}s` }}>{s}</span>
+              <div className="confetti" aria-hidden>
+                {[4, 12, 20, 80, 88, 96, 8, 92].map((left, n) => (
+                  <i key={n} className={n % 2 ? "petal" : "spark"} style={{ left: `${left}%`, animationDelay: `${n * 0.3}s` }} />
                 ))}
               </div>
             )}
-            <div className="big">{bird.emoji}</div>
-            <h2 style={{ margin: "8px 0 0", opacity: 1 }}>
+            <div className="big landing"><BirdIcon id={bird.id} size={112} /></div>
+            <h2 style={{ margin: "10px 0 0", opacity: 1 }}>
               {bird.id === "magpie" ? "반가운 소식이 도착했어요!" : "편지가 도착했어요!"}
             </h2>
             <div className="small">
@@ -148,7 +149,10 @@ export default function LetterView({ id }: { id: string }) {
                 : `${bird.name}가 ${dest}에 내려앉았어요.`}
             </div>
           </div>
-          <div className="paper">{view.message || (isRecipient ? "편지를 펼치는 중..." : "")}</div>
+          <div className="paper letter">
+            <div className="msg">{view.message || (isRecipient ? "편지를 펼치는 중..." : "")}</div>
+            <div className="seal" aria-hidden>새<br />편지</div>
+          </div>
         </>
       ) : (
         <>

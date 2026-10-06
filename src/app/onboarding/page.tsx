@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BIRDS } from "@/lib/birds";
 import { Envelope, Magpie } from "@/components/Illustrations";
 import { ONBOARDED_KEY } from "@/lib/letters";
+import BirdIcon from "@/components/BirdIcon";
 
 const LAST = 2;
 
@@ -38,7 +39,7 @@ export default function Onboarding() {
             <div className="birdgrid">
               {BIRDS.map((b) => (
                 <div key={b.id} className="birdcell">
-                  <span className="emoji">{b.emoji}</span>
+                  <BirdIcon id={b.id} size={64} />
                   <b>{b.name}</b>
                   <small>약 {b.minutesSeoulBusan}분</small>
                 </div>

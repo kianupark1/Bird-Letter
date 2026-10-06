@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BIRDS, REFERENCE_KM } from "@/lib/birds";
 import { Magpie } from "@/components/Illustrations";
+import BirdIcon from "@/components/BirdIcon";
 
 export const metadata = {
   title: "새 편지 — 소식은 날아서 와요",
@@ -52,7 +53,7 @@ export default function Welcome() {
       <div className="birdgrid">
         {BIRDS.map((b) => (
           <div key={b.id} className="birdcell">
-            <span className="emoji">{b.emoji}</span>
+            <BirdIcon id={b.id} size={60} />
             <b>{b.name}</b>
             <small>약 {b.minutesSeoulBusan}분</small>
           </div>

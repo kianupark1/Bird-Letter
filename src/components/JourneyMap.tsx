@@ -1,13 +1,14 @@
 import type { Route } from "@/lib/routes";
+import BirdIcon from "@/components/BirdIcon";
 
-type Props = { route: Route; p: number; emoji: string };
+type Props = { route: Route; p: number; birdId: string };
 
 // 한반도·제주·울릉도·독도를 아주 단순하게 그린 배경. 최종본은 Kakao Maps SDK로 교체
 const PENINSULA =
   "M98 14 Q120 2 150 6 Q182 10 200 38 Q214 64 226 96 Q238 126 240 156 Q242 186 222 196 Q215 192 205 175 Q185 146 150 140 Q120 138 104 128 Q98 112 104 86 Q96 62 98 14 Z";
 
 /** 임시 SVG 지도. 최종본은 Kakao Maps SDK로 교체 */
-export default function JourneyMap({ route, p, emoji }: Props) {
+export default function JourneyMap({ route, p, birdId }: Props) {
   const pts = route.points.map((pt) => pt.xy);
   const seg = pts.slice(1).map((pt, i) => Math.hypot(pt[0] - pts[i][0], pt[1] - pts[i][1]));
   const total = seg.reduce((a, b) => a + b, 0);
@@ -50,7 +51,7 @@ export default function JourneyMap({ route, p, emoji }: Props) {
         </g>
       ))}
       <g className="mapbird" aria-hidden>
-        <text x={pos[0] - 13} y={pos[1] - 8} style={{ fontSize: 26 }}>{emoji}</text>
+        <BirdIcon id={birdId} size={38} x={pos[0] - 19} y={pos[1] - 38} />
       </g>
     </svg>
   );

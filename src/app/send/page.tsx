@@ -8,6 +8,7 @@ import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
 import JourneyMap from "@/components/JourneyMap";
 import { IS_TOSS, letterHref } from "@/lib/target";
+import BirdIcon from "@/components/BirdIcon";
 
 export default function Send() {
   return (
@@ -70,7 +71,7 @@ function SendForm() {
               </button>
             ))}
           </div>
-          <JourneyMap route={route} p={0} emoji={bird.emoji} />
+          <JourneyMap route={route} p={0} birdId={bird.id} />
           <p className="sub" style={{ marginTop: 12 }}>{route.points.map((p) => p.name).join(" → ")} · {route.km}km</p>
           <div className="dock">
             <button className="cta" disabled={!to.trim()} onClick={() => setStep(2)}>다음: 새 고르기</button>
@@ -84,7 +85,7 @@ function SendForm() {
           {BIRDS.map((b) => (
             <button key={b.id} className="card" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
-                <span className="emoji">{b.emoji}</span>
+                <BirdIcon id={b.id} size={60} />
                 <div>
                   <div><span className="name">{b.name}</span><span className="badge">{b.badge}</span></div>
                   <div className="note">{b.note}</div>
@@ -102,7 +103,7 @@ function SendForm() {
 
       {step === 3 && (
         <>
-          <p className="sub">{to}에게 · {bird.emoji} {bird.name} · {whenText} 뒤 도착 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</p>
+          <p className="sub">{to}에게 · <BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {whenText} 뒤 도착 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</p>
           <textarea className="field" placeholder="마음을 적어 보세요" value={message} onChange={(e) => setMessage(e.target.value)} maxLength={500} />
           <div className="small">{message.length}/500</div>
           {error && <div className="small" role="alert" style={{ color: "var(--dahong)", opacity: 1 }}>{error}</div>}
