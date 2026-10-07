@@ -279,3 +279,11 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 @keyframes popin { 0% { transform: translateY(40px) scale(.9); opacity: 0; } 100% { transform: none; opacity: 1; } }
 @keyframes popbird { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-6px) rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) { .popcard, .popbird { animation: none; } }
+
+/* 푸시 켜기 안내 */
+.pushcard { display: flex; gap: 10px; align-items: center; background: var(--card); border: 1px dashed var(--hwangto); border-radius: 16px; padding: 12px 14px 12px 8px; margin-top: 12px; }
+.pushcard .birdicon { flex: none; }
+.pushtext { display: grid; gap: 2px; min-width: 0; }
+.pushtext .t { font-weight: 800; font-size: 15px; line-height: 1.35; }
+.pushtext .d { font-size: 13px; opacity: .8; line-height: 1.45; }
+.pushbtn { justify-self: start; margin-top: 6px; background: var(--dahong); color: var(--on-dahong); border: 0; font: inherit; font-weight: 800; font-size: 14px; border-radius: 999px; min-height: 44px; padding: 0 20px; cursor: pointer; }

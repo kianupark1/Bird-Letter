@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
+import { PUSH_CONFIGURED, usePushState } from "@/lib/push";
 import { IS_TOSS } from "@/lib/target";
 
 type NotifyKey = keyof Profile["notify"];
@@ -21,13 +22,7 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
-  const [browserNotif, setBrowserNotif] = useState<"unsupported" | NotificationPermission>("unsupported");
-  useEffect(() => {
-    if (typeof Notification !== "undefined") setBrowserNotif(Notification.permission);
-  }, []);
-  const askBrowserNotif = async () => {
-    try { setBrowserNotif(await Notification.requestPermission()); } catch {}
-  };
+  const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
   const toggle = (key: NotifyKey) =>
     update((prev) => ({ notify: { ...prev.notify, [key]: !prev.notify[key] } }));
@@ -125,12 +120,24 @@ export default function Settings() {
       <div className="small">
         앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 오는 알림(푸시)은 준비 중이에요."}
       </div>
-      {!IS_TOSS && browserNotif !== "unsupported" && (
+      {!IS_TOSS && (
         <div className="list">
-          <button className="listrow action" onClick={askBrowserNotif} disabled={browserNotif === "granted"}>
-            <span>{browserNotif === "granted" ? "다른 탭에 있어도 알림 받는 중" : browserNotif === "denied" ? "브라우저에서 알림이 막혀 있어요" : "다른 탭에 있어도 알림 받기"}</span>
-            <span aria-hidden>{browserNotif === "granted" ? "✓" : "›"}</span>
-          </button>
+          <div className="listrow">
+            <div className="grow">
+              <div className="name">앱을 닫아도 알림 받기</div>
+              <div className="note">
+                {push === "enabled" ? "켜져 있어요. 편지가 도착하면 폰으로 알려줘요."
+                  : !PUSH_CONFIGURED ? "준비 중이에요."
+                  : push === "unsupported" ? "이 기기·브라우저에서는 쓸 수 없어요."
+                  : push === "needs-install" ? "아이폰은 ‘홈 화면에 추가’한 앱에서 켤 수 있어요."
+                  : push === "denied" ? "브라우저(폰 설정)에서 알림이 막혀 있어요."
+                  : "꺼 둔 사이에 도착해도 알려줘요."}
+              </div>
+            </div>
+            {PUSH_CONFIGURED && (push === "enabled" || push === "default") && (
+              <button role="switch" aria-checked={push === "enabled"} aria-label="앱을 닫아도 알림 받기" className="switch" onClick={push === "enabled" ? disablePush : enablePush} />
+            )}
+          </div>
         </div>
       )}
 

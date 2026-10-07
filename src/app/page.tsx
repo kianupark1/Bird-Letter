@@ -8,6 +8,7 @@ import { ONBOARDED_KEY, SAMPLE_INBOX, letterProgress, useLetters, useNow } from 
 import { formatMinutes } from "@/lib/geo";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
+import PushPrompt from "@/components/PushPrompt";
 import { DEFAULT_PROFILE, useProfile } from "@/lib/settings";
 
 export default function Home() {
@@ -72,6 +73,8 @@ export default function Home() {
           </Link>
         );
       })}
+
+      {flying.length > 0 && <PushPrompt birdId={flying[0].birdId} />}
 
       {arrived.length > 0 && (
         <>

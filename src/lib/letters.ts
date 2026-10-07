@@ -18,6 +18,13 @@ export type Letter = {
   arriveAt?: number;
 };
 
+/** 같은 화면의 다른 부분(알림 담당 등)이 새로 보낸·받은 편지를 바로 알도록 전하는 신호 */
+const BUS = "saepyeonji:letters";
+type BusEvent = { type: "sent"; letter: Letter } | { type: "received"; meta: remote.Meta };
+const announce = (detail: BusEvent) => { try { window.dispatchEvent(new CustomEvent(BUS, { detail })); } catch {} };
+/** 링크로 편지를 처음 열어 받는 사람이 됐을 때 알려요 */
+export const announceReceived = (meta: remote.Meta) => announce({ type: "received", meta });
+
 export const LETTERS_KEY = "saepyeonji.letters.v1";
 const KEY = LETTERS_KEY;
 export const ONBOARDED_KEY = "saepyeonji.onboarded.v1";
@@ -64,6 +71,16 @@ export function useLetters() {
     backendRef.current = b;
     setBackendState(b);
     if (b !== "checking") settled.current?.done();
+  }, []);
+
+  useEffect(() => {
+    const h = (e: Event) => {
+      const d = (e as CustomEvent<BusEvent>).detail;
+      if (d.type === "sent") setLetters((prev) => (prev.some((x) => x.id === d.letter.id) ? prev : [d.letter, ...prev]));
+      else setReceived((prev) => (prev.some((x) => x.id === d.meta.id) ? prev : [d.meta, ...prev]));
+    };
+    window.addEventListener(BUS, h);
+    return () => window.removeEventListener(BUS, h);
   }, []);
 
   useEffect(() => {
@@ -134,6 +151,7 @@ export function useLetters() {
           sentAt: meta?.sentAt ?? Date.now(), arriveAt: meta?.arriveAt,
         };
         setLetters((prev) => [letter, ...prev]);
+        announce({ type: "sent", letter });
         return id;
       }
       const sentAt = Date.now();
@@ -143,6 +161,7 @@ export function useLetters() {
         message: l.message, sentAt, arriveAt: sentAt + minutes * 60000,
       };
       persist([letter, ...letters]);
+      announce({ type: "sent", letter });
       return letter.id;
     },
     [letters, persist],

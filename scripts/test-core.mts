@@ -6,6 +6,7 @@ import { BIRDS } from "../core/birds.ts";
 import { ROUTES, getRoute, routePosition, makeRoute } from "../core/routes.ts";
 import { PLACES, nearestPlace, getPlace } from "../core/places.ts";
 import { MAX_LETTER_CHARS } from "../core/limits.ts";
+import { validateSchedule, dedupKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
 
 let pass = 0, fail = 0;
 const eq = (label: string, got: unknown, want: unknown) => {
@@ -75,6 +76,33 @@ eq("예전 노선 id 거리 유지(서울→제주)", getRoute("seoul-jeju").km,
 }
 eq("편지 글자 수 한도는 10만 자", MAX_LETTER_CHARS, 100000);
 eq("getPlace 서울", getPlace("seoul")?.landmark.name, "남대문");
+
+// 푸시 예약 요청 검사: 올바른 건 통과, 위험한 건 거절
+{
+  const now = 1_800_000_000_000;
+  const good = () => ({
+    subscription: { endpoint: "https://fcm.googleapis.com/fcm/send/abc123", keys: { p256dh: "BNcRdreALRFXTkOOUHK1EtK2wtaz5Ry4YfYCA_0QTpQtUbVlUls0VJXg7A8u-Ts1XbjhazAkj7I99e8QcYP7DkM", auth: "tBHItJI5svbpez7KI4CCXg" } },
+    payload: { title: "엄마에게 보낸 편지가 도착했어요!", body: "까치가 제주에 내려앉았어요", url: "/letter/abcDEF123", tag: "l-abc-a" },
+    at: now + 60_000,
+  });
+  const bad = (mut: (g: any) => void) => { const g: any = good(); mut(g); return validateSchedule(g, now).ok; };
+  eq("푸시 예약: 올바른 요청 통과", validateSchedule(good(), now).ok, true);
+  eq("푸시 예약: 토스 앱 편지 주소(?id=)도 통과", bad((g) => (g.payload.url = "/letter?id=abc123")) , true);
+  eq("푸시 예약: 모질라·애플 알림 서버 통과", validateSchedule({ ...good(), subscription: { ...good().subscription, endpoint: "https://updates.push.services.mozilla.com/wpush/v2/x" } }, now).ok && validateSchedule({ ...good(), subscription: { ...good().subscription, endpoint: "https://web.push.apple.com/Qx" } }, now).ok, true);
+  eq("푸시 예약: 아무 사이트 주소는 거절", bad((g) => (g.subscription.endpoint = "https://evil.example.com/x")), false);
+  eq("푸시 예약: http 주소는 거절", bad((g) => (g.subscription.endpoint = "http://fcm.googleapis.com/x")), false);
+  eq("푸시 예약: 비슷한 가짜 도메인 거절", bad((g) => (g.subscription.endpoint = "https://fcm.googleapis.com.evil.com/x")), false);
+  eq("푸시 예약: 다른 사이트로 열리는 주소 거절", bad((g) => (g.payload.url = "https://evil.example.com/letter/a")), false);
+  eq("푸시 예약: 편지 주소가 아닌 경로 거절", bad((g) => (g.payload.url = "/settings")), false);
+  eq("푸시 예약: 이미 지난 시각 거절", bad((g) => (g.at = now - 3_600_000)), false);
+  eq("푸시 예약: 8일 넘게 먼 시각 거절", bad((g) => (g.at = now + MAX_AHEAD_MS + 1000)), false);
+  eq("푸시 예약: 제목이 너무 길면 거절", bad((g) => (g.payload.title = "가".repeat(81))), false);
+  eq("푸시 예약: 구독 키가 없으면 거절", bad((g) => delete g.subscription.keys), false);
+  eq("푸시 예약: 숫자 아닌 시각 거절", bad((g) => (g.at = "내일")), false);
+  eq("푸시 예약: 빈 요청 거절", validateSchedule(null, now).ok, false);
+  eq("중복 방지 값: 같은 입력은 같은 값", dedupKey("https://fcm.googleapis.com/x", "t1"), dedupKey("https://fcm.googleapis.com/x", "t1"));
+  eq("중복 방지 값: 다른 구독은 다른 값", dedupKey("https://fcm.googleapis.com/x", "t1") !== dedupKey("https://fcm.googleapis.com/y", "t1"), true);
+}
 
 // 표시
 eq("125분 표시", formatMinutes(125), "2시간 5분");

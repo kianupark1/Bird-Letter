@@ -12,7 +12,8 @@ import { getBird } from "@/lib/birds";
 import { getRoute, routePosition } from "@/lib/routes";
 import { letterProgress, useLetters, useNow } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
-import { withIGa } from "@/lib/korean";
+import { arrivalText, passingText } from "@/lib/notifyText";
+import { hasPushSub, schedulePush, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 
@@ -34,6 +35,7 @@ export default function Notifier() {
   const { letters, received, ready } = useLetters();
   const { profile, ready: profileReady } = useProfile();
   const now = useNow(5000);
+  const { state: pushState } = usePushState();
   const store = useRef<Record<string, Rec> | null>(null);
   const [queue, setQueue] = useState<Popup[]>([]);
   const quiet = pathname.startsWith("/onboarding") || pathname.startsWith("/welcome");
@@ -50,7 +52,7 @@ export default function Notifier() {
     ];
     let changed = false;
     for (const it of items) {
-      const route = getRoute(it.routeId), bird = getBird(it.birdId);
+      const route = getRoute(it.routeId);
       const pr = letterProgress({ birdId: it.birdId, routeId: it.routeId, sentAt: it.sentAt, arriveAt: it.arriveAt }, now);
       const pos = routePosition(route, pr.p);
       const arrivedAt = (it.arriveAt ?? it.sentAt + pr.total * 60000);
@@ -64,9 +66,8 @@ export default function Notifier() {
         r.a = 1; changed = true;
         const wantsIt = it.kind === "sent" ? profile.notify.arrival : profile.notify.reply;
         if (wantsIt && now - arrivedAt < RECENT_MS) {
-          out.push(it.kind === "sent"
-            ? { key: `a-${it.id}`, id: it.id, birdId: it.birdId, title: `${it.who}에게 보낸 편지가 도착했어요!`, sub: `${bird.name}가 ${route.to.name}에 내려앉았어요` }
-            : { key: `a-${it.id}`, id: it.id, birdId: it.birdId, title: `${withIGa(it.who)} 보낸 편지가 도착했어요!`, sub: `${route.title} · ${bird.name}가 편지를 가져왔어요` });
+          const t = arrivalText(it.kind, it.who, route, it.birdId);
+          out.push({ key: `a-${it.id}`, id: it.id, birdId: it.birdId, title: t.title, sub: t.body });
         }
       }
       // 경유지 통과(내가 보낸 편지만, 도착 전에)
@@ -74,8 +75,8 @@ export default function Notifier() {
         const idx = pos.passedIdx;
         r.p = idx; changed = true;
         if (it.kind === "sent" && profile.notify.passing && idx > 0) {
-          const pt = route.points[idx];
-          out.push({ key: `p-${it.id}-${idx}`, id: it.id, birdId: it.birdId, title: `${it.who}에게 가는 편지가 ${pt.name} 근처예요`, sub: `${bird.name}가 ${pos.next ? `다음은 ${pos.next.name}` : "곧 도착"}${pos.next ? "(으)로 날아가요" : "해요"}` });
+          const t = passingText(it.who, route, it.birdId, idx);
+          out.push({ key: `p-${it.id}-${idx}`, id: it.id, birdId: it.birdId, title: t.title, sub: t.body });
         }
       }
     }
@@ -85,11 +86,44 @@ export default function Notifier() {
       const fresh = out.filter((o) => letterHref(o.id) !== here && !here.startsWith(`/letter/${o.id}`));
       if (fresh.length) setQueue((q) => [...q, ...fresh.filter((f) => !q.some((x) => x.key === f.key))]);
       // 화면이 가려져 있으면(다른 탭) 브라우저 알림도 보내요(허용했을 때만)
-      if (!IS_TOSS && typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
+      if (!IS_TOSS && !hasPushSub() && typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
         for (const o of out) { try { new Notification(o.title, { body: o.sub, icon: "/icon-192.png", tag: o.key }); } catch {} }
       }
     }
   }, [now, letters, received, ready, profileReady, profile.notify, quiet, pathname]);
+
+  // 푸시가 켜져 있으면, 아직 도착하지 않은 편지의 도착·경유지 알림을 서버에 예약해요(이미 예약한 건 건너뜀)
+  useEffect(() => {
+    if (pushState !== "enabled" || !ready || !profileReady) return;
+    let off = false;
+    (async () => {
+      const items = [
+        ...letters.map((l) => ({ id: l.id, kind: "sent" as const, who: l.to, routeId: l.routeId, birdId: l.birdId, sentAt: l.sentAt, arriveAt: l.arriveAt })),
+        ...received.map((m) => ({ id: m.id, kind: "received" as const, who: m.fromName || "누군가", routeId: m.routeId, birdId: m.birdId, sentAt: m.sentAt, arriveAt: m.arriveAt })),
+      ];
+      for (const it of items) {
+        if (off) return;
+        const route = getRoute(it.routeId);
+        const pr = letterProgress({ birdId: it.birdId, routeId: it.routeId, sentAt: it.sentAt, arriveAt: it.arriveAt }, Date.now());
+        if (pr.done) continue;
+        const arriveMs = it.arriveAt ?? it.sentAt + pr.total * 60000;
+        const url = letterHref(it.id);
+        if (it.kind === "sent" ? profile.notify.arrival : profile.notify.reply) {
+          const t = arrivalText(it.kind, it.who, route, it.birdId);
+          await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-a` }, arriveMs);
+        }
+        if (it.kind === "sent" && profile.notify.passing) {
+          for (let i = 1; i < route.points.length - 1; i++) {
+            const at = it.sentAt + pr.total * route.fractions[i] * 60000;
+            if (at <= Date.now()) continue;
+            const t = passingText(it.who, route, it.birdId, i);
+            await schedulePush(`${it.id}:p${i}`, { title: t.title, body: t.body, url, tag: `l-${it.id}-p${i}` }, at);
+          }
+        }
+      }
+    })();
+    return () => { off = true; };
+  }, [pushState, letters, received, ready, profileReady, profile.notify]);
 
   const cur = queue[0];
   // 한 팝업은 9초 뒤 저절로 사라져요

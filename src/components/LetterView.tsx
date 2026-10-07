@@ -5,12 +5,13 @@ import JourneyMap from "@/components/JourneyMap";
 import { getBird } from "@/lib/birds";
 import { getRoute, routePosition } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
-import { letterProgress, useLetters, useNow, type Letter } from "@/lib/letters";
+import { announceReceived, letterProgress, useLetters, useNow, type Letter } from "@/lib/letters";
 import { withEulReul, withIGa } from "@/lib/korean";
 import { ensureUser } from "@/lib/firebase/client";
 import * as remote from "@/lib/firebase/remote";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
+import PushPrompt from "@/components/PushPrompt";
 
 const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
 
@@ -45,6 +46,7 @@ export default function LetterView({ id }: { id: string }) {
         try {
           await remote.claim(id);
           meta.recipientUid = user.uid;
+          announceReceived(meta);
         } catch {}
       }
       if (!off) setIncoming({ state: "ok", meta });
@@ -167,6 +169,7 @@ export default function LetterView({ id }: { id: string }) {
         </>
       ) : (
         <>
+          <PushPrompt birdId={bird.id} />
           <div className="eta">
             <div className="top">
               <span>도착까지</span>
