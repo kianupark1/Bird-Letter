@@ -1,6 +1,6 @@
 # 매일 낮 12시(한국 시간)에 promo/schedule.json 에서 "오늘 날짜" 글을 스레드·인스타그램에 올려요.
 # 내 컴퓨터가 꺼져 있어도 GitHub 서버에서 돌아요. 실패하면 GitHub가 이메일로 알려 줘요.
-# 비밀값이 없으면 실패로 끝나요(일정에 글이 있는 날만). 값 넣는 방법은 docs/자동게시-설정.md 를 보세요.
+# 기본은 꺼져 있어요(AUTO_POST_ENABLED 변수를 true로 해야 켜져요). 값 넣는 방법은 docs/자동게시-설정.md 를 보세요.
 name: 홍보 글 자동 게시
 
 on:
@@ -14,6 +14,8 @@ on:
 
 jobs:
   post:
+    # 레포 Settings → Secrets and variables → Actions → Variables 에 AUTO_POST_ENABLED = true 를 넣어야 켜져요(기본은 꺼짐)
+    if: ${{ vars.AUTO_POST_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
