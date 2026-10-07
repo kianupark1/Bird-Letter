@@ -130,6 +130,27 @@ function Crane() {
   );
 }
 
+/** 부리에 문 편지(봉투). 새마다 부리 위치가 달라서 걸리는 자리를 따로 정했어요 */
+const LETTER_AT: Record<string, { x: number; y: number; r: number }> = {
+  hawk: { x: 176, y: 100, r: -12 },
+  swallow: { x: 172, y: 90, r: -10 },
+  pigeon: { x: 172, y: 86, r: -10 },
+  magpie: { x: 178, y: 92, r: -10 },
+  bungbungi: { x: 166, y: 126, r: -8 },
+  crane: { x: 182, y: 62, r: 8 },
+};
+
+function Letter({ id }: { id: string }) {
+  const at = LETTER_AT[id] ?? LETTER_AT.pigeon;
+  return (
+    <g transform={`translate(${at.x} ${at.y}) rotate(${at.r})`}>
+      <rect x="-23" y="-16" width="46" height="32" rx="3.5" style={{ ...c(CREAM), stroke: `var(${RED})`, strokeWidth: 3 }} />
+      <path d="M-22 -14 L0 4 L22 -14" style={s(RED, 3)} />
+      <circle cx="0" cy="4" r="5.5" style={c(RED)} />
+    </g>
+  );
+}
+
 const ART: Record<string, () => React.JSX.Element> = {
   hawk: Hawk,
   swallow: Swallow,
@@ -148,9 +169,11 @@ type Props = {
   x?: number;
   y?: number;
   title?: string;
+  /** true면 편지를 부리에 문 모습 */
+  letter?: boolean;
 };
 
-export default function BirdIcon({ id, size = 40, className, x, y, title }: Props) {
+export default function BirdIcon({ id, size = 40, className, x, y, title, letter }: Props) {
   const Art = ART[id] ?? Pigeon;
   return (
     <svg
@@ -165,6 +188,7 @@ export default function BirdIcon({ id, size = 40, className, x, y, title }: Prop
       aria-hidden={title ? undefined : true}
       focusable="false"
     >
+      {letter && <Letter id={id} />}
       <Art />
     </svg>
   );

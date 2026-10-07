@@ -3,10 +3,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import JourneyMap from "@/components/JourneyMap";
 import { getBird } from "@/lib/birds";
-import { getRoute } from "@/lib/routes";
+import { getRoute, routePosition } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
 import { letterProgress, useLetters, useNow, type Letter } from "@/lib/letters";
-import { withIGa } from "@/lib/korean";
+import { withEulReul, withIGa } from "@/lib/korean";
 import { ensureUser } from "@/lib/firebase/client";
 import * as remote from "@/lib/firebase/remote";
 import { IS_TOSS, letterHref } from "@/lib/target";
@@ -87,10 +87,11 @@ export default function LetterView({ id }: { id: string }) {
   const route = getRoute(view.routeId);
   const pr = letterProgress(view, now);
   const remainMin = Math.max(1, Math.ceil(pr.total - pr.elapsed));
-  const last = route.points.length - 1;
-  const nextIdx = route.points.findIndex((_, i) => pr.p < i / last);
+  const pos = routePosition(route, pr.p);
+  const nextIdx = pos.nextIdx;
   const arriveAt = view.arriveAt ?? view.sentAt + pr.total * 60000;
-  const dest = route.title.split("→")[1].trim();
+  const dest = route.to.name;
+  const nextMin = pos.next ? Math.max(1, Math.ceil((route.fractions[pos.nextIdx] - pr.p) * pr.total)) : 0;
 
   const share = async () => {
     // 토스 빌드의 공유 링크 방식(intoss://)은 아직 정하지 않았다(확인 필요). 지금은 웹 초대 링크 형식을 그대로 둔다.
@@ -129,6 +130,16 @@ export default function LetterView({ id }: { id: string }) {
 
       <JourneyMap route={route} p={pr.p} birdId={bird.id} />
 
+      {!pr.done && (
+        <div className="where" role="status" aria-live="polite">
+          <BirdIcon id={bird.id} size={56} letter className="bob" />
+          <div>
+            <div className="now">{pr.p <= 0.001 ? `${route.points[0].name}에서 막 출발했어요` : `지금 ${withEulReul(pos.passed.name)} 지나는 중`}</div>
+            {pos.next && <div className="next">다음 {pos.next.name}까지 약 {formatMinutes(nextMin)}</div>}
+          </div>
+        </div>
+      )}
+
       {pr.done ? (
         <>
           <div className={`arrived ${bird.id === "magpie" ? "special" : ""}`}>
@@ -139,7 +150,7 @@ export default function LetterView({ id }: { id: string }) {
                 ))}
               </div>
             )}
-            <div className="big landing"><BirdIcon id={bird.id} size={112} /></div>
+            <div className="big landing"><BirdIcon id={bird.id} size={112} letter /></div>
             <h2 style={{ margin: "10px 0 0", opacity: 1 }}>
               {bird.id === "magpie" ? "반가운 소식이 도착했어요!" : "편지가 도착했어요!"}
             </h2>
@@ -164,15 +175,16 @@ export default function LetterView({ id }: { id: string }) {
             <div className="progress"><i style={{ width: `${pr.p * 100}%` }} /></div>
             <div className="meta">{clock(arriveAt)} 도착 예정 · {Math.round(pr.p * 100)}% 날아왔어요</div>
           </div>
-          <ol className="timeline" aria-label="경유지">
+          <ol className="timeline" aria-label="지나는 곳과 예상 시각">
             {route.points.map((pt, i) => {
-              const passed = pr.p >= i / last;
-              const at = view.sentAt + pr.total * (i / last) * 60000;
-              const label = i === 0 ? `출발 ${clock(at)}` : i === last ? `도착 예정 ${clock(at)}` : `${passed ? "지남" : "예상"} ${clock(at)}`;
+              const passed = i <= pos.passedIdx && pr.p > 0.001 || i === 0;
+              const at = view.sentAt + pr.total * route.fractions[i] * 60000;
+              const isLast = i === route.points.length - 1;
+              const label = i === 0 ? `출발 ${clock(at)}` : isLast ? `도착 예정 ${clock(at)}` : passed ? `지남 ✓ ${clock(at)}` : `예상 ${clock(at)}`;
               return (
-                <li key={pt.name} className={passed ? "passed" : i === nextIdx ? "next" : ""}>
+                <li key={`${pt.name}-${i}`} className={passed ? "passed" : i === nextIdx ? "next" : ""}>
                   <span className="tdot" aria-hidden />
-                  <span>{pt.name}</span>
+                  <span>{(i === 0 || isLast) && pt.sub ? `${pt.sub} ${pt.name}` : pt.name}</span>
                   <span className="t">{label}</span>
                 </li>
               );

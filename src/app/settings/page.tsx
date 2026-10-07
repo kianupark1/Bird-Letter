@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
@@ -20,6 +21,13 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
+  const [browserNotif, setBrowserNotif] = useState<"unsupported" | NotificationPermission>("unsupported");
+  useEffect(() => {
+    if (typeof Notification !== "undefined") setBrowserNotif(Notification.permission);
+  }, []);
+  const askBrowserNotif = async () => {
+    try { setBrowserNotif(await Notification.requestPermission()); } catch {}
+  };
 
   const toggle = (key: NotifyKey) =>
     update((prev) => ({ notify: { ...prev.notify, [key]: !prev.notify[key] } }));
@@ -79,8 +87,23 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* 알림은 설정만 저장하고 실제 푸시가 없어서, 토스 빌드에서는 보여 주지 않는다 */}
-      {!IS_TOSS && (<>
+      <h2>내가 있는 곳</h2>
+      <div className="list">
+        <label className="listrow" htmlFor="home-place">
+          <div className="grow">
+            <div className="name">편지를 보낼 때 출발하는 곳</div>
+            <div className="note">새가 여기서 날아가요. 편지 쓸 때 바꿀 수도 있어요.</div>
+          </div>
+          <select id="home-place" className="field" style={{ width: "auto", margin: 0 }} value={profile.homePlace} onChange={(e) => update({ homePlace: e.target.value })}>
+            {placesByRegion().map((g) => (
+              <optgroup key={g.region} label={g.region}>
+                {g.places.map((pl) => <option key={pl.id} value={pl.id}>{pl.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <h2>알림</h2>
       <div className="list">
         {NOTIFY_ROWS.map((r) => (
@@ -99,8 +122,17 @@ export default function Settings() {
           </div>
         ))}
       </div>
-      <div className="small">실제 푸시 알림은 서버(Firebase)를 연결한 뒤부터 와요. 지금은 설정만 저장돼요.</div>
-      </>)}
+      <div className="small">
+        앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 오는 알림(푸시)은 준비 중이에요."}
+      </div>
+      {!IS_TOSS && browserNotif !== "unsupported" && (
+        <div className="list">
+          <button className="listrow action" onClick={askBrowserNotif} disabled={browserNotif === "granted"}>
+            <span>{browserNotif === "granted" ? "다른 탭에 있어도 알림 받는 중" : browserNotif === "denied" ? "브라우저에서 알림이 막혀 있어요" : "다른 탭에 있어도 알림 받기"}</span>
+            <span aria-hidden>{browserNotif === "granted" ? "✓" : "›"}</span>
+          </button>
+        </div>
+      )}
 
       <h2>계정</h2>
       <div className="list">

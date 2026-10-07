@@ -5,6 +5,8 @@ export type Profile = {
   nickname: string;
   /** 알림 설정. 실제 푸시는 Firebase(FCM) 연동 후 동작 */
   notify: { arrival: boolean; passing: boolean; reply: boolean };
+  /** 내가 지금 있는 지역(편지 쓸 때 보내는 곳의 기본값). 지역 id(core/places.ts) */
+  homePlace: string;
 };
 
 export const PROFILE_KEY = "saepyeonji.profile.v1";
@@ -12,6 +14,7 @@ export const PROFILE_KEY = "saepyeonji.profile.v1";
 export const DEFAULT_PROFILE: Profile = {
   nickname: "새 친구",
   notify: { arrival: true, passing: false, reply: true },
+  homePlace: "seoul",
 };
 
 export function useProfile() {

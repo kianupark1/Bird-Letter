@@ -61,7 +61,7 @@ export default function Home() {
         return (
           <Link key={l.id} href={letterHref(l.id)} className="card">
             <div className="row grow">
-              <BirdIcon id={bird.id} size={48} className="bob" />
+              <BirdIcon id={bird.id} size={52} className="bob" letter />
               <div className="grow">
                 <div className="name ellipsis">{l.to}에게</div>
                 <div className="note">{route.title} · {bird.name}</div>

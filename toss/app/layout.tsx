@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "pretendard/dist/web/variable/pretendardvariable.css";
 import "../../src/app/globals.css";
 import "../toss.css";
+import Notifier from "../../src/components/Notifier";
 
 export const metadata: Metadata = {
   title: "새 편지",
@@ -19,7 +20,10 @@ export const viewport: Viewport = {
 export default function TossLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" style={{ colorScheme: "light" }}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Notifier />
+      </body>
     </html>
   );
 }

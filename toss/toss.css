@@ -18,6 +18,7 @@
   --hwangto-text: #8A5A06;
   --b-cream: #FBF3E4; --b-ink: #2A2118; --b-brown: #8A5A3C; --b-brown2: #5B3A29;
   --b-grey: #9AA8B8; --b-grey2: #6F8094; --b-edge: rgba(42, 33, 24, 0.35);
+  --sea: #D5E5EB; --land-dim: #E6DECD; --coast: #B3A27C; --grid: rgba(30, 58, 92, 0.10); --map-text: #3A2F25;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -37,6 +38,7 @@
     --hwangto-text: #8A5A06;
     --b-cream: #FBF3E4; --b-ink: #2A2118; --b-brown: #8A5A3C; --b-brown2: #5B3A29;
     --b-grey: #9AA8B8; --b-grey2: #6F8094; --b-edge: rgba(42, 33, 24, 0.35);
+    --sea: #D5E5EB; --land-dim: #E6DECD; --coast: #B3A27C; --grid: rgba(30, 58, 92, 0.10); --map-text: #3A2F25;
   }
 }
 /* 토스 내비게이션 바가 위에 있으므로 화면 아래쪽 여백(하단 메뉴 자리)을 줄인다 */

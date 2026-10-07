@@ -3,6 +3,7 @@ import { BIRDS, REFERENCE_KM } from "@/lib/birds";
 import { Magpie } from "@/components/Illustrations";
 import BirdIcon from "@/components/BirdIcon";
 import { IS_BETA } from "@/lib/release";
+import { ROUTES } from "@/lib/routes";
 
 export const metadata = {
   title: "새 편지 — 소식은 날아서 와요",
@@ -18,7 +19,7 @@ export const metadata = {
 
 const STEPS = [
   { n: "1", title: "새를 골라요", desc: "빠른 매부터 귀한 소식용 두루미까지, 6종의 새 중에서요." },
-  { n: "2", title: "편지를 써요", desc: "받는 사람과 노선을 정하고 마음을 적어요." },
+  { n: "2", title: "편지를 써요", desc: "내가 있는 곳과 받는 사람이 있는 곳을 고르고, 마음을 적어요. 길이는 마음대로예요." },
   { n: "3", title: "새가 날아가요", desc: "서울에서 부산까지 실제 거리만큼, 지도 위를 날아가는 모습을 볼 수 있어요." },
   { n: "4", title: "도착!", desc: "기다린 시간만큼 반가운 편지가 내려앉아요." },
 ];
@@ -62,11 +63,14 @@ export default function Welcome() {
       </div>
       <Link href="/bungbungi" className="ghost">드론 새 마스코트, 붕붕이 만나기</Link>
 
-      <h2>데모 노선</h2>
+      <h2>전국 어디로든, 이런 길을 날아요</h2>
       <div className="list">
-        <div className="listrow"><span>서울 → 부산</span><span className="note">남대문 → 대전 엑스포 → 광안대교</span></div>
-        <div className="listrow"><span>서울 → 제주</span><span className="note">남대문 → 남해 상공 → 한라산</span></div>
-        <div className="listrow"><span>서울 → 독도</span><span className="note">남대문 → 울릉도 → 독도</span></div>
+        {ROUTES.map((r) => (
+          <div key={r.id} className="listrow">
+            <span>{r.title}</span>
+            <span className="note">{r.points.map((q) => q.name).join(" → ")}</span>
+          </div>
+        ))}
       </div>
 
       <Link href="/" className="cta" style={{ marginTop: 24 }}>첫 편지 보내 보기</Link>

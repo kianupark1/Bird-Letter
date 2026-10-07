@@ -136,6 +136,7 @@ const EDGE = [
   "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
   "C:/Program Files/Google/Chrome/Application/chrome.exe",
   "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser",
+  process.env.CHROME_PATH ?? "", // 직접 지정하고 싶을 때: CHROME_PATH=/경로/chrome npm run check:toss
 ].find(existsSync);
 if (!EDGE) {
   skipped++;
@@ -190,7 +191,7 @@ if (!EDGE) {
 
     await go("/settings/");
     t = await text();
-    check(!t.includes("알림") && !t.includes("개인정보 처리방침") && !t.includes("(테스트)"), "설정에 알림 토글·웹용 처리방침 링크·'(테스트)' 없음", "설정에 금지 요소가 보임");
+    check(t.includes("개인정보 처리방침") && t.includes("이용약관") && t.includes("운영정책") && !t.includes("(테스트)"), "설정에 처리방침·이용약관·운영정책 링크가 있고 '(테스트)' 표시는 없음", "설정에 약관 링크가 없거나 '(테스트)'가 보임");
 
     await go("/send/?test=1");
     t = await text();
