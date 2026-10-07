@@ -66,6 +66,20 @@ await expectDenied("B가 A인 척(fromUid=A) 편지를 저장", async () => {
   b.set(doc(B.db, "letters", r.id, "private", "body"), { message: "x" });
   await b.commit();
 });
+await expectOk("A가 3만 자 긴 편지를 저장하고 바로 지움", async () => {
+  const r = doc(collection(A.db, "letters")); const b = writeBatch(A.db);
+  b.set(r, meta());
+  b.set(doc(A.db, "letters", r.id, "private", "body"), { message: "가".repeat(30000) });
+  await b.commit();
+  await deleteDoc(doc(A.db, "letters", r.id, "private", "body"));
+  await deleteDoc(r);
+});
+await expectDenied("A가 10만 1자(한도 초과) 편지를 저장", async () => {
+  const r = doc(collection(A.db, "letters")); const b = writeBatch(A.db);
+  b.set(r, meta());
+  b.set(doc(A.db, "letters", r.id, "private", "body"), { message: "가".repeat(100001) });
+  await b.commit();
+});
 await expectDenied("A가 허용되지 않은 필드를 끼워 저장", async () => {
   const r = doc(collection(A.db, "letters")); const b = writeBatch(A.db);
   b.set(r, meta({ 해킹: true }));

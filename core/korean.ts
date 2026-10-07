@@ -12,3 +12,9 @@ export const iGa = (word: string) => (hasFinalConsonant(word) ? "이" : "가");
 
 /** 이름 + 주격 조사 (예: "지민이", "민수가") */
 export const withIGa = (word: string) => `${word}${iGa(word)}`;
+
+/** 목적격 조사: 받침이 있으면 "을", 없으면 "를" (예: 한라산을, 오동도를) */
+export const eulReul = (word: string) => (hasFinalConsonant(word) ? "을" : "를");
+
+/** 이름 + 목적격 조사 */
+export const withEulReul = (word: string) => `${word}${eulReul(word)}`;

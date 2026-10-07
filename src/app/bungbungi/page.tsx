@@ -3,6 +3,7 @@ import { IS_TOSS } from "@/lib/target";
 import { BIRDS, REFERENCE_KM } from "@/lib/birds";
 import { ROUTES } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
+import BirdIcon from "@/components/BirdIcon";
 
 export const metadata = { title: "붕붕이 · 새 편지" };
 
@@ -11,7 +12,7 @@ export default function Bungbungi() {
   return (
     <main className="app">
       <div className="bung-hero" aria-hidden>
-        <span className="bung-copter">{bird.emoji}</span>
+        <span className="bung-copter"><BirdIcon id="bungbungi" size={186} /></span>
       </div>
       <h1>붕붕이</h1>
       <p className="sub">새인 줄 알았죠? 프로펠러 달린 드론 새예요. 약속 시간은 칼같이 지켜요.</p>

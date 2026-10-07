@@ -76,7 +76,12 @@ try {
   ok("편지 쓰기 첫 화면이 열림", await waitText(A.page, "누구에게, 어디로 보낼까요?"));
   await shot(A.page, "01-A-send-step1");
   await setValue(A.page, "input.field", "엄마");
-  await clickText(A.page, "서울 → 제주");
+  if (await A.page.$("#from-place")) {
+    await A.page.select("#from-place", "seoul"); // 내가 있는 곳 / 받는 사람이 있는 곳을 상자에서 고름
+    await A.page.select("#to-place", "jeju");
+  } else {
+    await clickText(A.page, "서울 → 제주"); // 아직 배포되지 않은 옛 화면(노선 칩)
+  }
   await clickText(A.page, "다음: 새 고르기");
   await clickText(A.page, "매", "button.card");
   await shot(A.page, "02-A-send-step2");

@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
+import { PUSH_CONFIGURED, usePushState } from "@/lib/push";
 import { IS_TOSS } from "@/lib/target";
 
 type NotifyKey = keyof Profile["notify"];
@@ -20,6 +22,7 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
+  const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
   const toggle = (key: NotifyKey) =>
     update((prev) => ({ notify: { ...prev.notify, [key]: !prev.notify[key] } }));
@@ -79,8 +82,23 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* 알림은 설정만 저장하고 실제 푸시가 없어서, 토스 빌드에서는 보여 주지 않는다 */}
-      {!IS_TOSS && (<>
+      <h2>내가 있는 곳</h2>
+      <div className="list">
+        <label className="listrow" htmlFor="home-place">
+          <div className="grow">
+            <div className="name">편지를 보낼 때 출발하는 곳</div>
+            <div className="note">새가 여기서 날아가요. 편지 쓸 때 바꿀 수도 있어요.</div>
+          </div>
+          <select id="home-place" className="field" style={{ width: "auto", margin: 0 }} value={profile.homePlace} onChange={(e) => update({ homePlace: e.target.value })}>
+            {placesByRegion().map((g) => (
+              <optgroup key={g.region} label={g.region}>
+                {g.places.map((pl) => <option key={pl.id} value={pl.id}>{pl.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
+        </label>
+      </div>
+
       <h2>알림</h2>
       <div className="list">
         {NOTIFY_ROWS.map((r) => (
@@ -99,8 +117,29 @@ export default function Settings() {
           </div>
         ))}
       </div>
-      <div className="small">실제 푸시 알림은 서버(Firebase)를 연결한 뒤부터 와요. 지금은 설정만 저장돼요.</div>
-      </>)}
+      <div className="small">
+        앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 오는 알림(푸시)은 준비 중이에요."}
+      </div>
+      {!IS_TOSS && (
+        <div className="list">
+          <div className="listrow">
+            <div className="grow">
+              <div className="name">앱을 닫아도 알림 받기</div>
+              <div className="note">
+                {push === "enabled" ? "켜져 있어요. 편지가 도착하면 폰으로 알려줘요."
+                  : !PUSH_CONFIGURED ? "준비 중이에요."
+                  : push === "unsupported" ? "이 기기·브라우저에서는 쓸 수 없어요."
+                  : push === "needs-install" ? "아이폰은 ‘홈 화면에 추가’한 앱에서 켤 수 있어요."
+                  : push === "denied" ? "브라우저(폰 설정)에서 알림이 막혀 있어요."
+                  : "꺼 둔 사이에 도착해도 알려줘요."}
+              </div>
+            </div>
+            {PUSH_CONFIGURED && (push === "enabled" || push === "default") && (
+              <button role="switch" aria-checked={push === "enabled"} aria-label="앱을 닫아도 알림 받기" className="switch" onClick={push === "enabled" ? disablePush : enablePush} />
+            )}
+          </div>
+        </div>
+      )}
 
       <h2>계정</h2>
       <div className="list">
@@ -115,12 +154,15 @@ export default function Settings() {
 
       <h2>정보</h2>
       <div className="list">
-        {/* 토스 빌드용 처리방침은 아직 없어서(별도 작업) 연결하지 않는다 */}
-        {!IS_TOSS && (
-          <Link href="/privacy" className="listrow action">
-            <span>개인정보 처리방침</span><span aria-hidden>›</span>
-          </Link>
-        )}
+        <Link href="/privacy" className="listrow action">
+          <span>개인정보 처리방침</span><span aria-hidden>›</span>
+        </Link>
+        <Link href="/terms" className="listrow action">
+          <span>이용약관</span><span aria-hidden>›</span>
+        </Link>
+        <Link href="/policy" className="listrow action">
+          <span>운영정책 · 신고 처리</span><span aria-hidden>›</span>
+        </Link>
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>

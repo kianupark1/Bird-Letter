@@ -8,6 +8,7 @@ import { getBird } from "../birds";
 import { getRoute } from "../routes";
 import { travelMinutes } from "../geo";
 import { auth, db, ensureUser } from "./client";
+import { MAX_LETTER_CHARS } from "../limits";
 
 /** 서버에 저장된 편지의 겉정보 */
 export type Meta = {
@@ -54,7 +55,7 @@ export async function sendLetter(p: { toName: string; fromName: string; routeId:
     arriveAt: Timestamp.fromMillis(Date.now() + minutes * 60000),
     recipientUid: null,
   });
-  batch.set(doc(d, "letters", ref.id, "private", "body"), { message: p.message.trim().slice(0, 500) });
+  batch.set(doc(d, "letters", ref.id, "private", "body"), { message: p.message.trim().slice(0, MAX_LETTER_CHARS) });
   await batch.commit();
   return ref.id;
 }
