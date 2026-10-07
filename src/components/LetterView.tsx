@@ -2,7 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import JourneyMap from "@/components/JourneyMap";
-import { getBird } from "@/lib/birds";
+import { getBird, mishapText } from "@/lib/birds";
+import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { getRoute, routePosition } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
 import { announceReceived, letterProgress, useLetters, useNow, type Letter } from "@/lib/letters";
@@ -93,7 +94,12 @@ export default function LetterView({ id }: { id: string }) {
   const nextIdx = pos.nextIdx;
   const arriveAt = view.arriveAt ?? view.sentAt + pr.total * 60000;
   const dest = route.to.name;
-  const nextMin = pos.next ? Math.max(1, Math.ceil((route.fractions[pos.nextIdx] - pr.p) * pr.total)) : 0;
+  // 다음 지점까지: 멈춰 있는 중이면 멈춤이 풀리는 시각부터, 아니면 지금부터 계산
+  const nextAt = pos.next ? view.sentAt + elapsedAtFraction(pr.plan, route.fractions[pos.nextIdx]) : 0;
+  const nextMin = pos.next ? Math.max(1, Math.ceil((nextAt - now) / 60000)) : 0;
+  const mishap = pr.mishap;
+  const mishapDone = !!mishap && !pr.stalled && pr.p > mishap.at;
+  const mishapMsg = mishap ? mishapMessage(mishap.kind, bird.name) : null;
 
   const share = async () => {
     // 토스 빌드의 공유 링크 방식(intoss://)은 아직 정하지 않았다(확인 필요). 지금은 웹 초대 링크 형식을 그대로 둔다.
@@ -133,13 +139,29 @@ export default function LetterView({ id }: { id: string }) {
       <JourneyMap route={route} p={pr.p} birdId={bird.id} />
 
       {!pr.done && (
+        <>
         <div className="where" role="status" aria-live="polite">
           <BirdIcon id={bird.id} size={56} letter className="bob" />
           <div>
-            <div className="now">{pr.p <= 0.001 ? `${route.points[0].name}에서 막 출발했어요` : `지금 ${withEulReul(pos.passed.name)} 지나는 중`}</div>
-            {pos.next && <div className="next">다음 {pos.next.name}까지 약 {formatMinutes(nextMin)}</div>}
+            {pr.stalled && mishapMsg ? (
+              <>
+                <div className="now">{mishapMsg.title}</div>
+                <div className="next">{mishapMsg.body}</div>
+              </>
+            ) : (
+              <>
+                <div className="now">{pr.p <= 0.001 ? `${route.points[0].name}에서 막 출발했어요` : `지금 ${withEulReul(pos.passed.name)} 지나는 중`}</div>
+                {pos.next && <div className="next">다음 {pos.next.name}까지 약 {formatMinutes(nextMin)}</div>}
+              </>
+            )}
           </div>
         </div>
+        {mishapDone && mishapMsg && (
+          <div className="small" style={{ textAlign: "center" }}>
+            {mishap!.kind === "tree" ? "가는 길에 나무에 걸렸다가 빠져나왔어요." : "가는 길에 길을 잃었다가 다시 찾았어요."}
+          </div>
+        )}
+        </>
       )}
 
       {pr.done ? (
@@ -177,11 +199,12 @@ export default function LetterView({ id }: { id: string }) {
             </div>
             <div className="progress"><i style={{ width: `${pr.p * 100}%` }} /></div>
             <div className="meta">{clock(arriveAt)} 도착 예정 · {Math.round(pr.p * 100)}% 날아왔어요</div>
+            <div className="meta">{bird.name}는 시속 약 {bird.kmh}km로 날아요 · {mishapText(bird)}</div>
           </div>
           <ol className="timeline" aria-label="지나는 곳과 예상 시각">
             {route.points.map((pt, i) => {
               const passed = i <= pos.passedIdx && pr.p > 0.001 || i === 0;
-              const at = view.sentAt + pr.total * route.fractions[i] * 60000;
+              const at = view.sentAt + elapsedAtFraction(pr.plan, route.fractions[i]);
               const isLast = i === route.points.length - 1;
               const label = i === 0 ? `출발 ${clock(at)}` : isLast ? `도착 예정 ${clock(at)}` : passed ? `지남 ✓ ${clock(at)}` : `예상 ${clock(at)}`;
               return (

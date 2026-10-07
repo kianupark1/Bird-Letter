@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BIRDS } from "@/lib/birds";
+import { formatMinutes } from "@/lib/geo";
 import { Envelope, Magpie } from "@/components/Illustrations";
 import { ONBOARDED_KEY } from "@/lib/letters";
 import BirdIcon from "@/components/BirdIcon";
@@ -35,13 +36,13 @@ export default function Onboarding() {
         {i === 1 && (
           <>
             <h1>어떤 새를 보낼까요?</h1>
-            <p className="sub">새마다 속도와 성격이 달라요. 서울에서 부산까지 걸리는 시간이에요.</p>
+            <p className="sub">새마다 실제 비행 속도가 달라요. 서울에서 부산까지 걸리는 시간이에요. 아주 가끔은 길을 잃거나 나무에 걸려 늦어지기도 해요.</p>
             <div className="birdgrid">
               {BIRDS.map((b) => (
                 <div key={b.id} className="birdcell">
                   <BirdIcon id={b.id} size={64} />
                   <b>{b.name}</b>
-                  <small>약 {b.minutesSeoulBusan}분</small>
+                  <small>시속 약 {b.kmh}km<br />{formatMinutes(b.minutesSeoulBusan)}</small>
                 </div>
               ))}
             </div>

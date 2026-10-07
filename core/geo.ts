@@ -1,4 +1,4 @@
-import { BIRDS, REFERENCE_KM, type Bird } from "./birds";
+import { BIRDS, type Bird } from "./birds";
 
 /** 하버사인 공식: 두 좌표 사이 직선거리(km) */
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
@@ -10,9 +10,9 @@ export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: numb
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
-/** 새 종류와 거리로 도착까지 걸리는 분 */
+/** 새의 실제 속도와 거리로 도착까지 걸리는 분(사고가 없을 때) */
 export function travelMinutes(bird: Bird, km: number) {
-  return Math.round((bird.minutesSeoulBusan * km) / REFERENCE_KM);
+  return Math.round((km / bird.kmh) * 60);
 }
 
 export function formatMinutes(min: number) {

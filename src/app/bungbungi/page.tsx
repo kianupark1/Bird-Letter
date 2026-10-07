@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { IS_TOSS } from "@/lib/target";
-import { BIRDS, REFERENCE_KM } from "@/lib/birds";
+import { BIRDS, REFERENCE_KM, mishapText } from "@/lib/birds";
 import { ROUTES } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import BirdIcon from "@/components/BirdIcon";
@@ -19,7 +19,7 @@ export default function Bungbungi() {
 
       <h2>한눈에 보기</h2>
       <div className="stats">
-        <div><b>약 {bird.minutesSeoulBusan}분</b><span>서울 → 부산 ({REFERENCE_KM}km)</span></div>
+        <div><b>약 {formatMinutes(bird.minutesSeoulBusan)}</b><span>서울 → 부산 ({REFERENCE_KM}km) · 시속 약 {bird.kmh}km</span></div>
         <div><b>재미</b><span>마스코트 새</span></div>
       </div>
 
@@ -35,7 +35,7 @@ export default function Bungbungi() {
 
       <h2>붕붕이는요</h2>
       <div className="paper" style={{ marginTop: 0 }}>
-        {"· 배터리 걱정은 붕붕이도 해요. 그래도 이 노선은 한 번에 날아가요.\n· 날 때 “붕붕” 소리가 나요. 도착하면 조용히 편지를 내려놓아요.\n· 매보다는 느리지만 두루미보다는 훨씬 빨라요."}
+        {"· 배터리 걱정은 붕붕이도 해요. 그래도 이 노선은 한 번에 날아가요.\n· 날 때 “붕붕” 소리가 나요. 도착하면 조용히 편지를 내려놓아요.\n· 소형 드론 속도(시속 약 60km)로 날아요. 매보다는 느리고 두루미보다는 조금 빨라요.\n· " + mishapText(bird)}
       </div>
 
       <Link href="/send?bird=bungbungi" className="cta">붕붕이로 편지 보내기</Link>
