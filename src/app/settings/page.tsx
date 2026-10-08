@@ -7,6 +7,7 @@ import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/lett
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, usePushState } from "@/lib/push";
+import { openInstallGuide } from "@/lib/install";
 import { IS_TOSS } from "@/lib/target";
 
 type NotifyKey = keyof Profile["notify"];
@@ -134,6 +135,9 @@ export default function Settings() {
                   : "꺼 둔 사이에 도착해도 알려줘요."}
               </div>
             </div>
+            {PUSH_CONFIGURED && push === "needs-install" && (
+              <button className="chip" onClick={openInstallGuide}>설치 방법</button>
+            )}
             {PUSH_CONFIGURED && (push === "enabled" || push === "default") && (
               <button role="switch" aria-checked={push === "enabled"} aria-label="앱을 닫아도 알림 받기" className="switch" onClick={push === "enabled" ? disablePush : enablePush} />
             )}

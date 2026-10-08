@@ -9,6 +9,7 @@ import { formatMinutes } from "@/lib/geo";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
+import InstallCard from "@/components/InstallCard";
 import { DEFAULT_PROFILE, useProfile } from "@/lib/settings";
 
 export default function Home() {
@@ -75,6 +76,7 @@ export default function Home() {
       })}
 
       {flying.length > 0 && <PushPrompt birdId={flying[0].birdId} />}
+      {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={flying.length > 0} />}
 
       {arrived.length > 0 && (
         <>

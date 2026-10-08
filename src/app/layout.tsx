@@ -3,6 +3,7 @@ import "pretendard/dist/web/variable/pretendardvariable.css";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import Notifier from "@/components/Notifier";
+import InstallGuide from "@/components/InstallGuide";
 
 export const metadata: Metadata = {
   // 링크 미리보기 이미지 주소의 기준. 직접 정한 주소 > Vercel 배포 주소 > 내 컴퓨터 순서로 써요
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {children}
         <Notifier />
+        <InstallGuide />
         <BottomNav />
       </body>
     </html>
