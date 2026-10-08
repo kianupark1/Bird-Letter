@@ -162,13 +162,18 @@ function SendForm() {
       {step === 3 && (
         <>
           <div className="carrier">
-            <BirdIcon id={birdId} size={72} letter />
-            <p className="sub" style={{ margin: 0 }}>
-              {to}에게 · {route.title} · {bird.name}가 {whenText} 뒤에 도착해요 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)
-            </p>
+            <BirdIcon id={birdId} size={96} letter />
+            <div className="carrier-text">
+              <div className="to">{to}에게</div>
+              <div className="path">{getPlace(fromId)?.name} → {getPlace(toId)?.name}</div>
+              <div className="when">
+                {bird.name}가 {whenText} 뒤에 도착해요
+                {" "}<span className="nb">({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</span>
+              </div>
+            </div>
           </div>
           <p className="small" style={{ margin: 0 }}>
-            {bird.name}는 시속 약 {bird.kmh}km로 날아요. {mishapText(bird)} 편지는 사라지지 않고 꼭 도착해요.
+            {bird.name}는 시속 약 {bird.kmh}km로 날아요. {mishapText(bird)}. 편지는 사라지지 않고 꼭 도착해요.
           </p>
           <textarea
             className="field letterbox"

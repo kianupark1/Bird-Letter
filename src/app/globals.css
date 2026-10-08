@@ -302,3 +302,11 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 /* 글이 줄바꿈될 때 "요" 한 글자만 아래로 떨어지지 않게: 단어 단위로 끊고, 줄 길이를 고르게 맞춰요 */
 .sub, .proverb, .onboarding h1, .small { word-break: keep-all; text-wrap: balance; }
 .onboarding .sub { line-height: 1.65; }
+
+/* 편지 쓰기 마지막 화면 위쪽 요약: 받는 사람 / 지역 / 도착 시각을 세 줄로 */
+.carrier-text { display: grid; gap: 2px; min-width: 0; }
+.carrier-text .to { font-size: 18px; font-weight: 800; }
+.carrier-text .path { font-size: 15px; font-weight: 700; color: var(--hwangto-text); }
+.carrier-text .when { font-size: 14px; line-height: 1.5; opacity: 0.85; }
+.carrier-text .nb { white-space: nowrap; }
+.carrier { gap: 14px; }
