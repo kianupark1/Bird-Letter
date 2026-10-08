@@ -7,6 +7,9 @@ import { getPlace, nearestPlace } from "../../../core/places";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
+import { listFriends, type Friend } from "@/lib/firebase/friends";
+import { firebaseEnabled } from "@/lib/firebase/client";
+import Link from "next/link";
 import JourneyMap from "@/components/JourneyMap";
 import PlaceField from "@/components/PlaceField";
 import BirdIcon from "@/components/BirdIcon";
@@ -38,6 +41,19 @@ function SendForm() {
   const [birdId, setBirdId] = useState(BIRDS.some((b) => b.id === preset) ? (preset as string) : "swallow");
   const [message, setMessage] = useState("");
   const [geoMsg, setGeoMsg] = useState("");
+  // 친구에게 앱 안에서 바로 보내기(친구 목록에서 고르면 받는 사람이 정해져요)
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [toUid, setToUid] = useState<string | undefined>();
+  const presetFriend = params.get("friend");
+  useEffect(() => {
+    if (IS_TOSS || !firebaseEnabled) return;
+    listFriends().then((f) => {
+      setFriends(f);
+      const hit = presetFriend ? f.find((x) => x.uid === presetFriend) : undefined;
+      if (hit) { setTo(hit.name); setToUid(hit.uid); }
+    }).catch(() => {});
+  }, [presetFriend]);
+  const pickFriend = (f: Friend) => { setTo(f.name); setToUid(f.uid); };
 
   // 이전에 정해 둔 "내가 있는 곳"을 보내는 곳 기본값으로
   useEffect(() => {
@@ -78,7 +94,7 @@ function SendForm() {
     setBusy(true);
     setError("");
     try {
-      const id = await add({ to: to.trim(), routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed });
+      const id = await add({ to: to.trim(), toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed });
       router.push(letterHref(id));
     } catch {
       setError("편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
@@ -96,7 +112,19 @@ function SendForm() {
       {step === 1 && (
         <>
           <p className="sub">누구에게, 어디로 보낼까요?</p>
-          <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => setTo(e.target.value)} />
+          {!IS_TOSS && firebaseEnabled && (
+            <div className="friendpick">
+              <div className="lab">친구에게 바로 보내기</div>
+              <div className="chips">
+                {friends.map((f) => (
+                  <button key={f.uid} type="button" className="chip" aria-pressed={toUid === f.uid} onClick={() => pickFriend(f)}>{f.name}</button>
+                ))}
+                <Link href="/friends" className="chip">＋ 친구 추가</Link>
+              </div>
+              {friends.length === 0 && <div className="small" style={{ marginTop: 6 }}>친구를 연결하면 링크 없이 친구의 새편지함으로 바로 날아가요.</div>}
+            </div>
+          )}
+          <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); }} />
 
           <div className="placerow">
             <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={pickFrom} />

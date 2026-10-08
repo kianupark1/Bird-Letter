@@ -8,6 +8,7 @@ import { getRoute } from "../routes";
 import { totalMinutes } from "../flight";
 import { auth, db, ensureUser } from "./client";
 import { MAX_LETTER_CHARS } from "../limits";
+import { deleteFriendData } from "./friends";
 
 /** 서버에 저장된 편지의 겉정보 */
 export type Meta = {
@@ -37,7 +38,7 @@ function toMeta(id: string, d: DocumentData): Meta {
 }
 
 /** 편지 보내기: 겉정보와 내용을 한 번에 저장하고 편지 ID(= 초대 링크 주소)를 돌려줍니다. */
-export async function sendLetter(p: { toName: string; fromName: string; routeId: string; birdId: string; message: string; speed?: number }) {
+export async function sendLetter(p: { toName: string; fromName: string; routeId: string; birdId: string; message: string; speed?: number; recipientUid?: string | null }) {
   const user = await ensureUser();
   const d = db();
   const ref = doc(collection(d, "letters"));
@@ -53,7 +54,7 @@ export async function sendLetter(p: { toName: string; fromName: string; routeId:
     birdId: p.birdId,
     sentAt: serverTimestamp(),
     arriveAt: Timestamp.fromMillis(Date.now() + minutes * 60000),
-    recipientUid: null,
+    recipientUid: p.recipientUid ?? null,
   });
   batch.set(doc(d, "letters", ref.id, "private", "body"), { message: p.message.trim().slice(0, MAX_LETTER_CHARS) });
   await batch.commit();
@@ -119,6 +120,7 @@ export async function deleteMyData() {
     await deleteDoc(doc(d, "letters", m.id));
   }
   for (const id of await listBlocked(user.uid)) await deleteDoc(doc(d, "users", user.uid, "blocks", id));
+  await deleteFriendData(user.uid);
   await deleteDoc(doc(d, "users", user.uid)).catch(() => {});
   await deleteUser(auth().currentUser ?? user);
 }

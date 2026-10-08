@@ -365,3 +365,10 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 .pf-lm em { font-style: normal; margin-left: 8px; opacity: .6; font-size: 12px; }
 .pf-opt mark { background: none; color: var(--dahong); font-weight: 800; }
 .pf-empty { padding: 48px 0; text-align: center; opacity: .7; }
+/* 친구 */
+.friendcode { font-size: 30px; font-weight: 800; letter-spacing: .18em; margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+.friendpick { margin-bottom: 10px; }
+.friendpick .lab { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.friendpick .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; border-radius: 999px; font-size: 14px; }
+.card .avatar { width: 40px; height: 40px; font-size: 16px; display: flex; align-items: center; justify-content: center; }
