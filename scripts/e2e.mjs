@@ -77,8 +77,8 @@ try {
   await shot(A.page, "01-A-send-step1");
   await setValue(A.page, "input.field", "엄마");
   if (await A.page.$("#from-place")) {
-    await A.page.select("#from-place", "seoul"); // 내가 있는 곳 / 받는 사람이 있는 곳을 상자에서 고름
-    await A.page.select("#to-place", "jeju");
+    await A.page.click("#from-place"); await A.page.click('[role=option][data-place="seoul"]'); // 내가 있는 곳 / 받는 사람이 있는 곳을 상자에서 고름
+    await A.page.click("#to-place"); await A.page.click('[role=option][data-place="jeju"]');
   } else {
     await clickText(A.page, "서울 → 제주"); // 아직 배포되지 않은 옛 화면(노선 칩)
   }
