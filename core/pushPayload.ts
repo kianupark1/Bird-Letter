@@ -34,7 +34,7 @@ export function validateSchedule(input: unknown, nowMs: number): { ok: true; val
   if (!p || typeof p.title !== "string" || typeof p.body !== "string" || typeof p.url !== "string" || typeof p.tag !== "string") return fail("알림 내용이 없어요");
   if (p.title.length < 1 || p.title.length > 80) return fail("알림 제목 길이가 맞지 않아요");
   if (p.body.length > 160) return fail("알림 본문이 너무 길어요");
-  if (!/^\/letter(\/|\?id=)[A-Za-z0-9_-]{1,64}$/.test(p.url)) return fail("알림이 열 주소가 올바르지 않아요");
+  if (!/^(\/|\/letter(\/|\?id=)[A-Za-z0-9_-]{1,64})$/.test(p.url)) return fail("알림이 열 주소가 올바르지 않아요");
   if (p.tag.length < 1 || p.tag.length > 100 || !/^[A-Za-z0-9_:.-]+$/.test(p.tag)) return fail("알림 표시가 올바르지 않아요");
 
   if (typeof at !== "number" || !Number.isFinite(at)) return fail("알림 시각이 없어요");

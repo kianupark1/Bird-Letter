@@ -310,3 +310,33 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 .carrier-text .when { font-size: 14px; line-height: 1.5; opacity: 0.85; }
 .carrier-text .nb { white-space: nowrap; }
 .carrier { gap: 14px; }
+
+/* 앱 설치 도우미 */
+.pushrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pushlater { background: none; border: 0; color: inherit; opacity: .7; font: inherit; font-size: 14px; min-height: 44px; padding: 0 8px; cursor: pointer; }
+.ig-back { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.5); display: grid; align-items: end; }
+.ig-sheet { background: var(--card); color: var(--text); border-radius: 20px 20px 0 0; max-height: 92dvh; overflow-y: auto; padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; max-width: 520px; width: 100%; margin: 0 auto; }
+.ig-head { display: flex; gap: 12px; align-items: center; }
+.ig-head h2 { margin: 0; font-size: 19px; line-height: 1.3; }
+.ig-head p { margin: 2px 0 0; font-size: 14px; opacity: .75; }
+.ig-box { background: var(--bg); border-radius: 12px; padding: 12px 14px; font-size: 15px; line-height: 1.6; }
+.ig-main { display: grid; place-items: center; min-height: 52px; border-radius: 14px; background: var(--dahong); color: var(--on-dahong); font: inherit; font-weight: 800; font-size: 17px; border: 0; cursor: pointer; text-decoration: none; }
+.ig-sub { min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: none; color: inherit; font: inherit; font-size: 15px; cursor: pointer; padding: 0 14px; }
+.ig-foot { display: flex; gap: 8px; }
+.ig-foot .ig-sub { flex: 1; }
+.ig-steps { display: grid; gap: 10px; }
+.ig-steps > div, .ig-step { display: flex; gap: 10px; align-items: flex-start; font-size: 16px; line-height: 1.55; }
+.ig-steps span, .ig-step > span { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--dahong); color: var(--on-dahong); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.ig-note { font-size: 14px; opacity: .75; line-height: 1.5; }
+.ig-art { width: 100%; height: auto; display: block; }
+.ig-bar { fill: var(--bg); stroke: var(--line); stroke-width: 1.5; }
+.ig-ic { fill: var(--text); opacity: .4; }
+.ig-ln { fill: none; stroke: var(--text); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+.ig-dim { fill: var(--text); opacity: .14; }
+.ig-hl { fill: var(--hwangto); opacity: .35; }
+.ig-t { fill: var(--text); font-size: 16px; font-weight: 700; }
+.ig-pulse { fill: var(--dahong); opacity: .22; animation: ig-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ig-arrow { fill: none; stroke: var(--dahong); stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; animation: ig-bounce 1.1s ease-in-out infinite; }
+@keyframes ig-pulse { 0%, 100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .12; } }
+@keyframes ig-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+@media (prefers-reduced-motion: reduce) { .ig-pulse, .ig-arrow { animation: none; } }

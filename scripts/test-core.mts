@@ -87,6 +87,8 @@ eq("getPlace 서울", getPlace("seoul")?.landmark.name, "남대문");
   });
   const bad = (mut: (g: any) => void) => { const g: any = good(); mut(g); return validateSchedule(g, now).ok; };
   eq("푸시 예약: 올바른 요청 통과", validateSchedule(good(), now).ok, true);
+  eq("푸시 예약: 홈(/)으로 열리는 시험 알림 통과", bad((g) => (g.payload.url = "/")), true);
+  eq("푸시 예약: //외부주소 거절", bad((g) => (g.payload.url = "//evil.example")), false);
   eq("푸시 예약: 토스 앱 편지 주소(?id=)도 통과", bad((g) => (g.payload.url = "/letter?id=abc123")) , true);
   eq("푸시 예약: 모질라·애플 알림 서버 통과", validateSchedule({ ...good(), subscription: { ...good().subscription, endpoint: "https://updates.push.services.mozilla.com/wpush/v2/x" } }, now).ok && validateSchedule({ ...good(), subscription: { ...good().subscription, endpoint: "https://web.push.apple.com/Qx" } }, now).ok, true);
   eq("푸시 예약: 아무 사이트 주소는 거절", bad((g) => (g.subscription.endpoint = "https://evil.example.com/x")), false);

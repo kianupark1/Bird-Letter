@@ -13,6 +13,7 @@ import * as remote from "@/lib/firebase/remote";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
+import InstallCard from "@/components/InstallCard";
 
 const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
 
@@ -224,6 +225,8 @@ export default function LetterView({ id }: { id: string }) {
           )}
         </>
       )}
+
+      <InstallCard hideWhenPushPrompt={!pr.done} />
 
       {backend === "firebase" && !isRecipient && (
         <button className="ghost" onClick={share}>받는 사람에게 링크 보내기</button>
