@@ -104,6 +104,24 @@ export async function schedulePush(key: string, payload: PushPayload, atMs: numb
 }
 
 /** 화면에서 푸시 상태를 보고 켜고 끄는 훅 */
+/** 설정의 "알림 시험하기": 12초 뒤에 시험 알림을 보내요(앱을 닫거나 홈으로 나가 있어야 보여요) */
+export async function sendTestPush(): Promise<boolean> {
+  const sub = getStoredSub();
+  if (!sub) return false;
+  try {
+    const res = await fetch("/api/push/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subscription: sub,
+        payload: { title: "새편지 알림이 잘 켜졌어요", body: "이 알림이 보이면 앱을 닫아도 편지 소식이 와요.", url: "/", tag: `test-${Date.now()}` },
+        at: Date.now() + 12_000,
+      }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
+
 export function usePushState() {
   const [state, setState] = useState<PushState | "checking">("checking");
   const refresh = useCallback(async () => setState(await detectState()), []);

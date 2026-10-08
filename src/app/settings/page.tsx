@@ -6,7 +6,7 @@ import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
-import { PUSH_CONFIGURED, usePushState } from "@/lib/push";
+import { PUSH_CONFIGURED, sendTestPush, usePushState } from "@/lib/push";
 import { IS_TOSS } from "@/lib/target";
 
 type NotifyKey = keyof Profile["notify"];
@@ -138,6 +138,20 @@ export default function Settings() {
               <button role="switch" aria-checked={push === "enabled"} aria-label="앱을 닫아도 알림 받기" className="switch" onClick={push === "enabled" ? disablePush : enablePush} />
             )}
           </div>
+          {push === "enabled" && (
+            <div className="listrow">
+              <div className="grow">
+                <div className="name">알림 시험하기</div>
+                <div className="note">누른 뒤 <b>홈 화면으로 나가세요</b>. 12초쯤 뒤에 시험 알림이 와요.</div>
+              </div>
+              <button
+                className="chip"
+                onClick={async () => setMsg((await sendTestPush()) ? "12초 뒤에 시험 알림을 보내요. 지금 홈 화면으로 나가 보세요." : "시험 알림을 예약하지 못했어요. 잠시 후 다시 눌러 주세요.")}
+              >
+                시험 알림 보내기
+              </button>
+            </div>
+          )}
         </div>
       )}
 
