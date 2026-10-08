@@ -23,7 +23,9 @@ function makeProjection(route: Route) {
   const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
   const cy = (minLat + maxLat) / 2, cx = (minLng + maxLng) / 2;
   const kx = 111.32 * Math.cos((cy * Math.PI) / 180), ky = 110.57;
-  const vx = Math.max((maxLng - minLng) * kx * 1.6, 170), vy = Math.max((maxLat - minLat) * ky * 1.5, 170);
+  // 가까운 노선(서울 안 등)은 더 확대해서 구·동네 이름이 보이게 해요
+  const minSpan = route.km < 120 ? Math.max(24, route.km * 2.2) : 170;
+  const vx = Math.max((maxLng - minLng) * kx * 1.6, minSpan), vy = Math.max((maxLat - minLat) * ky * 1.5, minSpan);
   const scale = Math.min(W / vx, H / vy); // 1km가 화면에서 몇 칸인지
   const proj = (lng: number, lat: number): [number, number] => [W / 2 + (lng - cx) * kx * scale, H / 2 - (lat - cy) * ky * scale];
   return { proj, scale, kx, ky, cx, cy };
@@ -39,7 +41,9 @@ function useLandPaths(route: Route) {
       let d = "";
       for (const r of rings) {
         const pts = decodeRing(r).map(([lng, lat]) => proj(lng, lat));
-        if (!pts.some(([x, y]) => x > -60 && x < W + 60 && y > -60 && y < H + 60)) continue;
+        // 윤곽의 네모 범위가 화면과 겹치면 그려요(확대하면 큰 육지의 점이 화면 밖에만 있을 수 있어요)
+        const xs = pts.map((q) => q[0]), ys = pts.map((q) => q[1]);
+        if (Math.max(...xs) < -60 || Math.min(...xs) > W + 60 || Math.max(...ys) < -60 || Math.min(...ys) > H + 60) continue;
         d += "M" + pts.map(([x, y]) => `${f1(x)} ${f1(y)}`).join("L") + "Z";
       }
       return d;
@@ -70,7 +74,7 @@ export default function JourneyMap({ route, p, birdId, compact }: Props) {
 
   // 이름표가 서로 겹치지 않게: 경로 지점 → 도시 → 도 이름 순서로, 안 겹칠 때만 그려요
   const iconBoxes: Box[] = pts.map(([x, y]) => ({ x0: x - 11, y0: y - 11, x1: x + 11, y1: y + 11 }));
-  const barKm = scale * 100 > 150 ? 50 : 100;
+  const barKm = [100, 50, 20, 10, 5, 2, 1].find((k) => k * scale <= 150) ?? 1;
   const barLen = barKm * scale;
   const placed: Box[] = [
     { x0: bx - 24, y0: by - 38, x1: bx + 24, y1: by + 4 }, // 새가 있는 자리
@@ -102,6 +106,7 @@ export default function JourneyMap({ route, p, birdId, compact }: Props) {
     const onRoute = new Set(route.points.map((q) => q.sub).filter(Boolean));
     for (const pl of PLACES) {
       if (onRoute.has(pl.name)) continue;
+      if (pl.minor && scale < 2.5) continue; // 서울 구·작은 도시는 확대한 지도에서만
       if ((pl.id === "dokdo" || pl.id === "ulleung") && scale < 0.35) continue;
       const [x, y] = proj(pl.lng, pl.lat);
       if (x < 12 || x > W - 12 || y < 12 || y > H - 12) continue;

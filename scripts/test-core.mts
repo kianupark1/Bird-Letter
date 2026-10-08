@@ -76,6 +76,12 @@ eq("예전 노선 id 거리 유지(서울→제주)", getRoute("seoul-jeju").km,
 }
 eq("편지 글자 수 한도는 10만 자", MAX_LETTER_CHARS, 100000);
 eq("getPlace 서울", getPlace("seoul")?.landmark.name, "남대문");
+eq("서울 25개 구", PLACES.filter((p) => p.region === "서울").length, 25);
+eq("서울 구마다 랜드마크가 다름", new Set(PLACES.filter((p) => p.region === "서울").map((p) => p.landmark.name)).size, 25);
+eq("랜드마크 이름 중복 없음", new Set(PLACES.map((p) => p.landmark.name)).size, PLACES.length);
+eq("코엑스 근처 → 서울 강남구", nearestPlace(37.5126, 127.0590).id, "gangnam");
+eq("서울 안 노선(강남→종로)은 가까워서 경유지 후보가 있음", getRoute("gangnam-jongno").km < 20, true);
+eq("먼 노선 경유지에 서울 구 랜드마크 없음", getRoute("busan-sokcho").points.every((q) => !PLACES.some((p) => p.minor && p.landmark.name === q.name && q.name !== "") ), true);
 
 // 푸시 예약 요청 검사: 올바른 건 통과, 위험한 건 거절
 {
