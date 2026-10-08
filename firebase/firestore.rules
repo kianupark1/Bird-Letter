@@ -37,6 +37,7 @@ service cloud.firestore {
       allow get: if signedIn();
       allow create, update: if signedIn()
         && request.resource.data.uid == request.auth.uid
+        && (resource == null || resource.data.uid == request.auth.uid) // 이미 있는 코드는 주인만 고칠 수 있음
         && request.resource.data.keys().hasOnly(['uid', 'name'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 12
         && code.size() == 8;

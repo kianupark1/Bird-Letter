@@ -45,7 +45,7 @@
 
 ## 친구 기능 1단계 (2026-10-08 구현, 서버 규칙 게시 필요)
 
-익명 계정 + 친구 코드(8글자, `codes/{코드}`→uid·닉네임) + 초대 링크(`/friends?add=코드`). 코드로 서로 맺으면 `users/{uid}/friends/{상대uid}`가 양쪽에 생김. 편지 쓰기 1단계에서 친구를 고르면 `recipientUid`가 만들 때 정해져 받는 사람의 받은 편지함·알림에 바로 뜸(링크 불필요). 코드는 `src/lib/firebase/friends.ts`, 화면 `src/app/friends/page.tsx`. **`firebase/firestore.rules`를 Firebase 콘솔에 먼저 게시해야 동작**(옛 앱은 영향 없음). 남은 것: 받는 사람이 앱을 안 열었을 때의 푸시(친구 푸시 구독 읽기 권한 필요), 규칙 시험(`test:rules`)에 친구·코드 케이스 추가, 구글/카카오 연결, 연락처.
+익명 계정 + 친구 코드(8글자, `codes/{코드}`→uid·닉네임) + 초대 링크(`/friends?add=코드`). 코드로 서로 맺으면 `users/{uid}/friends/{상대uid}`가 양쪽에 생김. 편지 쓰기 1단계에서 친구를 고르면 `recipientUid`가 만들 때 정해져 받는 사람의 받은 편지함·알림에 바로 뜸(링크 불필요). 코드는 `src/lib/firebase/friends.ts`, 화면 `src/app/friends/page.tsx`. **`firebase/firestore.rules`를 Firebase 콘솔에 먼저 게시해야 동작**(옛 앱은 영향 없음). 남은 것: 받는 사람이 앱을 안 열었을 때의 푸시(친구 푸시 구독 읽기 권한 필요), 규칙 시험은 `scripts/rules-emulator.mjs`(로컬 에뮬레이터, 25개 통과, 실서버·Java 필요 없는 계정 불필요; 실행법은 파일 맨 위)로 함,구글/카카오 연결, 연락처.
 
 ## 데모 노선 (여정 지도용, 3개)
 
