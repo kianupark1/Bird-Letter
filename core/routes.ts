@@ -23,6 +23,7 @@ const KM_OVERRIDE: Record<string, number> = { "seoul-busan": 325, "seoul-jeju": 
 const CORRIDOR_MAX_KM = 58; // 직선에서 이만큼(짧은 노선은 더 좁게) 안쪽에 있는 랜드마크만 경유지 후보
 const CITY_BONUS_KM = 14; // 산보다 도시 랜드마크(탑·다리·성·한옥)를 조금 우대
 const MAX_MID = 4;
+const MINOR_MAX_KM = 120;
 
 // 대략적인 평면 좌표(km). 경로 판단에만 써요
 function plane(lat0: number, lat: number, lng: number) {
@@ -31,7 +32,7 @@ function plane(lat0: number, lat: number, lng: number) {
 
 function skyName(lat: number, lng: number) {
   let nearest: Place | null = null, best = Infinity;
-  for (const p of PLACES) { const d = haversineKm(lat, lng, p.lat, p.lng); if (d < best) { best = d; nearest = p; } }
+  for (const p of PLACES) { if (p.minor) continue; const d = haversineKm(lat, lng, p.lat, p.lng); if (d < best) { best = d; nearest = p; } }
   if (nearest && best < 70) return `${nearest.name} 근처 상공`;
   if (lng < 125.6) return "서해 상공";
   if (lat < 34.2) return "남해 상공";
@@ -51,7 +52,9 @@ export function makeRoute(from: Place, to: Place): Route {
   const corridor = Math.min(CORRIDOR_MAX_KM, Math.max(8, len * 0.2));
   const seen = new Set<string>([a.name, b.name]);
   const cands: { lm: Landmark; t: number; off: number }[] = [];
-  for (const lm of [...PLACES.map((p) => p.landmark), ...EXTRA_LANDMARKS]) {
+  // 서울 구·작은 도시의 랜드마크는 가까운(120km 미만) 노선에서만 경유지로 써요
+  const pool = km < MINOR_MAX_KM ? PLACES : PLACES.filter((p) => !p.minor);
+  for (const lm of [...pool.map((p) => p.landmark), ...EXTRA_LANDMARKS]) {
     if (seen.has(lm.name)) continue;
     const [px, py] = plane(lat0, lm.lat, lm.lng);
     const t = ((px - ax) * dx + (py - ay) * dy) / (len * len);
