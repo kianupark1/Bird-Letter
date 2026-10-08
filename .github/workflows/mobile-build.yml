@@ -1,0 +1,51 @@
+# 앱스토어·구글 플레이용 앱이 실제로 만들어지는지 확인해요(서명 없이 시험용으로만 빌드).
+# 계정 없이도 돌아가요. 직접 실행: GitHub → Actions → "앱 빌드 시험" → Run workflow
+name: 앱 빌드 시험
+
+on:
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - name: 안드로이드 프로젝트 만들기
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: 시험용 앱 파일(APK) 만들기
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: saepyeonji-android-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 아이폰 프로젝트 만들기
+        run: |
+          npx cap add ios
+          npx cap sync ios
+      - name: 시뮬레이터용으로 빌드(서명 없음)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build | tail -40
