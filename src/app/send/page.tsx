@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BIRDS, getBird, mishapShort, mishapText } from "@/lib/birds";
+import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { getPlace, nearestPlace, placesByRegion } from "../../../core/places";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
@@ -122,7 +122,7 @@ function SendForm() {
           <button type="button" className="swap" onClick={swap} aria-label="보내는 곳과 받는 곳 바꾸기">⇅ 서로 바꾸기</button>
           <PlaceSelect id="to-place" label="받는 사람이 있는 곳" value={toId} onChange={pickTo} />
 
-          <JourneyMap route={route} p={0} birdId={birdId} />
+          <div className="sendmap"><JourneyMap route={route} p={0} birdId={birdId} /></div>
           <p className="sub" style={{ marginTop: 12 }}>
             {same
               ? "보내는 곳과 받는 곳이 같아요. 받는 곳을 바꿔 주세요."
@@ -138,7 +138,7 @@ function SendForm() {
       {step === 2 && (
         <>
           <p className="sub">{route.title} · {route.km}km — 어떤 새가 날아갈까요?</p>
-          {BIRDS.map((b) => (
+          {BIRDS_SLOW_TO_FAST.map((b) => (
             <button key={b.id} className="card wrapfoot" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
                 <BirdIcon id={b.id} size={60} />
@@ -162,13 +162,18 @@ function SendForm() {
       {step === 3 && (
         <>
           <div className="carrier">
-            <BirdIcon id={birdId} size={72} letter />
-            <p className="sub" style={{ margin: 0 }}>
-              {to}에게 · {route.title} · {bird.name}가 {whenText} 뒤에 도착해요 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)
-            </p>
+            <BirdIcon id={birdId} size={96} letter />
+            <div className="carrier-text">
+              <div className="to">{to}에게</div>
+              <div className="path">{getPlace(fromId)?.name} → {getPlace(toId)?.name}</div>
+              <div className="when">
+                {bird.name}가 {whenText} 뒤에 도착해요
+                {" "}<span className="nb">({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)</span>
+              </div>
+            </div>
           </div>
           <p className="small" style={{ margin: 0 }}>
-            {bird.name}는 시속 약 {bird.kmh}km로 날아요. {mishapText(bird)} 편지는 사라지지 않고 꼭 도착해요.
+            {bird.name}는 시속 약 {bird.kmh}km로 날아요. {mishapText(bird)}. 편지는 사라지지 않고 꼭 도착해요.
           </p>
           <textarea
             className="field letterbox"

@@ -36,6 +36,7 @@
     --b-cream: #F3E9D8; --b-ink: #E9DDC8; --b-brown: #B58257; --b-brown2: #8A5A3C;
     --b-grey: #A9B7C6; --b-grey2: #7F90A3; --b-edge: rgba(243, 233, 216, 0.0);
     --sea: #1C2B34; --land-dim: #2B251E; --coast: #5E5039; --grid: rgba(157, 191, 227, 0.10); --map-text: #E6DAC4;
+    --lbl-halo: #1A1613; /* 어두운 모드: 지도 글자 테두리는 어둡게 (밝은 글자가 뭉개지지 않게) */
   }
 }
 * { box-sizing: border-box; }
@@ -244,7 +245,7 @@ textarea.field { min-height: 140px; resize: vertical; }
 .map .lmring.passed { stroke: var(--dahong); stroke-width: 2; }
 .map text { fill: var(--map-text); }
 .map text.lbl { font-size: 11px; font-weight: 700; paint-order: stroke; stroke: var(--sea); stroke-width: 3.2px; stroke-linejoin: round; }
-.map text.lbl.main { font-size: 11.5px; font-weight: 800; stroke: var(--b-cream); fill: var(--b-ink); }
+.map text.lbl.main { font-size: 11.5px; font-weight: 800; stroke: var(--lbl-halo, var(--b-cream)); fill: var(--b-ink); }
 .map text.lbl.city { font-size: 10px; font-weight: 600; opacity: 0.7; stroke-width: 2.6px; }
 .map text.region { font-size: 11px; font-weight: 700; letter-spacing: 0.3em; opacity: 0.28; stroke: none; }
 .map .scalebar { stroke: var(--map-text); stroke-width: 1.2; opacity: 0.6; fill: none; }
@@ -290,3 +291,22 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 .pushtext .t { font-weight: 800; font-size: 15px; line-height: 1.35; }
 .pushtext .d { font-size: 13px; opacity: .8; line-height: 1.45; }
 .pushbtn { justify-self: start; margin-top: 6px; background: var(--dahong); color: var(--on-dahong); border: 0; font: inherit; font-weight: 800; font-size: 14px; border-radius: 999px; min-height: 44px; padding: 0 20px; cursor: pointer; }
+
+/* 설정·목록 행: 제목은 굵게, 설명은 작고 연하게 */
+.listrow .name { font-weight: 700; font-size: 16px; }
+.listrow .note { font-size: 13px; line-height: 1.5; color: var(--text); opacity: 0.72; margin-top: 2px; }
+/* 편지 쓰기 첫 화면: 지도가 "다음" 버튼 밑에 잘리지 않게 높이를 줄여요 */
+.sendmap { max-width: 100%; display: grid; justify-items: center; }
+.sendmap .map { max-height: 46vh; width: auto; max-width: 100%; }
+
+/* 글이 줄바꿈될 때 "요" 한 글자만 아래로 떨어지지 않게: 단어 단위로 끊고, 줄 길이를 고르게 맞춰요 */
+.sub, .proverb, .onboarding h1, .small { word-break: keep-all; text-wrap: balance; }
+.onboarding .sub { line-height: 1.65; }
+
+/* 편지 쓰기 마지막 화면 위쪽 요약: 받는 사람 / 지역 / 도착 시각을 세 줄로 */
+.carrier-text { display: grid; gap: 2px; min-width: 0; }
+.carrier-text .to { font-size: 18px; font-weight: 800; }
+.carrier-text .path { font-size: 15px; font-weight: 700; color: var(--hwangto-text); }
+.carrier-text .when { font-size: 14px; line-height: 1.5; opacity: 0.85; }
+.carrier-text .nb { white-space: nowrap; }
+.carrier { gap: 14px; }

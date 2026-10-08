@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BIRDS, REFERENCE_KM } from "@/lib/birds";
+import { BIRDS_SLOW_TO_FAST, REFERENCE_KM } from "@/lib/birds";
 import { formatMinutes } from "@/lib/geo";
 import { Magpie } from "@/components/Illustrations";
 import BirdIcon from "@/components/BirdIcon";
@@ -54,7 +54,7 @@ export default function Welcome() {
       <h2>6종의 새</h2>
       <p className="small" style={{ marginTop: 0 }}>실제 새의 비행 속도로 날아가요. 서울 → 부산({REFERENCE_KM}km) 기준 소요 시간이에요. 아주 가끔(새마다 50~100통에 1번) 길을 잃거나 나무에 걸려 늦어질 수 있고, 편지는 꼭 도착해요.</p>
       <div className="birdgrid">
-        {BIRDS.map((b) => (
+        {BIRDS_SLOW_TO_FAST.map((b) => (
           <div key={b.id} className="birdcell">
             <BirdIcon id={b.id} size={60} />
             <b>{b.name}</b>

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BIRDS } from "@/lib/birds";
+import { BIRDS_SLOW_TO_FAST } from "@/lib/birds";
 import { formatMinutes } from "@/lib/geo";
 import { Envelope, Magpie } from "@/components/Illustrations";
 import { ONBOARDED_KEY } from "@/lib/letters";
@@ -30,15 +30,15 @@ export default function Onboarding() {
             <Magpie />
             <h1>소식은 날아서 와요</h1>
             <p className="proverb">“아침 까치가 울면 반가운 손님이 온다”</p>
-            <p className="sub">새 편지는 실제 거리와 새의 속도만큼 걸려 도착하는 느린 편지예요. 기다리는 시간까지 선물이 돼요.</p>
+            <p className="sub">새 편지는 실제 거리와 실제 새의 속도만큼<br />걸려 도착하는 느린 편지예요.<br />기다리는 시간까지 선물이 돼요.</p>
           </>
         )}
         {i === 1 && (
           <>
-            <h1>어떤 새를 보낼까요?</h1>
-            <p className="sub">새마다 실제 비행 속도가 달라요. 서울에서 부산까지 걸리는 시간이에요. 아주 가끔은 길을 잃거나 나무에 걸려 늦어지기도 해요.</p>
+            <h1>새마다 속도가 달라요</h1>
+            <p className="sub">실제 새의 비행 속도를 따라 날아가요.<br />서울에서 부산까지 걸리는 시간이에요.<br />아주 가끔은 길을 잃거나 나무에 걸려 늦어지기도 해요.</p>
             <div className="birdgrid">
-              {BIRDS.map((b) => (
+              {BIRDS_SLOW_TO_FAST.map((b) => (
                 <div key={b.id} className="birdcell">
                   <BirdIcon id={b.id} size={64} />
                   <b>{b.name}</b>

@@ -29,6 +29,9 @@ export const BIRDS: Bird[] = [
   make({ id: "crane", name: "두루미", emoji: "🦢", badge: "귀한 소식", kmh: 55, mishapOneIn: 100, note: "가장 귀한 소식용", speedNote: "느긋하지만 길을 잃지 않아요" }),
 ];
 
+/** 소개 화면용: 느린 새부터 빠른 새 순서 */
+export const BIRDS_SLOW_TO_FAST: Bird[] = [...BIRDS].sort((a, b) => a.kmh - b.kmh);
+
 export const getBird = (id: string) => BIRDS.find((b) => b.id === id) ?? BIRDS[2];
 
 /** "약 100통에 1번" 같은 표시 문구 */
