@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BIRDS, getBird, mishapShort, mishapText } from "@/lib/birds";
+import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { getPlace, nearestPlace, placesByRegion } from "../../../core/places";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
@@ -138,7 +138,7 @@ function SendForm() {
       {step === 2 && (
         <>
           <p className="sub">{route.title} · {route.km}km — 어떤 새가 날아갈까요?</p>
-          {BIRDS.map((b) => (
+          {BIRDS_SLOW_TO_FAST.map((b) => (
             <button key={b.id} className="card wrapfoot" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
                 <BirdIcon id={b.id} size={60} />
