@@ -297,3 +297,7 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 /* 편지 쓰기 첫 화면: 지도가 "다음" 버튼 밑에 잘리지 않게 높이를 줄여요 */
 .sendmap { max-width: 100%; display: grid; justify-items: center; }
 .sendmap .map { max-height: 46vh; width: auto; max-width: 100%; }
+
+/* 글이 줄바꿈될 때 "요" 한 글자만 아래로 떨어지지 않게: 단어 단위로 끊고, 줄 길이를 고르게 맞춰요 */
+.sub, .proverb, .onboarding h1, .small { word-break: keep-all; text-wrap: balance; }
+.onboarding .sub { line-height: 1.65; }

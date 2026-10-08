@@ -30,7 +30,7 @@ export default function Onboarding() {
             <Magpie />
             <h1>소식은 날아서 와요</h1>
             <p className="proverb">“아침 까치가 울면 반가운 손님이 온다”</p>
-            <p className="sub">새 편지는 실제 거리와 새의 속도만큼 걸려 도착하는 느린 편지예요. 기다리는 시간까지 선물이 돼요.</p>
+            <p className="sub">새 편지는 실제 거리와 실제 새의 속도만큼<br />걸려 도착하는 느린 편지예요.<br />기다리는 시간까지 선물이 돼요.</p>
           </>
         )}
         {i === 1 && (
