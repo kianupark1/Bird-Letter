@@ -118,7 +118,7 @@ export default function Settings() {
         ))}
       </div>
       <div className="small">
-        앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 오는 알림(푸시)은 준비 중이에요."}
+        앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 받으려면 아래 스위치를 켜 주세요."}
       </div>
       {!IS_TOSS && (
         <div className="list">

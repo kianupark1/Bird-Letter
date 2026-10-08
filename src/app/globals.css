@@ -290,3 +290,10 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 .pushtext .t { font-weight: 800; font-size: 15px; line-height: 1.35; }
 .pushtext .d { font-size: 13px; opacity: .8; line-height: 1.45; }
 .pushbtn { justify-self: start; margin-top: 6px; background: var(--dahong); color: var(--on-dahong); border: 0; font: inherit; font-weight: 800; font-size: 14px; border-radius: 999px; min-height: 44px; padding: 0 20px; cursor: pointer; }
+
+/* 설정·목록 행: 제목은 굵게, 설명은 작고 연하게 */
+.listrow .name { font-weight: 700; font-size: 16px; }
+.listrow .note { font-size: 13px; line-height: 1.5; color: var(--text); opacity: 0.72; margin-top: 2px; }
+/* 편지 쓰기 첫 화면: 지도가 "다음" 버튼 밑에 잘리지 않게 높이를 줄여요 */
+.sendmap { max-width: 100%; display: grid; justify-items: center; }
+.sendmap .map { max-height: 46vh; width: auto; max-width: 100%; }

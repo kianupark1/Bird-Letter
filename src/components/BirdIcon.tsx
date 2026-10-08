@@ -187,6 +187,7 @@ export default function BirdIcon({ id, size = 40, className, x, y, title, letter
       aria-label={title}
       aria-hidden={title ? undefined : true}
       focusable="false"
+      style={letter ? { overflow: "visible" } : undefined}
     >
       {letter && <Letter id={id} />}
       <Art />

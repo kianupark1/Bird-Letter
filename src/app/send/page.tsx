@@ -122,7 +122,7 @@ function SendForm() {
           <button type="button" className="swap" onClick={swap} aria-label="보내는 곳과 받는 곳 바꾸기">⇅ 서로 바꾸기</button>
           <PlaceSelect id="to-place" label="받는 사람이 있는 곳" value={toId} onChange={pickTo} />
 
-          <JourneyMap route={route} p={0} birdId={birdId} />
+          <div className="sendmap"><JourneyMap route={route} p={0} birdId={birdId} /></div>
           <p className="sub" style={{ marginTop: 12 }}>
             {same
               ? "보내는 곳과 받는 곳이 같아요. 받는 곳을 바꿔 주세요."
