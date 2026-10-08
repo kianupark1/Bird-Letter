@@ -1,24 +1,41 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
-@font-face { font-family: P; src: url("../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2"); font-weight: 100 900; }
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>:root {
+  --dahong: #C1481F;
+  --namsaek: #1E3A5C;
+  --hwangto: #E0A83C;
+  --cheongrok: #1B6E5C;
+  --bg: #FBF3E4;
+  --text: #2A2118;
+  --card: #FFFFFF;
+  --line: rgba(42, 33, 24, 0.12);
+  --land: #EFE3CC;
+  --sky: #FFFFFF;
+  --on-dahong: #FFFFFF;
+  --on-cheong: #FFFFFF;
+  --hwangto-text: #8A5A06;
+  /* 새 일러스트 색(BirdIcon) */
+  --b-cream: #FBF3E4; --b-ink: #2A2118; --b-brown: #8A5A3C; --b-brown2: #5B3A29;
+  --b-grey: #9AA8B8; --b-grey2: #6F8094; --b-edge: rgba(42, 33, 24, 0.35);
+  /* 지도 */
+  --sea: #D5E5EB; --land-dim: #E6DECD; --coast: #B3A27C; --grid: rgba(30, 58, 92, 0.10); --map-text: #3A2F25;
+}
+}
+@font-face { font-family: P; src: url("file:///home/user/Bird-Letter/node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2"); font-weight: 100 900; }
 * { box-sizing: border-box; margin: 0; }
 html, body { width: 100%; height: 100%; }
-body { font-family: P, "Malgun Gothic", sans-serif; color: #2A2118; background: #FBF3E4; position: relative; overflow: hidden; }
+body { font-family: P, sans-serif; color: #2A2118; background: #FBF3E4; position: relative; overflow: hidden; }
+svg { overflow: visible; display: block; }
 .band { position: absolute; left: 0; right: 0; top: 0; height: 22px; display: flex; }
 .band i { flex: 1; } .band i:nth-child(1){background:#C1481F} .band i:nth-child(2){background:#E0A83C} .band i:nth-child(3){background:#1B6E5C} .band i:nth-child(4){background:#1E3A5C} .band i:nth-child(5){background:#FBF3E4;border-bottom:2px solid #C1481F}
-.wrap { position: absolute; inset: 22px 0 0 0; padding: 90px 84px 70px; display: flex; flex-direction: column; }
-.brand { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 30px; font-weight: 700; }
-.brand small { font-size: 24px; font-weight: 600; color: #C1481F; border: 2px solid #E0A83C; border-radius: 999px; padding: 6px 18px; }
-h1 { font-size: 92px; line-height: 1.12; letter-spacing: -2px; font-weight: 800; }
-.proverb { color: #C1481F; font-weight: 700; font-size: 40px; margin-top: 28px; }
-.sub { font-size: 36px; line-height: 1.55; opacity: .75; margin-top: 24px; }
+.wrap { position: absolute; inset: 22px 0 0 0; padding: 84px 84px 64px; display: flex; flex-direction: column; }
+.brand { margin-top: auto; display: flex; justify-content: space-between; align-items: center; font-size: 32px; font-weight: 800; }
+.brand small { font-size: 22px; font-weight: 600; color: #C1481F; border: 2px solid #E0A83C; border-radius: 999px; padding: 6px 18px; }
+h1 { font-size: 90px; line-height: 1.14; letter-spacing: -2px; font-weight: 800; text-wrap: balance; }
+.hl { color: #C1481F; }
+.sub { font-size: 36px; line-height: 1.5; opacity: .78; margin-top: 22px; }
+.proverb { color: #C1481F; font-weight: 700; font-size: 38px; margin-top: 26px; }
+.tile { background: #fff; border-radius: 32px; padding: 26px 30px; display: flex; align-items: center; gap: 22px; box-shadow: 0 6px 0 rgba(42,33,24,.06); }
 </style></head><body><div class="band"><i></i><i></i><i></i><i></i><i></i></div><div class="wrap">
-      <div style="width:620px;margin:20px auto 0"><svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
-<path d="M40 92 L6 118 L46 108 Z" fill="#1E3A5C"/><ellipse cx="96" cy="88" rx="52" ry="34" fill="#1E3A5C"/>
-<ellipse cx="104" cy="104" rx="30" ry="18" fill="#FBF3E4"/><path d="M66 82 Q96 52 128 82 Q100 96 66 82 Z" fill="#1B6E5C"/>
-<circle cx="140" cy="62" r="22" fill="#1E3A5C"/><circle cx="148" cy="58" r="3.5" fill="#FBF3E4"/><circle cx="149" cy="58" r="1.5" fill="#2A2118"/>
-<path d="M160 62 L184 68 L160 74 Z" fill="#E0A83C"/><path d="M86 120 L82 144 M106 120 L110 144" stroke="#E0A83C" stroke-width="4" stroke-linecap="round"/>
-<path d="M20 40 q8 -10 16 0 M168 28 q8 -10 16 0" stroke="#E0A83C" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div>
-      <h1 style="text-align:center;margin-top:36px">소식은<br>날아서 와요</h1>
-      <p class="proverb" style="text-align:center">“아침 까치가 울면 반가운 손님이 온다”</p>
-      <p class="sub" style="text-align:center">실제 거리만큼 걸려 도착하는<br>느린 편지, 새 편지</p>
-      <div class="brand"><span>🕊️ 새 편지</span><small>출시 준비 중 · 체험판</small></div></div></body></html>
+    <div style="margin:10px auto 0"><svg viewBox="0 0 200 160" width="520" height="416" class="birdicon " aria-hidden="true" focusable="false" style="overflow:visible"><g transform="translate(178 92) rotate(-10)"><rect x="-22" y="-12" width="46" height="32" rx="4" style="fill:rgba(20,12,6,.22)"></rect><rect x="-23" y="-16" width="46" height="32" rx="3.5" style="fill:var(--b-cream);stroke:var(--dahong);stroke-width:3"></rect><rect x="-19" y="-12" width="38" height="24" rx="2" style="fill:none;stroke:var(--namsaek);stroke-width:1.6;stroke-dasharray:5 4"></rect><path d="M-22 -14 L0 4 L22 -14" style="stroke:var(--dahong);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M-22 14 L-7 2 M22 14 L7 2" style="stroke:var(--dahong);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.55"></path><path d="M-18 -12 L0 1 L-14 -12 Z" style="fill:rgba(255,255,255,.30)"></path><circle cx="0" cy="4" r="6" style="fill:var(--dahong)"></circle><circle cx="-1.8" cy="2.2" r="1.8" style="fill:rgba(255,255,255,.55)"></circle><path d="M-2.6 5 q2.6 -3 5.2 0" style="stroke:var(--b-cream);stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.9"></path></g><path d="M44 88 L2 100 L8 108 L52 100 Z" style="fill:var(--namsaek)"></path><path d="M42 94 L4 122 L14 128 L52 106 Z" style="fill:var(--namsaek)"></path><path d="M48 98 L12 140 L24 140 L58 108 Z" style="fill:var(--namsaek)"></path><path d="M6 103 L48 95 M10 124 L48 100 M18 138 L54 106" style="stroke:var(--cheongrok);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.9"></path><ellipse cx="96" cy="88" rx="52" ry="34" style="fill:var(--namsaek)"></ellipse><ellipse cx="86" cy="70" rx="30" ry="6" transform="rotate(-8 86 70)" style="fill:rgba(255,255,255,.30)"></ellipse><path d="M48 100 Q96 134 146 100 Q122 122 96 122 Q66 122 48 100 Z" style="fill:rgba(20,12,6,.22)"></path><ellipse cx="106" cy="104" rx="30" ry="18" style="fill:var(--b-cream)"></ellipse><path d="M94 100 q4 4 8 0 M104 106 q4 4 8 0 M114 100 q4 4 8 0 M96 112 q4 3 8 0 M110 113 q4 3 8 0" style="stroke:var(--b-grey2);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.55"></path><path d="M62 84 Q96 46 132 82 Q100 100 62 84 Z" style="fill:var(--cheongrok)"></path><path d="M66 84 Q96 60 124 80" style="stroke:var(--namsaek);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.55"></path><ellipse cx="104" cy="66" rx="15" ry="5.5" transform="rotate(-12 104 66)" style="fill:var(--b-cream)"></ellipse><path d="M66 86 q4 10 12 8 M80 91 q4 10 12 6 M96 93 q5 9 13 4 M112 90 q4 8 12 1" style="stroke:var(--namsaek);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.6"></path><path d="M72 74 Q96 56 120 74" style="fill:none;stroke:rgba(255,255,255,.32);stroke-width:2.4;stroke-linecap:round"></path><circle cx="140" cy="62" r="22" style="fill:var(--namsaek)"></circle><path d="M124 50 Q138 36 156 46" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:3;stroke-linecap:round"></path><ellipse cx="152" cy="66" rx="9" ry="6" style="fill:rgba(255,160,130,.25)"></ellipse><circle cx="148" cy="58" r="6" style="fill:var(--b-cream)"></circle><circle cx="148.4" cy="58" r="4.8" style="fill:var(--b-cream)"></circle><circle cx="149.3" cy="58.2" r="2.976" style="fill:#241a12"></circle><circle cx="150.6" cy="56.5" r="1.152" style="fill:#fff"></circle><path d="M160 58 L188 66 L160 76 Z" style="fill:var(--hwangto)"></path><path d="M160 67 L186 66" style="stroke:rgba(30,20,12,.55);stroke-width:1.6;stroke-linecap:round;fill:none;opacity:0.55"></path><circle cx="168" cy="62" r="1.4" style="fill:#241a12"></circle><path d="M86 120 L82 146 M106 120 L110 146" style="stroke:var(--hwangto);stroke-width:4.6;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M72 148 h14 M100 148 h14" style="stroke:var(--hwangto);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none"></path></svg></div>
+    <h1 style="text-align:center;margin-top:28px">소식은<br>날아서 와요</h1>
+    <p class="proverb" style="text-align:center">“아침 까치가 울면 반가운 손님이 온다”</p>
+    <p class="sub" style="text-align:center">실제 거리만큼 걸려 도착하는<br>느린 편지, 새 편지</p><div class="brand"><span>새 편지</span><small>웹 체험판 공개 · 앱스토어 준비 중</small></div></div></body></html>
