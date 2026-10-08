@@ -17,6 +17,8 @@ export type Letter = {
   sentAt: number;
   /** 도착 시각(ms). 서버에 저장된 편지는 이 값을 기준으로 진행률을 계산 */
   arriveAt?: number;
+  /** 친구에게 앱 안에서 바로 보낸 편지면 받는 친구의 uid */
+  toUid?: string;
 };
 
 /** 같은 화면의 다른 부분(알림 담당 등)이 새로 보낸·받은 편지를 바로 알도록 전하는 신호 */
@@ -110,6 +112,7 @@ export function useLetters() {
               message: (await remote.getBody(m.id)) ?? "",
               sentAt: m.sentAt,
               arriveAt: m.arriveAt,
+              toUid: m.recipientUid ?? undefined,
             })),
           );
           if (cancelled) return;
@@ -149,12 +152,12 @@ export function useLetters() {
       await settled.current!.promise; // 서버 연결 확인이 끝날 때까지 기다림
       if (backendRef.current === "firebase") {
         const id = await remote.sendLetter({
-          toName: l.to, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, message: l.message, speed: l.speed,
+          toName: l.to, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, message: l.message, speed: l.speed, recipientUid: l.toUid ?? null,
         });
         const meta = await remote.getMeta(id);
         const letter: Letter = {
           id, to: l.to, routeId: l.routeId, birdId: l.birdId, message: l.message,
-          sentAt: meta?.sentAt ?? Date.now(), arriveAt: meta?.arriveAt,
+          sentAt: meta?.sentAt ?? Date.now(), arriveAt: meta?.arriveAt, toUid: l.toUid,
         };
         setLetters((prev) => [letter, ...prev]);
         announce({ type: "sent", letter });

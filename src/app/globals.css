@@ -340,3 +340,11 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 @keyframes ig-pulse { 0%, 100% { transform: scale(.85); opacity: .35; } 50% { transform: scale(1.15); opacity: .12; } }
 @keyframes ig-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 @media (prefers-reduced-motion: reduce) { .ig-pulse, .ig-arrow { animation: none; } }
+
+/* 친구 */
+.friendcode { font-size: 30px; font-weight: 800; letter-spacing: .18em; margin: 6px 0 4px; font-variant-numeric: tabular-nums; }
+.friendpick { margin-bottom: 10px; }
+.friendpick .lab { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.friendpick .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; border-radius: 999px; font-size: 14px; }
+.card .avatar { width: 40px; height: 40px; font-size: 16px; display: flex; align-items: center; justify-content: center; }
