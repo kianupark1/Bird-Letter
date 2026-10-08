@@ -18,6 +18,29 @@ service cloud.firestore {
       match /blocks/{blockedUid} {
         allow read, write: if signedIn() && request.auth.uid == uid;
       }
+
+      // 친구 목록: 읽기는 본인만. 친구 코드로 서로 연결할 때, 상대가 "나는 당신의 친구예요" 하고
+      // 자기 문서(문서 ID = 자기 uid)만 내 목록에 남길 수 있고, 지우는 것도 본인 또는 그 친구만 가능
+      match /friends/{friendUid} {
+        allow read: if signedIn() && request.auth.uid == uid;
+        allow create, update: if signedIn()
+          && (request.auth.uid == uid || request.auth.uid == friendUid)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'at'])
+          && request.resource.data.uid == friendUid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 12;
+        allow delete: if signedIn() && (request.auth.uid == uid || request.auth.uid == friendUid);
+      }
+    }
+
+    // 친구 코드(8글자): 코드를 아는 사람만 한 건씩 조회(목록 조회는 불가). 주인만 만들고 고치고 지움
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'name'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 12
+        && code.size() == 8;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
     // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
@@ -34,7 +57,10 @@ service cloud.firestore {
         && request.resource.data.sentAt == request.time
         && request.resource.data.arriveAt > request.time
         && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid'])
-        && request.resource.data.recipientUid == null
+        // 받는 사람은 비워 두거나(링크로 전달), 서로 친구인 사람의 uid(앱 안에서 바로 전달)
+        && (request.resource.data.recipientUid == null
+            || (request.resource.data.recipientUid is string
+                && exists(/databases/$(database)/documents/users/$(request.resource.data.recipientUid)/friends/$(request.auth.uid))))
         && request.resource.data.toName is string && request.resource.data.toName.size() <= 20
         && request.resource.data.fromName is string && request.resource.data.fromName.size() <= 12;
 
