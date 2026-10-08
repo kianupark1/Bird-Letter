@@ -2,7 +2,7 @@
 // 기본 주소는 내 컴퓨터에서 켜 둔 앱(http://localhost:3000). AI 영상 크레딧 없이 쓰는 방법이에요.
 // 필요한 것: Playwright(+Chromium), ffmpeg. 결과: promo/video/saepyeonji-demo.mp4
 // 장면: 내 위치로 대구 선택 → 제주로 까치 편지 → 지도에서 날아가는 새 → 알림 팝업 → 도착
-// 시간이 오래 걸리지 않게 보내기 화면은 ?test=1(60배 빠르게), 시각은 저장값을 앞당겨서 녹화합니다.
+// 시간이 오래 걸리지 않게 보내기 화면은 ?test=1(600배 빠르게), 시각은 저장값을 앞당겨서 녹화합니다.
 import { mkdirSync, readdirSync, renameSync, rmSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";

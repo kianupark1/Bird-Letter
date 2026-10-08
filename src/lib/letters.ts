@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getBird } from "./birds";
 import { getRoute } from "./routes";
 import { travelMinutes } from "./geo";
+import { planFor, progressAt, totalMinutes, type Plan } from "./flight";
 import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
 
@@ -35,12 +36,17 @@ export const SAMPLE_INBOX = [
   { id: "in2", from: "민수", birdId: "swallow", routeId: "seoul-jeju", preview: "제주 도착! 바람이 엄청 불어", when: "3일 전" },
 ];
 
-export function letterProgress(l: Pick<Letter, "birdId" | "routeId" | "sentAt" | "arriveAt">, now: number) {
-  const total = l.arriveAt
-    ? Math.max(1, (l.arriveAt - l.sentAt) / 60000)
-    : travelMinutes(getBird(l.birdId), getRoute(l.routeId).km);
-  const elapsed = (now - l.sentAt) / 60000;
-  return { total, elapsed, p: Math.min(1, Math.max(0, elapsed / total)), done: elapsed >= total };
+/** 편지의 비행 계획(사고 포함). 도착 시각이 없던 옛 편지는 사고 없이 계산해요 */
+export function letterPlan(l: Pick<Letter, "id" | "birdId" | "routeId" | "sentAt" | "arriveAt">): Plan {
+  const arriveAt = l.arriveAt ?? l.sentAt + travelMinutes(getBird(l.birdId), getRoute(l.routeId).km) * 60000;
+  return planFor(l.arriveAt ? l.id : "", l.birdId, l.sentAt, arriveAt);
+}
+
+export function letterProgress(l: Pick<Letter, "id" | "birdId" | "routeId" | "sentAt" | "arriveAt">, now: number) {
+  const plan = letterPlan(l);
+  const elapsedMs = now - l.sentAt;
+  const pr = progressAt(plan, elapsedMs);
+  return { total: plan.totalMs / 60000, elapsed: elapsedMs / 60000, p: pr.p, done: pr.done, stalled: pr.stalled, mishap: plan.mishap, plan };
 }
 
 export function useNow(intervalMs = 15000) {
@@ -155,9 +161,10 @@ export function useLetters() {
         return id;
       }
       const sentAt = Date.now();
-      const minutes = travelMinutes(getBird(l.birdId), getRoute(l.routeId).km) / (l.speed ?? 1);
+      const newId = Math.random().toString(36).slice(2, 9);
+      const minutes = totalMinutes(newId, l.birdId, getRoute(l.routeId).km, sentAt, l.speed ?? 1);
       const letter: Letter = {
-        id: Math.random().toString(36).slice(2, 9), to: l.to, routeId: l.routeId, birdId: l.birdId,
+        id: newId, to: l.to, routeId: l.routeId, birdId: l.birdId,
         message: l.message, sentAt, arriveAt: sentAt + minutes * 60000,
       };
       persist([letter, ...letters]);

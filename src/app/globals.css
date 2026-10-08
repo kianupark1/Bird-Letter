@@ -63,6 +63,9 @@ button.card { cursor: pointer; }
 .card[aria-pressed="true"] { border-color: var(--dahong); }
 .card .name { font-weight: 700; font-size: 17px; }
 .card .note { font-size: 13px; opacity: .7; margin-top: 2px; }
+.card.wrapfoot { flex-wrap: wrap; row-gap: 8px; }
+.card.wrapfoot > .row { flex: 1 1 0; }
+.card .risk { flex-basis: 100%; font-size: 13px; color: var(--hwangto-text, var(--dahong)); border-top: 1px dashed var(--line, rgba(0,0,0,.15)); padding-top: 8px; }
 .emoji { font-size: 28px; line-height: 1; }
 .row { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .grow { flex: 1; min-width: 0; }

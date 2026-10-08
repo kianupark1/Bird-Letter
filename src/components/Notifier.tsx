@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 import { getBird } from "@/lib/birds";
 import { getRoute, routePosition } from "@/lib/routes";
 import { letterProgress, useLetters, useNow } from "@/lib/letters";
+import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { useProfile } from "@/lib/settings";
 import { arrivalText, passingText } from "@/lib/notifyText";
 import { hasPushSub, schedulePush, usePushState } from "@/lib/push";
@@ -21,7 +22,7 @@ const STORE = "saepyeonji.notified.v1";
 const RECENT_MS = 24 * 3600 * 1000;
 
 type Popup = { key: string; id: string; birdId: string; title: string; sub: string };
-type Rec = { a: number; p: number };
+type Rec = { a: number; p: number; m?: number };
 
 function load(): Record<string, Rec> {
   try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; }
@@ -53,7 +54,7 @@ export default function Notifier() {
     let changed = false;
     for (const it of items) {
       const route = getRoute(it.routeId);
-      const pr = letterProgress({ birdId: it.birdId, routeId: it.routeId, sentAt: it.sentAt, arriveAt: it.arriveAt }, now);
+      const pr = letterProgress({ id: it.id, birdId: it.birdId, routeId: it.routeId, sentAt: it.sentAt, arriveAt: it.arriveAt }, now);
       const pos = routePosition(route, pr.p);
       const arrivedAt = (it.arriveAt ?? it.sentAt + pr.total * 60000);
       let r = rec[it.id];
@@ -68,6 +69,14 @@ export default function Notifier() {
         if (wantsIt && now - arrivedAt < RECENT_MS) {
           const t = arrivalText(it.kind, it.who, route, it.birdId);
           out.push({ key: `a-${it.id}`, id: it.id, birdId: it.birdId, title: t.title, sub: t.body });
+        }
+      }
+      // 길을 잃거나 나무에 걸렸을 때(내가 보낸 편지만, 한 번만)
+      if (pr.mishap && !r.m && (pr.stalled || (pr.p > pr.mishap.at && !pr.done))) {
+        r.m = 1; changed = true;
+        if (it.kind === "sent" && pr.stalled && profile.notify.passing) {
+          const t = mishapMessage(pr.mishap.kind, getBird(it.birdId).name);
+          out.push({ key: `m-${it.id}`, id: it.id, birdId: it.birdId, title: `${it.who}에게 가는 편지: ${t.title}`, sub: t.body });
         }
       }
       // 경유지 통과(내가 보낸 편지만, 도착 전에)
@@ -104,7 +113,7 @@ export default function Notifier() {
       for (const it of items) {
         if (off) return;
         const route = getRoute(it.routeId);
-        const pr = letterProgress({ birdId: it.birdId, routeId: it.routeId, sentAt: it.sentAt, arriveAt: it.arriveAt }, Date.now());
+        const pr = letterProgress({ id: it.id, birdId: it.birdId, routeId: it.routeId, sentAt: it.sentAt, arriveAt: it.arriveAt }, Date.now());
         if (pr.done) continue;
         const arriveMs = it.arriveAt ?? it.sentAt + pr.total * 60000;
         const url = letterHref(it.id);
@@ -113,8 +122,16 @@ export default function Notifier() {
           await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-a` }, arriveMs);
         }
         if (it.kind === "sent" && profile.notify.passing) {
+          const plan = pr.plan;
+          if (plan.mishap && plan.stall) {
+            const mt = it.sentAt + plan.stall.from;
+            if (mt > Date.now()) {
+              const t = mishapMessage(plan.mishap.kind, getBird(it.birdId).name);
+              await schedulePush(`${it.id}:m`, { title: `${it.who}에게 가는 편지: ${t.title}`, body: t.body, url, tag: `l-${it.id}-m` }, mt);
+            }
+          }
           for (let i = 1; i < route.points.length - 1; i++) {
-            const at = it.sentAt + pr.total * route.fractions[i] * 60000;
+            const at = it.sentAt + elapsedAtFraction(plan, route.fractions[i]);
             if (at <= Date.now()) continue;
             const t = passingText(it.who, route, it.birdId, i);
             await schedulePush(`${it.id}:p${i}`, { title: t.title, body: t.body, url, tag: `l-${it.id}-p${i}` }, at);

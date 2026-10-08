@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BIRDS, getBird } from "@/lib/birds";
+import { BIRDS, getBird, mishapShort, mishapText } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { getPlace, nearestPlace, placesByRegion } from "../../../core/places";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
@@ -44,8 +44,8 @@ function SendForm() {
   // ?bird=bungbungi 처럼 새를 미리 골라서 들어올 수 있음
   const params = useSearchParams();
   const preset = params.get("bird");
-  // 주소 끝에 ?test=1을 붙이면 60배 빠르게 날아가요(직접 써 보는 시험용)
-  const speed = !IS_TOSS && params.get("test") ? 60 : 1;
+  // 주소 끝에 ?test=1을 붙이면 600배 빠르게 날아가요(직접 써 보는 시험용, 실제 새 속도라 60배로는 너무 오래 걸려요)
+  const speed = !IS_TOSS && params.get("test") ? 600 : 1;
   const [step, setStep] = useState(1);
   const [to, setTo] = useState("");
   const [fromId, setFromId] = useState("seoul");
@@ -139,15 +139,17 @@ function SendForm() {
         <>
           <p className="sub">{route.title} · {route.km}km — 어떤 새가 날아갈까요?</p>
           {BIRDS.map((b) => (
-            <button key={b.id} className="card" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
+            <button key={b.id} className="card wrapfoot" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
                 <BirdIcon id={b.id} size={60} />
                 <div>
                   <div><span className="name">{b.name}</span><span className="badge">{b.badge}</span></div>
                   <div className="note">{b.note}</div>
+                  <div className="note">시속 약 {b.kmh}km · {b.speedNote}</div>
                 </div>
               </div>
               <div className="time">{formatMinutes(Math.max(1, travelMinutes(b, route.km)))}</div>
+              <div className="risk">{mishapShort(b)}</div>
             </button>
           ))}
           <div className="dock">
@@ -165,6 +167,9 @@ function SendForm() {
               {to}에게 · {route.title} · {bird.name}가 {whenText} 뒤에 도착해요 ({new Date(Date.now() + minutes * 60000).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })} 예정)
             </p>
           </div>
+          <p className="small" style={{ margin: 0 }}>
+            {bird.name}는 시속 약 {bird.kmh}km로 날아요. {mishapText(bird)} 편지는 사라지지 않고 꼭 도착해요.
+          </p>
           <textarea
             className="field letterbox"
             placeholder="마음을 적어 보세요. 짧아도, 길어도 괜찮아요."

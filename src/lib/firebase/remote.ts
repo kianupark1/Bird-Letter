@@ -4,9 +4,8 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { deleteUser } from "firebase/auth";
-import { getBird } from "../birds";
 import { getRoute } from "../routes";
-import { travelMinutes } from "../geo";
+import { totalMinutes } from "../flight";
 import { auth, db, ensureUser } from "./client";
 import { MAX_LETTER_CHARS } from "../limits";
 
@@ -42,8 +41,9 @@ export async function sendLetter(p: { toName: string; fromName: string; routeId:
   const user = await ensureUser();
   const d = db();
   const ref = doc(collection(d, "letters"));
-  // speed: 테스트용 배속(주소에 ?test=1을 붙였을 때만 60배). 평소에는 1
-  const minutes = travelMinutes(getBird(p.birdId), getRoute(p.routeId).km) / (p.speed ?? 1);
+  // speed: 테스트용 배속(주소에 ?test=1을 붙였을 때만 600배). 평소에는 1
+  // 길 잃음·나무 걸림 사고는 편지 ID로 정해져서, 도착 시각에 지연이 이미 포함돼요(core/flight.ts)
+  const minutes = totalMinutes(ref.id, p.birdId, getRoute(p.routeId).km, Date.now(), p.speed ?? 1);
   const batch = writeBatch(d);
   batch.set(ref, {
     fromUid: user.uid,
