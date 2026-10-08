@@ -3,11 +3,12 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
-import { getPlace, nearestPlace, placesByRegion } from "../../../core/places";
+import { getPlace, nearestPlace } from "../../../core/places";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
 import JourneyMap from "@/components/JourneyMap";
+import PlaceField from "@/components/PlaceField";
 import BirdIcon from "@/components/BirdIcon";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import { MAX_LETTER_CHARS } from "@/lib/limits";
@@ -17,23 +18,6 @@ export default function Send() {
     <Suspense fallback={<main className="app" />}>
       <SendForm />
     </Suspense>
-  );
-}
-
-function PlaceSelect({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="placefield" htmlFor={id}>
-      <span className="lab">{label}</span>
-      <select id={id} className="field" value={value} onChange={(e) => onChange(e.target.value)}>
-        {placesByRegion().map((g) => (
-          <optgroup key={g.region} label={g.region}>
-            {g.places.map((p) => (
-              <option key={p.id} value={p.id}>{p.name === p.landmark.name ? p.name : `${p.name} · ${p.landmark.name}`}</option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
-    </label>
   );
 }
 
@@ -115,12 +99,12 @@ function SendForm() {
           <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => setTo(e.target.value)} />
 
           <div className="placerow">
-            <PlaceSelect id="from-place" label="내가 있는 곳" value={fromId} onChange={pickFrom} />
+            <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={pickFrom} />
             {!IS_TOSS && <button type="button" className="chip locate" onClick={locate}>내 위치로</button>}
           </div>
           {geoMsg && <div className="small" role="status" style={{ marginTop: 0, marginBottom: 8 }}>{geoMsg}</div>}
           <button type="button" className="swap" onClick={swap} aria-label="보내는 곳과 받는 곳 바꾸기">⇅ 서로 바꾸기</button>
-          <PlaceSelect id="to-place" label="받는 사람이 있는 곳" value={toId} onChange={pickTo} />
+          <PlaceField id="to-place" label="받는 사람이 있는 곳" value={toId} onChange={pickTo} />
 
           <div className="sendmap"><JourneyMap route={route} p={0} birdId={birdId} /></div>
           <p className="sub" style={{ marginTop: 12 }}>

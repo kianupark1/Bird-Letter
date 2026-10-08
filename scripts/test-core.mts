@@ -5,6 +5,7 @@ import { haversineKm, travelMinutes, formatMinutes } from "../core/geo.ts";
 import { BIRDS } from "../core/birds.ts";
 import { ROUTES, getRoute, routePosition, makeRoute } from "../core/routes.ts";
 import { PLACES, nearestPlace, getPlace } from "../core/places.ts";
+import { searchPlaces, choseong } from "../core/placeSearch.ts";
 import { MAX_LETTER_CHARS } from "../core/limits.ts";
 import { validateSchedule, dedupKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
 
@@ -76,6 +77,15 @@ eq("예전 노선 id 거리 유지(서울→제주)", getRoute("seoul-jeju").km,
 }
 eq("편지 글자 수 한도는 10만 자", MAX_LETTER_CHARS, 100000);
 eq("getPlace 서울", getPlace("seoul")?.landmark.name, "남대문");
+eq("초성 뽑기", choseong("송파구"), "ㅅㅍㄱ");
+eq("검색: 송 → 송파구가 맨 앞", searchPlaces(PLACES, "송")[0]?.id, "songpa");
+eq("검색: ㅅㅍ → 송파구", searchPlaces(PLACES, "ㅅㅍ")[0]?.id, "songpa");
+eq("검색: 강남 → 강남구", searchPlaces(PLACES, "강남")[0]?.id, "gangnam");
+eq("검색: 경복 → 종로구(경복궁)", searchPlaces(PLACES, "경복")[0]?.id, "jongno");
+eq("검색: 서울 → 서울 25곳 모두", searchPlaces(PLACES, "서울", 99).filter((p) => p.region === "서울").length, 25);
+eq("검색: 부 → 부산이 앞쪽", searchPlaces(PLACES, "부").slice(0, 4).some((p) => p.id === "busan"), true);
+eq("검색: 빈 검색어는 빈 목록", searchPlaces(PLACES, "  ").length, 0);
+eq("검색: 없는 이름", searchPlaces(PLACES, "뷁뷁").length, 0);
 eq("서울 25개 구", PLACES.filter((p) => p.region === "서울").length, 25);
 eq("서울 구마다 랜드마크가 다름", new Set(PLACES.filter((p) => p.region === "서울").map((p) => p.landmark.name)).size, 25);
 eq("랜드마크 이름 중복 없음", new Set(PLACES.map((p) => p.landmark.name)).size, PLACES.length);
