@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>어디에 몰렸나 (가칭)</title>
+<style>
+:root{
+  --bg:#F4F6F9; --card:#FFFFFF; --ink:#191F28; --sub:#5B6573; --line:#E3E8EF;
+  --brand:#2B5BD7; --brand-soft:#E8EFFD; --on-brand:#FFFFFF;
+  --up:#0B7A62; --up-soft:#E3F4EF; --down:#5B6573; --down-soft:#EEF1F5;
+  --bar:#B9CBF5; --warn:#FFF6E0; --warn-ink:#6B4A00;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.app{max-width:420px;margin:0 auto;padding-bottom:40px}
+.sample{background:var(--warn);color:var(--warn-ink);font-size:13px;padding:8px 16px;text-align:center}
+header{padding:20px 16px 8px}
+h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.lead{color:var(--sub);font-size:14px;margin-top:2px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:#E6EBF2;border-radius:12px;padding:4px;margin:12px 16px 0}
+.seg button{min-height:44px;border:0;border-radius:9px;background:transparent;font:inherit;font-weight:700;color:var(--sub);cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}
+.chips button{flex:0 0 auto;min-width:52px;min-height:44px;border:1px solid var(--line);background:var(--card);border-radius:22px;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;padding:0 14px}
+.chips button[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.metric{display:flex;gap:16px;padding:6px 16px 0;align-items:center}
+.metric button{min-height:44px;border:0;background:none;font:inherit;font-weight:600;color:var(--sub);cursor:pointer;padding:0;border-bottom:2px solid transparent}
+.metric button[aria-pressed=true]{color:var(--ink);border-bottom-color:var(--ink)}
+.hint{margin-left:auto;font-size:12px;color:var(--sub)}
+.card{background:var(--card);border-radius:16px;margin:12px 16px 0;padding:16px}
+.card h2{font-size:15px;font-weight:800;margin-bottom:2px}
+.sum-line{font-size:17px;font-weight:800;letter-spacing:-.02em;line-height:1.4;margin:6px 0 12px}
+.sum-line em{font-style:normal;color:var(--brand)}
+.tbar{display:grid;grid-template-columns:78px 1fr 44px;gap:8px;align-items:center;font-size:13px;margin-top:8px}
+.tbar .track{height:10px;background:var(--brand-soft);border-radius:5px;overflow:hidden}
+.tbar .fill{height:100%;background:var(--brand);border-radius:5px}
+.tbar b{text-align:right;font-variant-numeric:tabular-nums}
+.sub{font-size:12px;color:var(--sub);margin-top:10px}
+.list{padding:4px 0}
+.row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.rank{font-weight:800;font-size:16px;text-align:center;font-variant-numeric:tabular-nums}
+.rank.top{color:var(--brand)}
+.name{font-weight:700}
+.tag{display:inline-block;font-size:11px;font-weight:600;color:var(--sub);background:var(--down-soft);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+.meta{font-size:12px;color:var(--sub);margin-top:2px}
+.right{text-align:right;font-variant-numeric:tabular-nums}
+.val{font-weight:700}
+.chg{font-size:12px;font-weight:700;margin-top:2px}
+.chg.up{color:var(--up)} .chg.down{color:var(--down)}
+.more{display:block;width:100%;min-height:44px;margin-top:4px;border:0;border-radius:12px;background:var(--brand-soft);color:var(--brand);font:inherit;font-weight:700;cursor:pointer}
+.explain{font-size:13px;color:var(--sub);line-height:1.6}
+.explain b{color:var(--ink)}
+footer{padding:20px 16px 0;font-size:12px;color:var(--sub);line-height:1.6}
+footer strong{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sample" id="sampleBar">샘플 화면이에요 · 가짜 종목과 가짜 숫자예요 (실제 시장 데이터 아님)</div>
+  <header>
+    <h1>어디에 몰렸나</h1>
+    <p class="lead">사람들이 요즘 어디서 많이 거래하는지 한눈에 봐요</p>
+  </header>
+
+  <div class="seg" role="group" aria-label="시장 선택">
+    <button id="mkr" aria-pressed="true">국내주식</button>
+    <button id="mus" aria-pressed="false">해외주식</button>
+  </div>
+  <div class="chips" id="periods" role="group" aria-label="기간 선택"></div>
+  <div class="metric" role="group" aria-label="기준 선택">
+    <button id="mamount" aria-pressed="true">거래대금</button>
+    <button id="mvolume" aria-pressed="false">거래량</button>
+    <span class="hint" id="hint"></span>
+  </div>
+
+  <section class="card" aria-live="polite">
+    <h2>요즘 몰린 분야</h2>
+    <p class="sum-line" id="sumLine"></p>
+    <div id="themes"></div>
+    <p class="sub" id="themeNote"></p>
+  </section>
+
+  <section class="card">
+    <h2 id="listTitle">순위</h2>
+    <div class="list" id="list"></div>
+    <button class="more" id="more">더 보기</button>
+  </section>
+
+  <section class="card">
+    <h2>처음이세요?</h2>
+    <p class="explain"><b>거래대금</b>은 사고판 돈의 크기, <b>거래량</b>은 사고판 주식 수예요. 가격이 싼 주식은 주식 수만 많아 보일 수 있어서 처음엔 거래대금을 보시는 걸 추천해요.<br>
+    <b>▲ 늘었어요</b>는 바로 앞의 같은 기간보다 거래가 늘었다는 뜻이에요. 예를 들어 1주 순위의 ▲ 30%는 지난주보다 30% 늘었다는 뜻이에요.</p>
+  </section>
+
+  <footer>
+    <strong>꼭 읽어 주세요</strong><br>
+    이 서비스는 거래 현황을 보여주는 정보 제공용이에요. 특정 종목을 사거나 팔라고 권유하지 않아요. 투자 판단과 그 결과의 책임은 본인에게 있어요.
+    데이터는 실시간이 아니라 <span id="asof">전 영업일 장 마감</span> 기준이며 지연되거나 틀릴 수 있어요.
+  </footer>
+</div>
+
+<script>
+const PERIODS=[['1d','1일'],['1w','1주'],['1m','1달'],['3m','3달'],['6m','6달'],['1y','1년']]
+const PREV={'1d':'어제','1w':'지난주','1m':'지난달','3m':'그 전 3달','6m':'그 전 6달','1y':'작년'}
+const st={market:'kr',period:'1w',metric:'amount',shown:10}
+let DATA
+const $=(id)=>document.getElementById(id)
+const pct=(c)=>c==null?'-':`${c>=0?'▲':'▼'} ${Math.abs(c*100).toFixed(0)}%`
+
+function money(v,m,metric){
+  if(metric==='volume'){
+    if(m==='kr') return v>=1e8?`${(v/1e8).toFixed(1)}억 주`:`${Math.round(v/1e4).toLocaleString()}만 주`
+    return v>=1e9?`${(v/1e9).toFixed(1)}B주`:`${(v/1e6).toFixed(0)}M주`
+  }
+  if(m==='kr'){ const w=v; return w>=1e12?`${(w/1e12).toFixed(1)}조 원`:`${Math.round(w/1e8).toLocaleString()}억 원` }
+  return v>=1e9?`$${(v/1e9).toFixed(1)}B`:`$${(v/1e6).toFixed(0)}M`
+}
+
+function render(){
+  const d=DATA.markets[st.market][st.period][st.metric]
+  const m=st.market, label=PERIODS.find(p=>p[0]===st.period)[1]
+  $('mkr').setAttribute('aria-pressed',m==='kr'); $('mus').setAttribute('aria-pressed',m==='us')
+  $('mamount').setAttribute('aria-pressed',st.metric==='amount'); $('mvolume').setAttribute('aria-pressed',st.metric==='volume')
+  $('periods').innerHTML=PERIODS.map(([k,l])=>`<button data-k="${k}" aria-pressed="${k===st.period}">${l}</button>`).join('')
+  $('hint').textContent=`${PREV[st.period]}와 비교`
+  const t=d.themes[0], n=t.count
+  const what=st.metric==='amount'?'거래대금':'거래량'
+  $('sumLine').innerHTML=`최근 ${label}, 거래가 가장 많이 몰린 분야는 <em>${t.theme}</em>이에요 <span style="font-weight:600;color:var(--sub);font-size:14px">(상위 10개 중 ${n}개, ${what}의 ${Math.round(t.share*100)}%)</span>`
+  $('themeNote').textContent=`상위 10개 종목이 속한 분야의 ${what} 비중이에요.`
+  $('themes').innerHTML=d.themes.slice(0,5).map(x=>`<div class="tbar"><span>${x.theme}</span><span class="track"><span class="fill" style="display:block;width:${Math.round(x.share*100)}%"></span></span><b>${Math.round(x.share*100)}%</b></div>`).join('')
+  $('listTitle').textContent=`${m==='kr'?'국내':'해외'}주식 · 최근 ${label} ${what} 순위`
+  $('list').innerHTML=d.rows.slice(0,st.shown).map(r=>{
+    const up=(r.change??0)>=0
+    return `<div class="row"><div class="rank ${r.rank<=3?'top':''}">${r.rank}</div>
+      <div><div class="name">${r.name}<span class="tag">${r.theme}</span></div><div class="meta">${PREV[st.period]} ${money(r.prev,m,st.metric)}</div></div>
+      <div class="right"><div class="val">${money(r.value,m,st.metric)}</div><div class="chg ${up?'up':'down'}">${pct(r.change)} ${up?'늘었어요':'줄었어요'}</div></div></div>`}).join('')
+  $('more').style.display=st.shown>=d.rows.length?'none':'block'
+}
+
+$('mkr').onclick=()=>{st.market='kr';st.shown=10;render()}
+$('mus').onclick=()=>{st.market='us';st.shown=10;render()}
+$('mamount').onclick=()=>{st.metric='amount';render()}
+$('mvolume').onclick=()=>{st.metric='volume';render()}
+$('periods').onclick=(e)=>{const k=e.target.dataset.k;if(k){st.period=k;st.shown=10;render()}}
+$('more').onclick=()=>{st.shown+=10;render()}
+
+const q=new URLSearchParams(location.search)
+for(const k of ['market','period','metric']) if(q.get(k)) st[k]=q.get(k)
+if(q.get('shown')) st.shown=+q.get('shown')
+fetch('data.json').then(r=>r.json()).then(j=>{DATA=j;render()})
+</script>
+</body>
+</html>
