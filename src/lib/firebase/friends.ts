@@ -73,14 +73,21 @@ export async function removeFriend(friendUid: string) {
   await deleteDoc(doc(d, "users", friendUid, "friends", user.uid)).catch(() => {});
 }
 
-/** 탈퇴 삭제: 내 친구 목록, 친구들 목록에 남은 내 흔적, 내 친구 코드 */
+/**
+ * 탈퇴 삭제: 내 친구 목록, 친구들 목록에 남은 내 흔적, 내 친구 코드.
+ * 친구 기능의 서버 규칙이 아직 게시되지 않았거나 일부가 막혀도 탈퇴 삭제 전체가 멈추지 않게, 실패는 건너뛰어요.
+ */
 export async function deleteFriendData(uid: string) {
   const d = db();
-  for (const f of await getDocs(collection(d, "users", uid, "friends")).then((s) => s.docs)) {
-    await deleteDoc(doc(d, "users", f.id, "friends", uid)).catch(() => {});
-    await deleteDoc(f.ref).catch(() => {});
-  }
-  const me = await getDoc(doc(d, "users", uid));
-  const code = me.exists() ? (me.data().code as string | undefined) : undefined;
-  if (code) await deleteDoc(doc(d, "codes", code)).catch(() => {});
+  try {
+    for (const f of (await getDocs(collection(d, "users", uid, "friends"))).docs) {
+      await deleteDoc(doc(d, "users", f.id, "friends", uid)).catch(() => {});
+      await deleteDoc(f.ref).catch(() => {});
+    }
+  } catch {}
+  try {
+    const me = await getDoc(doc(d, "users", uid));
+    const code = me.exists() ? (me.data().code as string | undefined) : undefined;
+    if (code) await deleteDoc(doc(d, "codes", code)).catch(() => {});
+  } catch {}
 }
