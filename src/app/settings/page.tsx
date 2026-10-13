@@ -8,6 +8,7 @@ import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
+import { playChirp } from "@/lib/chirp";
 import { IS_TOSS } from "@/lib/target";
 import { LOGINS, linkAccount, linkedKinds, unlinkAccount, type LoginKind } from "@/lib/firebase/link";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
@@ -119,6 +120,19 @@ export default function Settings() {
             />
           </div>
         ))}
+        <div className="listrow">
+          <div className="grow">
+            <div className="name">새 짹짹 소리</div>
+            <div className="note">앱이 열려 있을 때 알림과 함께 새가 짹짹여요. <button className="linkbtn" style={{ display: "inline", margin: "0 0 0 4px", padding: 0, minHeight: 0, opacity: 1 }} onClick={() => playChirp()}>들어보기</button></div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={profile.chirp}
+            aria-label="새 짹짹 소리"
+            className="switch"
+            onClick={() => update({ chirp: !profile.chirp })}
+          />
+        </div>
       </div>
       <div className="small">
         앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 받으려면 아래 스위치를 켜 주세요."}

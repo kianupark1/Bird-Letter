@@ -8,8 +8,8 @@ export type NotifyKind = "sent" | "received";
 export function arrivalText(kind: NotifyKind, who: string, route: Route, birdId: string) {
   const bird = getBird(birdId);
   return kind === "sent"
-    ? { title: `${who}에게 보낸 편지가 도착했어요!`, body: `${bird.name}가 ${route.to.name}에 내려앉았어요` }
-    : { title: `${withIGa(who)} 보낸 편지가 도착했어요!`, body: `${route.title} · ${bird.name}가 편지를 가져왔어요` };
+    ? { title: `짹짹! ${who}에게 보낸 편지가 도착했어요`, body: `${bird.name}가 ${route.to.name}에 내려앉았어요` }
+    : { title: `짹짹! ${withIGa(who)} 보낸 편지가 도착했어요`, body: `${route.title} · ${bird.name}가 편지를 가져왔어요` };
 }
 
 export function passingText(who: string, route: Route, birdId: string, idx: number) {

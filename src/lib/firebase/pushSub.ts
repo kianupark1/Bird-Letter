@@ -42,7 +42,7 @@ export async function notifyFriendArrival(p: { letterId: string; toUid: string; 
   if (!sub) return;
   const route = getRoute(p.routeId), bird = getBird(p.birdId);
   await schedulePushTo(sub, {
-    title: `${withIGa(p.fromName || "누군가")} 보낸 편지가 도착했어요!`,
+    title: `짹짹! ${withIGa(p.fromName || "누군가")} 보낸 편지가 도착했어요`,
     body: `${route.title} · ${bird.name}가 편지를 가져왔어요`,
     url: `/letter/${p.letterId}`,
     tag: `l-${p.letterId}-r`,

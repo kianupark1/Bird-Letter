@@ -17,6 +17,7 @@ import { arrivalText, passingText } from "@/lib/notifyText";
 import { hasPushSub, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
+import { playChirp } from "@/lib/chirp";
 
 const STORE = "saepyeonji.notified.v1";
 const RECENT_MS = 24 * 3600 * 1000;
@@ -93,13 +94,14 @@ export default function Notifier() {
     if (out.length) {
       const here = pathname;
       const fresh = out.filter((o) => letterHref(o.id) !== here && !here.startsWith(`/letter/${o.id}`));
+      if (fresh.length && profile.chirp) playChirp();
       if (fresh.length) setQueue((q) => [...q, ...fresh.filter((f) => !q.some((x) => x.key === f.key))]);
       // 화면이 가려져 있으면(다른 탭) 브라우저 알림도 보내요(허용했을 때만)
       if (!IS_TOSS && !hasPushSub() && typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
         for (const o of out) { try { new Notification(o.title, { body: o.sub, icon: "/icon-192.png", tag: o.key }); } catch {} }
       }
     }
-  }, [now, letters, received, ready, profileReady, profile.notify, quiet, pathname]);
+  }, [now, letters, received, ready, profileReady, profile.notify, profile.chirp, quiet, pathname]);
 
   // 푸시가 켜져 있으면 내 알림 주소를 서버에 맡겨 둔다(친구가 나에게 보낸 편지의 도착 알림용)
   useEffect(() => { if (pushState === "enabled") syncSubToServer(); }, [pushState]);

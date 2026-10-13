@@ -16,6 +16,9 @@ self.addEventListener("push", (event) => {
         icon: "/icon-192.png",
         badge: "/icon-192.png",
         tag: data.tag || "saepyeonji",
+        // 짹-짹-짹: 진동도 새가 쪼는 것처럼(소리는 폰 설정을 따라요)
+        vibrate: [70, 50, 70, 50, 140],
+        renotify: true,
         data: { url: data.url || "/" },
       });
     })(),

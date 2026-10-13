@@ -137,7 +137,7 @@ export async function sendTestPush(): Promise<boolean> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         subscription: sub,
-        payload: { title: "새편지 알림이 잘 켜졌어요", body: "이 알림이 보이면 앱을 닫아도 편지 소식이 와요.", url: "/", tag: `test-${Date.now()}` },
+        payload: { title: "짹짹! 새편지 알림이 잘 켜졌어요", body: "이 알림이 보이면 앱을 닫아도 새가 소식을 물어다 줘요.", url: "/", tag: `test-${Date.now()}` },
         at: Date.now() + 12_000,
       }),
     });
