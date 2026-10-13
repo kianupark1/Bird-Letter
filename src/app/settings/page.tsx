@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
@@ -9,6 +9,8 @@ import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
 import { IS_TOSS } from "@/lib/target";
+import { LOGINS, linkAccount, linkedKinds, unlinkAccount, type LoginKind } from "@/lib/firebase/link";
+import { auth, firebaseEnabled } from "@/lib/firebase/client";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -159,6 +161,8 @@ export default function Settings() {
         </div>
       )}
 
+      {firebaseEnabled && !IS_TOSS && <AccountLinks />}
+
       <h2>계정</h2>
       <div className="list">
         <button className="listrow action" onClick={replayOnboarding}>
@@ -184,5 +188,49 @@ export default function Settings() {
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>
+  );
+}
+
+/** 소셜 계정 연결: 연결하면 폰을 바꿔도 편지와 친구가 이어져요. */
+function AccountLinks() {
+  const [linked, setLinked] = useState<LoginKind[]>([]);
+  const [busy, setBusy] = useState<LoginKind | null>(null);
+  const [note, setNote] = useState("");
+  useEffect(() => {
+    const a = auth();
+    setLinked(linkedKinds(a.currentUser));
+    return a.onAuthStateChanged((u) => setLinked(linkedKinds(u)));
+  }, []);
+  async function toggle(kind: LoginKind) {
+    setBusy(kind);
+    setNote("");
+    const isLinked = linked.includes(kind);
+    const r = isLinked ? await unlinkAccount(kind) : await linkAccount(kind);
+    setBusy(null);
+    if (!r.ok) setNote(r.message);
+    else {
+      setLinked(linkedKinds(auth().currentUser));
+      setNote(isLinked ? "연결을 해제했어요." : r.switched ? "이전에 연결한 계정으로 들어왔어요." : "연결했어요. 폰을 바꿔도 이어서 쓸 수 있어요.");
+    }
+  }
+  return (
+    <>
+      <h2>계정 연결</h2>
+      <div className="list">
+        {LOGINS.map((l) => (
+          <button
+            key={l.kind}
+            className="listrow action"
+            disabled={!l.ready || busy !== null}
+            onClick={() => toggle(l.kind)}
+            aria-label={`${l.label} ${linked.includes(l.kind) ? "연결 해제" : "연결"}`}
+          >
+            <span>{l.label}</span>
+            <span className="note">{!l.ready ? "준비 중" : linked.includes(l.kind) ? "연결됨 · 해제" : "연결하기"}</span>
+          </button>
+        ))}
+      </div>
+      <div className="small" role="status">{note || "연결하면 폰을 바꿔도 편지와 친구가 그대로 있어요."}</div>
+    </>
   );
 }

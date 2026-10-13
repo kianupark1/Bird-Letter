@@ -1,0 +1,87 @@
+"use client";
+import {
+  GoogleAuthProvider, OAuthProvider, browserPopupRedirectResolver, linkWithPopup, signInWithPopup, unlink,
+  type AuthProvider, type User,
+} from "firebase/auth";
+import { auth, ensureUser, firebaseEnabled } from "./client";
+
+/** 설정의 "계정 연결"에서 쓰는 로그인 종류. 구글·애플은 Firebase가 직접 처리하고, 나머지는 서버 연결이 끝나야 열립니다. */
+export type LoginKind = "google" | "apple" | "kakao" | "naver" | "line";
+
+export const LOGINS: { kind: LoginKind; label: string; ready: boolean }[] = [
+  { kind: "google", label: "구글", ready: true },
+  { kind: "apple", label: "애플", ready: true },
+  { kind: "kakao", label: "카카오", ready: false },
+  { kind: "naver", label: "네이버", ready: false },
+  { kind: "line", label: "라인", ready: false },
+];
+
+const PROVIDER_ID: Partial<Record<LoginKind, string>> = { google: "google.com", apple: "apple.com" };
+
+function provider(kind: LoginKind): AuthProvider {
+  if (kind === "google") return new GoogleAuthProvider();
+  const p = new OAuthProvider("apple.com");
+  p.addScope("name");
+  return p;
+}
+
+/** 지금 연결된 로그인 종류들(익명이면 빈 목록) */
+export function linkedKinds(u: User | null): LoginKind[] {
+  if (!u) return [];
+  return (Object.keys(PROVIDER_ID) as LoginKind[]).filter((k) => u.providerData.some((d) => d.providerId === PROVIDER_ID[k]));
+}
+
+export type LinkResult = { ok: true; switched: boolean } | { ok: false; message: string };
+
+/**
+ * 익명 계정에 구글·애플을 연결합니다. 사용자 번호가 그대로라서 편지·친구가 유지됩니다.
+ * 이미 그 구글/애플로 만든 계정이 있으면(예: 새 폰) 그 계정으로 들어가고 switched=true 를 돌려줍니다.
+ */
+export async function linkAccount(kind: LoginKind): Promise<LinkResult> {
+  if (!firebaseEnabled) return { ok: false, message: "서버에 연결된 뒤에 쓸 수 있어요." };
+  try {
+    const user = await ensureUser();
+    try {
+      await linkWithPopup(user, provider(kind), browserPopupRedirectResolver);
+      return { ok: true, switched: false };
+    } catch (e) {
+      const code = (e as { code?: string }).code;
+      if (code === "auth/credential-already-in-use" || code === "auth/email-already-in-use") {
+        await signInWithPopup(auth(), provider(kind), browserPopupRedirectResolver);
+        return { ok: true, switched: true };
+      }
+      throw e;
+    }
+  } catch (e) {
+    return { ok: false, message: friendlyError((e as { code?: string }).code) };
+  }
+}
+
+export async function unlinkAccount(kind: LoginKind): Promise<LinkResult> {
+  const id = PROVIDER_ID[kind];
+  const u = auth().currentUser;
+  if (!id || !u) return { ok: false, message: "연결된 계정이 없어요." };
+  try {
+    await unlink(u, id);
+    return { ok: true, switched: false };
+  } catch (e) {
+    return { ok: false, message: friendlyError((e as { code?: string }).code) };
+  }
+}
+
+function friendlyError(code?: string) {
+  switch (code) {
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+      return "연결을 취소했어요.";
+    case "auth/popup-blocked":
+      return "팝업이 막혀 있어요. 팝업을 허용하고 다시 눌러 주세요.";
+    case "auth/operation-not-allowed":
+    case "auth/unauthorized-domain":
+      return "아직 이 로그인이 준비되지 않았어요. 곧 열릴게요.";
+    case "auth/network-request-failed":
+      return "인터넷 연결을 확인해 주세요.";
+    default:
+      return "연결하지 못했어요. 잠시 뒤에 다시 해 주세요.";
+  }
+}
