@@ -45,5 +45,36 @@ await ok("B가 A 쪽 자기 문서 삭제", deleteDoc(doc(B, "users", "uidA", "f
 await ok("B가 자기 목록의 A 삭제", deleteDoc(doc(B, "users", "uidB", "friends", "uidA")));
 await no("끊긴 뒤 A→B 편지", setDoc(doc(A, "letters", "L4"), m()));
 await no("C가 A 쪽 친구 삭제", deleteDoc(doc(C, "users", "uidA", "friends", "uidB")));
+
+console.log("[예약 발송과 사진]");
+await ok("A↔B 다시 친구 맺기", bat(A));
+const HOUR = 3600e3, DAY = 24 * HOUR;
+const ts = (ms) => Timestamp.fromMillis(Date.now() + ms);
+const sched = (over = {}) => ({ fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: serverTimestamp(), departAt: ts(2 * DAY), arriveAt: ts(2 * DAY + 8 * HOUR), recipientUid: "uidB", ...over });
+await ok("예약 편지 만들기(출발 2일 뒤)", setDoc(doc(A, "letters", "S1"), sched()));
+await no("출발 시각이 과거", setDoc(doc(A, "letters", "S2"), sched({ departAt: ts(-HOUR) })));
+await no("출발 시각이 366일보다 멂", setDoc(doc(A, "letters", "S3"), sched({ departAt: ts(400 * DAY), arriveAt: ts(401 * DAY) })));
+await no("도착이 출발보다 빠름", setDoc(doc(A, "letters", "S4"), sched({ arriveAt: ts(DAY) })));
+await no("출발 시각이 문자열", setDoc(doc(A, "letters", "S5"), sched({ departAt: "내일" })));
+await ok("보낸 사람은 출발 전에도 편지를 열 수 있음", getDoc(doc(A, "letters", "S1")));
+await no("받는 사람은 출발 전에 편지를 열 수 없음", getDoc(doc(B, "letters", "S1")));
+await no("제3자도 출발 전에 열 수 없음", getDoc(doc(C, "letters", "S1")));
+await ok("예약 안 한 편지는 받는 사람이 바로 열 수 있음", getDoc(doc(B, "letters", "L3")));
+await ok("출발이 지난 예약 편지는 받는 사람이 열 수 있음", env.withSecurityRulesDisabled(async (ctx) => {
+  await setDoc(doc(ctx.firestore(), "letters", "S6"), { fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: Timestamp.now(), departAt: ts(-HOUR), arriveAt: ts(HOUR), recipientUid: "uidB" });
+}).then(() => getDoc(doc(B, "letters", "S6"))));
+await ok("사진 한 장 저장(photo0)", setDoc(doc(A, "letters", "S1", "private", "photo0"), { data: "data:image/jpeg;base64,AAAA" }));
+await ok("사진 세 번째 칸(photo2)", setDoc(doc(A, "letters", "S1", "private", "photo2"), { data: "data:image/jpeg;base64,AAAA" }));
+await no("사진 네 번째(photo3)는 불가", setDoc(doc(A, "letters", "S1", "private", "photo3"), { data: "x" }));
+await no("사진 문서에 다른 필드", setDoc(doc(A, "letters", "S1", "private", "photo1"), { data: "x", extra: 1 }));
+await no("사진이 너무 큼(450000자 초과)", setDoc(doc(A, "letters", "S1", "private", "photo1"), { data: "x".repeat(450001) }));
+await no("남이 내 편지에 사진 올리기", setDoc(doc(C, "letters", "S1", "private", "photo1"), { data: "x" }));
+await no("받는 사람은 도착 전 사진을 볼 수 없음", getDoc(doc(B, "letters", "S1", "private", "photo0")));
+await ok("보낸 사람은 사진을 볼 수 있음", getDoc(doc(A, "letters", "S1", "private", "photo0")));
+await ok("글(body) 저장은 그대로", setDoc(doc(A, "letters", "S1", "private", "body"), { message: "예약 편지" }));
+await no("body 이름이 아닌 글 문서", setDoc(doc(A, "letters", "S1", "private", "memo"), { message: "x" }));
+await ok("보낸 사람이 예약 편지를 취소(삭제)", deleteDoc(doc(A, "letters", "S1")));
+await no("받는 사람은 남의 예약 편지를 지울 수 없음", deleteDoc(doc(B, "letters", "S6")));
+
 console.log(`\n통과 ${pass} / 실패 ${fail}`);
 await env.cleanup(); process.exit(fail ? 1 : 0);

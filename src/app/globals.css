@@ -372,3 +372,71 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 .friendpick .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; border-radius: 999px; font-size: 14px; }
 .card .avatar { width: 40px; height: 40px; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+/* ───── 돌돌 말린 편지·사진, 폴라로이드 (기다림의 미학) ───── */
+.unroll { --rod-a: #b9824a; --rod-b: #e8b86a; --rod-c: #8f5a2b; }
+.u-rod { position: relative; z-index: 2; height: 16px; border-radius: 999px; background: linear-gradient(180deg, var(--rod-a) 0%, var(--rod-b) 38%, var(--rod-c) 100%); box-shadow: 0 2px 4px rgba(0,0,0,.28); }
+.u-rod::before, .u-rod::after { content: ""; position: absolute; top: -3px; width: 12px; height: 22px; border-radius: 6px; background: linear-gradient(180deg, #7a4a1f, #4d2c10); }
+.u-rod::before { left: -5px; } .u-rod::after { right: -5px; }
+.u-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 1.15s cubic-bezier(.3,.7,.2,1) var(--delay, 0ms); }
+.unroll.open .u-body { grid-template-rows: 1fr; }
+.u-inner { min-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity .9s ease calc(var(--delay, 0ms) + 250ms); }
+.unroll.open .u-inner { opacity: 1; visibility: visible; transition: opacity .9s ease calc(var(--delay, 0ms) + 250ms), visibility 0s linear var(--delay, 0ms); }
+.scrollwrap { position: relative; margin-top: 12px; }
+.scrollpaper .u-inner { background:
+    repeating-linear-gradient(0deg, transparent 0 31px, color-mix(in srgb, var(--hwangto) 22%, transparent) 31px 32px),
+    color-mix(in srgb, var(--hwangto) 9%, var(--card));
+  box-shadow: inset 6px 0 8px -6px rgba(0,0,0,.18), inset -6px 0 8px -6px rgba(0,0,0,.18); }
+.scrollpaper .u-inner > .msg { padding: 16px 20px 64px; white-space: pre-wrap; font-size: 16px; line-height: 32px; min-height: 96px; }
+.scrollpaper .seal { position: absolute; right: 14px; bottom: 12px; width: 44px; height: 44px; border: 2px solid var(--dahong); color: var(--dahong); border-radius: 8px; font-size: 12px; font-weight: 800; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-8deg); }
+.scroll-open { display: grid; justify-items: center; gap: 2px; width: 100%; min-height: 56px; margin-top: 10px; padding: 8px 12px; border: 0; border-radius: 14px; background: var(--dahong); color: #fff; font: inherit; cursor: pointer; }
+.scroll-open b { font-size: 17px; letter-spacing: .02em; } .scroll-open small { font-size: 12px; opacity: .92; }
+.scroll-open:focus-visible { outline: 3px solid var(--namsaek); outline-offset: 3px; }
+.scrollwrap:not(.opened) { cursor: pointer; }
+/* 닫혀 있을 때는 두 축이 겹쳐서 한 개의 두루마리처럼 보이고, 붉은 끈이 묶여 있어요 */
+.u-body + .u-rod { transition: margin-top 1s ease var(--delay, 0ms); margin-top: -7px; }
+.unroll.open .u-body + .u-rod { margin-top: 0; }
+.scrollwrap:not(.opened) .scrollpaper .u-rod:first-child { height: 20px; }
+.scrollwrap:not(.opened) .scrollpaper .u-rod:last-child { height: 20px; }
+.scrollwrap:not(.opened)::after { content: ""; position: absolute; left: 50%; top: -2px; width: 18px; height: 40px; transform: translateX(-50%); background: linear-gradient(90deg, #a83a14, var(--dahong), #a83a14); border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.3); z-index: 3; pointer-events: none; }
+.scrollwrap:not(.opened) .unroll { animation: scroll-hint 2.4s ease-in-out infinite; }
+@keyframes scroll-hint { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+.photos { display: grid; gap: 14px; margin-top: 16px; }
+.photoroll .u-inner { background: transparent; box-shadow: none; }
+.pr-pad { display: grid; gap: 10px; justify-items: center; padding: 14px 0 10px; }
+.photoroll .u-rod { height: 9px; } .photoroll .u-rod::before, .photoroll .u-rod::after { width: 9px; height: 15px; top: -3px; }
+.photoroll .u-body + .u-rod { margin-top: -4px; }
+.photoroll.open .u-body + .u-rod { margin-top: 0; }
+.polaroid { margin: 0; width: min(100%, 300px); background: #fdfbf6; padding: 12px 12px 14px; border-radius: 4px; box-shadow: 0 8px 18px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.7) inset; transform: rotate(var(--tilt, 0deg)); color: #2b211a; }
+.pol-photo { aspect-ratio: 1; overflow: hidden; background: #e9e2d3; }
+.pol-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.polaroid figcaption { display: grid; gap: 2px; text-align: center; padding: 12px 4px 4px; font-style: italic; }
+.polaroid figcaption b { font-size: 15px; font-weight: 600; } .polaroid figcaption span { font-size: 12px; color: #6b5b4e; font-style: normal; }
+.unroll.open .polaroid.dev .pol-photo img { animation: develop 5.5s ease-out var(--dev-delay, 0ms) both; }
+@keyframes develop { from { filter: grayscale(1) brightness(1.9) contrast(.55) blur(7px); opacity: .45; } 60% { filter: grayscale(.35) brightness(1.15) contrast(.85) blur(2px); opacity: .85; } to { filter: none; opacity: 1; } }
+.pol-save { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--namsaek); background: transparent; color: var(--namsaek); font: inherit; font-weight: 700; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .u-body, .u-inner { transition: none !important; }
+  .unroll.open .polaroid.dev .pol-photo img { animation: none; }
+  .scrollwrap:not(.opened) .unroll { animation: none; }
+}
+
+/* 편지 쓰기: 사진 고르기와 예약 */
+.photobar { display: grid; gap: 8px; margin: 10px 0 4px; }
+.photobar .addphoto { min-height: 46px; border: 1.5px dashed var(--namsaek); background: transparent; color: var(--namsaek); border-radius: 12px; font: inherit; font-weight: 700; cursor: pointer; }
+.photobar .addphoto:disabled { opacity: .5; cursor: default; }
+.thumbs { display: flex; gap: 12px; flex-wrap: wrap; padding: 6px 4px 10px; }
+.thumb { position: relative; width: 92px; background: #fdfbf6; padding: 6px 6px 18px; border-radius: 3px; box-shadow: 0 4px 10px rgba(0,0,0,.2); transform: rotate(var(--tilt, 0deg)); }
+.thumb img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.thumb button { position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: var(--dahong); color: #fff; font-size: 16px; line-height: 1; cursor: pointer; }
+.schedule { display: grid; gap: 8px; margin: 12px 0; padding: 12px 14px; background: var(--card); border-radius: 12px; }
+.schedule .modes { display: flex; gap: 8px; flex-wrap: wrap; }
+.schedule .modes button { flex: 1; min-width: 120px; min-height: 44px; border-radius: 999px; border: 1.5px solid var(--namsaek); background: transparent; color: var(--namsaek); font: inherit; font-weight: 700; cursor: pointer; }
+.schedule .modes button[aria-pressed="true"] { background: var(--namsaek); color: var(--bg); }
+.schedule input[type="datetime-local"] { min-height: 46px; font: inherit; font-size: 16px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line, rgba(0,0,0,.2)); background: var(--bg); color: inherit; }
+.schedule .hint { font-size: 13px; opacity: .8; line-height: 1.5; }
+.sched-card { text-align: center; padding: 18px 14px; background: var(--card); border-radius: 14px; margin-top: 12px; display: grid; gap: 8px; }
+.sched-card .when { font-size: 18px; font-weight: 800; color: var(--dahong); }
+.sr-file { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; clip: rect(0 0 0 0); }
+.photobar .addphoto:focus-within { outline: 3px solid var(--namsaek); outline-offset: 2px; }

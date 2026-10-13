@@ -47,7 +47,9 @@ service cloud.firestore {
     // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
     // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다.
     match /letters/{letterId} {
-      allow get: if signedIn();
+      // 예약한 편지는 출발 시각(departAt) 전에는 보낸 사람만 열 수 있다(받는 사람에게는 출발 전까지 보이지 않아요)
+      allow get: if signedIn()
+        && (resource.data.fromUid == request.auth.uid || resource.data.get('departAt', request.time) <= request.time);
 
       // 목록은 내가 보낸 편지, 또는 내가 받는 사람으로 등록된 편지만
       allow list: if signedIn() &&
@@ -57,7 +59,13 @@ service cloud.firestore {
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.sentAt == request.time
         && request.resource.data.arriveAt > request.time
-        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid'])
+        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt'])
+        // 예약 발송: 출발 시각은 지금부터 최대 366일 뒤까지, 도착은 항상 출발보다 뒤(core/schedule.ts의 MAX_SCHEDULE_DAYS와 같아야 해요)
+        && (!('departAt' in request.resource.data)
+            || (request.resource.data.departAt is timestamp
+                && request.resource.data.departAt >= request.time
+                && request.resource.data.departAt <= request.time + duration.value(366, 'd')))
+        && request.resource.data.arriveAt > request.resource.data.get('departAt', request.time)
         // 받는 사람은 비워 두거나(링크로 전달), 서로 친구인 사람의 uid(앱 안에서 바로 전달)
         && (request.resource.data.recipientUid == null
             || (request.resource.data.recipientUid is string
@@ -81,11 +89,18 @@ service cloud.firestore {
           isSender(letterId) ||
           get(/databases/$(database)/documents/letters/$(letterId)).data.arriveAt <= request.time
         );
+        // 편지 글(body)과 사진(photo0~photo2, 줄여서 글자로 바꾼 것 한 장씩)을 따로 저장해서 문서 하나가 1MB를 넘지 않게 한다
         allow create: if signedIn()
           && getAfter(/databases/$(database)/documents/letters/$(letterId)).data.fromUid == request.auth.uid
-          && request.resource.data.keys().hasOnly(['message'])
-          && request.resource.data.message is string
-          && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 100000; // core/limits.ts의 MAX_LETTER_CHARS와 같아야 해요
+          && (
+            (docId == 'body'
+              && request.resource.data.keys().hasOnly(['message'])
+              && request.resource.data.message is string
+              && request.resource.data.message.size() > 0 && request.resource.data.message.size() <= 100000) // core/limits.ts의 MAX_LETTER_CHARS와 같아야 해요
+            || (docId.matches('photo[0-2]')
+              && request.resource.data.keys().hasOnly(['data'])
+              && request.resource.data.data is string
+              && request.resource.data.data.size() > 0 && request.resource.data.data.size() <= 450000)); // core/limits.ts의 MAX_PHOTO_CHARS와 같아야 해요
         allow delete: if isSender(letterId);
       }
     }
