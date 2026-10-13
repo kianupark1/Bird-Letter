@@ -373,51 +373,64 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 .chip { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 14px; border-radius: 999px; font-size: 14px; }
 .card .avatar { width: 40px; height: 40px; font-size: 16px; display: flex; align-items: center; justify-content: center; }
 
-/* ───── 돌돌 말린 편지·사진, 폴라로이드 (기다림의 미학) ───── */
-.unroll { --rod-a: #b9824a; --rod-b: #e8b86a; --rod-c: #8f5a2b; }
-.u-rod { position: relative; z-index: 2; height: 16px; border-radius: 999px; background: linear-gradient(180deg, var(--rod-a) 0%, var(--rod-b) 38%, var(--rod-c) 100%); box-shadow: 0 2px 4px rgba(0,0,0,.28); }
-.u-rod::before, .u-rod::after { content: ""; position: absolute; top: -3px; width: 12px; height: 22px; border-radius: 6px; background: linear-gradient(180deg, #7a4a1f, #4d2c10); }
-.u-rod::before { left: -5px; } .u-rod::after { right: -5px; }
-.u-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 1.15s cubic-bezier(.3,.7,.2,1) var(--delay, 0ms); }
+/* ───── 돌돌 말린 편지·사진, 폴라로이드 (기다림의 미학) ─────
+   종이가 위아래로 돌돌 말려 있다가(한지 두루마리), 눌러서 펼치면 말린 축이 벌어지며 종이가 내려와요.
+   글씨는 종이 위에 그대로 있고 어떤 것도 글씨를 덮지 않아요(다 펼쳐지면 잘라내기도 풀어요). */
+.unroll { --t-top: #d6c4a0; --t-hi: #fbf3e4; --t-mid: #f1e2c4; --t-low: #c9b48a; --ring-a: #f8eed8; --ring-b: #c9b48a; }
+.u-rod { position: relative; z-index: 2; height: 22px; border-radius: 11px;
+  background: linear-gradient(180deg, var(--t-top) 0%, var(--t-hi) 26%, var(--t-mid) 58%, var(--t-low) 100%);
+  box-shadow: 0 4px 7px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.65); }
+/* 말린 종이의 단면(나선 모양) */
+.u-rod::before, .u-rod::after { content: ""; position: absolute; top: -2px; width: 26px; height: 26px; border-radius: 50%;
+  background: repeating-radial-gradient(circle at 50% 50%, var(--ring-a) 0 1.6px, var(--ring-b) 1.6px 2.6px, var(--t-mid) 2.6px 4.4px);
+  box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.u-rod::before { left: -7px; } .u-rod::after { right: -7px; }
+.u-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 2.6s cubic-bezier(.42,.05,.35,1) var(--delay, 0ms); }
 .unroll.open .u-body { grid-template-rows: 1fr; }
-.u-inner { min-height: 0; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity .9s ease calc(var(--delay, 0ms) + 250ms); }
-.unroll.open .u-inner { opacity: 1; visibility: visible; transition: opacity .9s ease calc(var(--delay, 0ms) + 250ms), visibility 0s linear var(--delay, 0ms); }
-.scrollwrap { position: relative; margin-top: 12px; }
+.u-inner { min-height: 0; overflow: hidden; visibility: hidden; }
+.unroll.open .u-inner { visibility: visible; transition: visibility 0s linear var(--delay, 0ms); }
+.unroll.settled .u-inner { overflow: visible; }
+/* 닫혀 있을 때는 두 개의 말린 종이가 맞닿아 있어요 */
+.u-body + .u-rod { margin-top: -9px; transition: margin-top 1.6s ease-in-out var(--delay, 0ms); }
+.unroll.open .u-body + .u-rod { margin-top: 0; }
+.scrollwrap { position: relative; margin-top: 14px; }
 .scrollpaper .u-inner { background:
-    repeating-linear-gradient(0deg, transparent 0 31px, color-mix(in srgb, var(--hwangto) 22%, transparent) 31px 32px),
-    color-mix(in srgb, var(--hwangto) 9%, var(--card));
-  box-shadow: inset 6px 0 8px -6px rgba(0,0,0,.18), inset -6px 0 8px -6px rgba(0,0,0,.18); }
-.scrollpaper .u-inner > .msg { padding: 16px 20px 64px; white-space: pre-wrap; font-size: 16px; line-height: 32px; min-height: 96px; }
-.scrollpaper .seal { position: absolute; right: 14px; bottom: 12px; width: 44px; height: 44px; border: 2px solid var(--dahong); color: var(--dahong); border-radius: 8px; font-size: 12px; font-weight: 800; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-8deg); }
-.scroll-open { display: grid; justify-items: center; gap: 2px; width: 100%; min-height: 56px; margin-top: 10px; padding: 8px 12px; border: 0; border-radius: 14px; background: var(--dahong); color: #fff; font: inherit; cursor: pointer; }
+    repeating-linear-gradient(0deg, transparent 0 31px, color-mix(in srgb, var(--hwangto) 20%, transparent) 31px 32px),
+    color-mix(in srgb, #f6ead0 70%, var(--card));
+  box-shadow: inset 0 9px 9px -8px rgba(0,0,0,.28), inset 0 -11px 10px -8px rgba(0,0,0,.22), inset 7px 0 8px -7px rgba(0,0,0,.16), inset -7px 0 8px -7px rgba(0,0,0,.16);
+  color: #2b211a; }
+.scrollpaper .u-inner > .msg { padding: 22px 18px 76px; white-space: pre-wrap; font-size: 16px; line-height: 32px; min-height: 110px; position: relative; z-index: 0; }
+.scrollpaper .seal { position: absolute; right: 16px; bottom: 14px; width: 46px; height: 46px; border: 2px solid var(--dahong); color: var(--dahong); border-radius: 8px; font-size: 12px; font-weight: 800; line-height: 1.15; display: grid; place-items: center; text-align: center; transform: rotate(-8deg); }
+.scroll-open { display: grid; justify-items: center; gap: 2px; width: 100%; min-height: 56px; margin-top: 14px; padding: 8px 12px; border: 0; border-radius: 14px; background: var(--dahong); color: #fff; font: inherit; cursor: pointer; }
 .scroll-open b { font-size: 17px; letter-spacing: .02em; } .scroll-open small { font-size: 12px; opacity: .92; }
 .scroll-open:focus-visible { outline: 3px solid var(--namsaek); outline-offset: 3px; }
 .scrollwrap:not(.opened) { cursor: pointer; }
-/* 닫혀 있을 때는 두 축이 겹쳐서 한 개의 두루마리처럼 보이고, 붉은 끈이 묶여 있어요 */
-.u-body + .u-rod { transition: margin-top 1s ease var(--delay, 0ms); margin-top: -7px; }
-.unroll.open .u-body + .u-rod { margin-top: 0; }
-.scrollwrap:not(.opened) .scrollpaper .u-rod:first-child { height: 20px; }
-.scrollwrap:not(.opened) .scrollpaper .u-rod:last-child { height: 20px; }
-.scrollwrap:not(.opened)::after { content: ""; position: absolute; left: 50%; top: -2px; width: 18px; height: 40px; transform: translateX(-50%); background: linear-gradient(90deg, #a83a14, var(--dahong), #a83a14); border-radius: 3px; box-shadow: 0 1px 3px rgba(0,0,0,.3); z-index: 3; pointer-events: none; }
-.scrollwrap:not(.opened) .unroll { animation: scroll-hint 2.4s ease-in-out infinite; }
-@keyframes scroll-hint { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.scrollwrap:not(.opened) .scrollpaper .u-rod { height: 26px; border-radius: 13px; }
+/* 붉은 끈 */
+.scrollwrap:not(.opened)::after { content: ""; position: absolute; left: 50%; top: -3px; width: 20px; height: 52px; transform: translateX(-50%); background: linear-gradient(90deg, #a83a14, var(--dahong), #a83a14); border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,.3); z-index: 3; pointer-events: none; }
+.scrollwrap:not(.opened) .unroll { animation: scroll-hint 2.6s ease-in-out infinite; }
+@keyframes scroll-hint { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-3px) rotate(-.4deg); } }
 
-.photos { display: grid; gap: 14px; margin-top: 16px; }
-.photoroll .u-inner { background: transparent; box-shadow: none; }
-.pr-pad { display: grid; gap: 10px; justify-items: center; padding: 14px 0 10px; }
-.photoroll .u-rod { height: 9px; } .photoroll .u-rod::before, .photoroll .u-rod::after { width: 9px; height: 15px; top: -3px; }
-.photoroll .u-body + .u-rod { margin-top: -4px; }
+.photos { display: grid; gap: 22px; margin-top: 22px; }
+/* 사진은 흰 인화지가 말려 있는 모양 */
+.photoroll { --t-top: #cfd5d9; --t-hi: #ffffff; --t-mid: #eceff1; --t-low: #b9c0c5; --ring-a: #ffffff; --ring-b: #b9c0c5; }
+.photoroll .u-rod { height: 14px; border-radius: 7px; }
+.photoroll .u-rod::before, .photoroll .u-rod::after { top: -3px; width: 20px; height: 20px; }
+.photoroll .u-rod::before { left: -5px; } .photoroll .u-rod::after { right: -5px; }
+.photoroll .u-body + .u-rod { margin-top: -6px; }
 .photoroll.open .u-body + .u-rod { margin-top: 0; }
-.polaroid { margin: 0; width: min(100%, 300px); background: #fdfbf6; padding: 12px 12px 14px; border-radius: 4px; box-shadow: 0 8px 18px rgba(0,0,0,.22), 0 1px 0 rgba(255,255,255,.7) inset; transform: rotate(var(--tilt, 0deg)); color: #2b211a; }
+.photoroll .u-inner { background: transparent; box-shadow: none; }
+.pr-pad { display: grid; gap: 12px; justify-items: center; padding: 22px 14px 18px; }
+.polaroid { margin: 0; width: min(100%, 300px); background: #fdfbf6; padding: 12px 12px 16px; border-radius: 4px; box-shadow: 0 10px 22px rgba(0,0,0,.24), 0 1px 0 rgba(255,255,255,.7) inset; transform: rotate(var(--tilt, 0deg)); color: #2b211a; }
 .pol-photo { aspect-ratio: 1; overflow: hidden; background: #e9e2d3; }
 .pol-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.polaroid figcaption { display: grid; gap: 2px; text-align: center; padding: 12px 4px 4px; font-style: italic; }
+.polaroid figcaption { display: grid; gap: 3px; text-align: center; padding: 14px 6px 4px; font-style: italic; position: relative; z-index: 1; }
 .polaroid figcaption b { font-size: 15px; font-weight: 600; } .polaroid figcaption span { font-size: 12px; color: #6b5b4e; font-style: normal; }
 .unroll.open .polaroid.dev .pol-photo img { animation: develop 5.5s ease-out var(--dev-delay, 0ms) both; }
 @keyframes develop { from { filter: grayscale(1) brightness(1.9) contrast(.55) blur(7px); opacity: .45; } 60% { filter: grayscale(.35) brightness(1.15) contrast(.85) blur(2px); opacity: .85; } to { filter: none; opacity: 1; } }
 .pol-save { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1.5px solid var(--namsaek); background: transparent; color: var(--namsaek); font: inherit; font-weight: 700; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
-  .u-body, .u-inner { transition: none !important; }
+  .u-body, .u-body + .u-rod { transition: none !important; }
   .unroll.open .polaroid.dev .pol-photo img { animation: none; }
   .scrollwrap:not(.opened) .unroll { animation: none; }
 }

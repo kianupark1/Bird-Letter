@@ -6,8 +6,15 @@ import { useEffect, useRef, useState } from "react";
  * open이 true가 되면 delay(ms) 뒤부터 펼쳐져요. 움직임 줄이기 설정이면 바로 펼쳐져요(CSS).
  */
 export function Unroll({ open, delay = 0, className = "", children }: { open: boolean; delay?: number; className?: string; children: React.ReactNode }) {
+  // 다 펼쳐진 뒤에는 잘라내기를 풀어서, 그림자·기울어진 사진·글씨가 어디에서도 가려지지 않게 해요
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!open) { setSettled(false); return; }
+    const t = setTimeout(() => setSettled(true), delay + 2800);
+    return () => clearTimeout(t);
+  }, [open, delay]);
   return (
-    <div className={`unroll ${open ? "open" : ""} ${className}`} style={{ ["--delay" as string]: `${delay}ms` }}>
+    <div className={`unroll ${open ? "open" : ""} ${settled ? "settled" : ""} ${className}`} style={{ ["--delay" as string]: `${delay}ms` }}>
       <div className="u-rod" aria-hidden />
       <div className="u-body"><div className="u-inner">{children}</div></div>
       <div className="u-rod" aria-hidden />
@@ -22,7 +29,7 @@ export function PolaroidPhoto({ src, caption, sub, open, delay = 0, tilt = 0, on
   return (
     <Unroll open={open} delay={delay} className="photoroll">
       <div className="pr-pad">
-        <figure className="polaroid dev" style={{ ["--tilt" as string]: `${tilt}deg`, ["--dev-delay" as string]: `${delay + 900}ms` }}>
+        <figure className="polaroid dev" style={{ ["--tilt" as string]: `${tilt}deg`, ["--dev-delay" as string]: `${delay + 1800}ms` }}>
           <div className="pol-photo"><img src={src} alt="편지에 담긴 사진" /></div>
           <figcaption><b>{caption}</b>{sub && <span>{sub}</span>}</figcaption>
         </figure>
@@ -42,7 +49,7 @@ export default function LetterReveal({ message, photos, caption, sub, loading, o
   const [open, setOpen] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => { btn.current?.focus({ preventScroll: true }); }, []);
-  const PHOTO_START = 1300, STEP = 1100;
+  const PHOTO_START = 2700, STEP = 2200;
   return (
     <div className="reveal">
       <div className={`scrollwrap ${open ? "opened" : ""}`} onClick={() => !open && setOpen(true)}>
