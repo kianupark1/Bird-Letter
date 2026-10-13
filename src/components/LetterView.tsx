@@ -17,6 +17,7 @@ import LetterReveal from "@/components/Unroll";
 import { savePolaroid } from "@/lib/photo";
 import { dateTimeText, isScheduled } from "../../core/schedule";
 import InstallCard from "@/components/InstallCard";
+import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 
 const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
 
@@ -160,6 +161,7 @@ export default function LetterView({ id }: { id: string }) {
     // 토스 빌드의 공유 링크 방식(intoss://)은 아직 정하지 않았다(확인 필요). 지금은 웹 초대 링크 형식을 그대로 둔다.
     const url = `${location.origin}${letterHref(view.id)}`;
     try {
+      if (KAKAO_SHARE_READY && (await shareToKakao(view.id, bird.name))) return; // 카카오링크가 앱 열기에 가장 확실함
       if (navigator.share) await navigator.share({ title: "새 편지가 날아가고 있어요", text: `${bird.name}가 편지를 물고 날아가고 있어요.`, url });
       else {
         await navigator.clipboard.writeText(url);
@@ -292,7 +294,7 @@ export default function LetterView({ id }: { id: string }) {
       <InstallCard hideWhenPushPrompt={!pr.done} />
 
       {backend === "firebase" && !isRecipient && !mine?.toUid && (
-        <button className="ghost" onClick={share}>받는 사람에게 링크 보내기</button>
+        <button className="ghost" onClick={share}>{KAKAO_SHARE_READY ? "카카오톡으로 보내기" : "받는 사람에게 링크 보내기"}</button>
       )}
       {mine?.toUid && <div className="small" style={{ textAlign: "center" }}>친구의 새편지함으로 바로 날아가고 있어요.</div>}
       {isRecipient && pr.done && backend === "firebase" && !IS_TOSS && (
