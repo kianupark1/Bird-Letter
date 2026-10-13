@@ -77,6 +77,17 @@ await ok("보낸 사람이 예약 편지를 취소(삭제)", deleteDoc(doc(A, "l
 await no("받는 사람은 남의 예약 편지를 지울 수 없음", deleteDoc(doc(B, "letters", "S6")));
 
 
+console.log("[푸시 구독]");
+const sub = { endpoint: "https://fcm.googleapis.com/fcm/send/abc", p256dh: "BPxx", auth: "yy", at: Date.now() };
+await ok("내 푸시 구독 저장", setDoc(doc(B, "users", "uidB", "push", "sub"), sub));
+await ok("친구(A)가 B의 푸시 구독을 읽음", getDoc(doc(A, "users", "uidB", "push", "sub")));
+await no("친구가 아닌 C는 읽을 수 없음", getDoc(doc(C, "users", "uidB", "push", "sub")));
+await no("친구가 남의 구독을 쓸 수 없음", setDoc(doc(A, "users", "uidB", "push", "sub"), sub));
+await no("https가 아닌 주소는 저장 불가", setDoc(doc(B, "users", "uidB", "push", "sub"), { ...sub, endpoint: "http://x" }));
+await no("다른 필드는 저장 불가", setDoc(doc(B, "users", "uidB", "push", "sub"), { ...sub, extra: 1 }));
+await no("sub 아닌 이름은 불가", setDoc(doc(B, "users", "uidB", "push", "other"), sub));
+await ok("내 구독 삭제", deleteDoc(doc(B, "users", "uidB", "push", "sub")));
+
 console.log("[답장]");
 const rep = (to, replyTo, over = {}) => ({ fromUid: to === "uidA" ? "uidB" : "uidA", fromName: "답", toName: "원본", routeId: "busan-seoul", birdId: "pigeon", sentAt: serverTimestamp(), arriveAt: ts(3 * HOUR), recipientUid: to, replyTo, ...over });
 await ok("A가 링크용 편지 L7(받는 사람 비움) 만들기", setDoc(doc(A, "letters", "L7"), { fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: serverTimestamp(), arriveAt: ts(HOUR), recipientUid: null }));

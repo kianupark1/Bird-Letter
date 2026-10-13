@@ -58,6 +58,7 @@ export async function enablePush(): Promise<PushState> {
     if (!j.endpoint || !j.keys?.p256dh || !j.keys?.auth) return "default";
     localStorage.setItem(SUB_KEY, JSON.stringify({ endpoint: j.endpoint, keys: { p256dh: j.keys.p256dh, auth: j.keys.auth } }));
     localStorage.removeItem(SCHED_KEY); // 새 구독이면 예약을 처음부터 다시
+    syncSubToServer();
     notify();
     return "enabled";
   } catch {
@@ -71,6 +72,7 @@ export async function disablePush() {
     await (await reg?.pushManager.getSubscription())?.unsubscribe();
   } catch {}
   try { localStorage.removeItem(SUB_KEY); localStorage.removeItem(SCHED_KEY); } catch {}
+  if (!IS_TOSS) import("./firebase/pushSub").then((m) => m.deleteMyPushSub()).catch(() => {});
   notify();
 }
 
@@ -101,6 +103,27 @@ export async function schedulePush(key: string, payload: PushPayload, atMs: numb
     }
   } catch {}
   return false;
+}
+
+/** 친구의 구독으로 알림을 예약한다(친구에게 편지를 보냈을 때 도착 알림용). 내 예약 기록과는 별개. */
+export async function schedulePushTo(subscription: PushSub, payload: PushPayload, atMs: number): Promise<boolean> {
+  if (serverOff) return false;
+  try {
+    const res = await fetch("/api/push/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ subscription, payload, at: atMs }),
+    });
+    if (res.status === 503) serverOff = true;
+    return res.ok;
+  } catch { return false; }
+}
+
+/** 내 푸시 구독을 서버에 맡겨 친구가 도착 알림을 예약할 수 있게 한다(서버 연결 후에만, 실패는 무시) */
+export function syncSubToServer() {
+  const sub = getStoredSub();
+  if (!sub || IS_TOSS) return;
+  import("./firebase/pushSub").then((m) => m.saveMyPushSub(sub)).catch(() => {});
 }
 
 /** 화면에서 푸시 상태를 보고 켜고 끄는 훅 */

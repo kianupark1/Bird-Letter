@@ -182,6 +182,10 @@ export function useLetters() {
         };
         setLetters((prev) => [letter, ...prev]);
         announce({ type: "sent", letter });
+        if (l.toUid && letter.arriveAt) { // 친구가 앱을 닫고 있어도 도착하면 알림이 가도록 친구 폰에 예약
+          const toUid = l.toUid, arriveAt = letter.arriveAt;
+          import("./firebase/pushSub").then((m) => m.notifyFriendArrival({ letterId: id, toUid, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, arriveAt })).catch(() => {});
+        }
         return id;
       }
       const sentAt = l.departAt ?? Date.now();

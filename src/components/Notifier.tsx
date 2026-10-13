@@ -14,7 +14,7 @@ import { letterProgress, useLetters, useNow } from "@/lib/letters";
 import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { useProfile } from "@/lib/settings";
 import { arrivalText, passingText } from "@/lib/notifyText";
-import { hasPushSub, schedulePush, usePushState } from "@/lib/push";
+import { hasPushSub, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 
@@ -101,6 +101,9 @@ export default function Notifier() {
     }
   }, [now, letters, received, ready, profileReady, profile.notify, quiet, pathname]);
 
+  // 푸시가 켜져 있으면 내 알림 주소를 서버에 맡겨 둔다(친구가 나에게 보낸 편지의 도착 알림용)
+  useEffect(() => { if (pushState === "enabled") syncSubToServer(); }, [pushState]);
+
   // 푸시가 켜져 있으면, 아직 도착하지 않은 편지의 도착·경유지 알림을 서버에 예약해요(이미 예약한 건 건너뜀)
   useEffect(() => {
     if (pushState !== "enabled" || !ready || !profileReady) return;
@@ -119,7 +122,7 @@ export default function Notifier() {
         const url = letterHref(it.id);
         if (it.kind === "sent" ? profile.notify.arrival : profile.notify.reply) {
           const t = arrivalText(it.kind, it.who, route, it.birdId);
-          await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-a` }, arriveMs);
+          await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-${it.kind === "sent" ? "a" : "r"}` }, arriveMs);
         }
         if (it.kind === "sent" && profile.notify.passing) {
           const plan = pr.plan;

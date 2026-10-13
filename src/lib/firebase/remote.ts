@@ -153,6 +153,7 @@ export async function deleteMyData() {
   for (const m of await listSent(user.uid)) await cancelLetter(m.id);
   for (const id of await listBlocked(user.uid)) await deleteDoc(doc(d, "users", user.uid, "blocks", id));
   await deleteFriendData(user.uid);
+  await deleteDoc(doc(d, "users", user.uid, "push", "sub")).catch(() => {});
   await deleteDoc(doc(d, "users", user.uid)).catch(() => {});
   await deleteUser(auth().currentUser ?? user);
 }
