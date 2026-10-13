@@ -59,17 +59,21 @@ service cloud.firestore {
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.sentAt == request.time
         && request.resource.data.arriveAt > request.time
-        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt'])
+        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt', 'replyTo'])
         // 예약 발송: 출발 시각은 지금부터 최대 366일 뒤까지, 도착은 항상 출발보다 뒤(core/schedule.ts의 MAX_SCHEDULE_DAYS와 같아야 해요)
         && (!('departAt' in request.resource.data)
             || (request.resource.data.departAt is timestamp
                 && request.resource.data.departAt >= request.time
                 && request.resource.data.departAt <= request.time + duration.value(366, 'd')))
         && request.resource.data.arriveAt > request.resource.data.get('departAt', request.time)
-        // 받는 사람은 비워 두거나(링크로 전달), 서로 친구인 사람의 uid(앱 안에서 바로 전달)
+        // 받는 사람은 비워 두거나(링크로 전달), 서로 친구인 사람의 uid(앱 안에서 바로 전달),
+        // 또는 "답장": 내가 받은 편지(replyTo)의 보낸 사람에게만 보낼 수 있다(친구가 아니어도 됨)
         && (request.resource.data.recipientUid == null
             || (request.resource.data.recipientUid is string
-                && exists(/databases/$(database)/documents/users/$(request.resource.data.recipientUid)/friends/$(request.auth.uid))))
+                && exists(/databases/$(database)/documents/users/$(request.resource.data.recipientUid)/friends/$(request.auth.uid)))
+            || (request.resource.data.replyTo is string
+                && get(/databases/$(database)/documents/letters/$(request.resource.data.replyTo)).data.recipientUid == request.auth.uid
+                && get(/databases/$(database)/documents/letters/$(request.resource.data.replyTo)).data.fromUid == request.resource.data.recipientUid))
         && request.resource.data.toName is string && request.resource.data.toName.size() <= 20
         && request.resource.data.fromName is string && request.resource.data.fromName.size() <= 12;
 

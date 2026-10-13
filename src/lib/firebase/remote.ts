@@ -46,6 +46,8 @@ function toMeta(id: string, d: DocumentData): Meta {
 export async function sendLetter(p: {
   toName: string; fromName: string; routeId: string; birdId: string; message: string; speed?: number;
   recipientUid?: string | null; photos?: string[]; departAt?: number;
+  /** 답장이면 원래 편지의 ID(서버 규칙이 "내가 받은 편지의 보낸 사람에게만"을 확인해요) */
+  replyTo?: string;
 }) {
   const user = await ensureUser();
   const d = db();
@@ -66,6 +68,7 @@ export async function sendLetter(p: {
     recipientUid: p.recipientUid ?? null,
     // 예약하지 않은 편지에는 이 칸을 아예 넣지 않아요(예전 서버 규칙에서도 그대로 보내져요)
     ...(p.departAt ? { departAt: Timestamp.fromMillis(p.departAt) } : {}),
+    ...(p.replyTo ? { replyTo: p.replyTo } : {}),
   });
   batch.set(doc(d, "letters", ref.id, "private", "body"), { message: p.message.trim().slice(0, MAX_LETTER_CHARS) });
   (p.photos ?? []).slice(0, MAX_PHOTOS).forEach((data, i) => batch.set(doc(d, "letters", ref.id, "private", `photo${i}`), { data }));

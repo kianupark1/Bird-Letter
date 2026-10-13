@@ -8,7 +8,8 @@ import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
 import { listFriends, type Friend } from "@/lib/firebase/friends";
-import { firebaseEnabled } from "@/lib/firebase/client";
+import { ensureUser, firebaseEnabled } from "@/lib/firebase/client";
+import { getMeta } from "@/lib/firebase/remote";
 import Link from "next/link";
 import JourneyMap from "@/components/JourneyMap";
 import PlaceField from "@/components/PlaceField";
@@ -61,7 +62,24 @@ function SendForm() {
       if (hit) { setTo(hit.name); setToUid(hit.uid); }
     }).catch(() => {});
   }, [presetFriend]);
-  const pickFriend = (f: Friend) => { setTo(f.name); setToUid(f.uid); };
+  const pickFriend = (f: Friend) => { setTo(f.name); setToUid(f.uid); setReplyTo(undefined); };
+  // 답장: 받은 편지(?reply=편지ID)의 보낸 사람에게, 보낸 곳과 받는 곳을 거꾸로 해서 써요
+  const replyId = params.get("reply");
+  const [replyTo, setReplyTo] = useState<string | undefined>();
+  const [replyName, setReplyName] = useState("");
+  useEffect(() => {
+    if (IS_TOSS || !firebaseEnabled || !replyId) return;
+    let off = false;
+    (async () => {
+      const meta = await getMeta(replyId);
+      const user = await ensureUser();
+      if (off || !meta || meta.recipientUid !== user.uid) return;
+      setTo(meta.fromName || "보낸 사람"); setToUid(meta.fromUid); setReplyTo(meta.id); setReplyName(meta.fromName || "보낸 사람");
+      const [a, b] = meta.routeId.split("-");
+      if (getPlace(a) && getPlace(b) && a !== b) { setTouched(true); setFromId(b); setToId(a); }
+    })();
+    return () => { off = true; };
+  }, [replyId]);
 
   // 이전에 정해 둔 "내가 있는 곳"을 보내는 곳 기본값으로
   useEffect(() => {
@@ -127,7 +145,7 @@ function SendForm() {
     try {
       const id = await add({
         to: to.trim(), toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed,
-        photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined,
+        photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined, replyTo,
       });
       router.push(letterHref(id));
     } catch {
@@ -146,7 +164,8 @@ function SendForm() {
       {step === 1 && (
         <>
           <p className="sub">누구에게, 어디로 보낼까요?</p>
-          {!IS_TOSS && firebaseEnabled && (
+          {replyTo && <div className="small" role="status" style={{ marginTop: 0, marginBottom: 8 }}>↩ {replyName}님이 보낸 편지에 답장해요. 보낸 곳과 받는 곳을 바꿔 두었어요.</div>}
+          {!IS_TOSS && firebaseEnabled && !replyTo && (
             <div className="friendpick">
               <div className="lab">친구에게 바로 보내기</div>
               <div className="chips">
@@ -158,7 +177,7 @@ function SendForm() {
               {friends.length === 0 && <div className="small" style={{ marginTop: 6 }}>친구를 연결하면 링크 없이 친구의 새편지함으로 바로 날아가요.</div>}
             </div>
           )}
-          <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); }} />
+          <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />
 
           <div className="placerow">
             <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={pickFrom} />

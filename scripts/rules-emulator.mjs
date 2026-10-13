@@ -76,5 +76,18 @@ await no("body 이름이 아닌 글 문서", setDoc(doc(A, "letters", "S1", "pri
 await ok("보낸 사람이 예약 편지를 취소(삭제)", deleteDoc(doc(A, "letters", "S1")));
 await no("받는 사람은 남의 예약 편지를 지울 수 없음", deleteDoc(doc(B, "letters", "S6")));
 
+
+console.log("[답장]");
+const rep = (to, replyTo, over = {}) => ({ fromUid: to === "uidA" ? "uidB" : "uidA", fromName: "답", toName: "원본", routeId: "busan-seoul", birdId: "pigeon", sentAt: serverTimestamp(), arriveAt: ts(3 * HOUR), recipientUid: to, replyTo, ...over });
+await ok("A가 링크용 편지 L7(받는 사람 비움) 만들기", setDoc(doc(A, "letters", "L7"), { fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: serverTimestamp(), arriveAt: ts(HOUR), recipientUid: null }));
+await ok("B가 링크를 열어 받는 사람으로 등록", (await import("firebase/firestore")).updateDoc(doc(B, "letters", "L7"), { recipientUid: "uidB" }));
+await ok("둘의 친구 관계 지우기(친구가 아닌 상태로 시험)", Promise.all([deleteDoc(doc(B, "users", "uidB", "friends", "uidA")), deleteDoc(doc(A, "users", "uidA", "friends", "uidB"))]));
+await no("친구도 아니고 답장도 아니면 보낼 수 없음", setDoc(doc(B, "letters", "R0"), (({ replyTo, ...rest }) => rest)(rep("uidA", "L7"))));
+await ok("B가 받은 편지(L7)에 친구가 아니어도 답장", setDoc(doc(B, "letters", "R1"), rep("uidA", "L7")));
+await no("제3자 C는 L7에 답장 불가", setDoc(doc(C, "letters", "R2"), rep("uidA", "L7", { fromUid: "uidC" })));
+await no("B가 답장으로 엉뚱한 사람(C)에게 보내기", setDoc(doc(B, "letters", "R3"), rep("uidC", "L7")));
+await no("받는 사람이 아닌 A가 자기 편지에 답장", setDoc(doc(A, "letters", "R4"), rep("uidB", "L7", { fromUid: "uidA" })));
+await no("replyTo가 없는 편지를 가리킴", setDoc(doc(B, "letters", "R5"), rep("uidA", "NOPE")));
+
 console.log(`\n통과 ${pass} / 실패 ${fail}`);
 await env.cleanup(); process.exit(fail ? 1 : 0);

@@ -295,6 +295,9 @@ export default function LetterView({ id }: { id: string }) {
         <button className="ghost" onClick={share}>받는 사람에게 링크 보내기</button>
       )}
       {mine?.toUid && <div className="small" style={{ textAlign: "center" }}>친구의 새편지함으로 바로 날아가고 있어요.</div>}
+      {isRecipient && pr.done && backend === "firebase" && !IS_TOSS && (
+        <Link href={`/send?reply=${view.id}`} className="cta">↩ 답장하기</Link>
+      )}
       {isRecipient && (
         <div style={{ display: "flex", gap: 8 }}>
           <button className="ghost" onClick={report}>신고하기</button>
