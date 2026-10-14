@@ -38,11 +38,12 @@ const scene = (k: number) => `
   <circle cx="144" cy="94" r="18" fill="${NAVY}"/>
   <circle cx="150" cy="90" r="4.4" fill="${CREAM}"/><circle cx="151.4" cy="90.4" r="2.1" fill="#1A1613"/>
   <!-- 입에 문 편지: 편지를 먼저 그리고 부리를 그 위에 얹어서 "물고 있는" 모습 -->
-  <g transform="translate(187 110) rotate(10)">
-    <rect x="-18" y="-12" width="36" height="24" rx="3" fill="rgba(0,0,0,.2)" transform="translate(2 3)"/>
-    <rect x="-18" y="-12" width="36" height="24" rx="3" fill="${CREAM}" stroke="${RED}" stroke-width="2.4"/>
-    <path d="M-17 -10 L0 3 L17 -10" fill="none" stroke="${RED}" stroke-width="2.2"/>
-    <circle cx="2" cy="4" r="4.4" fill="${RED}"/>
+  <g transform="translate(186 114) rotate(14)">
+    <rect x="-13" y="-19" width="26" height="38" rx="3" fill="rgba(0,0,0,.2)" transform="translate(2 3)"/>
+    <rect x="-13" y="-19" width="26" height="38" rx="3" fill="${CREAM}" stroke="${RED}" stroke-width="2.4"/>
+    <path d="M-12 -17 L0 -3 L12 -17" fill="none" stroke="${RED}" stroke-width="2.2"/>
+    <circle cx="0" cy="-2" r="4.2" fill="${RED}"/>
+    <path d="M-6 8 H6 M-6 13 H3" stroke="${NAVY}" stroke-width="1.8" stroke-linecap="round" opacity=".7"/>
   </g>
   <path d="M157 100 L181 103 L158 106 Z" fill="#B5832A"/>
   <path d="M157 92 L182 100 L157 101 Z" fill="${GOLD}"/>
