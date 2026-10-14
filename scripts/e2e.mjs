@@ -92,7 +92,7 @@ try {
   await A.page.waitForFunction(() => location.pathname.startsWith("/letter/"), { timeout: 30000 }).catch(() => {});
   const id = new URL(A.page.url()).pathname.split("/").pop();
   ok("편지가 서버에 저장됨(편지 ID 20자)", id.length === 20, `ID=${id}`);
-  ok("여정 화면에 '도착까지'와 '링크 보내기'가 보임", (await waitText(A.page, "도착까지")) && (await text(A.page)).includes("받는 사람에게 링크 보내기"));
+  ok("여정 화면에 '도착까지'와 '링크 보내기'가 보임", (await waitText(A.page, "도착까지")) && (await text(A.page)).match(/받는 사람에게 링크 보내기|카카오톡으로 보내기/) !== null);
   await shot(A.page, "04-A-journey");
 
   console.log("\n[2] 받는 사람(B): 링크로 열기");
@@ -104,7 +104,9 @@ try {
   await shot(B.page, "05-B-before-arrival");
 
   console.log("\n[3] 도착 후");
-  const arrived = await waitText(B.page, MESSAGE, 90000);
+  const scrollReady = await waitText(B.page, "편지 펼치기", 90000); // 도착하면 돌돌 말린 편지가 나타나고, 눌러서 펼친다
+  if (scrollReady) await clickText(B.page, "편지 펼치기");
+  const arrived = scrollReady && (await waitText(B.page, MESSAGE, 15000));
   ok("도착 시각이 지나면 B에게 편지 내용이 열림", arrived);
   await shot(B.page, "06-B-arrived");
   ok("도착 화면 문구가 보임", (await text(B.page)).includes("도착했어요"));
