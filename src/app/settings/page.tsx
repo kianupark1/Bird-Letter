@@ -12,6 +12,7 @@ import { playChirp } from "@/lib/chirp";
 import { IS_TOSS } from "@/lib/target";
 import { LOGINS, linkAccount, linkedKinds, unlinkAccount, type LoginKind } from "@/lib/firebase/link";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
+import { isKakaoLinked } from "@/lib/firebase/kakao";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -229,10 +230,16 @@ function AccountLinks() {
   const [note, setNote] = useState("");
   useEffect(() => {
     const a = auth();
-    setLinked(linkedKinds(a.currentUser));
-    return a.onAuthStateChanged((u) => setLinked(linkedKinds(u)));
+    const refresh = async (u: typeof a.currentUser) => {
+      const k = u ? await isKakaoLinked() : false; // 카카오는 로그인 토큰 안의 표시(claim)로 알아요
+      setLinked([...linkedKinds(u), ...(k ? (["kakao"] as LoginKind[]) : [])]);
+    };
+    refresh(a.currentUser);
+    if (new URLSearchParams(location.search).get("linked") === "kakao") setNote("카카오 연결이 끝났어요. 폰을 바꿔도 이어서 쓸 수 있어요.");
+    return a.onAuthStateChanged((u) => { refresh(u); });
   }, []);
   async function toggle(kind: LoginKind) {
+    if (kind === "kakao" && linked.includes("kakao")) { setNote("카카오 연결 해제는 아직 지원하지 않아요."); return; }
     setBusy(kind);
     setNote("");
     const isLinked = linked.includes(kind);
@@ -240,7 +247,7 @@ function AccountLinks() {
     setBusy(null);
     if (!r.ok) setNote(r.message);
     else {
-      setLinked(linkedKinds(auth().currentUser));
+      if (kind !== "kakao") setLinked(linkedKinds(auth().currentUser));
       setNote(isLinked ? "연결을 해제했어요." : r.switched ? "이전에 연결한 계정으로 들어왔어요." : "연결했어요. 폰을 바꿔도 이어서 쓸 수 있어요.");
     }
   }

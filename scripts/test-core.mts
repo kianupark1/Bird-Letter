@@ -10,6 +10,9 @@ import { validateDepart, isScheduled, toInputValue, fromInputValue, dateTimeText
 import { MAX_PHOTOS, MAX_PHOTO_CHARS } from "../core/limits.ts";
 import { MAX_LETTER_CHARS } from "../core/limits.ts";
 import { validateSchedule, dedupKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
+import { generateKeyPairSync, createVerify, createSign } from "node:crypto";
+import { createCustomToken, createAccessAssertion, verifyFirebaseIdToken, parseServiceAccount } from "../core/serverAuth.ts";
+import { loginWithKakao, type KakaoDeps } from "../core/kakaoLogin.ts";
 
 let pass = 0, fail = 0;
 const eq = (label: string, got: unknown, want: unknown) => {
@@ -184,6 +187,76 @@ let clean = "";
 for (let i = 0; i < 100 && !clean; i++) if (!rollMishap(`c${i}`, "hawk", after)) clean = `c${i}`;
 const cp = planFor(clean, "hawk", after, after + 3600_000);
 eq("사고 없으면 중간 진행률 50%", progressAt(cp, 1800_000).p, 0.5);
+
+// ---- 서버 로그인 부품(키는 시험용으로 즉석에서 만든 것) ----
+const kp = generateKeyPairSync("rsa", { modulusLength: 2048 });
+const privPem = kp.privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+const sa = { project_id: "demo-bl", client_email: "svc@demo-bl.iam.gserviceaccount.com", private_key: privPem };
+const NOW = 1_800_000_000;
+const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(Buffer.from(x, "base64url").toString()) : x));
+{
+  const tok = createCustomToken(sa, "uid123", { kakao: true }, NOW);
+  const [h, b, sig] = jwtParts(tok) as [any, any, string];
+  eq("커스텀 토큰 alg", h.alg, "RS256");
+  eq("커스텀 토큰 uid", b.uid, "uid123");
+  eq("커스텀 토큰 iss", b.iss, sa.client_email);
+  eq("커스텀 토큰 유효 1시간", b.exp - b.iat, 3600);
+  eq("커스텀 토큰 claims", b.claims.kakao, true);
+  const [hh, pp] = tok.split(".");
+  eq("커스텀 토큰 서명이 맞음", createVerify("RSA-SHA256").update(`${hh}.${pp}`).verify(kp.publicKey, Buffer.from(sig, "base64url")), true);
+  const as = jwtParts(createAccessAssertion(sa, "scope-x", NOW))[1] as any;
+  eq("접근 요청서 scope", as.scope, "scope-x");
+  eq("서비스 계정 JSON 읽기", parseServiceAccount(JSON.stringify(sa))?.project_id, "demo-bl");
+  eq("서비스 계정 base64 읽기", parseServiceAccount(Buffer.from(JSON.stringify(sa)).toString("base64"))?.client_email, sa.client_email);
+  eq("서비스 계정 잘못된 값은 null", parseServiceAccount("{}"), null);
+  eq("서비스 계정 없음은 null", parseServiceAccount(undefined), null);
+}
+{
+  // 폰의 ID 토큰을 흉내: 같은 키로 서명한 토큰을 같은 공개 키로 확인
+  const idTok = (over: Record<string, unknown> = {}, kid = "k1") => {
+    const head = Buffer.from(JSON.stringify({ alg: "RS256", kid })).toString("base64url");
+    const body = Buffer.from(JSON.stringify({ aud: "demo-bl", iss: "https://securetoken.google.com/demo-bl", sub: "anon1", iat: NOW - 10, exp: NOW + 3000, ...over })).toString("base64url");
+    const sig = createSign("RSA-SHA256").update(`${head}.${body}`).sign(kp.privateKey).toString("base64url");
+    return `${head}.${body}.${sig}`;
+  };
+  const keyFor = (kid: string) => (kid === "k1" ? kp.publicKey : undefined);
+  eq("ID 토큰 정상", verifyFirebaseIdToken(idTok(), "demo-bl", keyFor, NOW)?.uid, "anon1");
+  eq("ID 토큰 만료", verifyFirebaseIdToken(idTok({ exp: NOW - 1 }), "demo-bl", keyFor, NOW), null);
+  eq("ID 토큰 다른 프로젝트", verifyFirebaseIdToken(idTok({ aud: "other" }), "demo-bl", keyFor, NOW), null);
+  eq("ID 토큰 다른 발급처", verifyFirebaseIdToken(idTok({ iss: "https://evil.example/demo-bl" }), "demo-bl", keyFor, NOW), null);
+  eq("ID 토큰 모르는 키(kid)", verifyFirebaseIdToken(idTok({}, "zz"), "demo-bl", keyFor, NOW), null);
+  const forged = idTok().split(".").slice(0, 2).join(".") + "." + Buffer.from("x".repeat(256)).toString("base64url");
+  eq("ID 토큰 서명 위조", verifyFirebaseIdToken(forged, "demo-bl", keyFor, NOW), null);
+  eq("ID 토큰 쓰레기", verifyFirebaseIdToken("a.b", "demo-bl", keyFor, NOW), null);
+}
+{
+  // 카카오 흐름: 저장소와 카카오를 가짜로
+  const store = new Map<string, string>();
+  const mk = (uid: string, claims: Record<string, unknown> = {}, kakao = "12345"): KakaoDeps => ({
+    kakaoUserId: async (c) => { if (c === "badcode") throw new Error("x"); return kakao; },
+    verifyIdToken: async (t) => (t === "good" ? { uid, claims } : null),
+    claimAccount: async (k, u) => { if (store.has(k)) return false; store.set(k, u); return true; },
+    accountUid: async (k) => store.get(k) ?? null,
+    mintToken: (u, c) => `T:${u}:${JSON.stringify(c)}`,
+  });
+  const r1 = await loginWithKakao({ code: "code-1", idToken: "good" }, mk("anonA"));
+  eq("첫 연결은 지금 쓰던 계정 uid를 유지", r1.ok && r1.uid, "anonA");
+  eq("첫 연결은 계정 바뀜 없음", r1.ok && r1.switched, false);
+  eq("카카오번호가 기록됨", store.get("12345"), "anonA");
+  const r2 = await loginWithKakao({ code: "code-2", idToken: "good" }, mk("anonB"));
+  eq("새 폰에서 같은 카카오로 들어오면 기존 계정으로", r2.ok && r2.uid, "anonA");
+  eq("새 폰은 계정 바뀜 표시", r2.ok && r2.switched, true);
+  const r3 = await loginWithKakao({ code: "badcode", idToken: "good" }, mk("anonC"));
+  eq("카카오 확인 실패는 401", !r3.ok && r3.status, 401);
+  const r4 = await loginWithKakao({ code: "code-4", idToken: "bad" }, mk("anonC"));
+  eq("가짜 Firebase 토큰은 401", !r4.ok && r4.status, 401);
+  const r5 = await loginWithKakao({ code: 5, idToken: "good" }, mk("anonC"));
+  eq("잘못된 요청은 400", !r5.ok && r5.status, 400);
+  const r6 = await loginWithKakao({ code: "code-6", idToken: "good" }, mk("anonD", { kakaoId: "999" }, "777"));
+  eq("이미 다른 카카오가 연결된 계정은 409", !r6.ok && r6.status, 409);
+  const r7 = await loginWithKakao({ code: "code-7", idToken: "good" }, mk("anonE", {}, "12abc"));
+  eq("카카오 번호 형식이 이상하면 거절", !r7.ok, true);
+}
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
