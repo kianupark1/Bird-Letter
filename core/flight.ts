@@ -1,5 +1,5 @@
 /**
- * 비행 계획: 실제 속도로 걸리는 시간 + 아주 드문 "길 잃음/나무 걸림" 사고.
+ * 비행 계획: 새 속도(그날 컨디션 ±15%)로 걸리는 시간 + 아주 드문 "길 잃음/나무 걸림" 사고.
  *
  * 사고는 보낼 때 편지 ID와 새 종류로 정해져요(같은 ID면 누가 계산해도 같은 결과).
  * 그래서 서버에 따로 저장하는 값이 없고, 보낸 사람·받는 사람의 화면이 항상 같은 이야기를 보여줘요.
@@ -9,6 +9,11 @@ import { getBird, type MishapKind } from "./birds";
 
 /** 이 시각 이후에 보낸 편지부터 사고 규칙을 적용해요(그전에 보낸 시험 편지는 옛 계산 그대로) */
 export const MISHAP_SINCE = Date.parse("2026-10-08T00:00:00+09:00");
+
+/** 이 시각 이후에 보낸 편지부터 새의 그날 컨디션(바람·기운)에 따라 속도가 조금 달라져요 */
+export const SPEED_VARY_SINCE = Date.parse("2026-10-15T00:00:00+09:00");
+/** 속도 변동 폭: 평소 속도의 ±15% */
+export const SPEED_VARY = 0.15;
 
 /** 길 잃음·나무 걸림이 편지를 붙잡아 두는 시간: 원래 비행 시간의 25%~75% */
 export const DELAY_RANGE = [0.25, 0.75] as const;
@@ -45,12 +50,23 @@ export function rollMishap(letterId: string, birdId: string, sentAt: number): Mi
   };
 }
 
+/**
+ * 이 편지를 나르는 새의 그날 컨디션: 1±15%(1보다 크면 빨리, 작으면 천천히).
+ * 편지 ID로 정해져서 보낸 사람·받는 사람 화면이 같고, 서버에 따로 저장하는 값이 없어요.
+ * 도착 시각(arriveAt)에 이미 반영돼서 기록된 뒤에는 바뀌지 않아요.
+ */
+export function speedFactor(letterId: string, birdId: string, sentAt: number) {
+  if (sentAt < SPEED_VARY_SINCE) return 1;
+  const r = rng(hash32(`${letterId}|${birdId}|speed`));
+  return 1 + (r() * 2 - 1) * SPEED_VARY;
+}
+
 /** 사고 때문에 늘어나는 비율(없으면 0) */
 export const extraFrac = (m: Mishap | null) => (m ? m.delayFrac : 0);
 
 /** 보낼 때 쓰는 전체 비행 시간(분, 소수 포함). speed는 테스트 배속(평소 1) */
 export function totalMinutes(letterId: string, birdId: string, km: number, sentAt: number, speed = 1) {
-  const base = ((km / getBird(birdId).kmh) * 60) / speed;
+  const base = ((km / (getBird(birdId).kmh * speedFactor(letterId, birdId, sentAt))) * 60) / speed;
   return base * (1 + extraFrac(rollMishap(letterId, birdId, sentAt)));
 }
 

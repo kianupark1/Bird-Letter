@@ -154,7 +154,7 @@ eq("40분 표시", formatMinutes(40), "40분");
 eq("60분 표시", formatMinutes(60), "1시간");
 
 // 길 잃음·나무 걸림 사고(core/flight.ts)
-import { MISHAP_SINCE, elapsedAtFraction, planFor, progressAt, rollMishap, totalMinutes } from "../core/flight.ts";
+import { MISHAP_SINCE, SPEED_VARY_SINCE, speedFactor, elapsedAtFraction, planFor, progressAt, rollMishap, totalMinutes } from "../core/flight.ts";
 const after = MISHAP_SINCE + 3600_000;
 eq("같은 ID는 항상 같은 결과", JSON.stringify(rollMishap("abc123", "magpie", after)), JSON.stringify(rollMishap("abc123", "magpie", after)));
 eq("기준일 전에 보낸 편지는 사고 없음", (() => { for (let i = 0; i < 3000; i++) if (rollMishap(`x${i}`, "magpie", MISHAP_SINCE - 1)) return false; return true; })(), true);
@@ -187,6 +187,23 @@ let clean = "";
 for (let i = 0; i < 100 && !clean; i++) if (!rollMishap(`c${i}`, "hawk", after)) clean = `c${i}`;
 const cp = planFor(clean, "hawk", after, after + 3600_000);
 eq("사고 없으면 중간 진행률 50%", progressAt(cp, 1800_000).p, 0.5);
+
+// 속도 변동 ±15%
+{
+  const t = SPEED_VARY_SINCE + 3600_000;
+  let lo = 9, hi = 0, sum = 0; const N = 20000;
+  for (let i = 0; i < N; i++) { const f = speedFactor(`sv${i}`, "pigeon", t); lo = Math.min(lo, f); hi = Math.max(hi, f); sum += f; }
+  eq("속도 변동은 0.85~1.15 안", lo >= 0.85 && hi <= 1.15, true);
+  eq("속도 변동이 실제로 퍼져 있음", lo < 0.87 && hi > 1.13, true);
+  near("속도 변동 평균은 1", sum / N, 1, 0.01);
+  eq("같은 ID는 같은 컨디션", speedFactor("zz", "hawk", t), speedFactor("zz", "hawk", t));
+  eq("기준일 전 편지는 변동 없음", speedFactor("zz", "hawk", SPEED_VARY_SINCE - 1), 1);
+  let id = ""; for (let i = 0; i < 1000 && !id; i++) if (!rollMishap(`q${i}`, "hawk", t)) id = `q${i}`;
+  const f = speedFactor(id, "hawk", t);
+  near("변동이 도착 시간에 반영", totalMinutes(id, "hawk", 325, t), ((325 / (90 * f)) * 60), 0.001);
+  const pl = planFor(id, "hawk", t, t + totalMinutes(id, "hawk", 325, t) * 60000);
+  eq("변동 있어도 중간 진행률 50%", progressAt(pl, pl.totalMs / 2).p, 0.5);
+}
 
 // ---- 서버 로그인 부품(키는 시험용으로 즉석에서 만든 것) ----
 const kp = generateKeyPairSync("rsa", { modulusLength: 2048 });
