@@ -31,7 +31,7 @@ async function googleCerts() {
 
 export async function POST(req: Request) {
   const sa = parseServiceAccount(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-  const restKey = process.env.KAKAO_REST_API_KEY?.trim(), base = siteUrl();
+  const restKey = (process.env.KAKAO_REST_API_KEY ?? process.env.NEXT_PUBLIC_KAKAO_REST_KEY)?.replace(/^﻿/, "").trim(), base = siteUrl();
   if (!sa || !restKey || !base) return NextResponse.json({ error: "not-configured" }, { status: 503 });
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
