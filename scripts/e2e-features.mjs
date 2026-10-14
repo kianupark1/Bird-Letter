@@ -140,7 +140,9 @@ try {
   const rid = await writeLetter(B.page, { to: "지민", text: REPLY });
   ok("답장이 서버에 저장됨", rid.length === 20 && rid !== id, `ID=${rid}`);
   await A.page.goto(`${BASE}/letter/${rid}`, { waitUntil: "networkidle2" });
-  ok("A에게 답장이 도착함(내용이 열림)", await waitText(A.page, REPLY, 90000));
+  ok("A에게 답장이 도착함('편지 펼치기'가 나타남)", await waitText(A.page, "편지 펼치기", 90000));
+  await clickText(A.page, "편지 펼치기");
+  ok("A가 펼치면 답장 글이 보임", await waitText(A.page, REPLY, 15000));
   await shot(A.page, "f3-A-reply");
 
   console.log("\n[4] 예약 발송: 출발 전에는 받는 사람에게 안 보임");
@@ -156,7 +158,9 @@ try {
   ok("출발 전 B에게 보낸 사람 정보도 보이지 않음", !t.includes("지민이 보낸 편지"), t.slice(0, 80).replace(/\n/g, " "));
   await shot(B.page, "f4-B-scheduled-hidden");
   await clickText(A.page, "예약 취소하기");
-  ok("예약을 취소하면 편지가 사라짐", await waitText(A.page, "취소했어요", 15000) || (await A.page.evaluate(() => location.pathname)) === "/");
+  await clickText(A.page, "취소할게요");
+  await A.page.waitForFunction(() => location.pathname === "/", { timeout: 20000 }).catch(() => {});
+  ok("예약을 취소하면 홈으로 돌아가고 목록에서 사라짐", (await A.page.evaluate(() => location.pathname)) === "/" && !(await text(A.page)).includes("출발을 기다리는 편지"));
 
   console.log("\n[5] 정리(시험 데이터 삭제)와 오류 점검");
   for (const U of [A, B]) {
