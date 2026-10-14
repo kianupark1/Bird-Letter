@@ -14,9 +14,10 @@ import { letterProgress, useLetters, useNow } from "@/lib/letters";
 import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { useProfile } from "@/lib/settings";
 import { arrivalText, passingText } from "@/lib/notifyText";
-import { hasPushSub, schedulePush, usePushState } from "@/lib/push";
+import { hasPushSub, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
+import { playChirp } from "@/lib/chirp";
 
 const STORE = "saepyeonji.notified.v1";
 const RECENT_MS = 24 * 3600 * 1000;
@@ -93,13 +94,17 @@ export default function Notifier() {
     if (out.length) {
       const here = pathname;
       const fresh = out.filter((o) => letterHref(o.id) !== here && !here.startsWith(`/letter/${o.id}`));
+      if (fresh.length && profile.chirp) playChirp();
       if (fresh.length) setQueue((q) => [...q, ...fresh.filter((f) => !q.some((x) => x.key === f.key))]);
       // 화면이 가려져 있으면(다른 탭) 브라우저 알림도 보내요(허용했을 때만)
       if (!IS_TOSS && !hasPushSub() && typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {
         for (const o of out) { try { new Notification(o.title, { body: o.sub, icon: "/icon-192.png", tag: o.key }); } catch {} }
       }
     }
-  }, [now, letters, received, ready, profileReady, profile.notify, quiet, pathname]);
+  }, [now, letters, received, ready, profileReady, profile.notify, profile.chirp, quiet, pathname]);
+
+  // 푸시가 켜져 있으면 내 알림 주소를 서버에 맡겨 둔다(친구가 나에게 보낸 편지의 도착 알림용)
+  useEffect(() => { if (pushState === "enabled") syncSubToServer(); }, [pushState]);
 
   // 푸시가 켜져 있으면, 아직 도착하지 않은 편지의 도착·경유지 알림을 서버에 예약해요(이미 예약한 건 건너뜀)
   useEffect(() => {
@@ -119,7 +124,7 @@ export default function Notifier() {
         const url = letterHref(it.id);
         if (it.kind === "sent" ? profile.notify.arrival : profile.notify.reply) {
           const t = arrivalText(it.kind, it.who, route, it.birdId);
-          await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-a` }, arriveMs);
+          await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-${it.kind === "sent" ? "a" : "r"}` }, arriveMs);
         }
         if (it.kind === "sent" && profile.notify.passing) {
           const plan = pr.plan;

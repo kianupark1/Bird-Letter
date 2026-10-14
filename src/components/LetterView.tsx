@@ -13,7 +13,11 @@ import * as remote from "@/lib/firebase/remote";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
+import LetterReveal from "@/components/Unroll";
+import { savePolaroid } from "@/lib/photo";
+import { dateTimeText, isScheduled } from "../../core/schedule";
 import InstallCard from "@/components/InstallCard";
+import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 
 const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
 
@@ -22,12 +26,14 @@ type Incoming = { state: "loading" } | { state: "missing" } | { state: "ok"; met
 
 /** 편지 화면 본문. 웹은 /letter/[id], 토스는 /letter?id= 가 이 컴포넌트를 불러 쓴다. */
 export default function LetterView({ id }: { id: string }) {
-  const { letters, ready, backend, fastForward } = useLetters();
+  const { letters, ready, backend, fastForward, cancel } = useLetters();
   const now = useNow(5000);
   const [demo, setDemo] = useState(false);
   const [incoming, setIncoming] = useState<Incoming>({ state: "loading" });
   const [body, setBody] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const mine = letters.find((l) => l.id === id);
 
   // 주소 끝에 ?demo=1을 붙였을 때만 "빨리 감기"를 보여준다(일반 사용자에게는 숨김, 내 폰 저장 상태에서만 동작)
@@ -73,6 +79,17 @@ export default function LetterView({ id }: { id: string }) {
     remote.getBody(id).then((m) => m !== null && setBody(m));
   }, [isRecipient, arrivedNow, body, id]);
 
+  // 사진: 내 폰 저장이면 편지에 들어 있고, 서버면 도착한 뒤(보낸 사람은 언제든) 불러와요
+  useEffect(() => {
+    if (!view || !arrivedNow) return;
+    if (mine?.photos?.length) { setPhotos(mine.photos); return; }
+    if (backend !== "firebase") return;
+    let off = false;
+    remote.getPhotos(id).then((p) => { if (!off) setPhotos(p); });
+    return () => { off = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrivedNow, backend, id, mine?.photos]);
+
   if (!ready || (!mine && backend === "firebase" && incoming.state === "loading"))
     return (
       <main className="app">
@@ -82,7 +99,7 @@ export default function LetterView({ id }: { id: string }) {
   if (!view)
     return (
       <main className="app">
-        <div className="empty">편지를 찾을 수 없어요.</div>
+        <div className="empty">편지를 찾을 수 없어요.<br />아직 출발하지 않은 예약 편지라면, 출발한 뒤에 볼 수 있어요.</div>
         {!IS_TOSS && <Link href="/" className="ghost">홈으로</Link>}
       </main>
     );
@@ -102,10 +119,49 @@ export default function LetterView({ id }: { id: string }) {
   const mishapDone = !!mishap && !pr.stalled && pr.p > mishap.at;
   const mishapMsg = mishap ? mishapMessage(mishap.kind, bird.name) : null;
 
+  // 예약한 편지: 출발하기 전에는 두루마리가 말려 있고, 취소할 수 있어요(받는 사람에게는 보이지 않아요)
+  if (mine && isScheduled(mine.sentAt, now)) {
+    const dep = mine.sentAt;
+    const doCancel = async () => {
+      try { await cancel(mine.id); window.location.assign("/"); }
+      catch { setNotice("예약을 취소하지 못했어요. 잠시 후 다시 시도해 주세요."); setConfirmCancel(false); }
+    };
+    return (
+      <main className="app">
+        <h1>{mine.to}에게 보낼 편지</h1>
+        <p className="sub"><BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {route.title} · {route.km}km</p>
+        <div className="sched-card">
+          <BirdIcon id={bird.id} size={96} letter className="bob" />
+          <div className="when">{dateTimeText(dep)}에 출발해요</div>
+          <div className="small">{dateTimeText(arriveAt)}쯤 도착할 예정이에요.</div>
+          <div className="small">출발하기 전까지는 받는 사람에게 보이지 않아요. 새가 날아갈 때까지 조금만 기다려 주세요.</div>
+        </div>
+        <div className={`scrollwrap`}>
+          <div className="unroll" aria-hidden><div className="u-rod" /><div className="u-body" /><div className="u-rod" /></div>
+        </div>
+        {mine.photos && mine.photos.length > 0 && <div className="small" style={{ textAlign: "center" }}>폴라로이드 사진 {mine.photos.length}장이 함께 말려 있어요.</div>}
+        {!confirmCancel ? (
+          <button className="ghost" onClick={() => setConfirmCancel(true)}>예약 취소하기</button>
+        ) : (
+          <div className="sched-card">
+            <div className="small">예약을 취소하면 편지가 지워져요. 되돌릴 수 없어요.</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button className="cta" style={{ flex: 1 }} onClick={doCancel}>취소할게요</button>
+              <button className="ghost" style={{ flex: 1 }} onClick={() => setConfirmCancel(false)}>그대로 둘게요</button>
+            </div>
+          </div>
+        )}
+        {notice && <div className="small" role="status" style={{ textAlign: "center" }}>{notice}</div>}
+        {!IS_TOSS && <Link href="/" className="ghost">홈으로</Link>}
+      </main>
+    );
+  }
+
   const share = async () => {
     // 토스 빌드의 공유 링크 방식(intoss://)은 아직 정하지 않았다(확인 필요). 지금은 웹 초대 링크 형식을 그대로 둔다.
     const url = `${location.origin}${letterHref(view.id)}`;
     try {
+      if (KAKAO_SHARE_READY && (await shareToKakao(view.id, bird.name))) return; // 카카오링크가 앱 열기에 가장 확실함
       if (navigator.share) await navigator.share({ title: "새 편지가 날아가고 있어요", text: `${bird.name}가 편지를 물고 날아가고 있어요.`, url });
       else {
         await navigator.clipboard.writeText(url);
@@ -185,10 +241,19 @@ export default function LetterView({ id }: { id: string }) {
                 : `${bird.name}가 ${dest}에 내려앉았어요.`}
             </div>
           </div>
-          <div className="paper letter">
-            <div className="msg">{view.message || (isRecipient ? "편지를 펼치는 중..." : "")}</div>
-            <div className="seal" aria-hidden>새<br />편지</div>
-          </div>
+          <LetterReveal
+            message={view.message}
+            photos={photos}
+            caption={`${bird.name}가 물고 온 사진`}
+            sub={`${route.title} · ${dateTimeText(arriveAt)}`}
+            loading={isRecipient}
+            onSave={async (src) => {
+              try {
+                const r = await savePolaroid(src, `${bird.name}가 물고 온 사진`, `${route.title} · ${dateTimeText(arriveAt)}`);
+                setNotice(r === "downloaded" ? "폴라로이드를 저장했어요. 내려받은 파일을 확인해 주세요." : "저장 창에서 '이미지 저장'을 눌러 주세요.");
+              } catch { setNotice("저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
+            }}
+          />
         </>
       ) : (
         <>
@@ -229,9 +294,12 @@ export default function LetterView({ id }: { id: string }) {
       <InstallCard hideWhenPushPrompt={!pr.done} />
 
       {backend === "firebase" && !isRecipient && !mine?.toUid && (
-        <button className="ghost" onClick={share}>받는 사람에게 링크 보내기</button>
+        <button className="ghost" onClick={share}>{KAKAO_SHARE_READY ? "카카오톡으로 보내기" : "받는 사람에게 링크 보내기"}</button>
       )}
       {mine?.toUid && <div className="small" style={{ textAlign: "center" }}>친구의 새편지함으로 바로 날아가고 있어요.</div>}
+      {isRecipient && pr.done && backend === "firebase" && !IS_TOSS && (
+        <Link href={`/send?reply=${view.id}`} className="cta">↩ 답장하기</Link>
+      )}
       {isRecipient && (
         <div style={{ display: "flex", gap: 8 }}>
           <button className="ghost" onClick={report}>신고하기</button>

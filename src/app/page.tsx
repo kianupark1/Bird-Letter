@@ -6,6 +6,7 @@ import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { ONBOARDED_KEY, SAMPLE_INBOX, letterProgress, useLetters, useNow } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
+import { dateTimeText, isScheduled } from "../../core/schedule";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
@@ -26,7 +27,8 @@ export default function Home() {
   const { profile } = useProfile();
   const greeting = `${profile.nickname !== DEFAULT_PROFILE.nickname ? `${profile.nickname}님, ` : ""}오늘은 어떤 소식을 날려 볼까요?`;
   const now = useNow();
-  const flying = letters.filter((l) => !letterProgress(l, now).done);
+  const scheduled = letters.filter((l) => isScheduled(l.sentAt, now)).sort((a, b) => a.sentAt - b.sentAt);
+  const flying = letters.filter((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
   const arrived = letters.filter((l) => letterProgress(l, now).done);
 
   return (
@@ -47,8 +49,8 @@ export default function Home() {
         </div>
       )}
 
-      <h2>날아가는 중</h2>
-      {ready && flying.length === 0 && (
+      {(flying.length > 0 || scheduled.length === 0) && <h2>날아가는 중</h2>}
+      {ready && flying.length === 0 && scheduled.length === 0 && (
         <div className="empty hero">
           <BirdIcon id="magpie" size={96} className="bob" />
           <div className="t">아직 날아가는 편지가 없어요</div>
@@ -74,6 +76,29 @@ export default function Home() {
           </Link>
         );
       })}
+
+      {scheduled.length > 0 && (
+        <>
+          <h2>출발을 기다리는 편지</h2>
+          {scheduled.map((l) => {
+            const bird = getBird(l.birdId);
+            const route = getRoute(l.routeId);
+            return (
+              <Link key={l.id} href={letterHref(l.id)} className="card">
+                <div className="row grow">
+                  <BirdIcon id={bird.id} size={52} letter />
+                  <div className="grow">
+                    <div className="name ellipsis">{l.to}에게</div>
+                    <div className="note">{route.title} · {bird.name}</div>
+                    <div className="note">🕰 {dateTimeText(l.sentAt)} 출발 예정</div>
+                  </div>
+                </div>
+                <div className="note">예약 중</div>
+              </Link>
+            );
+          })}
+        </>
+      )}
 
       {flying.length > 0 && <PushPrompt birdId={flying[0].birdId} />}
       {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={flying.length > 0} />}

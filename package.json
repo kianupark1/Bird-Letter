@@ -10,6 +10,7 @@
     "build:toss": "next build toss",
     "check:toss": "node scripts/check-toss.mjs",
     "test:rules": "node scripts/rules-test.mjs",
+    "e2e:local": "node scripts/e2e-local.mjs",
     "e2e": "node scripts/e2e.mjs",
     "test:core": "tsx scripts/test-core.mts",
     "cards": "node promo/build-cards.js",

@@ -6,6 +6,7 @@ import { travelMinutes } from "./geo";
 import { planFor, progressAt, totalMinutes, type Plan } from "./flight";
 import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
+import { isScheduled } from "../../core/schedule";
 
 export type Letter = {
   id: string;
@@ -13,12 +14,14 @@ export type Letter = {
   routeId: string;
   birdId: string;
   message: string;
-  /** 보낸 시각(ms) */
+  /** 새가 출발한 시각(ms). 예약한 편지는 예약한 출발 시각이라 미래일 수 있어요 */
   sentAt: number;
   /** 도착 시각(ms). 서버에 저장된 편지는 이 값을 기준으로 진행률을 계산 */
   arriveAt?: number;
   /** 친구에게 앱 안에서 바로 보낸 편지면 받는 친구의 uid */
   toUid?: string;
+  /** 편지에 담은 사진(줄인 JPEG 글자). 서버 편지는 열 때 불러와요 */
+  photos?: string[];
 };
 
 /** 같은 화면의 다른 부분(알림 담당 등)이 새로 보낸·받은 편지를 바로 알도록 전하는 신호 */
@@ -65,7 +68,10 @@ export type Backend = "checking" | "firebase" | "local";
 
 export function useLetters() {
   const [letters, setLetters] = useState<Letter[]>([]);
-  const [received, setReceived] = useState<remote.Meta[]>([]);
+  const [receivedAll, setReceived] = useState<remote.Meta[]>([]);
+  const nowTick = useNow(15000);
+  // 예약 편지는 출발하기 전에는 받는 사람에게 보이지 않아요(기다림의 미학: 깜짝 선물)
+  const received = receivedAll.filter((m) => !isScheduled(m.sentAt, nowTick));
   const [ready, setReady] = useState(false);
   const [backend, setBackendState] = useState<Backend>("checking");
   // 서버 연결 확인이 끝나기 전에 "보내기"를 눌러도 잘못 저장되지 않도록, 확인이 끝날 때까지 기다리게 하는 장치
@@ -139,6 +145,20 @@ export function useLetters() {
     };
   }, [setBackend]);
 
+  // 서버를 쓰는 동안 1분마다 받은 편지를 다시 불러와서, 친구가 보낸 편지·출발한 예약 편지가 새로고침 없이 나타나게 해요
+  useEffect(() => {
+    if (backend !== "firebase") return;
+    const t = setInterval(async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const user = await ensureUser();
+        const [recv, blocked] = await Promise.all([remote.listReceived(user.uid), remote.listBlocked(user.uid)]);
+        setReceived(recv.filter((r) => !blocked.has(r.fromUid)));
+      } catch {}
+    }, 60000);
+    return () => clearInterval(t);
+  }, [backend]);
+
   const persist = useCallback((next: Letter[]) => {
     setLetters(next);
     try {
@@ -148,31 +168,46 @@ export function useLetters() {
 
   /** 편지 보내기. 서버 저장이 실패하면 오류를 그대로 던져서 화면이 알려주게 한다(조용히 내 폰에만 저장하지 않음). */
   const add = useCallback(
-    async (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number }) => {
+    async (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => {
       await settled.current!.promise; // 서버 연결 확인이 끝날 때까지 기다림
       if (backendRef.current === "firebase") {
         const id = await remote.sendLetter({
           toName: l.to, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, message: l.message, speed: l.speed, recipientUid: l.toUid ?? null,
+          photos: l.photos, departAt: l.departAt, replyTo: l.replyTo,
         });
         const meta = await remote.getMeta(id);
         const letter: Letter = {
           id, to: l.to, routeId: l.routeId, birdId: l.birdId, message: l.message,
-          sentAt: meta?.sentAt ?? Date.now(), arriveAt: meta?.arriveAt, toUid: l.toUid,
+          sentAt: meta?.sentAt ?? l.departAt ?? Date.now(), arriveAt: meta?.arriveAt, toUid: l.toUid, photos: l.photos,
         };
         setLetters((prev) => [letter, ...prev]);
         announce({ type: "sent", letter });
+        if (l.toUid && letter.arriveAt) { // 친구가 앱을 닫고 있어도 도착하면 알림이 가도록 친구 폰에 예약
+          const toUid = l.toUid, arriveAt = letter.arriveAt;
+          import("./firebase/pushSub").then((m) => m.notifyFriendArrival({ letterId: id, toUid, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, arriveAt })).catch(() => {});
+        }
         return id;
       }
-      const sentAt = Date.now();
+      const sentAt = l.departAt ?? Date.now();
       const newId = Math.random().toString(36).slice(2, 9);
       const minutes = totalMinutes(newId, l.birdId, getRoute(l.routeId).km, sentAt, l.speed ?? 1);
       const letter: Letter = {
         id: newId, to: l.to, routeId: l.routeId, birdId: l.birdId,
-        message: l.message, sentAt, arriveAt: sentAt + minutes * 60000,
+        message: l.message, sentAt, arriveAt: sentAt + minutes * 60000, photos: l.photos,
       };
       persist([letter, ...letters]);
       announce({ type: "sent", letter });
       return letter.id;
+    },
+    [letters, persist],
+  );
+
+  /** 보낸 편지를 지워요(출발 전 예약 취소). 서버 편지는 글·사진까지 함께 지워요 */
+  const cancel = useCallback(
+    async (id: string) => {
+      if (backendRef.current === "firebase") await remote.cancelLetter(id);
+      else persist(letters.filter((x) => x.id !== id));
+      setLetters((prev) => prev.filter((x) => x.id !== id));
     },
     [letters, persist],
   );
@@ -184,5 +219,5 @@ export function useLetters() {
     [letters, persist],
   );
 
-  return { letters, received, ready, backend, add, fastForward };
+  return { letters, received, ready, backend, add, cancel, fastForward };
 }

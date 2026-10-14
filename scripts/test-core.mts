@@ -6,6 +6,8 @@ import { BIRDS } from "../core/birds.ts";
 import { ROUTES, getRoute, routePosition, makeRoute } from "../core/routes.ts";
 import { PLACES, nearestPlace, getPlace } from "../core/places.ts";
 import { searchPlaces, choseong } from "../core/placeSearch.ts";
+import { validateDepart, isScheduled, toInputValue, fromInputValue, dateTimeText, MAX_SCHEDULE_DAYS } from "../core/schedule.ts";
+import { MAX_PHOTOS, MAX_PHOTO_CHARS } from "../core/limits.ts";
 import { MAX_LETTER_CHARS } from "../core/limits.ts";
 import { validateSchedule, dedupKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
 
@@ -77,6 +79,27 @@ eq("예전 노선 id 거리 유지(서울→제주)", getRoute("seoul-jeju").km,
 }
 eq("편지 글자 수 한도는 10만 자", MAX_LETTER_CHARS, 100000);
 eq("getPlace 서울", getPlace("seoul")?.landmark.name, "남대문");
+// 예약 발송: 출발 시각 확인과 표시
+{
+  const now = Date.UTC(2026, 9, 13, 3, 0, 0);
+  eq("예약: 비워 두면 안내", validateDepart(null, now) !== null, true);
+  eq("예약: 30초 뒤는 안 됨", validateDepart(now + 30_000, now) !== null, true);
+  eq("예약: 2분 뒤는 됨", validateDepart(now + 120_000, now), null);
+  eq("예약: 30일 뒤는 됨", validateDepart(now + 30 * 86400_000, now), null);
+  eq("예약: 366일 뒤는 안 됨", validateDepart(now + 366 * 86400_000, now) !== null, true);
+  eq("예약: 최대 일수는 366(서버 규칙과 같음)", MAX_SCHEDULE_DAYS, 366);
+  eq("예약 중 판정: 출발이 미래", isScheduled(now + 1, now), true);
+  eq("예약 중 판정: 출발이 지났으면 아님", isScheduled(now - 1, now), false);
+  const v = toInputValue(new Date(2026, 11, 25, 9, 5).getTime());
+  eq("입력칸 값 만들기", v, "2026-12-25T09:05");
+  eq("입력칸 값 읽기(되돌리기)", fromInputValue(v), new Date(2026, 11, 25, 9, 5).getTime());
+  eq("입력칸 값이 이상하면 null", fromInputValue("내일"), null);
+  eq("날짜 표시(오전)", dateTimeText(new Date(2026, 11, 25, 9, 5).getTime()), "12월 25일 오전 9:05");
+  eq("날짜 표시(낮 12시는 오후 12)", dateTimeText(new Date(2026, 0, 2, 12, 0).getTime()), "1월 2일 오후 12:00");
+  eq("날짜 표시(자정은 오전 12)", dateTimeText(new Date(2026, 0, 2, 0, 7).getTime()), "1월 2일 오전 12:07");
+}
+eq("사진은 최대 3장", MAX_PHOTOS, 3);
+eq("사진 한 장은 450000자까지(서버 규칙과 같음)", MAX_PHOTO_CHARS, 450000);
 eq("초성 뽑기", choseong("송파구"), "ㅅㅍㄱ");
 eq("검색: 송 → 송파구가 맨 앞", searchPlaces(PLACES, "송")[0]?.id, "songpa");
 eq("검색: ㅅㅍ → 송파구", searchPlaces(PLACES, "ㅅㅍ")[0]?.id, "songpa");

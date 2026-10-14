@@ -1,14 +1,17 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
-import { PUSH_CONFIGURED, sendTestPush, usePushState } from "@/lib/push";
+import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
+import { playChirp } from "@/lib/chirp";
 import { IS_TOSS } from "@/lib/target";
+import { LOGINS, linkAccount, linkedKinds, unlinkAccount, type LoginKind } from "@/lib/firebase/link";
+import { auth, firebaseEnabled } from "@/lib/firebase/client";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -23,6 +26,7 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
+  const [testMsg, setTestMsg] = useState("");
   const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
   const toggle = (key: NotifyKey) =>
@@ -117,6 +121,19 @@ export default function Settings() {
             />
           </div>
         ))}
+        <div className="listrow">
+          <div className="grow">
+            <div className="name">새 짹짹 소리</div>
+            <div className="note">앱이 열려 있을 때 알림과 함께 새가 짹짹여요. <button className="linkbtn" style={{ display: "inline", margin: "0 0 0 4px", padding: 0, minHeight: 0, opacity: 1 }} onClick={() => playChirp()}>들어보기</button></div>
+          </div>
+          <button
+            role="switch"
+            aria-checked={profile.chirp}
+            aria-label="새 짹짹 소리"
+            className="switch"
+            onClick={() => update({ chirp: !profile.chirp })}
+          />
+        </div>
       </div>
       <div className="small">
         앱을 열어 둔 동안에는 귀여운 팝업으로 알려줘요.{!IS_TOSS && " 앱을 닫아도 받으려면 아래 스위치를 켜 주세요."}
@@ -143,21 +160,39 @@ export default function Settings() {
             )}
           </div>
           {push === "enabled" && (
+            <>
             <div className="listrow">
               <div className="grow">
                 <div className="name">알림 시험하기</div>
                 <div className="note">누른 뒤 <b>홈 화면으로 나가세요</b>. 12초쯤 뒤에 시험 알림이 와요.</div>
               </div>
-              <button
-                className="chip"
-                onClick={async () => setMsg((await sendTestPush()) ? "12초 뒤에 시험 알림을 보내요. 지금 홈 화면으로 나가 보세요." : "시험 알림을 예약하지 못했어요. 잠시 후 다시 눌러 주세요.")}
-              >
-                시험 알림 보내기
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <button className="chip" onClick={async () => setTestMsg((await showLocalTest()) ? "이 폰에서 알림을 띄웠어요. 위쪽에 보이나요?" : "이 폰에서 알림을 띄우지 못했어요. 폰 설정에서 이 앱의 알림 허용을 확인해 주세요.")}>
+                  이 폰에서 바로 시험
+                </button>
+                <button
+                  className="chip"
+                  onClick={async () => {
+                    setTestMsg("예약하는 중이에요...");
+                    const r = await sendTestPush();
+                    setTestMsg(r.ok ? "예약했어요. 지금 홈 화면으로 나가세요. 12초쯤 뒤에 알림이 와요."
+                      : r.reason === "server-off" ? "서버에 알림 설정이 아직 없어요(503). 개발팀에 알려 주세요."
+                      : r.reason === "rejected" ? `서버가 예약을 거절했어요(오류 ${r.status}). 개발팀에 알려 주세요.`
+                      : r.reason === "network" ? "인터넷 연결을 확인해 주세요."
+                      : "이 폰의 알림 주소를 찾지 못했어요. 스위치를 껐다 켜 주세요.");
+                  }}
+                >
+                  서버로 시험 알림 보내기
+                </button>
+              </div>
             </div>
+            {testMsg && <div className="small" role="status" style={{ padding: "0 16px 12px" }}>{testMsg}</div>}
+            </>
           )}
         </div>
       )}
+
+      {firebaseEnabled && !IS_TOSS && <AccountLinks />}
 
       <h2>계정</h2>
       <div className="list">
@@ -184,5 +219,49 @@ export default function Settings() {
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>
+  );
+}
+
+/** 소셜 계정 연결: 연결하면 폰을 바꿔도 편지와 친구가 이어져요. */
+function AccountLinks() {
+  const [linked, setLinked] = useState<LoginKind[]>([]);
+  const [busy, setBusy] = useState<LoginKind | null>(null);
+  const [note, setNote] = useState("");
+  useEffect(() => {
+    const a = auth();
+    setLinked(linkedKinds(a.currentUser));
+    return a.onAuthStateChanged((u) => setLinked(linkedKinds(u)));
+  }, []);
+  async function toggle(kind: LoginKind) {
+    setBusy(kind);
+    setNote("");
+    const isLinked = linked.includes(kind);
+    const r = isLinked ? await unlinkAccount(kind) : await linkAccount(kind);
+    setBusy(null);
+    if (!r.ok) setNote(r.message);
+    else {
+      setLinked(linkedKinds(auth().currentUser));
+      setNote(isLinked ? "연결을 해제했어요." : r.switched ? "이전에 연결한 계정으로 들어왔어요." : "연결했어요. 폰을 바꿔도 이어서 쓸 수 있어요.");
+    }
+  }
+  return (
+    <>
+      <h2>계정 연결</h2>
+      <div className="list">
+        {LOGINS.map((l) => (
+          <button
+            key={l.kind}
+            className="listrow action"
+            disabled={!l.ready || busy !== null}
+            onClick={() => toggle(l.kind)}
+            aria-label={`${l.label} ${linked.includes(l.kind) ? "연결 해제" : "연결"}`}
+          >
+            <span>{l.label}</span>
+            <span className="note">{!l.ready ? "준비 중" : linked.includes(l.kind) ? "연결됨 · 해제" : "연결하기"}</span>
+          </button>
+        ))}
+      </div>
+      <div className="small" role="status">{note || "연결하면 폰을 바꿔도 편지와 친구가 그대로 있어요."}</div>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { firebaseEnabled } from "@/lib/firebase/client";
 import { addFriend, ensureMyCode, isCode, listFriends, lookupCode, normalizeCode, removeFriend, type Friend } from "@/lib/firebase/friends";
 import { useProfile } from "@/lib/settings";
+import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvite";
 
 export default function FriendsPage() {
   return (
@@ -72,6 +73,14 @@ function Friends() {
       else { await navigator.clipboard.writeText(`${text}\n${link()}`); setMsg("초대 링크를 복사했어요. 친구에게 붙여넣어 보내 주세요."); }
     } catch {}
   };
+  const [canPick, setCanPick] = useState(false);
+  useEffect(() => setCanPick(contactPickerSupported()), []);
+  const inviteFromContacts = async () => {
+    const c = await pickContact();
+    if (!c) { setMsg("전화번호가 있는 연락처를 골라 주세요."); return; }
+    setMsg(`${c.name || "친구"}님께 보낼 문자를 열어요.`);
+    location.href = smsHref(c.tel, `새편지에서 친구해요! 내 친구 코드: ${code}\n${link()}`);
+  };
   const copy = async () => { try { await navigator.clipboard.writeText(code); setMsg("코드를 복사했어요."); } catch {} };
   const remove = async (f: Friend) => {
     if (!window.confirm(`${f.name}님과 친구를 끊을까요? 서로에게 바로 보내기가 멈춰요.`)) return;
@@ -105,6 +114,10 @@ function Friends() {
           <button className="cta" style={{ flex: 2 }} disabled={!code} onClick={share}>초대 링크 보내기</button>
           <button className="ghost" style={{ flex: 1 }} disabled={!code} onClick={copy}>코드 복사</button>
         </div>
+        {canPick && (
+          <button className="ghost" disabled={!code} onClick={inviteFromContacts}>연락처에서 골라 문자로 초대</button>
+        )}
+        {canPick && <div className="note" style={{ marginTop: 6 }}>고른 연락처는 문자를 여는 데만 쓰고 저장하지 않아요.</div>}
       </div>
 
       <h2>친구 코드 입력</h2>
