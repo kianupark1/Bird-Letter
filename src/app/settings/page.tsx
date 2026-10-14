@@ -264,7 +264,7 @@ function AccountLinks() {
             aria-label={`${l.label} ${linked.includes(l.kind) ? "연결 해제" : "연결"}`}
           >
             <span>{l.label}</span>
-            <span className="note">{!l.ready ? "준비 중" : linked.includes(l.kind) ? "연결됨 · 해제" : "연결하기"}</span>
+            <span className="note">{!l.ready ? "준비 중" : linked.includes(l.kind) ? (l.kind === "kakao" ? "연결됨" : "연결됨 · 해제") : "연결하기"}</span>
           </button>
         ))}
       </div>
