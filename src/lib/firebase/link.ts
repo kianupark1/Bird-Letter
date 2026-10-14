@@ -6,12 +6,14 @@ import {
 import { auth, ensureUser, firebaseEnabled } from "./client";
 
 /** 설정의 "계정 연결"에서 쓰는 로그인 종류. 구글·애플은 Firebase가 직접 처리하고, 나머지는 서버 연결이 끝나야 열립니다. */
+import { KAKAO_LOGIN_READY, startKakaoLogin } from "./kakao";
+
 export type LoginKind = "google" | "apple" | "kakao" | "naver" | "line";
 
 export const LOGINS: { kind: LoginKind; label: string; ready: boolean }[] = [
   { kind: "google", label: "구글", ready: true },
   { kind: "apple", label: "애플", ready: true },
-  { kind: "kakao", label: "카카오", ready: false },
+  { kind: "kakao", label: "카카오", ready: KAKAO_LOGIN_READY },
   { kind: "naver", label: "네이버", ready: false },
   { kind: "line", label: "라인", ready: false },
 ];
@@ -38,6 +40,7 @@ export type LinkResult = { ok: true; switched: boolean } | { ok: false; message:
  * 이미 그 구글/애플로 만든 계정이 있으면(예: 새 폰) 그 계정으로 들어가고 switched=true 를 돌려줍니다.
  */
 export async function linkAccount(kind: LoginKind): Promise<LinkResult> {
+  if (kind === "kakao") { startKakaoLogin(); return { ok: true, switched: false }; } // 카카오 화면으로 이동(돌아오면 /auth/kakao 가 마무리)
   if (!firebaseEnabled) return { ok: false, message: "서버에 연결된 뒤에 쓸 수 있어요." };
   try {
     const user = await ensureUser();

@@ -1,0 +1,32 @@
+# 새 기능(사진·답장·예약)을 공개 사이트에서 실제 서버로 시험해요. Firebase 규칙을 게시한 뒤에 통과해요.
+# 이 파일이나 시험 파일을 고쳐 올리면 자동으로 돌고, 손으로도 실행할 수 있어요.
+name: 새 기능 서버 시험
+
+on:
+  push:
+    branches: [claude/exciting-shannon-lbcyf3]
+    paths:
+      - scripts/e2e-features.mjs
+      - .github/workflows/feature-check.yml
+  workflow_dispatch:
+
+jobs:
+  features:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 사진·답장·예약 시험
+        run: npm run e2e:features
+      - name: 실패하면 화면 캡처 남기기
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-output-features
+          path: qa-output/
+          if-no-files-found: ignore
