@@ -6,7 +6,7 @@ import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import { useProfile, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
-import { PUSH_CONFIGURED, sendTestPush, usePushState } from "@/lib/push";
+import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
 import { playChirp } from "@/lib/chirp";
 import { IS_TOSS } from "@/lib/target";
@@ -26,6 +26,7 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
+  const [testMsg, setTestMsg] = useState("");
   const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
   const toggle = (key: NotifyKey) =>
@@ -159,18 +160,34 @@ export default function Settings() {
             )}
           </div>
           {push === "enabled" && (
+            <>
             <div className="listrow">
               <div className="grow">
                 <div className="name">알림 시험하기</div>
                 <div className="note">누른 뒤 <b>홈 화면으로 나가세요</b>. 12초쯤 뒤에 시험 알림이 와요.</div>
               </div>
-              <button
-                className="chip"
-                onClick={async () => setMsg((await sendTestPush()) ? "12초 뒤에 시험 알림을 보내요. 지금 홈 화면으로 나가 보세요." : "시험 알림을 예약하지 못했어요. 잠시 후 다시 눌러 주세요.")}
-              >
-                시험 알림 보내기
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <button className="chip" onClick={async () => setTestMsg((await showLocalTest()) ? "이 폰에서 알림을 띄웠어요. 위쪽에 보이나요?" : "이 폰에서 알림을 띄우지 못했어요. 폰 설정에서 이 앱의 알림 허용을 확인해 주세요.")}>
+                  이 폰에서 바로 시험
+                </button>
+                <button
+                  className="chip"
+                  onClick={async () => {
+                    setTestMsg("예약하는 중이에요...");
+                    const r = await sendTestPush();
+                    setTestMsg(r.ok ? "예약했어요. 지금 홈 화면으로 나가세요. 12초쯤 뒤에 알림이 와요."
+                      : r.reason === "server-off" ? "서버에 알림 설정이 아직 없어요(503). 개발팀에 알려 주세요."
+                      : r.reason === "rejected" ? `서버가 예약을 거절했어요(오류 ${r.status}). 개발팀에 알려 주세요.`
+                      : r.reason === "network" ? "인터넷 연결을 확인해 주세요."
+                      : "이 폰의 알림 주소를 찾지 못했어요. 스위치를 껐다 켜 주세요.");
+                  }}
+                >
+                  서버로 시험 알림 보내기
+                </button>
+              </div>
             </div>
+            {testMsg && <div className="small" role="status" style={{ padding: "0 16px 12px" }}>{testMsg}</div>}
+            </>
           )}
         </div>
       )}
