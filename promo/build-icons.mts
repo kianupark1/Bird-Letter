@@ -19,7 +19,7 @@ const scene = (k: number) => `
   <g opacity=".22"><circle cx="150" cy="40" r="10"/><circle cx="164" cy="34" r="13"/><circle cx="180" cy="42" r="9"/><rect x="142" y="40" width="46" height="11" rx="5.5"/></g>
   <g opacity=".18"><circle cx="150" cy="176" r="9"/><circle cx="164" cy="171" r="12"/><rect x="142" y="176" width="40" height="10" rx="5"/></g>
 </g>
-<g transform="translate(100 104) scale(${k}) translate(-104 -100)">
+<g transform="translate(94 104) scale(${k}) translate(-104 -100)">
   <!-- 먼 쪽 날개(위로 솟음) -->
   <path d="M98 102 C102 62 112 30 132 4 C140 34 134 72 116 106 Z" fill="${DARK}"/>
   <path d="M112 90 C116 62 122 38 132 16" stroke="${GREEN}" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>
@@ -37,14 +37,25 @@ const scene = (k: number) => `
   <!-- 머리·눈·부리 -->
   <circle cx="144" cy="94" r="18" fill="${NAVY}"/>
   <circle cx="150" cy="90" r="4.4" fill="${CREAM}"/><circle cx="151.4" cy="90.4" r="2.1" fill="#1A1613"/>
-  <path d="M158 93 L180 99 L159 104 Z" fill="${GOLD}"/>
-  <!-- 입에 문 편지 -->
-  <g transform="translate(176 112) rotate(14)">
-    <rect x="-20" y="-13" width="40" height="27" rx="3" fill="rgba(0,0,0,.18)" transform="translate(2 3)"/>
-    <rect x="-20" y="-14" width="40" height="27" rx="3" fill="${CREAM}" stroke="${RED}" stroke-width="2.6"/>
-    <path d="M-19 -12 L0 3 L19 -12" fill="none" stroke="${RED}" stroke-width="2.4"/>
-    <circle cx="0" cy="3" r="5" fill="${RED}"/>
+  <!-- 입에 문 편지: 편지를 먼저 그리고 부리를 그 위에 얹어서 "물고 있는" 모습 -->
+  <g transform="translate(188 111) rotate(10)">
+    <rect x="-22" y="-15" width="44" height="30" rx="3.5" fill="rgba(0,0,0,.22)" transform="translate(2.5 3.5)"/>
+    <rect x="-22" y="-15" width="44" height="30" rx="3.5" fill="${CREAM}"/>
+    <!-- 항공우편풍 빨강·남색 줄무늬 테두리 -->
+    <rect x="-20" y="-13" width="40" height="26" rx="2.5" fill="none" stroke="${RED}" stroke-width="4"/>
+    <rect x="-20" y="-13" width="40" height="26" rx="2.5" fill="none" stroke="${NAVY}" stroke-width="4" stroke-dasharray="6 6" stroke-dashoffset="3"/>
+    <rect x="-17.5" y="-10.5" width="35" height="21" rx="1.5" fill="#FFF9EC"/>
+    <!-- 뚜껑 접힌 선과 그늘 -->
+    <path d="M-17.5 -10.5 L0 4 L17.5 -10.5 Z" fill="${RED}" opacity=".09"/>
+    <path d="M-17.5 -10.5 L0 4 L17.5 -10.5" fill="none" stroke="${RED}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M-17.5 10.5 L-5 0 M17.5 10.5 L5 0" fill="none" stroke="${RED}" stroke-width="1.2" opacity=".5"/>
+    <!-- 하트 도장 -->
+    <circle cx="0" cy="4" r="7" fill="${RED}"/>
+    <circle cx="0" cy="4" r="7" fill="none" stroke="${GOLD}" stroke-width="1.4"/>
+    <path d="M0 8.6 C-5.4 4.4 -2.6 0.4 0 2.8 C2.6 0.4 5.4 4.4 0 8.6 Z" fill="${CREAM}"/>
   </g>
+  <path d="M157 100 L181 103 L158 106 Z" fill="#B5832A"/>
+  <path d="M157 92 L182 100 L157 101 Z" fill="${GOLD}"/>
 </g>`;
 
 const html = (size: number, k: number, rounded: boolean) => `<!doctype html><meta charset="utf-8"><style>
