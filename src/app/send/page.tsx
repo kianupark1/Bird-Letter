@@ -149,8 +149,10 @@ function SendForm() {
     setBusy(true);
     setError("");
     try {
+      // 이름만 적었어도 같은 이름의 친구가 있으면 그 친구에게 바로 보내요(같은 사람이 둘로 갈라지지 않게)
+      const uid = toUid ?? friends.find((f) => f.name === to.trim())?.uid;
       const id = await add({
-        to: to.trim(), toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed,
+        to: to.trim(), toUid: uid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed,
         photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined, replyTo,
       });
       router.push(letterHref(id));

@@ -38,8 +38,12 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
     return t;
   };
   for (const f of friends) get(keyForUid(f.uid), f.uid, f.name);
+  // 이름만 적어 보낸 편지도, 같은 이름의 친구가 있으면 그 친구 한 명으로 합쳐요(같은 사람이 둘로 갈라지지 않게)
+  const friendByName = new Map<string, string>();
+  for (const f of friends) if (!friendByName.has(f.name)) friendByName.set(f.name, f.uid);
   for (const s of sent) {
-    const t = s.toUid ? get(keyForUid(s.toUid), s.toUid, friendName.get(s.toUid) ?? s.to) : get(keyForName(s.to), undefined, s.to);
+    const uid = s.toUid ?? friendByName.get(s.to);
+    const t = uid ? get(keyForUid(uid), uid, friendName.get(uid) ?? s.to) : get(keyForName(s.to), undefined, s.to);
     t.entries.push({ dir: "sent", item: s, at: s.sentAt });
   }
   for (const r of received) {

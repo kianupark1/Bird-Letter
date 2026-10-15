@@ -13,9 +13,8 @@ import { openInstallGuide } from "@/lib/install";
 import { playChirp } from "@/lib/chirp";
 import { getBird } from "@/lib/birds";
 import { IS_TOSS } from "@/lib/target";
-import { LOGINS, linkAccount, linkedKinds, unlinkAccount, type LoginKind } from "@/lib/firebase/link";
+import { signOut } from "firebase/auth";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
-import { isKakaoLinked } from "@/lib/firebase/kakao";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -37,6 +36,12 @@ export default function Settings() {
   const toggle = (key: NotifyKey) =>
     update((prev) => ({ notify: { ...prev.notify, [key]: !prev.notify[key] } }));
 
+  // 로그아웃: 다음에 열면 처음 로그인 화면이 나와요(같은 계정으로 다시 들어오면 편지와 친구가 그대로예요)
+  const logout = async () => {
+    if (!window.confirm("로그아웃할까요? 같은 계정으로 다시 로그인하면 편지와 친구는 그대로예요.")) return;
+    try { await signOut(auth()); } catch {}
+    window.location.assign("/");
+  };
   const replayOnboarding = () => {
     try {
       localStorage.removeItem(ONBOARDED_KEY);
@@ -203,13 +208,16 @@ export default function Settings() {
         </div>
       )}
 
-      {firebaseEnabled && !IS_TOSS && <AccountLinks />}
-
       <h2>계정</h2>
       <div className="list">
         <button className="listrow action" onClick={replayOnboarding}>
           <span>온보딩 다시 보기</span><span aria-hidden>›</span>
         </button>
+        {firebaseEnabled && !IS_TOSS && (
+          <button className="listrow action" onClick={logout}>
+            <span>로그아웃</span><span aria-hidden>›</span>
+          </button>
+        )}
         <button className="listrow action danger" onClick={clearLetters}>
           <span>{backend === "firebase" ? "내 편지와 데이터 모두 삭제" : "보낸 편지 모두 지우기"}</span><span aria-hidden>›</span>
         </button>
@@ -230,55 +238,5 @@ export default function Settings() {
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>
-  );
-}
-
-/** 소셜 계정 연결: 연결하면 폰을 바꿔도 편지와 친구가 이어져요. */
-function AccountLinks() {
-  const [linked, setLinked] = useState<LoginKind[]>([]);
-  const [busy, setBusy] = useState<LoginKind | null>(null);
-  const [note, setNote] = useState("");
-  useEffect(() => {
-    const a = auth();
-    const refresh = async (u: typeof a.currentUser) => {
-      const k = u ? await isKakaoLinked() : false; // 카카오는 로그인 토큰 안의 표시(claim)로 알아요
-      setLinked([...linkedKinds(u), ...(k ? (["kakao"] as LoginKind[]) : [])]);
-    };
-    refresh(a.currentUser);
-    if (new URLSearchParams(location.search).get("linked") === "kakao") setNote("카카오 연결이 끝났어요. 폰을 바꿔도 이어서 쓸 수 있어요.");
-    return a.onAuthStateChanged((u) => { refresh(u); });
-  }, []);
-  async function toggle(kind: LoginKind) {
-    if (kind === "kakao" && linked.includes("kakao")) { setNote("카카오 연결 해제는 아직 지원하지 않아요."); return; }
-    setBusy(kind);
-    setNote("");
-    const isLinked = linked.includes(kind);
-    const r = isLinked ? await unlinkAccount(kind) : await linkAccount(kind);
-    setBusy(null);
-    if (!r.ok) setNote(r.message);
-    else {
-      if (kind !== "kakao") setLinked(linkedKinds(auth().currentUser));
-      setNote(isLinked ? "연결을 해제했어요." : r.switched ? "이전에 연결한 계정으로 들어왔어요." : "연결했어요. 폰을 바꿔도 이어서 쓸 수 있어요.");
-    }
-  }
-  return (
-    <>
-      <h2>계정 연결</h2>
-      <div className="list">
-        {LOGINS.map((l) => (
-          <button
-            key={l.kind}
-            className="listrow action"
-            disabled={!l.ready || busy !== null}
-            onClick={() => toggle(l.kind)}
-            aria-label={`${l.label} ${linked.includes(l.kind) ? "연결 해제" : "연결"}`}
-          >
-            <span>{l.label}</span>
-            <span className="note">{!l.ready ? "준비 중" : linked.includes(l.kind) ? (l.kind === "kakao" ? "연결됨" : "연결됨 · 해제") : "연결하기"}</span>
-          </button>
-        ))}
-      </div>
-      <div className="small" role="status">{note || "연결하면 폰을 바꿔도 편지와 친구가 그대로 있어요."}</div>
-    </>
   );
 }

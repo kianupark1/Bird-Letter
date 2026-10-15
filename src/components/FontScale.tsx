@@ -8,6 +8,7 @@ export default function FontScale() {
     const apply = () => {
       let id = "normal";
       try { id = JSON.parse(localStorage.getItem(PROFILE_KEY) ?? "{}").fontScale ?? "normal"; } catch {}
+      if (id === "xlarge") id = "large"; // 옛 "아주 크게"는 "크게"로
       document.documentElement.dataset.scale = FONT_SCALES.some((s) => s.id === id) ? id : "normal";
     };
     apply();
