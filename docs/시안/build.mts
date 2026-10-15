@@ -254,16 +254,15 @@ add("08-보낸직후", "⑧ 날려 보냈어요 (보낸 직후)", "보내는 순
 </div>
 <div class="dock" style="padding-bottom:30px"><div class="cta">지민 대화방 보기</div></div>`, "8"));
 
-// 09 친구 추가
-add("09-친구추가", "⑨ 친구 추가", "방법은 세 가지만. 코드를 몰라도 카카오톡이나 연락처로 초대해요.", wrap(`
-<div class="hd"><div class="back">‹</div><div class="t"><b>친구 추가</b><span>친구가 있어야 편지를 보낼 수 있어요</span></div></div>
+// 09 친구 추가 (코드 없이: 카카오톡 초대가 맨 위)
+add("09-친구추가", "⑨ 친구 추가 (코드 없음)", "친구 코드는 화면에서 없앴어요. 카카오톡으로 초대 링크를 보내면 끝.", wrap(`
+<div class="hd"><div class="back">‹</div><div class="t"><b>친구 초대</b><span>링크를 받은 친구가 시작하면 자동으로 친구가 돼요</span></div></div>
 <div class="body">
-  <div class="opt"><div class="ic">💬</div><div><b>카카오톡으로 초대하기</b><span>링크를 보내면 바로 연결돼요</span></div></div>
+  <div class="cta" style="background:#FEE500;color:#2a211b;height:72px">💬 카카오톡으로 초대하기</div>
+  <div class="st" style="text-align:center">친구가 링크를 누르고 카카오로 시작하면<br>바로 편지를 주고받을 수 있어요</div>
   <div class="opt"><div class="ic">📇</div><div><b>연락처에서 초대하기</b><span>문자로 초대 링크를 보내요</span></div></div>
-  <div class="st" style="margin-top:6px">내 친구 코드를 알려 주세요</div>
-  <div class="code">K7M2 9QXA</div>
-  <div class="ghost">코드 복사하기</div>
-  <div class="opt"><div class="ic">⌨️</div><div><b>친구 코드 입력하기</b><span>친구가 알려 준 코드를 적어요</span></div></div>
+  <div class="opt"><div class="ic">🔗</div><div><b>초대 링크 복사하기</b><span>다른 앱에 붙여 넣어 보낼 수 있어요</span></div></div>
+  <div class="opt" style="opacity:.7"><div class="ic">👥</div><div><b>카카오톡 친구 중에서 찾기 <span class="tag" style="font-size:13px;background:#F6E9CF;border-radius:8px;padding:1px 6px">준비 중</span></b><span>이미 새 편지를 쓰는 친구가 자동으로 나와요</span></div></div>
 </div>
 ${tabs(1)}`, "9"));
 
@@ -287,10 +286,52 @@ add("11-내정보", "⑪ 내 정보 / 설정", "★ 새로 넣을 것: 글씨 �
   <div class="row" style="min-height:84px"><div class="av g">나</div><div class="mid"><div class="nm">대표님</div><div class="st">카카오 연결됨</div></div></div>
   <div class="eta"><div class="nm" style="font-size:20px">★ 글씨 크기</div><div class="seg" style="margin-top:10px"><div>보통</div><div class="on">크게</div><div>아주 크게</div></div></div>
   <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">도착 알림</div><div class="st">편지가 오면 짹짹! 알려 드려요</div></div><div class="sw"></div></div>
-  <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">계정 연결</div><div class="st">카카오 · 구글 · 네이버 · 애플 · 라인</div></div><div style="font-size:28px">›</div></div>
+  <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">로그인 방법</div><div class="st">카카오로 로그인 중 · 다른 방법도 추가</div></div><div style="font-size:28px">›</div></div>
   <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">도움말 · 문의</div></div><div style="font-size:28px">›</div></div>
 </div>
 ${tabs(2)}`, "11"));
+
+// 14 시작(로그인)
+add("14-로그인", "⑫ 처음 열었을 때 (로그인)", "로그인이 곧 시작이에요. 코드·가입 양식 없음. 버튼 하나로 끝.", wrap(`
+<div class="body" style="justify-content:center">
+  <div class="center">
+    ${bird("magpie", 200, true)}
+    <h1 style="font-size:36px">새 편지</h1>
+    <p>새가 날아서 전하는<br>천천히 도착하는 편지</p>
+  </div>
+</div>
+<div class="dock" style="padding-bottom:20px;gap:12px">
+  <div class="cta" style="background:#FEE500;color:#2a211b;height:68px">💬 카카오로 시작하기</div>
+  <div class="ghost" style="height:62px">구글로 시작하기</div>
+  <div class="cta" style="background:#111;height:62px">  애플로 시작하기</div>
+  <div class="st" style="text-align:center;font-size:15px">네이버 · 라인은 곧 추가돼요<br>시작하면 이용약관과 개인정보 처리방침에 동의한 것으로 봐요 · 만 14세 이상</div>
+</div>`));
+
+// 15 초대 받은 사람
+add("15-초대받음", "⑬ 친구가 보낸 초대 링크를 눌렀을 때", "누가 초대했는지 먼저 보여 주고, 로그인하면 자동으로 친구가 돼요.", wrap(`
+<div class="body" style="justify-content:center">
+  <div class="center">
+    <div class="av g" style="width:96px;height:96px;font-size:44px">지</div>
+    <h2>지민님이<br>편지 친구로 초대했어요</h2>
+    <p>새가 날아서 전하는 편지.<br>시작하면 지민님과 바로 연결돼요</p>
+  </div>
+</div>
+<div class="dock" style="padding-bottom:20px;gap:12px">
+  <div class="cta" style="background:#FEE500;color:#2a211b;height:68px">💬 카카오로 시작하고 친구 되기</div>
+  <div class="ghost" style="height:62px">구글로 시작하기</div>
+  <div class="st" style="text-align:center;font-size:15px">앱이 없으면 먼저 설치 화면으로 이동해요</div>
+</div>`));
+
+// 16 연결됨
+add("16-친구연결됨", "⑭ 친구가 됐어요 (로그인 직후)", "코드 입력 없이 자동 연결. 다음 할 일은 첫 편지 하나.", wrap(`
+<div class="body" style="justify-content:center">
+  <div class="center">
+    <div style="display:flex;align-items:center;gap:14px"><div class="av n" style="width:80px;height:80px;font-size:36px">나</div><div style="font-size:30px">💌</div><div class="av g" style="width:80px;height:80px;font-size:36px">지</div></div>
+    <h2>지민님과<br>편지 친구가 되었어요!</h2>
+    <p>첫 편지를 써서<br>새에게 맡겨 보세요</p>
+  </div>
+</div>
+<div class="dock" style="padding-bottom:30px"><div class="cta">지민에게 첫 편지 쓰기</div></div>`));
 
 /* ───────── 보드(목표·벤치마크·디자인 규칙) ───────── */
 const boardCss = `.board{width:1200px;padding:40px 44px;background:var(--bg)}.board h1{font-size:38px;margin-bottom:6px}.board .lead{font-size:20px;color:var(--sub);margin-bottom:26px}
@@ -301,11 +342,11 @@ table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--line);pad
 .sw2{display:flex;gap:10px;margin-top:10px}.sw2 i{display:block;width:70px;height:70px;border-radius:16px}.sw2 span{font-size:14px;display:block;margin-top:4px;color:var(--sub)}`;
 const swatch = (c: string, n: string) => `<div><i style="background:${c}"></i><span>${n}<br>${c}</span></div>`;
 
-const goal = `<div class="board"><h1>목표와 원칙</h1><div class="lead">대상: 20~30대부터 할아버지·할머니, 아이들까지 누구나. 앞의 그림 11장이 이 원칙으로 만든 화면이에요.</div>
+const goal = `<div class="board"><h1>목표와 원칙</h1><div class="lead">대상: 20~30대부터 할아버지·할머니, 아이들까지 누구나. 앞의 그림 14장이 이 원칙으로 만든 화면이에요.</div>
 <div class="grid g3">
 <div class="bx"><h3>① 한 화면에 하나만</h3><p>화면마다 눌러야 할 큰 버튼은 <b>단 하나</b>. 목록은 사람 단위로 한 줄.</p></div>
 <div class="bx"><h3>② 크고 또렷하게</h3><ul><li>글씨 본문 18px 이상, 제목 24~28px</li><li>버튼 높이 56~64px (손가락 큰 분도 OK)</li><li>색에만 기대지 않고 글로 상태를 말함</li></ul></div>
-<div class="bx"><h3>③ 메신저처럼 익숙하게</h3><p>하단 탭 3개(편지·친구·내 정보). 사람을 누르면 대화방. 카톡·라인·왓츠앱에서 쓰던 방식 그대로.</p></div>
+<div class="bx"><h3>③ 메신저처럼 익숙하게</h3><p>로그인=시작(카카오·구글·애플), 친구 코드 없음. 하단 탭 3개(편지·친구·내 정보). 사람을 누르면 대화방. 카톡·라인·왓츠앱에서 쓰던 방식 그대로.</p></div>
 <div class="bx"><h3>④ 새편지만의 것: 지도</h3><p>대화방에 들어가면 <b>지도가 먼저</b>. 보낸 사람도 받는 사람도 같은 지도로 기다려요.</p></div>
 <div class="bx"><h3>⑤ 기다림의 미학</h3><p>도착 시각과 날아가는 모습이 가장 눈에 띄게. 시간을 줄이는 버튼은 없음. 내용은 도착 전까지 봉인.</p></div>
 <div class="bx"><h3>⑥ 어르신 배려</h3><p>★ 글씨 크기 설정(크게·아주 크게), 용어는 쉬운 말(예: "예약" → "나중에 보내기").</p></div>
@@ -319,7 +360,7 @@ const bench = `<div class="board"><h1>벤치마킹: 무엇을 가져오고 무�
 <tr><td><b>Carrier Pidge</b></td><td>지도 위에서 비둘기가 날아가고 도착 시각이 정해지는 느낌</td><td>지도를 <b>대화방 맨 위</b>에 고정(②③), 사람마다 지도</td><td>새가 죽어 편지가 사라지는 규칙(우리는 늦어질 뿐 꼭 도착)</td></tr>
 </table>
 <div class="grid g2" style="margin-top:18px"><div class="bx"><h3>일반 메신저와 우리가 다른 점</h3><p>메신저는 메시지가 <b>바로</b> 가요. 새편지는 <b>날아가는 시간</b>이 있어요. 그래서 대화방에 <b>지도 + 남은 시간</b>이 있고, 내용은 도착 전까지 봉인돼요.</p></div>
-<div class="bx"><h3>처음 쓰는 사람의 길</h3><p>친구 초대(⑩) → 편지 쓰기 → 새 고르기(⑥) → 글쓰기(⑦) → 날려 보냄(⑧) → 대화방 지도(②). 받는 사람은 푸시 → 도착(④) → 편지 읽기(⑤) → 답장.</p></div></div></div>`;
+<div class="bx"><h3>처음 쓰는 사람의 길</h3><p>로그인(⑫) → 친구 초대(⑨, 코드 없음) → 편지 쓰기 → 새 고르기(⑥) → 글쓰기(⑦) → 날려 보냄(⑧) → 대화방 지도(②). 받는 사람은 초대 링크(⑬) → 카카오로 시작 → 친구 연결(⑭), 편지가 오면 푸시 → 도착(④) → 편지 읽기(⑤) → 답장.</p></div></div></div>`;
 
 const tokens = `<div class="board"><h1>디자인 규칙(색·글씨·크기)</h1><div class="lead">앱의 오방색을 그대로 쓰고, 글씨와 버튼만 더 크게 키웠어요. 다크 모드도 앱에서 지원해요.</div>
 <div class="grid g2"><div class="bx"><h3>색</h3><div class="sw2">${swatch("#C1481F", "다홍(주요 버튼)")}${swatch("#1E3A5C", "남색(보조)")}${swatch("#E0A83C", "황토(진행바)")}${swatch("#1B6E5C", "청록(아바타)")}${swatch("#FBF3E4", "한지(배경)")}</div></div>
@@ -341,5 +382,5 @@ shoot("13-디자인규칙", tokens, 1200, 620);
 
 // 전체 한눈에 보기(화면 11장을 한 장에)
 const sheet = `<div style="padding:30px;background:#d9d2c4;width:${4 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(4,390px);gap:30px 30px">${screens.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
-shoot("전체-한눈에", sheet, 4 * 420 + 30, 3 * 960 + 60);
+shoot("전체-한눈에", sheet, 4 * 420 + 30, 4 * 960 + 60);
 console.log("만든 그림:", screens.length + 4);
