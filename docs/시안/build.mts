@@ -335,7 +335,7 @@ const shoot = (name: string, body: string, w: number, h: number) => {
   execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${w},${h + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, name + ".png")}`, "file://" + f], { stdio: "ignore" });
 };
 for (const s of screens) shoot(s.file, s.html, 390, 844);
-shoot("00-목표와원칙", goal, 1200, 700);
+shoot("00-목표와원칙", goal, 1200, 560);
 shoot("12-벤치마킹", bench, 1200, 930);
 shoot("13-디자인규칙", tokens, 1200, 620);
 
