@@ -223,13 +223,13 @@ const pk = (id: string, name: string, time: string, d: string, sel = false) => `
 add("06-새고르기", "⑥ 새 고르기 (편지 쓰기 1단계)", "받는 사람은 이미 정해져 있어요. 시간이 제일 크게 보여요.", wrap(`
 <div class="hd"><div class="back">‹</div><div class="t"><b>어떤 새로 보낼까요?</b><span>지민에게 · 서울 → 부산 325km</span></div></div>
 <div class="body" style="gap:8px">
-  ${pk("hawk", "매", "약 3시간 37분", "가장 빨라요")}
+  ${pk("hawk", "매", "약 3시간 37분", "<b style=\"color:#C1481F\">체험 5회 남음</b> · 유료 새")}
   ${pk("pigeon", "비둘기", "약 5시간", "믿음직한 기본 새", true)}
-  ${pk("bungbungi", "붕붕이", "약 5시간 25분", "드론 새 마스코트")}
+  ${pk("bungbungi", "붕붕이", "약 5시간 25분", "<b style=\"color:#C1481F\">체험 5회 남음</b> · 유료 새")}
   ${pk("crane", "두루미", "약 5시간 55분", "귀한 소식용")}
   ${pk("swallow", "제비", "약 8시간 8분", "봄 소식")}
   ${pk("magpie", "까치", "약 9시간 17분", "특별한 도착 연출")}
-  <div class="st" style="text-align:center;font-size:15px">바람에 따라 시간이 조금 달라질 수 있어요</div>
+  <div class="st" style="text-align:center;font-size:15px">바람에 따라 시간이 조금 달라질 수 있어요 · 보내기는 계속 무료</div>
 </div>
 <div class="dock"><div class="cta">이 새로 보낼게요</div></div>`, "6"));
 
@@ -258,6 +258,7 @@ add("08-보낸직후", "⑧ 날려 보냈어요 (보낸 직후)", "보내는 순
 add("09-친구추가", "⑨ 친구 추가 (코드 없음)", "친구 코드는 화면에서 없앴어요. 카카오톡으로 초대 링크를 보내면 끝.", wrap(`
 <div class="hd"><div class="back">‹</div><div class="t"><b>친구 초대</b><span>링크를 받은 친구가 시작하면 자동으로 친구가 돼요</span></div></div>
 <div class="body">
+  <div class="warn" style="background:#FCEBE2;border-color:var(--dahong);color:#7a2a0f">🎁 친구가 첫 편지를 보내면 <b>둘 다 유료 새 체험 3회</b>를 드려요</div>
   <div class="cta" style="background:#FEE500;color:#2a211b;height:72px">💬 카카오톡으로 초대하기</div>
   <div class="st" style="text-align:center">친구가 링크를 누르고 카카오로 시작하면<br>바로 편지를 주고받을 수 있어요</div>
   <div class="opt"><div class="ic">📇</div><div><b>연락처에서 초대하기</b><span>문자로 초대 링크를 보내요</span></div></div>
@@ -333,6 +334,54 @@ add("16-친구연결됨", "⑭ 친구가 됐어요 (로그인 직후)", "코드 
 </div>
 <div class="dock" style="padding-bottom:30px"><div class="cta">지민에게 첫 편지 쓰기</div></div>`));
 
+// 17 가입 선물
+add("17-가입선물", "⑮ 가입 선물 (로그인 직후)", "유료 새 두 종을 5번씩 써 볼 수 있어요. 보내기는 원래 무료.", wrap(`
+<div class="body" style="justify-content:center">
+  <div class="center">
+    <h2>🎁 가입 선물이<br>도착했어요!</h2>
+    <p>유료 새를 <b>5번씩</b> 무료로 써 보세요</p>
+    <div style="display:flex;gap:12px;width:100%">
+      <div class="pick" style="flex:1;flex-direction:column;text-align:center;gap:4px;padding:16px 8px">${bird("bungbungi", 104)}<b>붕붕이</b><span class="d" style="color:var(--dahong);font-weight:700;font-size:18px">체험 5회</span></div>
+      <div class="pick" style="flex:1;flex-direction:column;text-align:center;gap:4px;padding:16px 8px">${bird("hawk", 104)}<b>매</b><span class="d" style="color:var(--dahong);font-weight:700;font-size:18px">체험 5회</span></div>
+    </div>
+    <p style="font-size:16px">기본 새(비둘기·까치·제비·두루미)는<br>계속 무료예요</p>
+  </div>
+</div>
+<div class="dock" style="padding-bottom:30px"><div class="cta">받고 시작하기</div></div>`));
+
+// 18 체험 끝
+add("18-체험끝", "⑯ 체험 5회를 다 썼을 때", "강요하지 않아요. 사거나, 기본 새로 계속 보내거나.", wrap(`
+<div class="hd"><div class="back">‹</div><div class="t"><b>어떤 새로 보낼까요?</b><span>지민에게 · 서울 → 부산 325km</span></div></div>
+<div class="body" style="gap:8px;opacity:.35;pointer-events:none">${pk("hawk", "매", "약 3시간 37분", "유료 새")}${pk("pigeon", "비둘기", "약 5시간", "믿음직한 기본 새")}${pk("bungbungi", "붕붕이", "약 5시간 25분", "유료 새", true)}</div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:28px 28px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:22px 20px 30px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">
+  ${bird("bungbungi", 120)}
+  <div style="font-size:26px;font-weight:700">붕붕이 체험 5회를<br>다 썼어요</div>
+  <div class="st" style="font-size:18px">계속 쓰려면 <b style="color:var(--text)">₩1,500</b> · 한 번만 사면 계속 써요</div>
+  <div class="cta" style="width:100%">붕붕이 구매하기 ₩1,500</div>
+  <div class="ghost" style="width:100%;height:56px">붕붕이+매 묶음 ₩2,500</div>
+  <div class="st" style="font-size:17px;font-weight:700;color:var(--namsaek)">비둘기로 그냥 보낼게요 (무료)</div>
+  <div class="st" style="font-size:14px">카카오 로그인 중이라 폰을 바꿔도 구매가 유지돼요 · 가격은 예시</div>
+</div>`));
+
+// 19 내 새 꾸미기
+const itm = (ico: string, name: string, price: string, on = false) => `<div class="pick ${on ? "sel" : ""}" style="flex-direction:column;justify-content:center;text-align:center;gap:2px;padding:12px 6px;min-height:112px"><div style="font-size:38px;line-height:1">${ico}</div><b style="font-size:19px">${name}</b><span class="d" style="${on ? "color:var(--dahong);font-weight:700" : ""}">${price}</span></div>`;
+add("19-새꾸미기", "⑰ 내 새 꾸미기 (옷장)", "내 새에게 옷을 입혀요. 친구에게도 이 모습으로 보여요. 그림은 예시예요.", wrap(`
+<div class="hd"><div class="back">‹</div><div class="t"><b>내 새 꾸미기</b><span>친구에게도 이 모습으로 보여요</span></div></div>
+<div class="body" style="gap:10px">
+  <div class="eta" style="display:flex;flex-direction:column;align-items:center;padding:14px;background:linear-gradient(#FFF8E8,#F6E9CF)">
+    <div style="position:relative;width:230px;height:184px">${bird("pigeon", 230)}
+      <svg viewBox="0 0 200 160" width="230" height="184" style="position:absolute;left:0;top:0"><path d="M112 84 Q131 100 152 82" fill="none" stroke="#C1481F" stroke-width="11" stroke-linecap="round"/><path d="M121 90 l-1 8 M132 94 l0 8 M143 90 l2 7" stroke="#FBF3E4" stroke-width="3" stroke-linecap="round"/><path d="M121 99 l-4 20 l11 -2 z" fill="#C1481F"/></svg></div>
+    <div class="nm" style="margin-top:4px">비둘기 · 빨간 목도리</div>
+  </div>
+  <div class="seg"><div class="on">옷·소품</div><div>편지지</div><div>도착 연출</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+    ${itm("🐦", "기본", "무료")}${itm("🧣", "목도리", "착용 중", true)}${itm("🎉", "생일 모자", "₩1,000")}
+    ${itm("👘", "한복", "설날 한정")}${itm("🌸", "꽃 장식", "₩1,000")}${itm("🎩", "신사 모자", "₩1,500")}
+  </div>
+  <div class="st" style="text-align:center;font-size:15px">그림과 가격은 예시예요 · 직접 골라서 사요 (랜덤 뽑기 없음)</div>
+</div>
+<div class="dock"><div class="cta">이 모습으로 저장</div></div>`));
+
 /* ───────── 보드(목표·벤치마크·디자인 규칙) ───────── */
 const boardCss = `.board{width:1200px;padding:40px 44px;background:var(--bg)}.board h1{font-size:38px;margin-bottom:6px}.board .lead{font-size:20px;color:var(--sub);margin-bottom:26px}
 .grid{display:grid;gap:18px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}
@@ -342,7 +391,7 @@ table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--line);pad
 .sw2{display:flex;gap:10px;margin-top:10px}.sw2 i{display:block;width:70px;height:70px;border-radius:16px}.sw2 span{font-size:14px;display:block;margin-top:4px;color:var(--sub)}`;
 const swatch = (c: string, n: string) => `<div><i style="background:${c}"></i><span>${n}<br>${c}</span></div>`;
 
-const goal = `<div class="board"><h1>목표와 원칙</h1><div class="lead">대상: 20~30대부터 할아버지·할머니, 아이들까지 누구나. 앞의 그림 14장이 이 원칙으로 만든 화면이에요.</div>
+const goal = `<div class="board"><h1>목표와 원칙</h1><div class="lead">대상: 20~30대부터 할아버지·할머니, 아이들까지 누구나. 앞의 그림 17장이 이 원칙으로 만든 화면이에요.</div>
 <div class="grid g3">
 <div class="bx"><h3>① 한 화면에 하나만</h3><p>화면마다 눌러야 할 큰 버튼은 <b>단 하나</b>. 목록은 사람 단위로 한 줄.</p></div>
 <div class="bx"><h3>② 크고 또렷하게</h3><ul><li>글씨 본문 18px 이상, 제목 24~28px</li><li>버튼 높이 56~64px (손가락 큰 분도 OK)</li><li>색에만 기대지 않고 글로 상태를 말함</li></ul></div>
@@ -374,6 +423,9 @@ const shoot = (name: string, body: string, w: number, h: number) => {
   const f = resolve(OUT, `${name}.html`);
   writeFileSync(f, page(body));
   execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${w},${h + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, name + ".png")}`, "file://" + f], { stdio: "ignore" });
+  // 크로미움이 창 크기보다 아래쪽을 더 찍어서, 정확한 크기로 잘라 줘요
+  const png = resolve(OUT, name + ".png");
+  execFileSync("convert", [png, "-crop", `${w * 2}x${h * 2}+0+0`, "+repage", png]);
 };
 for (const s of screens) shoot(s.file, s.html, 390, 844);
 shoot("00-목표와원칙", goal, 1200, 560);
@@ -382,5 +434,5 @@ shoot("13-디자인규칙", tokens, 1200, 620);
 
 // 전체 한눈에 보기(화면 11장을 한 장에)
 const sheet = `<div style="padding:30px;background:#d9d2c4;width:${4 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(4,390px);gap:30px 30px">${screens.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
-shoot("전체-한눈에", sheet, 4 * 420 + 30, 4 * 960 + 60);
+shoot("전체-한눈에", sheet, 4 * 420 + 30, 5 * 960 + 60);
 console.log("만든 그림:", screens.length + 4);
