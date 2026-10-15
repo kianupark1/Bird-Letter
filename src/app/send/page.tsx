@@ -212,10 +212,10 @@ function SendForm() {
       {step === 2 && (
         <>
           <p className="sub big">어떤 새로 보낼까요?<br /><span>{to}에게 · {route.title} · {route.km}km</span></p>
-          {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
-            <button key={b.id} className="card wrapfoot birdpick" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
+          {[...BIRDS_SLOW_TO_FAST].reverse().map((b, bi) => (
+            <button key={b.id} className={`card wrapfoot birdpick bp${bi % 6}`} aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
-                <BirdIcon id={b.id} size={60} />
+                <BirdIcon id={b.id} size={78} />
                 <div>
                   <div><span className="name">{b.name}</span></div>
                   <div className="kmh">시속 {b.kmh}km</div>

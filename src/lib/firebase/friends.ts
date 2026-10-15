@@ -2,7 +2,9 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, writeBatch } from "firebase/firestore";
 import { db, ensureUser } from "./client";
 
-export type Friend = { uid: string; name: string };
+export type Friend = { uid: string; name: string; /** 친구가 고른 "내 새"(없으면 이름으로 정해요) */ bird?: string };
+const BIRDS_OK = ["magpie", "pigeon", "swallow", "crane", "bungbungi", "hawk"];
+const okBird = (b: unknown): string | undefined => (typeof b === "string" && BIRDS_OK.includes(b) ? b : undefined);
 
 // 헷갈리는 글자(0 O 1 I L)를 뺀 8글자 코드
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -19,7 +21,7 @@ function newCode() {
 const nick = (n: string) => (n.trim() || "새 친구").slice(0, 12);
 
 /** 내 친구 코드. 처음이면 만들고, 닉네임이 바뀌었으면 코드에 붙은 이름도 고쳐요 */
-export async function ensureMyCode(name: string): Promise<string> {
+export async function ensureMyCode(name: string, bird?: string): Promise<string> {
   const user = await ensureUser();
   const d = db();
   const me = doc(d, "users", user.uid);
@@ -35,34 +37,43 @@ export async function ensureMyCode(name: string): Promise<string> {
   }
   const cdoc = doc(d, "codes", code);
   const cur = await getDoc(cdoc);
-  if (!cur.exists() || cur.data().name !== nick(name)) await setDoc(cdoc, { uid: user.uid, name: nick(name) });
+  const b = okBird(bird);
+  if (!cur.exists() || cur.data().name !== nick(name) || (b && cur.data().bird !== b)) {
+    try { await setDoc(cdoc, { uid: user.uid, name: nick(name), ...(b ? { bird: b } : {}) }); }
+    catch (e) { if (!b) throw e; await setDoc(cdoc, { uid: user.uid, name: nick(name) }); } // 서버 규칙이 아직 "내 새"를 모르면 이름만 저장
+  }
   return code;
 }
 
 /** 코드 주인 찾기(친구 추가 전에 "OO님"을 보여줄 때) */
 export async function lookupCode(code: string): Promise<Friend | null> {
   const s = await getDoc(doc(db(), "codes", normalizeCode(code)));
-  return s.exists() ? { uid: s.data().uid, name: s.data().name } : null;
+  return s.exists() ? { uid: s.data().uid, name: s.data().name, bird: okBird(s.data().bird) } : null;
 }
 
 /** 코드로 친구 맺기: 내 목록과 상대 목록에 서로 남겨요(서로 친구여야 앱 안에서 바로 보낼 수 있어요) */
-export async function addFriend(code: string, myName: string): Promise<Friend> {
+export async function addFriend(code: string, myName: string, myBird?: string): Promise<Friend> {
   const user = await ensureUser();
   const other = await lookupCode(code);
   if (!other) throw new Error("not-found");
   if (other.uid === user.uid) throw new Error("self");
   const d = db();
-  const batch = writeBatch(d);
-  batch.set(doc(d, "users", user.uid, "friends", other.uid), { uid: other.uid, name: nick(other.name), at: serverTimestamp() });
-  batch.set(doc(d, "users", other.uid, "friends", user.uid), { uid: user.uid, name: nick(myName), at: serverTimestamp() });
-  await batch.commit();
+  const write = async (withBird: boolean) => {
+    const batch = writeBatch(d);
+    const ob = withBird ? okBird(other.bird) : undefined, mb = withBird ? okBird(myBird) : undefined;
+    batch.set(doc(d, "users", user.uid, "friends", other.uid), { uid: other.uid, name: nick(other.name), at: serverTimestamp(), ...(ob ? { bird: ob } : {}) });
+    batch.set(doc(d, "users", other.uid, "friends", user.uid), { uid: user.uid, name: nick(myName), at: serverTimestamp(), ...(mb ? { bird: mb } : {}) });
+    await batch.commit();
+  };
+  try { await write(true); }
+  catch (e) { if (!okBird(other.bird) && !okBird(myBird)) throw e; await write(false); } // 서버 규칙이 아직 "내 새"를 모르면 이름만으로 친구 맺기
   return other;
 }
 
 export async function listFriends(): Promise<Friend[]> {
   const user = await ensureUser();
   const s = await getDocs(collection(db(), "users", user.uid, "friends"));
-  return s.docs.map((x) => ({ uid: x.id, name: x.data().name as string })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  return s.docs.map((x) => ({ uid: x.id, name: x.data().name as string, bird: okBird(x.data().bird) })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
 }
 
 /** 친구 끊기: 양쪽 목록에서 지워요(끊으면 서로에게 바로 보내기는 멈춰요) */

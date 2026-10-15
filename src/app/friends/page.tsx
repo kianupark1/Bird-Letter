@@ -10,7 +10,7 @@ import { KAKAO_SHARE_READY, shareInviteToKakao } from "@/lib/kakaoShare";
 import { useSession } from "@/lib/session";
 import LoginStart from "@/components/LoginStart";
 import NameStep, { shouldAskName } from "@/components/NameStep";
-import { avatarTone, initialOf } from "../../../core/threads";
+import Face from "@/components/Face";
 import { roomHref } from "@/lib/room";
 
 export default function FriendsPage() {
@@ -45,14 +45,14 @@ function Friends() {
   const reload = useCallback(async () => setFriends(await listFriends()), []);
   useEffect(() => {
     if (state !== "ready" || !ready || !firebaseEnabled || legacy) { if (state === "ready") setLoading(false); return; }
-    if (shouldAskName(profile.nickname)) { setNaming(true); return; }
+    if (shouldAskName(profile)) { setNaming(true); return; }
     setNaming(false);
     (async () => {
-      try { setCode(await ensureMyCode(profile.nickname)); await reload(); }
+      try { setCode(await ensureMyCode(profile.nickname, profile.avatarBird)); await reload(); }
       catch { setMsg("서버에 연결하지 못했어요. 잠시 후 다시 열어 주세요."); }
       setLoading(false);
     })();
-  }, [state, ready, profile.nickname, reload, legacy]);
+  }, [state, ready, profile, reload, legacy]);
 
   const link = () => `${location.origin}/invite?c=${code}`;
   const text = `${profile.nickname}님이 새편지 친구로 초대했어요!`;
@@ -114,7 +114,7 @@ function Friends() {
           <li key={f.uid}>
             <div className="trow">
               <Link href={roomHref({ uid: f.uid, name: f.name })} className="tfriend">
-                <span className={`tav tone${avatarTone(f.name)}`} aria-hidden>{initialOf(f.name)}</span>
+                <Face name={f.name} bird={f.bird} />
                 <span className="tname">{f.name}</span>
               </Link>
               <button type="button" className="chip" onClick={() => remove(f)} aria-label={`${f.name} 친구 끊기`}>끊기</button>

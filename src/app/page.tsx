@@ -6,7 +6,8 @@ import { getRoute } from "@/lib/routes";
 import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
-import { avatarTone, buildThreads, initialOf, type Thread } from "../../core/threads";
+import { buildThreads, type Thread } from "../../core/threads";
+import Face from "@/components/Face";
 import { listFriends, type Friend } from "@/lib/firebase/friends";
 import { firebaseEnabled } from "@/lib/firebase/client";
 import type { Meta } from "@/lib/firebase/remote";
@@ -27,7 +28,7 @@ export default function Home() {
   return <Inbox />;
 }
 
-type Row = { lead?: string; sub: string; progress?: number; badge?: string; side?: string };
+type Row = { lead?: string; sub: string; progress?: number; birdId?: string; badge?: string; side?: string };
 
 /** 대화방 한 줄에 보여줄 상태를 말로 정해요(시안 ①). 가장 눈에 띌 일이 먼저예요 */
 function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string>): Row {
@@ -45,11 +46,11 @@ function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string>): Row
   if (newRecv) return { lead: "새 편지가 도착했어요!", sub: "눌러서 열어 보세요", badge: "새 편지", side: dateTimeText(newRecv.arriveAt).split(" ").slice(0, 2).join(" ") };
   if (flyingRecv) {
     const pr = letterProgress(recvLike(flyingRecv), now);
-    return { lead: "편지가 오고 있어요", sub: `${clockText(flyingRecv.arriveAt)} 도착`, progress: pr.p };
+    return { lead: "편지가 오고 있어요", sub: `${clockText(flyingRecv.arriveAt)} 도착`, progress: pr.p, birdId: flyingRecv.birdId };
   }
   if (flyingSent) {
     const pr = letterProgress(flyingSent, now);
-    return { lead: "내 편지가 날아가는 중", sub: `${getRoute(flyingSent.routeId).title} · ${formatMinutes(Math.max(1, Math.ceil(pr.total - pr.elapsed)))} 남음`, progress: pr.p };
+    return { lead: "내 편지가 날아가는 중", sub: `${getRoute(flyingSent.routeId).title} · ${formatMinutes(Math.max(1, Math.ceil(pr.total - pr.elapsed)))} 남음`, progress: pr.p, birdId: flyingSent.birdId };
   }
   if (scheduled) return { lead: "출발 예정", sub: dateTimeText(scheduled.sentAt), side: "예약" };
   const last = t.entries[0];
@@ -62,7 +63,7 @@ function Inbox() {
   const { profile, ready: profileReady } = useProfile();
   const [named, setNamed] = useState(false);
   // 서버에 로그인한 사람이 처음이면, 친구들에게 보일 이름부터 물어봐요(서버 없이 개발할 때는 건너뜀)
-  if (profileReady && !named && firebaseEnabled && shouldAskName(profile.nickname)) return <NameStep onDone={() => setNamed(true)} />;
+  if (profileReady && !named && firebaseEnabled && shouldAskName(profile)) return <NameStep onDone={() => setNamed(true)} />;
   return <InboxList />;
 }
 
@@ -78,6 +79,7 @@ function InboxList() {
     listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
 
+  const friendBird = useMemo(() => new Map(friends.map((f) => [f.uid, f.bird])), [friends]);
   const threads = useMemo(() => buildThreads(letters, received, friends), [letters, received, friends]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 
@@ -85,7 +87,10 @@ function InboxList() {
     <main className="app inbox">
       <header className="inboxhead">
         <BirdIcon id="magpie" size={52} />
-        <h1>새 편지</h1>
+        <div>
+          <h1>새 편지</h1>
+          <div className="greet">오늘도 편지 날리기 좋은 날 ☀</div>
+        </div>
       </header>
 
       {ready && threads.length === 0 && (
@@ -102,12 +107,14 @@ function InboxList() {
           const info = rowInfo(t, now, opened);
           return (
             <li key={t.key}>
-              <Link href={roomHref(t)} className="trow">
-                <span className={`tav tone${avatarTone(t.name)}`} aria-hidden>{initialOf(t.name)}</span>
+              <Link href={roomHref(t)} className={`trow ${info.badge ? "hot" : info.progress !== undefined ? "fly" : ""}`}>
+                <Face name={t.name} bird={t.uid ? friendBird.get(t.uid) : undefined} />
                 <span className="tmid">
                   <span className="tname">{t.name}</span>
                   <span className="tst">{info.lead && <b>{info.lead}</b>}{info.lead && <br />}{info.sub}</span>
-                  {info.progress !== undefined && <span className="progress"><i style={{ width: `${Math.round(info.progress * 100)}%` }} /></span>}
+                  {info.progress !== undefined && info.birdId && (
+                    <span className="mtrack"><i style={{ width: `${Math.round(info.progress * 100)}%` }} /><span className="mb" style={{ left: `${Math.round(info.progress * 100)}%` }}><BirdIcon id={info.birdId} size={40} /></span></span>
+                  )}
                 </span>
                 {(info.badge || info.side) && (
                   <span className="tside">{info.side}{info.badge && <span className="tbadge">{info.badge}</span>}</span>

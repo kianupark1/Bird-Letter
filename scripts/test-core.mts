@@ -206,7 +206,7 @@ eq("사고 없으면 중간 진행률 50%", progressAt(cp, 1800_000).p, 0.5);
 }
 
 // 사람별 대화방 묶기(core/threads.ts)
-import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTone } from "../core/threads.ts";
+import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTone, avatarBirdFor, AVATAR_BIRDS } from "../core/threads.ts";
 {
   const friends = [{ uid: "f1", name: "지민" }, { uid: "f2", name: "가온" }, { uid: "f3", name: "현우" }];
   const sent = [
@@ -229,6 +229,11 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
   eq("주소 값 없음", keyFromParams(null, null), null);
   eq("첫 글자", initialOf("지민"), "지");
   eq("같은 이름은 같은 색", avatarTone("지민"), avatarTone("지민"));
+  eq("같은 이름은 같은 새 얼굴", avatarBirdFor("지민"), avatarBirdFor("지민"));
+  eq("고른 새가 있으면 그 새", avatarBirdFor("지민", "crane"), "crane");
+  eq("엉뚱한 값이면 이름으로 정함", (AVATAR_BIRDS as readonly string[]).includes(avatarBirdFor("지민", "dragon")), true);
+  const kinds = new Set(["엄마", "지민", "현우", "할머니", "서연", "민수", "아빠", "수진", "하늘", "도윤"].map((n) => avatarBirdFor(n)));
+  eq("이름마다 새 얼굴이 고르게 흩어짐(10명 중 4종 이상)", kinds.size >= 4, true);
 }
 
 // ---- 서버 로그인 부품(키는 시험용으로 즉석에서 만든 것) ----

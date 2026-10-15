@@ -57,9 +57,24 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
 /** 이름 첫 글자(동그란 얼굴 그림에 쓰는 글자) */
 export const initialOf = (name: string) => (name.trim()[0] ?? "새");
 
+/** 이름을 고르게 흩어 놓는 계산(한글은 단순 곱셈으로는 한쪽으로 몰려요) */
+function mix(name: string) {
+  let h = 2166136261;
+  for (const ch of name) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995) >>> 0; h ^= h >>> 15;
+  return h >>> 0;
+}
+
 /** 아바타 배경색 번호(이름이 같으면 항상 같은 색) */
 export function avatarTone(name: string, tones = 4) {
-  let h = 0;
-  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return h % tones;
+  return mix(name + "#") % tones;
+}
+
+/** 새 얼굴 후보(core/birds.ts의 id와 같아야 해요) */
+export const AVATAR_BIRDS = ["magpie", "pigeon", "swallow", "crane", "bungbungi", "hawk"] as const;
+
+/** 친구가 "내 새"를 고르지 않았거나 아직 모를 때: 이름으로 항상 같은 새를 정해 줘요 */
+export function avatarBirdFor(name: string, chosen?: string | null): string {
+  if (chosen && (AVATAR_BIRDS as readonly string[]).includes(chosen)) return chosen;
+  return AVATAR_BIRDS[mix(name) % AVATAR_BIRDS.length];
 }

@@ -9,7 +9,7 @@ import { ensureUser } from "@/lib/firebase/client";
 import { addFriend, isCode, lookupCode, normalizeCode, type Friend } from "@/lib/firebase/friends";
 import { useProfile } from "@/lib/settings";
 import { useSession } from "@/lib/session";
-import { avatarTone, initialOf } from "../../../core/threads";
+import Face from "@/components/Face";
 
 /**
  * 친구가 보낸 초대 링크(/invite?c=코드)를 눌렀을 때(시안 ⑬⑭).
@@ -41,11 +41,11 @@ function Invite() {
   // 로그인이 끝난 상태면 이름을 확인하고 친구로 연결
   useEffect(() => {
     if (state !== "ready" || !inviter || !profileReady || started.current) return;
-    if (shouldAskName(profile.nickname)) { setNaming(true); return; }
+    if (shouldAskName(profile)) { setNaming(true); return; }
     started.current = true;
     setNaming(false);
-    addFriend(code, profile.nickname).then(() => setResult("done")).catch((e) => setResult((e as Error).message === "self" ? "self" : "error"));
-  }, [state, inviter, profileReady, profile.nickname, code]);
+    addFriend(code, profile.nickname, profile.avatarBird).then(() => setResult("done")).catch((e) => setResult((e as Error).message === "self" ? "self" : "error"));
+  }, [state, inviter, profileReady, profile, code]);
 
   if (state === "checking" || inviter === undefined) return <main className="app" aria-busy="true" />;
   if (inviter === null)
@@ -65,9 +65,9 @@ function Invite() {
         {result === "done" && (
           <>
             <div className="pairs">
-              <span className={`tav tone${avatarTone(profile.nickname)}`} aria-hidden>{initialOf(profile.nickname)}</span>
+              <Face name={profile.nickname} bird={profile.avatarBird} size={84} />
               <span aria-hidden style={{ fontSize: 30 }}>💌</span>
-              <span className={`tav tone${avatarTone(inviter.name)}`} aria-hidden>{initialOf(inviter.name)}</span>
+              <Face name={inviter.name} bird={inviter.bird} size={84} />
             </div>
             <h1 style={{ fontSize: 28 }}>{inviter.name}님과<br />편지 친구가 되었어요!</h1>
             <p>첫 편지를 써서<br />새에게 맡겨 보세요</p>

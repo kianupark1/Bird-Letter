@@ -29,6 +29,11 @@ await ok("A가 B와 친구 맺기(양쪽 한 번에)", bat(A));
 await ok("A가 자기 친구 목록 읽기", getDocs(collection(A, "users", "uidA", "friends")));
 await no("C가 A의 친구 목록 읽기", getDocs(collection(C, "users", "uidA", "friends")));
 await no("친구 문서에 이상한 필드", setDoc(doc(A, "users", "uidA", "friends", "uidX"), { uid: "uidX", name: "x", at: serverTimestamp(), evil: 1 }));
+await ok("친구 문서에 내 새(bird) 담기", setDoc(doc(A, "users", "uidA", "friends", "uidY"), { uid: "uidY", name: "y", at: serverTimestamp(), bird: "pigeon" }));
+await no("bird가 글자가 아님", setDoc(doc(A, "users", "uidA", "friends", "uidY2"), { uid: "uidY2", name: "y", at: serverTimestamp(), bird: 7 }));
+await no("bird가 너무 김", setDoc(doc(A, "users", "uidA", "friends", "uidY3"), { uid: "uidY3", name: "y", at: serverTimestamp(), bird: "x".repeat(13) }));
+await ok("코드 문서에 내 새(bird) 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie" }));
+await no("코드 문서의 bird가 글자가 아님", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: 5 }));
 
 console.log("[친구에게 바로 보내기]");
 const m = (over = {}) => ({ fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: serverTimestamp(), arriveAt: Timestamp.fromMillis(Date.now() + 3600e3), recipientUid: "uidB", ...over });
