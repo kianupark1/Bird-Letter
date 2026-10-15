@@ -246,20 +246,23 @@ function Crane() {
   );
 }
 
-/** 부리에 문 편지(봉투). 새마다 부리 위치가 달라서 걸리는 자리를 따로 정했어요 */
-const LETTER_AT: Record<string, { x: number; y: number; r: number }> = {
-  hawk: { x: 176, y: 100, r: -12 },
-  swallow: { x: 172, y: 90, r: -10 },
-  pigeon: { x: 172, y: 86, r: -10 },
-  magpie: { x: 178, y: 92, r: -10 },
-  bungbungi: { x: 166, y: 126, r: -8 },
-  crane: { x: 182, y: 62, r: 8 },
+/**
+ * 부리에 문 편지(봉투). 새마다 부리 끝 위치가 달라서 자리를 따로 정했어요.
+ * 봉투는 새보다 먼저 그려서, 부리가 봉투의 한쪽 모서리를 위에서 "꽉 문" 모습이 돼요(s: 봉투 크기 비율).
+ */
+const LETTER_AT: Record<string, { x: number; y: number; r: number; s: number }> = {
+  hawk: { x: 181, y: 92, r: -12, s: 0.82 },
+  swallow: { x: 178, y: 73, r: -10, s: 0.82 },
+  pigeon: { x: 178, y: 69, r: -10, s: 0.82 },
+  magpie: { x: 186, y: 72, r: -10, s: 0.82 },
+  bungbungi: { x: 169, y: 108, r: -8, s: 0.82 },
+  crane: { x: 195, y: 44, r: 8, s: 0.82 },
 };
 
 function Letter({ id }: { id: string }) {
   const at = LETTER_AT[id] ?? LETTER_AT.pigeon;
   return (
-    <g transform={`translate(${at.x} ${at.y}) rotate(${at.r})`}>
+    <g transform={`translate(${at.x} ${at.y}) rotate(${at.r}) scale(${at.s})`}>
       {/* 그림자 */}
       <rect x="-22" y="-12" width="46" height="32" rx="4" style={SH} />
       {/* 봉투 몸통 + 항공우편풍 테두리 */}
