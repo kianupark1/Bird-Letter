@@ -569,7 +569,7 @@ textarea.letterbox { font-size: 20px; line-height: 1.7; min-height: 220px; }
 
 /* ═════ 2차 시안(v2): 더 귀엽고 단순하게. 색은 오방색 그대로 ═════ */
 :root { --raise: 0 3px 0 rgba(42,33,24,.08), 0 8px 18px rgba(42,33,24,.07); --tint-hot: rgba(193,72,31,.14); --tint-fly: rgba(224,168,60,.24); }
-body { background: radial-gradient(120px 60px at 12% 40px, #FFFDF6 60%, transparent 62%), radial-gradient(160px 70px at 90% 80px, #FFFDF6 60%, transparent 62%), radial-gradient(90px 44px at 68% 20px, #FFFDF6 60%, transparent 62%), linear-gradient(#FFF7E6 0, var(--bg) 300px) no-repeat; background-color: var(--bg); }
+body { background: radial-gradient(120px 60px at 12% 40px, #FFFDF6 60%, transparent 62%), radial-gradient(160px 70px at 90% 80px, #FFFDF6 60%, transparent 62%), radial-gradient(90px 44px at 68% 20px, #FFFDF6 60%, transparent 62%), linear-gradient(#FFF7E6 0, var(--bg) 300px); background-repeat: no-repeat; background-color: var(--bg); }
 @media (prefers-color-scheme: dark) { body { background: var(--bg); } :root { --raise: 0 3px 0 rgba(0,0,0,.3), 0 8px 18px rgba(0,0,0,.25); } }
 
 /* 도톰한 버튼 */
@@ -635,3 +635,18 @@ body { background: radial-gradient(120px 60px at 12% 40px, #FFFDF6 60%, transpar
 
 .soon { display: inline-block; font-style: normal; font-size: 13px; font-weight: 700; color: #2A2118; background: var(--hwangto); border-radius: 10px; padding: 2px 10px; margin-top: 6px; white-space: nowrap; }
 .opt .soon { opacity: 1; }
+
+/* 랭킹(시안 v2-7) */
+.rankpage .seg { margin: 6px 0 12px; }
+.podium { display: flex; align-items: flex-end; justify-content: center; gap: 10px; background: var(--card); border-radius: 26px; box-shadow: var(--raise); padding: 18px 8px 0; overflow: hidden; }
+.pod { text-align: center; width: 104px; display: flex; flex-direction: column; align-items: center; }
+.pod.first { width: 116px; }
+.pod .crown { font-size: 26px; line-height: 1; }
+.pod .pname { font-size: 18px; font-weight: 700; margin-top: 4px; }
+.pod .pkm { font-size: 15px; opacity: .75; }
+.pod.first .pkm { color: var(--dahong); font-weight: 700; font-size: 16px; opacity: 1; }
+.pod .pstep { width: 100%; display: grid; place-items: center; font-size: 26px; margin-top: 6px; border-radius: 14px 14px 0 0; height: 56px; background: rgba(42,33,24,.08); }
+.pod.first .pstep { height: 84px; background: var(--tint-fly); font-size: 30px; }
+.rnum { width: 30px; text-align: center; font-size: 22px; font-weight: 700; flex: none; }
+.rkm { font-size: 18px; flex: none; }
+.rankcard { background: var(--tint-fly); margin-top: 6px; }

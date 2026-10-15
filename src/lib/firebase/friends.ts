@@ -96,6 +96,7 @@ export async function deleteFriendData(uid: string) {
       await deleteDoc(f.ref).catch(() => {});
     }
   } catch {}
+  try { await deleteDoc(doc(d, "stats", uid)); } catch {}
   try {
     const me = await getDoc(doc(d, "users", uid));
     const code = me.exists() ? (me.data().code as string | undefined) : undefined;

@@ -108,6 +108,12 @@ function Friends() {
       </div>
       {msg && <div className="small" role="status" style={{ fontSize: 16 }}>{msg}</div>}
 
+      <Link href="/rank" className="opt rankcard">
+        <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏆</span>
+        <span><b>우리 랭킹 보기</b><span>누가 제일 멀리 보냈을까?</span></span>
+        <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
+      </Link>
+
       <h2 className="friendh">내 친구 {friends.length > 0 && `(${friends.length})`}</h2>
       {!loading && friends.length === 0 && <div className="empty">아직 친구가 없어요.<br />위에서 카카오톡으로 초대해 보세요.</div>}
       <ul className="threads">

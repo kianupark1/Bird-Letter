@@ -239,6 +239,35 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
   eq("이름마다 새 얼굴이 고르게 흩어짐(10명 중 4종 이상)", kinds.size >= 4, true);
 }
 
+// 구 단위 위치(core/districts.ts)
+import { locate, DISTRICT_MAX_KM } from "../core/districts.ts";
+{
+  eq("해운대 근처는 부산 해운대구", locate(35.163, 129.165).label, "부산 해운대구");
+  eq("강남 근처는 서울 강남구", locate(37.517, 127.047).label, "서울 강남구");
+  eq("대전 유성은 대전 유성구", locate(36.362, 127.356).label, "대전 유성구");
+  eq("구를 알 수 없는 곳(제주 바다)은 가까운 지역 이름", locate(33.4, 126.5).label.includes("구"), false);
+  eq("출발 지역도 함께 돌려줌", typeof locate(35.163, 129.165).place.id, "string");
+  eq("구 판정 거리 기준", DISTRICT_MAX_KM, 12);
+}
+// 랭킹 계산(core/rank.ts)
+import { myStats, rankOf, myPlace } from "../core/rank.ts";
+{
+  eq("내 기록: 합과 가장 먼 한 통", JSON.stringify(myStats([325, 452, 0, 120])), JSON.stringify({ km: 897, maxKm: 452, count: 3 }));
+  eq("편지가 없으면 0", JSON.stringify(myStats([])), JSON.stringify({ km: 0, maxKm: 0, count: 0 }));
+  const es = [
+    { uid: "a", name: "나", me: true, stats: { km: 1980, maxKm: 430, count: 5 } },
+    { uid: "b", name: "지민", me: false, stats: { km: 2350, maxKm: 325, count: 7 } },
+    { uid: "c", name: "새친구", me: false, stats: null },
+    { uid: "d", name: "현우", me: false, stats: { km: 1200, maxKm: 452, count: 3 } },
+  ];
+  eq("누적 거리 1위는 지민", rankOf(es, "total")[0].name, "지민");
+  eq("기록 없는 친구는 맨 뒤", rankOf(es, "total").slice(-1)[0].name, "새친구");
+  eq("가장 먼 한 통 1위는 현우", rankOf(es, "longest")[0].name, "현우");
+  const mp = myPlace(rankOf(es, "total"), "total")!;
+  eq("내 순위 2위", mp.rank, 2);
+  eq("1위까지 370km", mp.gapKm, 370);
+}
+
 // ---- 서버 로그인 부품(키는 시험용으로 즉석에서 만든 것) ----
 const kp = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const privPem = kp.privateKey.export({ type: "pkcs8", format: "pem" }).toString();
