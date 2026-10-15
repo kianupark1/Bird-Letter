@@ -286,7 +286,7 @@ add("11-내정보", "⑪ 내 정보 / 설정", "★ 새로 넣을 것: 글씨 �
   <div class="row" style="min-height:84px"><div class="av g">나</div><div class="mid"><div class="nm">대표님</div><div class="st">카카오 연결됨</div></div></div>
   <div class="eta"><div class="nm" style="font-size:20px">★ 글씨 크기</div><div class="seg" style="margin-top:10px"><div>보통</div><div class="on">크게</div><div>아주 크게</div></div></div>
   <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">도착 알림</div><div class="st">편지가 오면 짹짹! 알려 드려요</div></div><div class="sw"></div></div>
-  <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">로그인 방법</div><div class="st">카카오로 로그인 중 · 다른 방법도 추가</div></div><div style="font-size:28px">›</div></div>
+  <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">로그인 방법</div><div class="st">카카오로 로그인 중 · 구글·애플·네이버 추가 가능</div></div><div style="font-size:28px">›</div></div>
   <div class="row" style="min-height:76px"><div class="mid"><div class="nm" style="font-size:20px">도움말 · 문의</div></div><div style="font-size:28px">›</div></div>
 </div>
 ${tabs(2)}`, "11"));
@@ -304,7 +304,7 @@ add("14-로그인", "⑫ 처음 열었을 때 (로그인)", "로그인이 곧 �
   <div class="cta" style="background:#FEE500;color:#2a211b;height:68px">💬 카카오로 시작하기</div>
   <div class="ghost" style="height:62px">구글로 시작하기</div>
   <div class="cta" style="background:#111;height:62px">  애플로 시작하기</div>
-  <div class="st" style="text-align:center;font-size:15px">네이버 · 라인은 곧 추가돼요<br>시작하면 이용약관과 개인정보 처리방침에 동의한 것으로 봐요 · 만 14세 이상</div>
+  <div class="st" style="text-align:center;font-size:15px">네이버는 곧 추가돼요<br>시작하면 이용약관과 개인정보 처리방침에 동의한 것으로 봐요 · 만 14세 이상</div>
 </div>`));
 
 // 15 초대 받은 사람
