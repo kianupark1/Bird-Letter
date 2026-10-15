@@ -222,7 +222,7 @@ add("05-편지읽기", "⑤ 편지 읽기 (두루마리가 펼쳐진 모습)", "
 const KMH: Record<string, number> = { hawk: 90, pigeon: 65, bungbungi: 60, crane: 55, swallow: 40, magpie: 35 };
 /** 새 한 줄: 이름 / 시속(km/h) / (유료 새는 체험 표시) / 걸리는 시간 */
 const pk = (id: string, name: string, time: string, tag = "", sel = false) =>
-  `<div class="pick ${sel ? "sel" : ""}" style="min-height:82px"><div style="width:68px;flex:none">${bird(id, 66)}</div><div><b>${name}</b><span class="d" style="font-size:17px;color:var(--namsaek);font-weight:700">시속 ${KMH[id]}km${tag ? ` <i style="font-style:normal;background:var(--dahong);color:#fff;font-size:14px;border-radius:9px;padding:2px 8px;margin-left:4px;white-space:nowrap">${tag}</i>` : ""}</span></div><div class="tm">${time}<small>걸려요</small></div></div>`;
+  `<div class="pick ${sel ? "sel" : ""}" style="min-height:82px"><div style="width:68px;flex:none">${bird(id, 66)}</div><div><b>${name}</b><span class="d" style="font-size:15px;color:var(--namsaek);font-weight:700">시속 ${KMH[id]}km${tag ? ` <i style="font-style:normal;background:var(--dahong);color:#fff;font-size:14px;border-radius:9px;padding:2px 8px;margin-left:4px;white-space:nowrap">${tag}</i>` : ""}</span></div><div class="tm">${time}<small>걸려요</small></div></div>`;
 add("06-새고르기", "⑥ 새 고르기 (편지 쓰기 1단계)", "받는 사람은 이미 정해져 있어요. 시간이 제일 크게 보여요.", wrap(`
 <div class="hd"><div class="back">‹</div><div class="t"><b>어떤 새로 보낼까요?</b><span>지민에게 · 서울 → 부산 325km</span></div></div>
 <div class="body" style="gap:8px">
