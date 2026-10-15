@@ -85,7 +85,7 @@ try {
   await clickText(A.page, "다음: 새 고르기");
   await clickText(A.page, "매", "button.card");
   await shot(A.page, "02-A-send-step2");
-  await clickText(A.page, "다음: 편지 쓰기");
+  await clickText(A.page, "이 새로 보낼게요");
   await setValue(A.page, "textarea", MESSAGE);
   await shot(A.page, "03-A-send-step3");
   await clickText(A.page, "보내기");
@@ -117,12 +117,12 @@ try {
   await clickText(B.page, "이 사람 차단");
   ok("차단됨", await waitText(B.page, "차단했어요", 10000));
   await B.page.goto(`${BASE}/`, { waitUntil: "networkidle2" });
-  ok("차단한 사람의 편지는 받은 편지함에서 사라짐", await waitText(B.page, "아직 받은 편지가 없어요", 15000));
+  ok("차단한 사람의 편지는 목록에서 사라짐", await waitText(B.page, "친구를 초대하면", 15000));
   await shot(B.page, "07-B-home-after-block");
 
   console.log("\n[5] 보내는 사람: 홈과 삭제");
   await A.page.goto(`${BASE}/`, { waitUntil: "networkidle2" });
-  ok("A의 홈에 보낸 편지가 보임(서버에서 다시 불러옴)", await waitText(A.page, "엄마에게", 20000));
+  ok("A의 편지 목록에 엄마가 보임(서버에서 다시 불러옴)", await waitText(A.page, "엄마", 20000));
   await shot(A.page, "08-A-home");
   await A.page.goto(`${BASE}/settings`, { waitUntil: "networkidle2" });
   ok("설정에 '보낸 편지 1'이 보임", await waitText(A.page, "보낸 편지", 15000));
@@ -130,7 +130,7 @@ try {
   await clickText(A.page, "내 편지와 데이터 모두 삭제");
   await A.page.waitForFunction(() => location.pathname === "/", { timeout: 40000 }).catch(() => {});
   ok("탈퇴 삭제 후 홈으로 돌아옴", new URL(A.page.url()).pathname === "/");
-  ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "아직 날아가는 편지가 없어요", 20000));
+  ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "친구를 초대하면", 20000));
 
   console.log("\n[6] 오류 점검");
   ok("A 화면에 서버 연결 실패·스크립트 오류 없음", A.errors.length === 0, A.errors.join(" | "));

@@ -57,3 +57,27 @@ export async function shareToKakao(letterId: string, birdName: string): Promise<
     return false;
   }
 }
+
+/** 친구 초대를 카카오톡으로 보내기(카카오톡 안의 친구 고르는 화면이 열려요). 받은 친구는 링크를 눌러 로그인하면 자동으로 친구가 돼요 */
+export async function shareInviteToKakao(code: string, inviterName: string): Promise<boolean> {
+  if (!KEY) return false;
+  try {
+    const k = await load();
+    if (!k.isInitialized()) k.init(KEY);
+    const url = `${location.origin}/invite?c=${encodeURIComponent(code)}`;
+    const link = { mobileWebUrl: url, webUrl: url, iosExecutionParams: { invite: code }, androidExecutionParams: { invite: code } };
+    k.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: `${inviterName}님이 편지 친구로 초대했어요`,
+        description: "새가 날아서 전하는, 천천히 도착하는 편지",
+        imageUrl: `${location.origin}/og.png`,
+        link,
+      },
+      buttons: [{ title: "친구 되기", link }],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}

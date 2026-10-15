@@ -6,7 +6,7 @@ import { getBird, mishapText } from "@/lib/birds";
 import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { getRoute, routePosition } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
-import { announceReceived, letterProgress, useLetters, useNow, type Letter } from "@/lib/letters";
+import { announceReceived, letterProgress, markOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { withEulReul, withIGa } from "@/lib/korean";
 import { ensureUser } from "@/lib/firebase/client";
 import * as remote from "@/lib/firebase/remote";
@@ -78,6 +78,11 @@ export default function LetterView({ id }: { id: string }) {
     if (!isRecipient || !arrivedNow || body !== null) return;
     remote.getBody(id).then((m) => m !== null && setBody(m));
   }, [isRecipient, arrivedNow, body, id]);
+
+  // 받는 사람이 도착한 편지를 열어 보면 목록의 "새 편지" 표시를 꺼요
+  useEffect(() => {
+    if (isRecipient && arrivedNow) markOpened(id);
+  }, [isRecipient, arrivedNow, id]);
 
   // 사진: 내 폰 저장이면 편지에 들어 있고, 서버면 도착한 뒤(보낸 사람은 언제든) 불러와요
   useEffect(() => {

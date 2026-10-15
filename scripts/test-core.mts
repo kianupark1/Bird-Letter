@@ -205,6 +205,32 @@ eq("사고 없으면 중간 진행률 50%", progressAt(cp, 1800_000).p, 0.5);
   eq("변동 있어도 중간 진행률 50%", progressAt(pl, pl.totalMs / 2).p, 0.5);
 }
 
+// 사람별 대화방 묶기(core/threads.ts)
+import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTone } from "../core/threads.ts";
+{
+  const friends = [{ uid: "f1", name: "지민" }, { uid: "f2", name: "가온" }, { uid: "f3", name: "현우" }];
+  const sent = [
+    { id: "s1", to: "지민", toUid: "f1", sentAt: 100 },
+    { id: "s2", to: "엄마", sentAt: 300 },
+    { id: "s3", to: "지민", toUid: "f1", sentAt: 500 },
+  ];
+  const recv = [{ id: "r1", fromUid: "f1", fromName: "지민이", sentAt: 400 }, { id: "r2", fromUid: "x9", fromName: "낯선이", sentAt: 50 }];
+  const t = buildThreads(sent, recv, friends);
+  eq("지민 편지 3통이 한 방에 모임", t.find((x) => x.key === keyForUid("f1"))!.entries.length, 3);
+  eq("지민 방의 최신 편지가 맨 앞", t.find((x) => x.key === keyForUid("f1"))!.entries[0].item.id, "s3");
+  eq("친구 이름이 있으면 그 이름", t.find((x) => x.key === keyForUid("f1"))!.name, "지민");
+  eq("이름만 아는 받는 사람은 이름으로 묶임", t.some((x) => x.key === keyForName("엄마")), true);
+  eq("친구 아닌 보낸 사람도 방이 생김", t.find((x) => x.key === keyForUid("x9"))!.name, "낯선이");
+  eq("편지 없는 친구도 빈 방으로 나옴", t.find((x) => x.key === keyForUid("f3"))!.entries.length, 0);
+  eq("최근 편지가 있는 방이 앞", t[0].key, keyForUid("f1"));
+  eq("편지 없는 친구는 이름순으로 맨 뒤", t.slice(-2).map((x) => x.name).join(","), "가온,현우");
+  eq("주소 값에서 구분값", keyFromParams("abc", null), "u:abc");
+  eq("주소 값(이름)", keyFromParams(null, "엄마"), "n:엄마");
+  eq("주소 값 없음", keyFromParams(null, null), null);
+  eq("첫 글자", initialOf("지민"), "지");
+  eq("같은 이름은 같은 색", avatarTone("지민"), avatarTone("지민"));
+}
+
 // ---- 서버 로그인 부품(키는 시험용으로 즉석에서 만든 것) ----
 const kp = generateKeyPairSync("rsa", { modulusLength: 2048 });
 const privPem = kp.privateKey.export({ type: "pkcs8", format: "pem" }).toString();

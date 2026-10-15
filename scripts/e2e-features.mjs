@@ -90,7 +90,7 @@ async function writeLetter(page, { to, text, files = [], later = null, bird = "�
   }
   await clickText(page, "다음: 새 고르기");
   await clickText(page, bird, "button.card");
-  await clickText(page, "다음: 편지 쓰기");
+  await clickText(page, "이 새로 보낼게요");
   await setValue(page, "textarea", text);
   if (files.length) {
     const input = await page.$("#photo-input");
@@ -160,7 +160,7 @@ try {
   await clickText(A.page, "예약 취소하기");
   await clickText(A.page, "취소할게요");
   await A.page.waitForFunction(() => location.pathname === "/", { timeout: 20000 }).catch(() => {});
-  ok("예약을 취소하면 홈으로 돌아가고 목록에서 사라짐", (await A.page.evaluate(() => location.pathname)) === "/" && !(await text(A.page)).includes("출발을 기다리는 편지"));
+  ok("예약을 취소하면 홈으로 돌아가고 목록에서 사라짐", (await A.page.evaluate(() => location.pathname)) === "/" && !(await text(A.page)).includes("출발 예정"));
 
   console.log("\n[5] 정리(시험 데이터 삭제)와 오류 점검");
   for (const U of [A, B]) {

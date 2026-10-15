@@ -10,22 +10,23 @@ const ICONS: Record<string, React.JSX.Element> = {
   friends: <><circle {...stroke} cx="9" cy="9" r="3" /><path {...stroke} d="M3.5 19c.5-3 2.6-4.5 5.5-4.5s5 1.5 5.5 4.5M16 6.5a3 3 0 0 1 0 5.5M18 14.8c1.7.5 2.7 1.9 3 4.2" /></>,
   settings: <><circle {...stroke} cx="12" cy="12" r="3" /><path {...stroke} d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8" /></>,
 };
+// 시안 ⑪: 하단 메뉴는 3개(편지·친구·내 정보). 편지 쓰기는 편지 목록의 큰 버튼으로 옮겼어요.
 const TABS = [
-  { href: "/", label: "홈", icon: "home" },
-  { href: "/send", label: "편지 쓰기", icon: "send" },
+  { href: "/", label: "편지", icon: "send" },
   { href: "/friends", label: "친구", icon: "friends" },
-  { href: "/settings", label: "설정", icon: "settings" },
+  { href: "/settings", label: "내 정보", icon: "settings" },
 ];
 
 export default function BottomNav() {
   const path = usePathname();
   if (IS_TOSS) return null; // 토스 빌드는 토스 내비게이션 바를 쓴다
-  if (path.startsWith("/onboarding") || path.startsWith("/welcome")) return null;
+  // 목록 화면 세 곳에서만 보여요(대화방·편지 쓰기·편지 읽기에서는 숨겨서 화면을 넓게 써요)
+  if (!TABS.some((t) => t.href === path)) return null;
   return (
     <nav className="bottomnav" aria-label="메뉴">
       {TABS.map((t) => (
         <Link key={t.href} href={t.href} aria-current={path === t.href ? "page" : undefined}>
-          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden>{ICONS[t.icon]}</svg>
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden>{ICONS[t.icon]}</svg>
           {t.label}
         </Link>
       ))}

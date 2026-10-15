@@ -10,9 +10,18 @@ import { auth, ensureUser, firebaseEnabled } from "./client";
 const KEY = (process.env.NEXT_PUBLIC_KAKAO_REST_KEY ?? "").replace(/^﻿/, "").trim();
 export const KAKAO_LOGIN_READY = Boolean(KEY) && firebaseEnabled;
 const STATE_KEY = "saepyeonji.kakao.state.v1";
+const NEXT_KEY = "saepyeonji.kakao.next.v1";
 
-export function startKakaoLogin() {
+/** 카카오 로그인이 끝난 뒤 돌아갈 화면(로그인 시작 화면에서 눌렀으면 홈, 설정에서 눌렀으면 설정) */
+export function kakaoNext(): string {
+  let n = "/settings?linked=kakao";
+  try { n = sessionStorage.getItem(NEXT_KEY) || n; sessionStorage.removeItem(NEXT_KEY); } catch {}
+  return n;
+}
+
+export function startKakaoLogin(next?: string) {
   if (!KAKAO_LOGIN_READY) return;
+  try { if (next) sessionStorage.setItem(NEXT_KEY, next); } catch {}
   const state = crypto.randomUUID();
   try { sessionStorage.setItem(STATE_KEY, state); } catch {}
   const redirect = `${location.origin}/auth/kakao`;

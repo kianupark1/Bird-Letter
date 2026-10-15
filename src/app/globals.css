@@ -190,7 +190,7 @@ textarea.field { min-height: 140px; resize: vertical; }
 
 .bottomnav { position: fixed; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; gap: 8px;
   padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); }
-.bottomnav a { flex: 1; max-width: 180px; text-align: center; font-size: 12px; padding: 6px 0; border-radius: 10px; opacity: .75; }
+.bottomnav a { flex: 1; max-width: 180px; text-align: center; font-size: 15px; font-weight: 600; padding: 6px 0; border-radius: 10px; opacity: .75; min-height: 56px; }
 .bottomnav a svg { display: block; margin: 0 auto 2px; }
 .bottomnav a[aria-current="page"] { opacity: 1; color: var(--dahong); font-weight: 700; }
 
@@ -457,3 +457,108 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 /* 링크로 들어온 사람에게 앱 열기를 돕는 띠 */
 .openapp { display: flex; align-items: center; justify-content: space-between; gap: 10px; max-width: 420px; margin: 0 auto; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--line); color: var(--text); font-size: 13px; line-height: 1.4; }
 .openapp .btn { flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; background: var(--dahong); color: var(--on-dahong, #fff); font-weight: 700; text-decoration: none; }
+
+/* ───── 메신저형 개편(시안 docs/시안): 큰 글씨·큰 버튼 ───── */
+body[data-hide-nav] .bottomnav { display: none; }
+html[data-scale="large"] body { zoom: 1.15; }
+html[data-scale="xlarge"] body { zoom: 1.3; }
+
+.start { max-width: 420px; margin: 0 auto; min-height: 100dvh; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+.start-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; }
+.start-hero h1 { font-size: 36px; margin: 6px 0 0; }
+.start-hero p { font-size: 19px; line-height: 1.55; opacity: .8; margin: 0; }
+.start-btns { display: flex; flex-direction: column; gap: 12px; }
+.sbtn { height: 64px; border-radius: 20px; border: 2px solid transparent; font: inherit; font-size: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.sbtn:disabled { opacity: .6; cursor: default; }
+.sbtn.kakao { background: #FEE500; color: #2A2118; }
+.sbtn.google { background: transparent; border-color: var(--namsaek); color: var(--namsaek); }
+.sbtn.apple { background: #111; color: #fff; }
+.start-msg { color: var(--dahong); font-size: 16px; font-weight: 600; text-align: center; margin: 2px 0 0; }
+.start-fine { font-size: 14px; line-height: 1.6; opacity: .7; text-align: center; margin: 4px 0 0; }
+.start-fine a { text-decoration: underline; }
+
+/* 편지 목록(시안 ①) */
+.inbox .dock { bottom: calc(76px + env(safe-area-inset-bottom)); }
+.inboxhead { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.inboxhead h1 { font-size: 28px; margin: 0; }
+.cta.big { height: 64px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 22px; border-radius: 20px; padding: 0 16px; }
+.threads { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.trow { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-height: 92px; }
+.tav { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 700; color: #fff; flex: none; }
+.tone0 { background: var(--cheongrok); } .tone1 { background: var(--namsaek); } .tone2 { background: #8A5A2B; } .tone3 { background: #7b3f61; }
+.tmid { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.tname { font-size: 22px; font-weight: 700; }
+.tst { font-size: 17px; line-height: 1.4; opacity: .85; margin-top: 2px; }
+.tst b { color: var(--dahong); }
+.tside { flex: none; text-align: right; font-size: 15px; opacity: .8; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.tbadge { background: var(--dahong); color: var(--on-dahong); font-weight: 700; font-size: 15px; border-radius: 12px; padding: 3px 10px; }
+.inbox-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 24px 0 8px; }
+.inbox-empty h2 { font-size: 26px; line-height: 1.35; margin: 6px 0 0; opacity: 1; }
+.inbox-empty p { font-size: 18px; line-height: 1.5; opacity: .75; margin: 0 0 10px; }
+.inbox-empty .cta { width: 100%; }
+
+/* 대화방(시안 ②③): 지도가 맨 위 */
+.room { padding-bottom: 24px; }
+.roomhead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.roomback { width: 48px; height: 56px; display: grid; place-items: center; font-size: 34px; margin-left: -8px; }
+.tav.sm { width: 48px; height: 48px; font-size: 22px; }
+.rname { font-size: 24px; font-weight: 700; }
+.rsub { font-size: 16px; opacity: .7; }
+.roommap { border-radius: 20px; overflow: hidden; border: 1px solid var(--line); }
+.roommap .map { border-radius: 0; display: block; }
+.roomwarn { margin-top: 10px; background: #FFF1CC; border: 1px solid var(--hwangto); border-radius: 14px; padding: 12px 14px; font-size: 17px; font-weight: 600; color: #5a3d00; line-height: 1.45; }
+.roometa { margin-top: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; }
+.roometa .big { font-size: 26px; font-weight: 700; }
+.roometa .big em { font-style: normal; color: var(--dahong); }
+.roometa .sm { font-size: 17px; opacity: .75; margin-top: 2px; line-height: 1.4; }
+.roomempty { text-align: center; padding: 24px 8px; font-size: 18px; opacity: .8; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dayhint { text-align: center; font-size: 15px; opacity: .6; margin: 18px 0 8px; }
+.roomcards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rcard { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-height: 84px; }
+.rcard.me { background: #FCEBE2; border-color: rgba(193,72,31,.35); }
+.rcard.isnew { border: 2px solid var(--dahong); }
+.rcard b { font-size: 19px; display: block; }
+.rcard .rsub2 { font-size: 16px; opacity: .75; display: block; margin-top: 2px; }
+.ric { width: 56px; height: 56px; border-radius: 14px; background: #F6E9CF; display: grid; place-items: center; flex: none; }
+.rcard .tbadge { margin-left: auto; }
+.room-dock { bottom: 8px; margin-top: 16px; }
+
+/* 편지 쓰기(시안 ⑥⑦): 큰 글씨 */
+.sendhead { display: flex; align-items: center; gap: 4px; margin-bottom: 8px; }
+.sendhead h1 { font-size: 24px; margin: 0; }
+button.roomback { background: none; border: 0; color: inherit; font: inherit; font-size: 34px; cursor: pointer; }
+.sub.big { font-size: 20px; font-weight: 700; opacity: 1; line-height: 1.4; margin: 4px 0 14px; }
+.sub.big span { font-size: 16px; font-weight: 400; opacity: .7; }
+.birdpick { min-height: 84px; border-radius: 18px; border: 2px solid var(--line); }
+.birdpick .name { font-size: 22px; }
+.birdpick .kmh { font-size: 15px; font-weight: 700; color: var(--namsaek); margin-top: 2px; }
+.birdpick .time { font-size: 20px; }
+.birdpick .risk { font-size: 13px; }
+.dock { bottom: calc(8px + env(safe-area-inset-bottom)); }
+.dock .cta.big { margin-top: 0; }
+.field { font-size: 18px; }
+textarea.letterbox { font-size: 20px; line-height: 1.7; min-height: 220px; }
+.namefield { font-size: 24px; text-align: center; max-width: 320px; margin: 6px 0 0; }
+.pairs { display: flex; align-items: center; gap: 14px; }
+.pairs .tav { width: 80px; height: 80px; font-size: 36px; }
+
+/* 친구 초대(시안 ⑨) */
+.pagetitle { font-size: 28px; margin: 0 0 6px; }
+.optlist { display: flex; flex-direction: column; gap: 10px; margin: 14px 0 8px; }
+.opt { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; font: inherit; color: inherit; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px; min-height: 84px; cursor: pointer; }
+.opt.dim { opacity: .65; cursor: default; }
+.opt:disabled { opacity: .5; }
+.opt b { font-size: 20px; display: block; }
+.opt span > span { font-size: 15px; opacity: .7; display: block; margin-top: 2px; }
+.oic { width: 56px; height: 56px; border-radius: 50%; background: #F6E9CF; display: grid; place-items: center; font-size: 26px; flex: none; }
+.soon { font-style: normal; font-size: 13px; background: #F6E9CF; border-radius: 8px; padding: 1px 7px; margin-left: 4px; font-weight: 600; }
+.friendh { font-size: 18px; margin: 22px 0 10px; opacity: 1; }
+.tfriend { flex: 1; display: flex; align-items: center; gap: 14px; min-width: 0; }
+
+/* 글씨 크기 설정(시안 ⑪) */
+.scalebox { background: var(--card); border-radius: 18px; padding: 16px; margin: 12px 0; border: 1px solid var(--line); }
+.scalebox .name { font-size: 20px; font-weight: 700; }
+.scalebox .note { font-size: 15px; opacity: .7; margin-top: 8px; }
+.seg { display: flex; gap: 8px; margin-top: 10px; }
+.seg button { flex: 1; min-height: 56px; border-radius: 14px; border: 2px solid var(--line); background: transparent; color: inherit; font: inherit; font-size: 18px; font-weight: 700; cursor: pointer; }
+.seg button.on { border-color: var(--dahong); color: var(--dahong); background: #FCEBE2; }

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
-import { useProfile, type Profile } from "@/lib/settings";
+import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
@@ -63,7 +63,7 @@ export default function Settings() {
 
   return (
     <main className="app">
-      <h1>설정</h1>
+      <h1>내 정보</h1>
 
       <div className="profilecard">
         <div className="avatar" aria-hidden>{initial}</div>
@@ -78,6 +78,17 @@ export default function Settings() {
           />
           <div className="small">닉네임을 눌러서 바꿀 수 있어요</div>
         </div>
+      </div>
+
+      <div className="scalebox">
+        <div className="name">글씨 크기</div>
+        <div className="seg" role="radiogroup" aria-label="글씨 크기">
+          {FONT_SCALES.map((f) => (
+            <button key={f.id} type="button" role="radio" aria-checked={profile.fontScale === f.id} className={profile.fontScale === f.id ? "on" : ""}
+              onClick={() => { update({ fontScale: f.id as FontScale }); setTimeout(() => window.dispatchEvent(new Event("saepyeonji:scale")), 0); }}>{f.label}</button>
+          ))}
+        </div>
+        <div className="note">모든 화면의 글씨와 버튼이 커져요</div>
       </div>
 
       <div className="stats">

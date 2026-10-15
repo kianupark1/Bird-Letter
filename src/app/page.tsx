@@ -1,176 +1,130 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
-import { ONBOARDED_KEY, SAMPLE_INBOX, letterProgress, useLetters, useNow } from "@/lib/letters";
+import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
-import { dateTimeText, isScheduled } from "../../core/schedule";
-import { IS_TOSS, letterHref } from "@/lib/target";
+import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
+import { avatarTone, buildThreads, initialOf, type Thread } from "../../core/threads";
+import { listFriends, type Friend } from "@/lib/firebase/friends";
+import { firebaseEnabled } from "@/lib/firebase/client";
+import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
-import { DEFAULT_PROFILE, useProfile } from "@/lib/settings";
+import LoginStart from "@/components/LoginStart";
+import { useSession } from "@/lib/session";
+import NameStep, { shouldAskName } from "@/components/NameStep";
+import { useProfile } from "@/lib/settings";
+import { roomHref } from "@/lib/room";
 
 export default function Home() {
-  const router = useRouter();
-  const { letters, received, ready, backend } = useLetters();
+  const { state, recheck } = useSession();
+  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "login") return <LoginStart onDone={recheck} />;
+  return <Inbox />;
+}
 
-  // 처음 방문한 사람은 온보딩으로 보낸다
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(ONBOARDED_KEY)) router.replace("/onboarding");
-    } catch {}
-  }, [router]);
+type Row = { lead?: string; sub: string; progress?: number; badge?: string; side?: string };
 
-  const { profile } = useProfile();
-  const greeting = `${profile.nickname !== DEFAULT_PROFILE.nickname ? `${profile.nickname}님, ` : ""}오늘은 어떤 소식을 날려 볼까요?`;
+/** 대화방 한 줄에 보여줄 상태를 말로 정해요(시안 ①). 가장 눈에 띌 일이 먼저예요 */
+function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string>): Row {
+  const recvLike = (m: Meta) => ({ id: m.id, birdId: m.birdId, routeId: m.routeId, sentAt: m.sentAt, arriveAt: m.arriveAt });
+  let flyingRecv: Meta | undefined, flyingSent: Letter | undefined, newRecv: Meta | undefined, scheduled: Letter | undefined;
+  for (const e of t.entries) {
+    if (e.dir === "received") {
+      const done = letterProgress(recvLike(e.item), now).done;
+      if (done && !opened.has(e.item.id) && !newRecv) newRecv = e.item;
+      if (!done && !isScheduled(e.item.sentAt, now) && !flyingRecv) flyingRecv = e.item;
+    } else if (isScheduled(e.item.sentAt, now)) {
+      if (!scheduled) scheduled = e.item;
+    } else if (!letterProgress(e.item, now).done && !flyingSent) flyingSent = e.item;
+  }
+  if (newRecv) return { lead: "새 편지가 도착했어요!", sub: "눌러서 열어 보세요", badge: "새 편지", side: dateTimeText(newRecv.arriveAt).split(" ").slice(0, 2).join(" ") };
+  if (flyingRecv) {
+    const pr = letterProgress(recvLike(flyingRecv), now);
+    return { lead: "편지가 오고 있어요", sub: `${clockText(flyingRecv.arriveAt)} 도착`, progress: pr.p };
+  }
+  if (flyingSent) {
+    const pr = letterProgress(flyingSent, now);
+    return { lead: "내 편지가 날아가는 중", sub: `${getRoute(flyingSent.routeId).title} · ${formatMinutes(Math.max(1, Math.ceil(pr.total - pr.elapsed)))} 남음`, progress: pr.p };
+  }
+  if (scheduled) return { lead: "출발 예정", sub: dateTimeText(scheduled.sentAt), side: "예약" };
+  const last = t.entries[0];
+  if (!last) return { sub: "편지를 보내 보세요" };
+  const when = dateTimeText(last.at).split(" ").slice(0, 2).join(" ");
+  return { sub: last.dir === "sent" ? "내가 보낸 편지가 도착했어요" : "받은 편지를 읽었어요", side: when };
+}
+
+function Inbox() {
+  const { profile, ready: profileReady } = useProfile();
+  const [named, setNamed] = useState(false);
+  // 서버에 로그인한 사람이 처음이면, 친구들에게 보일 이름부터 물어봐요(서버 없이 개발할 때는 건너뜀)
+  if (profileReady && !named && firebaseEnabled && shouldAskName(profile.nickname)) return <NameStep onDone={() => setNamed(true)} />;
+  return <InboxList />;
+}
+
+function InboxList() {
+  const { letters, received, ready } = useLetters();
   const now = useNow();
-  const scheduled = letters.filter((l) => isScheduled(l.sentAt, now)).sort((a, b) => a.sentAt - b.sentAt);
-  const flying = letters.filter((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
-  const arrived = letters.filter((l) => letterProgress(l, now).done);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [opened, setOpened] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setOpened(readOpened());
+    listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
+  }, []);
+
+  const threads = useMemo(() => buildThreads(letters, received, friends), [letters, received, friends]);
+  const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 
   return (
-    <main className="app">
-      <header className="homehead">
-        <div className="logo"><BirdIcon id="magpie" size={48} /></div>
-        <div>
-          <h1>새 편지</h1>
-          <p className="sub">{greeting}</p>
-        </div>
+    <main className="app inbox">
+      <header className="inboxhead">
+        <BirdIcon id="magpie" size={52} />
+        <h1>새 편지</h1>
       </header>
 
-      {/* 토스 빌드에는 자체 하단 메뉴가 없어서(토스 내비게이션 바 사용) 홈에서 바로 이동하는 버튼을 둔다 */}
-      {IS_TOSS && (
-        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-          <Link href="/send" className="cta" style={{ flex: 2 }}>편지 쓰기</Link>
-          <Link href="/settings" className="ghost" style={{ flex: 1 }}>설정</Link>
+      {ready && threads.length === 0 && (
+        <div className="inbox-empty">
+          <BirdIcon id="magpie" size={190} letter className="bob" />
+          <h2>친구를 초대하면<br />편지를 보낼 수 있어요</h2>
+          <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
+          <Link href="/friends" className="cta big">친구 초대하기</Link>
         </div>
       )}
 
-      {(flying.length > 0 || scheduled.length === 0) && <h2>날아가는 중</h2>}
-      {ready && flying.length === 0 && scheduled.length === 0 && (
-        <div className="empty hero">
-          <BirdIcon id="magpie" size={96} className="bob" />
-          <div className="t">아직 날아가는 편지가 없어요</div>
-          <div className="d">첫 편지를 써서 새에게 맡겨 보세요.<br />실제 거리만큼 날아가서 도착해요.</div>
-          <Link href="/send" className="cta">첫 편지 쓰기</Link>
-        </div>
-      )}
-      {flying.map((l) => {
-        const bird = getBird(l.birdId);
-        const route = getRoute(l.routeId);
-        const pr = letterProgress(l, now);
-        return (
-          <Link key={l.id} href={letterHref(l.id)} className="card">
-            <div className="row grow">
-              <BirdIcon id={bird.id} size={52} className="bob" letter />
-              <div className="grow">
-                <div className="name ellipsis">{l.to}에게</div>
-                <div className="note">{route.title} · {bird.name}</div>
-                <div className="progress"><i style={{ width: `${pr.p * 100}%` }} /></div>
-              </div>
-            </div>
-            <div className="time">{formatMinutes(Math.max(1, Math.ceil(pr.total - pr.elapsed)))} 남음</div>
-          </Link>
-        );
-      })}
-
-      {scheduled.length > 0 && (
-        <>
-          <h2>출발을 기다리는 편지</h2>
-          {scheduled.map((l) => {
-            const bird = getBird(l.birdId);
-            const route = getRoute(l.routeId);
-            return (
-              <Link key={l.id} href={letterHref(l.id)} className="card">
-                <div className="row grow">
-                  <BirdIcon id={bird.id} size={52} letter />
-                  <div className="grow">
-                    <div className="name ellipsis">{l.to}에게</div>
-                    <div className="note">{route.title} · {bird.name}</div>
-                    <div className="note">🕰 {dateTimeText(l.sentAt)} 출발 예정</div>
-                  </div>
-                </div>
-                <div className="note">예약 중</div>
+      <ul className="threads">
+        {threads.map((t) => {
+          const info = rowInfo(t, now, opened);
+          return (
+            <li key={t.key}>
+              <Link href={roomHref(t)} className="trow">
+                <span className={`tav tone${avatarTone(t.name)}`} aria-hidden>{initialOf(t.name)}</span>
+                <span className="tmid">
+                  <span className="tname">{t.name}</span>
+                  <span className="tst">{info.lead && <b>{info.lead}</b>}{info.lead && <br />}{info.sub}</span>
+                  {info.progress !== undefined && <span className="progress"><i style={{ width: `${Math.round(info.progress * 100)}%` }} /></span>}
+                </span>
+                {(info.badge || info.side) && (
+                  <span className="tside">{info.side}{info.badge && <span className="tbadge">{info.badge}</span>}</span>
+                )}
               </Link>
-            );
-          })}
-        </>
-      )}
+            </li>
+          );
+        })}
+      </ul>
 
-      {flying.length > 0 && <PushPrompt birdId={flying[0].birdId} />}
-      {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={flying.length > 0} />}
+      {flyingAny && <PushPrompt birdId={flyingAny.birdId} />}
+      {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
 
-      {arrived.length > 0 && (
-        <>
-          <h2>도착한 편지</h2>
-          {arrived.map((l) => (
-            <Link key={l.id} href={letterHref(l.id)} className="card">
-              <div className="row grow">
-                <BirdIcon id={l.birdId} size={48} />
-                <div className="grow">
-                  <div className="name ellipsis">{l.to}에게</div>
-                  <div className="note ellipsis">{l.message}</div>
-                </div>
-              </div>
-              <div className="time">도착 ✓</div>
-            </Link>
-          ))}
-        </>
-      )}
-
-      <Link href="/bungbungi" className="card promo">
-        <div className="row grow">
-          <BirdIcon id="bungbungi" size={48} />
-          <div className="grow">
-            <div className="name">붕붕이를 만나보세요</div>
-            <div className="note">프로펠러 달린 드론 새 마스코트</div>
-          </div>
+      {threads.length > 0 && (
+        <div className="dock">
+          <Link href="/send" className="cta big">✉ 편지 쓰기</Link>
         </div>
-        <span aria-hidden>›</span>
-      </Link>
-
-      {backend === "firebase" ? (
-        <>
-          <h2>받은 편지함</h2>
-          {received.length === 0 && (
-            <div className="empty">아직 받은 편지가 없어요.<br />친구가 보낸 링크를 열면 여기에 모여요.</div>
-          )}
-          {received.map((m) => {
-            const done = letterProgress(m, now).done;
-            return (
-              <Link key={m.id} href={letterHref(m.id)} className="card">
-                <div className="row grow">
-                  <BirdIcon id={m.birdId} size={48} />
-                  <div className="grow">
-                    <div className="name ellipsis">{m.fromName || "누군가"}</div>
-                    <div className="note">{getRoute(m.routeId).title} · {getBird(m.birdId).name}</div>
-                  </div>
-                </div>
-                <div className={done ? "time" : "note"}>{done ? "도착 ✓" : "오는 중"}</div>
-              </Link>
-            );
-          })}
-        </>
-      ) : IS_TOSS ? null : (
-        <>
-          <h2>받은 편지함 (예시)</h2>
-          {SAMPLE_INBOX.map((m) => (
-            <div key={m.id} className="card">
-              <div className="row grow">
-                <BirdIcon id={m.birdId} size={48} />
-                <div className="grow">
-                  <div className="name">{m.from}</div>
-                  <div className="note ellipsis">{m.preview}</div>
-                </div>
-              </div>
-              <div className="note">{m.when}</div>
-            </div>
-          ))}
-        </>
       )}
     </main>
   );
 }
+

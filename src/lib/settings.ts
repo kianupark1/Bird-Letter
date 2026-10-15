@@ -9,7 +9,15 @@ export type Profile = {
   chirp: boolean;
   /** 내가 지금 있는 지역(편지 쓸 때 보내는 곳의 기본값). 지역 id(core/places.ts) */
   homePlace: string;
+  /** 글씨 크기(어르신용): 보통 / 크게 / 아주 크게. 모든 화면에 적용돼요 */
+  fontScale: FontScale;
 };
+export type FontScale = "normal" | "large" | "xlarge";
+export const FONT_SCALES: { id: FontScale; label: string }[] = [
+  { id: "normal", label: "보통" },
+  { id: "large", label: "크게" },
+  { id: "xlarge", label: "아주 크게" },
+];
 
 export const PROFILE_KEY = "saepyeonji.profile.v1";
 
@@ -18,6 +26,7 @@ export const DEFAULT_PROFILE: Profile = {
   notify: { arrival: true, passing: false, reply: true },
   chirp: true,
   homePlace: "seoul",
+  fontScale: "normal",
 };
 
 export function useProfile() {
