@@ -444,17 +444,17 @@ console.log("만든 그림:", screens.length + 4);
 const CSS2 = `
 body{background:#d9d2c4}
 .v2{width:390px;height:844px;position:relative;overflow:hidden;display:flex;flex-direction:column;font-family:P,sans-serif;color:#2A2118;
- background:radial-gradient(120px 60px at 12% 6%,#fff 60%,transparent 62%),radial-gradient(160px 70px at 88% 11%,#fff 60%,transparent 62%),radial-gradient(90px 44px at 70% 3%,#fff 60%,transparent 62%),linear-gradient(#E6F1F5 0,#F4F1E6 220px,#FBF3E4 330px)}
+ background:radial-gradient(120px 60px at 12% 6%,#FFFDF6 60%,transparent 62%),radial-gradient(160px 70px at 88% 11%,#FFFDF6 60%,transparent 62%),radial-gradient(90px 44px at 70% 3%,#FFFDF6 60%,transparent 62%),linear-gradient(#FFF7E6 0,#FBF3E4 300px)}
 .v2 .sb{height:44px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:15px;font-weight:700;flex:none}
 .v2 .body{flex:1;overflow:hidden;padding:0 16px;display:flex;flex-direction:column;gap:12px}
 .v2 .hello{display:flex;align-items:center;gap:10px;padding:6px 18px 10px}
 .v2 .hello b{font-size:28px}
 .v2 .hello small{display:block;font-size:16px;opacity:.7;margin-top:1px}
 .v2 .row2{display:flex;align-items:center;gap:14px;background:#fff;border-radius:26px;padding:14px 16px;min-height:96px;box-shadow:0 3px 0 rgba(42,33,24,.08),0 8px 18px rgba(42,33,24,.07)}
-.v2 .row2.fly{background:linear-gradient(#FFFBEA,#FFF3C9)}
-.v2 .row2.hot{background:linear-gradient(#FFF1EA,#FFE2D3);box-shadow:0 3px 0 rgba(193,72,31,.25),0 8px 18px rgba(193,72,31,.12)}
+.v2 .row2.fly{background:linear-gradient(#FFFBEF,#FBEBC4)}
+.v2 .row2.hot{background:linear-gradient(#FFF3EC,#F7D9CA);box-shadow:0 3px 0 rgba(193,72,31,.25),0 8px 18px rgba(193,72,31,.12)}
 .v2 .face{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 0 3px #fff,0 2px 0 rgba(42,33,24,.12)}
-.v2 .f0{background:#DDEFE8}.v2 .f1{background:#DCE6F2}.v2 .f2{background:#F6E6CF}.v2 .f3{background:#F2DDE8}
+.v2 .f0{background:rgba(27,110,92,.16)}.v2 .f1{background:rgba(30,58,92,.14)}.v2 .f2{background:rgba(224,168,60,.28)}.v2 .f3{background:rgba(193,72,31,.14)}
 .v2 .nm{font-size:22px;font-weight:700}
 .v2 .st{font-size:17px;margin-top:2px;line-height:1.35;color:#6B5E52}
 .v2 .st b{color:#C1481F}
@@ -470,7 +470,7 @@ body{background:#d9d2c4}
 .v2 .tabs{display:flex;background:#fff;border-radius:28px 28px 0 0;box-shadow:0 -6px 18px rgba(42,33,24,.08);padding:8px 8px 16px;flex:none}
 .v2 .tabs div{flex:1;text-align:center;font-size:15px;font-weight:700;color:#8a7c6f;padding-top:4px}
 .v2 .tabs div.on{color:#C1481F}
-.v2 .tabs div.on span{background:#FCE3D6;border-radius:16px}
+.v2 .tabs div.on span{background:rgba(193,72,31,.14);border-radius:16px}
 .v2 .tabs span{display:block;margin:0 auto 2px;width:56px;height:34px;border-radius:16px;display:grid;place-items:center}
 .v2 .bubble{position:relative;background:#fff;border-radius:22px;padding:12px 18px;font-size:20px;font-weight:700;box-shadow:0 3px 0 rgba(42,33,24,.08);text-align:center}
 .v2 .bubble::after{content:"";position:absolute;left:50%;bottom:-10px;margin-left:-10px;border:10px solid transparent;border-bottom:0;border-top-color:#fff}
@@ -481,8 +481,8 @@ body{background:#d9d2c4}
 .v2 .eta2 .big em{font-style:normal;color:#C1481F}
 .v2 .eta2 .sm{font-size:17px;color:#6B5E52;margin-top:2px}
 .v2 .sticker{display:flex;align-items:center;gap:14px;background:#fff;border-radius:24px;padding:12px 16px;min-height:80px;box-shadow:0 3px 0 rgba(42,33,24,.08)}
-.v2 .sticker .ic{width:58px;height:58px;border-radius:18px;background:#FFF3C9;display:grid;place-items:center;flex:none}
-.v2 .sticker.me{background:#FFE9DE}
+.v2 .sticker .ic{width:58px;height:58px;border-radius:18px;background:rgba(224,168,60,.25);display:grid;place-items:center;flex:none}
+.v2 .sticker.me{background:#F9E1D4}
 .v2 .sticker b{font-size:19px;display:block}.v2 .sticker span.d{font-size:16px;color:#6B5E52}
 .v2 .pk{display:flex;align-items:center;gap:12px;border-radius:26px;padding:10px 16px 10px 10px;min-height:92px;box-shadow:0 3px 0 rgba(42,33,24,.08)}
 .v2 .pk .pic{width:84px;display:grid;place-items:center;flex:none}
@@ -491,7 +491,7 @@ body{background:#d9d2c4}
 .v2 .pk .tm{margin-left:auto;text-align:right;font-size:21px;font-weight:700;color:#C1481F;white-space:nowrap}
 .v2 .pk .tm small{display:block;font-size:14px;color:#6B5E52;font-weight:400}
 .v2 .pk.sel{box-shadow:0 0 0 4px #C1481F,0 8px 18px rgba(193,72,31,.2)}
-.v2 .pc0{background:#E7F2EC}.v2 .pc1{background:#E6ECF5}.v2 .pc2{background:#FFF3C9}.v2 .pc3{background:#F5E6EE}.v2 .pc4{background:#F6E9D5}.v2 .pc5{background:#E8F1F6}
+.v2 .pc0{background:#DFE9DD}.v2 .pc1{background:#DFE2E2}.v2 .pc2{background:#F8E6BC}.v2 .pc3{background:#F4DACB}.v2 .pc4{background:#F1E4C8}.v2 .pc5{background:#E6DECA}
 .v2 .confetti i{position:absolute;width:12px;height:18px;border-radius:4px}
 `;
 const FACE: [string, number][] = [["magpie", 0], ["pigeon", 1], ["swallow", 2], ["crane", 3], ["bungbungi", 0], ["hawk", 1]];
@@ -502,7 +502,7 @@ const wrap2 = (inner: string) => `<div class="v2"><div class="sb"><span>9:41</sp
 const v2: { file: string; title: string; note: string; html: string }[] = [];
 const add2 = (file: string, title: string, note: string, html: string) => v2.push({ file, title, note, html });
 
-add2("v2-1-로그인", "로그인: 구름 하늘 + 말하는 새", "새가 말을 걸어요. 버튼은 도톰해서 누르고 싶게.", wrap2(`
+add2("v2-1-로그인", "로그인: 한지 하늘 + 말하는 새", "새가 말을 걸어요. 버튼은 도톰해서 누르고 싶게.", wrap2(`
 <div class="body" style="justify-content:center;align-items:center;gap:16px">
   <div class="bubble">짹짹! 반가워요 🌤</div>
   <div style="margin-top:6px">${bird("hawk", 210, true)}</div>
@@ -537,7 +537,7 @@ add2("v2-3-대화방", "대화방: 지도 한 장 + 한 문장", "글을 줄이�
 <div class="dock"><div class="chunky">✉ 지민에게 편지 쓰기</div></div>`));
 
 const pk2 = (id: string, name: string, time: string, c: number, sel = false, tag = "") => `<div class="pk pc${c} ${sel ? "sel" : ""}"><div class="pic">${bird(id, 78)}</div><div><b>${name}</b><span class="kmh">시속 ${KMH[id]}km</span>${tag ? ` <span class="pill" style="font-size:13px">${tag}</span>` : ""}</div><div class="tm">${time}<small>걸려요</small></div></div>`;
-add2("v2-4-새고르기", "새 고르기: 새마다 파스텔 카드", "새가 크게 보여요. 시속은 작은 알약으로.", wrap2(`
+add2("v2-4-새고르기", "새 고르기: 오방색 카드", "새가 크게 보여요. 시속은 작은 알약으로.", wrap2(`
 <div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:24px">어떤 새로 보낼까요?</b><small>지민에게 · 서울 → 부산 325km</small></div></div>
 <div class="body" style="gap:9px">
   ${pk2("hawk", "매", "약 3시간 37분", 5, false, "체험 5회")}
@@ -571,15 +571,15 @@ ${tabs2(2)}`));
 // 비교표: 지금 → 2차
 const beforeAfter = `<div class="board"><h1>2차 시안: 더 귀엽고, 더 단순하게</h1><div class="lead">기준: ① 귀여움(고퀄리티) ② 단순함·쓰기 편함. 지금 앱과 비교해서 바꾼 점만 적었어요.</div>
 <table><tr><th style="width:150px">화면</th><th>지금</th><th>2차 시안</th></tr>
-<tr><td><b>로그인</b></td><td>새 + 글자 + 버튼</td><td>구름 하늘 배경, 새가 <b>말풍선으로 인사</b>, 도톰한 버튼(눌리는 느낌)</td></tr>
-<tr><td><b>편지 목록</b></td><td>글자 동그라미 아바타, 얇은 막대</td><td>친구마다 <b>새 얼굴 아바타</b>, 막대 위를 <b>작은 새가 날아가는</b> 진행 표시, 상태별 색(도착=분홍, 비행=노랑)</td></tr>
+<tr><td><b>로그인</b></td><td>새 + 글자 + 버튼</td><td>한지 배경에 구름, 새가 <b>말풍선으로 인사</b>, 도톰한 버튼(눌리는 느낌)</td></tr>
+<tr><td><b>편지 목록</b></td><td>글자 동그라미 아바타, 얇은 막대</td><td>친구마다 <b>새 얼굴 아바타</b>, 막대 위를 <b>작은 새가 날아가는</b> 진행 표시, 상태별 색(도착=다홍빛, 비행=황토빛)</td></tr>
 <tr><td><b>대화방</b></td><td>지도 + 글 세 줄 + 카드</td><td>지도에 흰 테두리(스티커), <b>문장 하나</b>(도착까지 N), 편지는 스티커 카드</td></tr>
-<tr><td><b>새 고르기</b></td><td>흰 카드, 작은 새</td><td><b>파스텔 카드</b>, 새를 크게, 시속은 작은 알약, 선택은 굵은 테두리</td></tr>
+<tr><td><b>새 고르기</b></td><td>흰 카드, 작은 새</td><td><b>오방색을 옅게 입힌 카드</b>, 새를 크게, 시속은 작은 알약, 선택은 굵은 테두리</td></tr>
 <tr><td><b>도착</b></td><td>글 중심</td><td><b>폭죽 + "짹짹!" 말풍선</b>, 버튼 하나</td></tr>
 <tr><td><b>내 정보</b></td><td>글자 아바타</td><td><b>내 새</b> 고르기(꾸미기·스킨으로 이어지는 자리)</td></tr></table>
 <div class="grid g3" style="margin-top:18px">
-<div class="bx"><h3>귀여움 규칙</h3><ul><li>사람 얼굴 자리는 <b>새 얼굴</b></li><li>중요한 순간(로그인·도착)에는 <b>새가 말해요</b></li><li>둥글고 도톰한 모양, 부드러운 그림자</li></ul></div>
-<div class="bx"><h3>단순함 규칙</h3><ul><li>한 화면에 <b>큰 버튼 하나</b></li><li>글은 <b>한 문장</b>이 기본</li><li>색은 상태를 알려 줌(분홍=새 편지, 노랑=비행 중)</li></ul></div>
+<div class="bx"><h3>귀여움 규칙</h3><ul><li>사람 얼굴 자리는 <b>새 얼굴</b></li><li>중요한 순간(로그인·도착)에는 <b>새가 말해요</b></li><li>둥글고 도톰한 모양, 부드러운 그림자</li><li><b>색은 오방색 그대로</b>(다홍·남색·황토·청록·한지)</li></ul></div>
+<div class="bx"><h3>단순함 규칙</h3><ul><li>한 화면에 <b>큰 버튼 하나</b></li><li>글은 <b>한 문장</b>이 기본</li><li>색은 상태를 알려 줌(다홍빛=새 편지, 황토빛=비행 중)</li></ul></div>
 <div class="bx"><h3>지킬 것</h3><ul><li>어르신용 큰 글씨·큰 버튼 그대로</li><li>기다림의 미학(시간을 줄이는 요소 없음)</li><li>새 그림은 직접 그린 것만 사용</li></ul></div></div></div>`;
 
 const page2 = (body: string, bg = "#d9d2c4") => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}${CSS2}body{background:${bg}}</style></head><body>${body}</body></html>`;
