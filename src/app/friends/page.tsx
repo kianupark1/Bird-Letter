@@ -102,7 +102,8 @@ function Friends() {
           <span className="oic" aria-hidden>🔗</span><span><b>초대 링크 복사하기</b><span>다른 앱에 붙여 넣어 보낼 수 있어요</span></span>
         </button>
         <div className="opt dim">
-          <span className="oic" aria-hidden>👥</span><span><b>카카오톡 친구 중에서 찾기 <i className="soon">준비 중</i></b><span>이미 새 편지를 쓰는 친구가 자동으로 나와요</span></span>
+          <span className="oic" aria-hidden>👥</span>
+          <span><b>카카오톡 친구 중에서 찾기</b><span>이미 새 편지를 쓰는 친구가 자동으로 나와요</span><i className="soon">준비 중</i></span>
         </div>
       </div>
       {msg && <div className="small" role="status" style={{ fontSize: 16 }}>{msg}</div>}

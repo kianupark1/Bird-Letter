@@ -14,11 +14,11 @@ export type Profile = {
   /** 내 새(내 얼굴이 되는 새 그림). 처음 가입할 때 직접 골라요. 비어 있으면 아직 안 고른 것 */
   avatarBird: string;
 };
-export type FontScale = "normal" | "large" | "xlarge";
+export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [
+  { id: "small", label: "작게" },
   { id: "normal", label: "보통" },
   { id: "large", label: "크게" },
-  { id: "xlarge", label: "아주 크게" },
 ];
 
 export const PROFILE_KEY = "saepyeonji.profile.v1";
@@ -41,7 +41,7 @@ export function useProfile() {
       const raw = localStorage.getItem(PROFILE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
-        setProfile({ ...DEFAULT_PROFILE, ...saved, notify: { ...DEFAULT_PROFILE.notify, ...saved.notify } });
+        setProfile({ ...DEFAULT_PROFILE, ...saved, fontScale: saved.fontScale === "xlarge" ? "large" : saved.fontScale ?? "normal", notify: { ...DEFAULT_PROFILE.notify, ...saved.notify } });
       }
     } catch {}
     setReady(true);

@@ -568,6 +568,50 @@ add2("v2-6-내새", "내 정보: '내 새' 고르기", "내 얼굴이 되는 새
 </div>
 ${tabs2(2)}`));
 
+
+add2("v2-7-랭킹", "우리 랭킹: 누가 제일 멀리 보냈을까", "친구와 나의 편지 비행 거리를 겨뤄요. 새 얼굴로 시상대.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:26px">우리 랭킹 🏆</b><small>편지가 날아간 거리의 합이에요</small></div></div>
+<div class="body" style="gap:10px">
+  <div class="seg"><div class="on">누적 거리</div><div>가장 먼 한 통</div></div>
+  <div class="eta2" style="padding:16px 10px 14px">
+    <div style="display:flex;align-items:flex-end;justify-content:center;gap:10px">
+      <div style="text-align:center;width:104px"><div class="face f0" style="width:70px;height:70px;margin:0 auto">${bird("magpie", 58)}</div><div class="nm" style="font-size:18px;margin-top:4px">나</div><div style="font-size:15px;color:#6B5E52">1,980km</div><div style="background:#EBD9CC;border-radius:14px 14px 0 0;height:68px;margin-top:6px;display:grid;place-items:center;font-size:28px">🥈</div></div>
+      <div style="text-align:center;width:112px"><div style="font-size:26px">👑</div><div class="face f2" style="width:84px;height:84px;margin:0 auto;box-shadow:inset 0 0 0 4px #E0A83C">${bird("crane", 68)}</div><div class="nm" style="font-size:20px;margin-top:4px">지민</div><div style="font-size:16px;color:#C1481F;font-weight:700">2,350km</div><div style="background:#F6E2A6;border-radius:14px 14px 0 0;height:84px;margin-top:6px;display:grid;place-items:center;font-size:30px">🥇</div></div>
+      <div style="text-align:center;width:104px"><div class="face f1" style="width:70px;height:70px;margin:0 auto">${bird("hawk", 58)}</div><div class="nm" style="font-size:18px;margin-top:4px">현우</div><div style="font-size:15px;color:#6B5E52">1,200km</div><div style="background:#E8E1D0;border-radius:14px 14px 0 0;height:54px;margin-top:6px;display:grid;place-items:center;font-size:26px">🥉</div></div>
+    </div>
+  </div>
+  <div class="sticker"><div style="font-size:24px;width:34px;text-align:center;font-weight:700">4</div><div class="face f3" style="width:52px;height:52px">${bird("swallow", 42)}</div><div style="flex:1"><b>엄마</b><span class="d">편지 6통</span></div><div style="font-weight:700;font-size:18px">650km</div></div>
+  <div class="sticker"><div style="font-size:24px;width:34px;text-align:center;font-weight:700">5</div><div class="face f0" style="width:52px;height:52px">${bird("pigeon", 42)}</div><div style="flex:1"><b>할머니</b><span class="d">편지 2통</span></div><div style="font-weight:700;font-size:18px">325km</div></div>
+  <div class="bubble" style="margin-top:4px;font-size:17px">내 순위 2위 · 1위 지민까지 370km 🕊</div>
+</div>
+${tabs2(1)}`));
+
+add2("v2-8-내위치", "내 위치: 구 단위로만 찾아요", "정확한 위치가 아니라 '구'까지만. 좌표는 저장하지 않아요.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:24px">내가 있는 곳</b><small>편지가 여기서 날아가요</small></div></div>
+<div class="body" style="gap:14px">
+  <div class="map2">${mapSvg(350, 220, 0.05, "magpie", { from: SEOUL, mid: DAEJEON, to: BUSAN })}</div>
+  <div class="eta2" style="text-align:center">
+    <div style="font-size:18px;color:#6B5E52">지금 이 근처예요</div>
+    <div style="font-size:32px;font-weight:700;margin:4px 0">서울 강남구</div>
+    <div class="st" style="font-size:15px;color:#6B5E52">정확한 위치는 저장하지 않고, 구 이름만 써요</div>
+  </div>
+  <div class="chunky">📍 내 위치로 다시 찾기</div>
+  <div class="chunky gg" style="font-size:20px">직접 고르기 (시·구)</div>
+</div>
+<div class="dock"><div class="chunky" style="background:#1B6E5C;box-shadow:0 5px 0 #0f4a3d,0 10px 18px rgba(27,110,92,.3)">맞아요, 여기서 보낼게요</div></div>`));
+
+add2("v2-9-친구초대고침", "친구 초대: '준비 중' 표시 정리", "삐뚤게 놓인 도형을 없애고 글씨가 보이는 작은 표시로.", wrap2(`
+<div class="hello"><div><b>친구 초대</b><small>링크를 받은 친구가 시작하면 자동으로 친구가 돼요</small></div></div>
+<div class="body">
+  <div class="chunky kk" style="height:72px">💬 카카오톡으로 초대하기</div>
+  <div class="sticker"><div class="ic">🔗</div><div><b>초대 링크 복사하기</b><span class="d">다른 앱에 붙여 넣어 보낼 수 있어요</span></div></div>
+  <div class="sticker" style="opacity:.75"><div class="ic">👥</div><div><b>카카오톡 친구 중에서 찾기</b><span class="d">이미 새 편지를 쓰는 친구가 자동으로 나와요</span><span style="display:inline-block;background:#E0A83C;border-radius:10px;padding:2px 10px;font-size:13px;font-weight:700;margin-top:6px">준비 중</span></div></div>
+  <div class="sticker" style="background:#FFF3C9"><div class="ic" style="background:#fff">🏆</div><div style="flex:1"><b>우리 랭킹 보기</b><span class="d">누가 제일 멀리 보냈을까?</span></div><span style="font-size:26px">›</span></div>
+  <div style="font-size:18px;font-weight:700;margin-top:6px">내 친구 (2)</div>
+  <div class="row2">${face("지민")}<div style="flex:1" class="nm">지민</div><span class="pill" style="background:#fff;color:#1E3A5C;border:2px solid #1E3A5C">끊기</span></div>
+</div>
+${tabs2(1)}`));
+
 // 비교표: 지금 → 2차
 const beforeAfter = `<div class="board"><h1>2차 시안: 더 귀엽고, 더 단순하게</h1><div class="lead">기준: ① 귀여움(고퀄리티) ② 단순함·쓰기 편함. 지금 앱과 비교해서 바꾼 점만 적었어요.</div>
 <table><tr><th style="width:150px">화면</th><th>지금</th><th>2차 시안</th></tr>
@@ -593,6 +637,6 @@ const shoot2 = (name: string, body: string, w: number, h: number, bg?: string) =
 for (const s of v2) shoot2(s.file, s.html, 390, 844);
 shoot2("v2-0-바뀐점", beforeAfter, 1200, 760, "#FBF3E4");
 const sheet2 = `<div style="padding:30px;background:#d9d2c4;width:${3 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(3,390px);gap:30px"><div style="grid-column:1/-1;font-size:26px;font-weight:700">2차 시안 한눈에 보기 (더 귀엽고 더 단순하게)</div>${v2.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
-shoot2("v2-전체-한눈에", sheet2, 3 * 420 + 30, 2 * 960 + 130);
+shoot2("v2-전체-한눈에", sheet2, 3 * 420 + 30, 3 * 960 + 130);
 console.log("2차 시안:", v2.length + 2);
 

@@ -224,6 +224,9 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
   eq("편지 없는 친구도 빈 방으로 나옴", t.find((x) => x.key === keyForUid("f3"))!.entries.length, 0);
   eq("최근 편지가 있는 방이 앞", t[0].key, keyForUid("f1"));
   eq("편지 없는 친구는 이름순으로 맨 뒤", t.slice(-2).map((x) => x.name).join(","), "가온,현우");
+  const t2 = buildThreads([{ id: "n1", to: "가온", sentAt: 10 }, { id: "n2", to: "가온", toUid: "f2", sentAt: 20 }], [], friends);
+  eq("이름만 적은 편지도 같은 이름의 친구와 한 방", t2.filter((x) => x.name === "가온").length, 1);
+  eq("합쳐진 방에 편지 2통", t2.find((x) => x.key === keyForUid("f2"))!.entries.length, 2);
   eq("주소 값에서 구분값", keyFromParams("abc", null), "u:abc");
   eq("주소 값(이름)", keyFromParams(null, "엄마"), "n:엄마");
   eq("주소 값 없음", keyFromParams(null, null), null);
