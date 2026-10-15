@@ -328,16 +328,16 @@ const tokens = `<div class="board"><h1>디자인 규칙(색·글씨·크기)</h1
 <div class="bx"><h3>글씨 크기 설정(★ 신규)</h3><p>보통 / 크게(+15%) / 아주 크게(+30%). 모든 화면에 적용. 어르신이 직접 켜기 쉽게 "내 정보" 맨 위에 둬요.</p></div></div></div>`;
 
 /* ───────── 그림으로 굽기 ───────── */
-const page = (body: string) => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}</style></head><body>${body}</body></html>`;
+const page = (body: string) => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}${body.startsWith("<div class=\"board\"") ? "body{background:#FBF3E4}" : ""}</style></head><body>${body}</body></html>`;
 const shoot = (name: string, body: string, w: number, h: number) => {
   const f = resolve(OUT, `${name}.html`);
   writeFileSync(f, page(body));
   execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${w},${h + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, name + ".png")}`, "file://" + f], { stdio: "ignore" });
 };
 for (const s of screens) shoot(s.file, s.html, 390, 844);
-shoot("00-목표와원칙", goal, 1200, 760);
-shoot("12-벤치마킹", bench, 1200, 720);
-shoot("13-디자인규칙", tokens, 1200, 700);
+shoot("00-목표와원칙", goal, 1200, 700);
+shoot("12-벤치마킹", bench, 1200, 930);
+shoot("13-디자인규칙", tokens, 1200, 620);
 
 // 전체 한눈에 보기(화면 11장을 한 장에)
 const sheet = `<div style="padding:30px;background:#d9d2c4;width:${4 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(4,390px);gap:30px 30px">${screens.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
