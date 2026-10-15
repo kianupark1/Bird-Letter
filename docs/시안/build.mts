@@ -219,17 +219,20 @@ add("05-편지읽기", "⑤ 편지 읽기 (두루마리가 펼쳐진 모습)", "
 <div class="dock"><div class="cta">답장하기</div><div class="ghost">${I.cam} 사진 저장하기</div></div>`, "5"));
 
 // 06 새 고르기
-const pk = (id: string, name: string, time: string, d: string, sel = false) => `<div class="pick ${sel ? "sel" : ""}"><div style="width:68px">${bird(id, 66)}</div><div><b>${name}</b><span class="d">${d}</span></div><div class="tm">${time}<small>걸려요</small></div></div>`;
+const KMH: Record<string, number> = { hawk: 90, pigeon: 65, bungbungi: 60, crane: 55, swallow: 40, magpie: 35 };
+/** 새 한 줄: 이름 / 시속(km/h) / (유료 새는 체험 표시) / 걸리는 시간 */
+const pk = (id: string, name: string, time: string, tag = "", sel = false) =>
+  `<div class="pick ${sel ? "sel" : ""}" style="min-height:82px"><div style="width:68px;flex:none">${bird(id, 66)}</div><div><b>${name}</b><span class="d" style="font-size:17px;color:var(--namsaek);font-weight:700">시속 ${KMH[id]}km${tag ? ` <i style="font-style:normal;background:var(--dahong);color:#fff;font-size:14px;border-radius:9px;padding:2px 8px;margin-left:4px;white-space:nowrap">${tag}</i>` : ""}</span></div><div class="tm">${time}<small>걸려요</small></div></div>`;
 add("06-새고르기", "⑥ 새 고르기 (편지 쓰기 1단계)", "받는 사람은 이미 정해져 있어요. 시간이 제일 크게 보여요.", wrap(`
 <div class="hd"><div class="back">‹</div><div class="t"><b>어떤 새로 보낼까요?</b><span>지민에게 · 서울 → 부산 325km</span></div></div>
 <div class="body" style="gap:8px">
-  ${pk("hawk", "매", "약 3시간 37분", "<b style=\"color:#C1481F\">체험 5회 남음</b> · 유료 새")}
-  ${pk("pigeon", "비둘기", "약 5시간", "믿음직한 기본 새", true)}
-  ${pk("bungbungi", "붕붕이", "약 5시간 25분", "<b style=\"color:#C1481F\">체험 5회 남음</b> · 유료 새")}
-  ${pk("crane", "두루미", "약 5시간 55분", "귀한 소식용")}
-  ${pk("swallow", "제비", "약 8시간 8분", "봄 소식")}
-  ${pk("magpie", "까치", "약 9시간 17분", "특별한 도착 연출")}
-  <div class="st" style="text-align:center;font-size:15px">바람에 따라 시간이 조금 달라질 수 있어요 · 보내기는 계속 무료</div>
+  ${pk("hawk", "매", "약 3시간 37분", "체험 5회")}
+  ${pk("pigeon", "비둘기", "약 5시간", "", true)}
+  ${pk("bungbungi", "붕붕이", "약 5시간 25분", "체험 5회")}
+  ${pk("crane", "두루미", "약 5시간 55분")}
+  ${pk("swallow", "제비", "약 8시간 8분")}
+  ${pk("magpie", "까치", "약 9시간 17분")}
+  <div class="st" style="text-align:center;font-size:15px">바람에 따라 시속·시간이 조금 달라져요</div>
 </div>
 <div class="dock"><div class="cta">이 새로 보낼게요</div></div>`, "6"));
 
@@ -352,7 +355,7 @@ add("17-가입선물", "⑮ 가입 선물 (로그인 직후)", "유료 새 두 �
 // 18 체험 끝
 add("18-체험끝", "⑯ 체험 5회를 다 썼을 때", "강요하지 않아요. 사거나, 기본 새로 계속 보내거나.", wrap(`
 <div class="hd"><div class="back">‹</div><div class="t"><b>어떤 새로 보낼까요?</b><span>지민에게 · 서울 → 부산 325km</span></div></div>
-<div class="body" style="gap:8px;opacity:.35;pointer-events:none">${pk("hawk", "매", "약 3시간 37분", "유료 새")}${pk("pigeon", "비둘기", "약 5시간", "믿음직한 기본 새")}${pk("bungbungi", "붕붕이", "약 5시간 25분", "유료 새", true)}</div>
+<div class="body" style="gap:8px;opacity:.35;pointer-events:none">${pk("hawk", "매", "약 3시간 37분", "체험 끝")}${pk("pigeon", "비둘기", "약 5시간")}${pk("bungbungi", "붕붕이", "약 5시간 25분", "체험 끝", true)}</div>
 <div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-radius:28px 28px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);padding:22px 20px 30px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center">
   ${bird("bungbungi", 120)}
   <div style="font-size:26px;font-weight:700">붕붕이 체험 5회를<br>다 썼어요</div>
