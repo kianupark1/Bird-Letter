@@ -496,3 +496,29 @@ html[data-scale="xlarge"] body { zoom: 1.3; }
 .inbox-empty h2 { font-size: 26px; line-height: 1.35; margin: 6px 0 0; opacity: 1; }
 .inbox-empty p { font-size: 18px; line-height: 1.5; opacity: .75; margin: 0 0 10px; }
 .inbox-empty .cta { width: 100%; }
+
+/* 대화방(시안 ②③): 지도가 맨 위 */
+.room { padding-bottom: 24px; }
+.roomhead { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.roomback { width: 48px; height: 56px; display: grid; place-items: center; font-size: 34px; margin-left: -8px; }
+.tav.sm { width: 48px; height: 48px; font-size: 22px; }
+.rname { font-size: 24px; font-weight: 700; }
+.rsub { font-size: 16px; opacity: .7; }
+.roommap { border-radius: 20px; overflow: hidden; border: 1px solid var(--line); }
+.roommap .map { border-radius: 0; display: block; }
+.roomwarn { margin-top: 10px; background: #FFF1CC; border: 1px solid var(--hwangto); border-radius: 14px; padding: 12px 14px; font-size: 17px; font-weight: 600; color: #5a3d00; line-height: 1.45; }
+.roometa { margin-top: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px 16px; }
+.roometa .big { font-size: 26px; font-weight: 700; }
+.roometa .big em { font-style: normal; color: var(--dahong); }
+.roometa .sm { font-size: 17px; opacity: .75; margin-top: 2px; line-height: 1.4; }
+.roomempty { text-align: center; padding: 24px 8px; font-size: 18px; opacity: .8; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.dayhint { text-align: center; font-size: 15px; opacity: .6; margin: 18px 0 8px; }
+.roomcards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rcard { display: flex; align-items: center; gap: 14px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; min-height: 84px; }
+.rcard.me { background: #FCEBE2; border-color: rgba(193,72,31,.35); }
+.rcard.isnew { border: 2px solid var(--dahong); }
+.rcard b { font-size: 19px; display: block; }
+.rcard .rsub2 { font-size: 16px; opacity: .75; display: block; margin-top: 2px; }
+.ric { width: 56px; height: 56px; border-radius: 14px; background: #F6E9CF; display: grid; place-items: center; flex: none; }
+.rcard .tbadge { margin-left: auto; }
+.room-dock { bottom: 8px; margin-top: 16px; }
