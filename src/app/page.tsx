@@ -9,7 +9,9 @@ import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { buildThreads, type Thread } from "../../core/threads";
 import Face from "@/components/Face";
 import { listFriends, type Friend } from "@/lib/firebase/friends";
-import { firebaseEnabled } from "@/lib/firebase/client";
+import { auth, firebaseEnabled } from "@/lib/firebase/client";
+import { publishStats } from "@/lib/firebase/stats";
+import { myStats } from "../../core/rank";
 import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
@@ -80,6 +82,17 @@ function InboxList() {
   }, []);
 
   const friendBird = useMemo(() => new Map(friends.map((f) => [f.uid, f.bird])), [friends]);
+  // 내 거리 기록을 서버에 올려 둬요(친구가 랭킹에서 볼 수 있게). 로그인한 사람만, 값이 바뀔 때만 올려요
+  const { profile: me } = useProfile();
+  useEffect(() => {
+    if (!ready || !firebaseEnabled) return;
+    try { const u = auth().currentUser; if (!u || u.isAnonymous) return; } catch { return; }
+    const st = myStats(letters.filter((l) => l.sentAt <= Date.now()).map((l) => getRoute(l.routeId).km));
+    const sig = `${st.km}|${st.maxKm}|${st.count}|${me.nickname}|${me.avatarBird}`;
+    try { if (localStorage.getItem("saepyeonji.stats.sig") === sig) return; } catch {}
+    void publishStats(st, me.nickname, me.avatarBird).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
+  }, [ready, letters, me.nickname, me.avatarBird]);
+
   const threads = useMemo(() => buildThreads(letters, received, friends), [letters, received, friends]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 

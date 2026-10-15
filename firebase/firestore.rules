@@ -61,6 +61,20 @@ service cloud.firestore {
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
+    // 거리 랭킹용 기록: 내 기록은 나만 쓰고, 읽기는 나와 "내 친구 목록에 있는 사람"만 해요(친구끼리 누가 제일 멀리 보냈나 겨루는 용도)
+    match /stats/{uid} {
+      allow get: if signedIn()
+        && (request.auth.uid == uid || exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid)));
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['km', 'maxKm', 'count', 'name', 'bird'])
+        && request.resource.data.km is number && request.resource.data.km >= 0 && request.resource.data.km <= 1000000
+        && request.resource.data.maxKm is number && request.resource.data.maxKm >= 0 && request.resource.data.maxKm <= 20000
+        && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 100000
+        && request.resource.data.name is string && request.resource.data.name.size() <= 12
+        && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12));
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
     // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다.
     match /letters/{letterId} {

@@ -108,7 +108,7 @@ export default function Settings() {
         <label className="listrow" htmlFor="home-place">
           <div className="grow">
             <div className="name">편지를 보낼 때 출발하는 곳</div>
-            <div className="note">새가 여기서 날아가요. 편지 쓸 때 바꿀 수도 있어요.</div>
+            <div className="note">{profile.homeLabel ? `마지막으로 찾은 곳: ${profile.homeLabel} · ` : ""}새가 여기서 날아가요. 편지 쓸 때 바꿀 수도 있어요.</div>
           </div>
           <select id="home-place" className="field" style={{ width: "auto", margin: 0 }} value={profile.homePlace} onChange={(e) => update({ homePlace: e.target.value })}>
             {placesByRegion().map((g) => (

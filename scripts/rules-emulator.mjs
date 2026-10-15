@@ -35,6 +35,20 @@ await no("bird가 너무 김", setDoc(doc(A, "users", "uidA", "friends", "uidY3"
 await ok("코드 문서에 내 새(bird) 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie" }));
 await no("코드 문서의 bird가 글자가 아님", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: 5 }));
 
+console.log("[거리 랭킹 기록]");
+const st = (over = {}) => ({ km: 1200, maxKm: 452, count: 3, name: "에이", bird: "magpie", ...over });
+await ok("A가 자기 기록 쓰기", setDoc(doc(A, "stats", "uidA"), st()));
+await no("A가 B의 기록 쓰기", setDoc(doc(A, "stats", "uidB"), st()));
+await no("이상한 필드", setDoc(doc(A, "stats", "uidA"), st({ evil: 1 })));
+await no("km가 너무 큼", setDoc(doc(A, "stats", "uidA"), st({ km: 99999999 })));
+await no("km가 음수", setDoc(doc(A, "stats", "uidA"), st({ km: -5 })));
+await no("km가 글자", setDoc(doc(A, "stats", "uidA"), st({ km: "많이" })));
+await ok("친구 B가 A의 기록 읽기", getDoc(doc(B, "stats", "uidA")));
+await no("친구가 아닌 C가 A의 기록 읽기", getDoc(doc(C, "stats", "uidA")));
+await no("기록 목록 조회", getDocs(collection(B, "stats")));
+await ok("A가 자기 기록 읽기", getDoc(doc(A, "stats", "uidA")));
+await ok("A가 자기 기록 지우기", deleteDoc(doc(A, "stats", "uidA")));
+
 console.log("[친구에게 바로 보내기]");
 const m = (over = {}) => ({ fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: serverTimestamp(), arriveAt: Timestamp.fromMillis(Date.now() + 3600e3), recipientUid: "uidB", ...over });
 await ok("A→친구 B 편지", setDoc(doc(A, "letters", "L1"), m()));

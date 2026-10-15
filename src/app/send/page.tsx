@@ -3,7 +3,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
-import { getPlace, nearestPlace } from "../../../core/places";
+import { getPlace } from "../../../core/places";
+import { locate as findDistrict } from "../../../core/districts";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
@@ -135,9 +136,10 @@ function SendForm() {
     setGeoMsg("위치를 찾는 중이에요...");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const near = nearestPlace(pos.coords.latitude, pos.coords.longitude);
-        pickFrom(near.id);
-        setGeoMsg(`${near.name}에 있는 것으로 정했어요.`);
+        const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만 알아내고 좌표는 저장하지 않아요
+        pickFrom(here.place.id);
+        update({ homeLabel: here.label });
+        setGeoMsg(here.label === here.place.name ? `${here.label} 근처에 있는 것으로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
       },
       () => setGeoMsg("위치를 허용하지 않아서 직접 골라야 해요."),
       { timeout: 10000, maximumAge: 600000 },
@@ -204,7 +206,7 @@ function SendForm() {
               ? "보내는 곳과 받는 곳이 같아요. 받는 곳을 바꿔 주세요."
               : `${getPlace(fromId)?.name} ${route.points[0].name} → ${getPlace(toId)?.name} ${route.points[route.points.length - 1].name} · ${route.km}km`}
           </p>
-          {!IS_TOSS && <p className="small" style={{ marginTop: -8 }}>‘내 위치로’는 가까운 지역을 고르는 데만 써요. 정확한 위치는 저장하지 않아요.</p>}
+          {!IS_TOSS && <p className="small" style={{ marginTop: -8 }}>‘내 위치로’는 구 단위까지만 찾아요. 정확한 위치는 저장하지 않아요.</p>}
           <div className="dock">
             <button className="cta" disabled={!to.trim() || same} onClick={() => setStep(2)}>다음: 새 고르기</button>
           </div>

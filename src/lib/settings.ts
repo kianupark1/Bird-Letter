@@ -13,6 +13,8 @@ export type Profile = {
   fontScale: FontScale;
   /** 내 새(내 얼굴이 되는 새 그림). 처음 가입할 때 직접 골라요. 비어 있으면 아직 안 고른 것 */
   avatarBird: string;
+  /** 마지막으로 "내 위치로" 찾았을 때의 구 이름(예: 부산 해운대구). 표시용이고 좌표는 저장하지 않아요 */
+  homeLabel?: string;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [
