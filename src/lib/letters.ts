@@ -35,6 +35,20 @@ export const LETTERS_KEY = "saepyeonji.letters.v1";
 const KEY = LETTERS_KEY;
 export const ONBOARDED_KEY = "saepyeonji.onboarded.v1";
 
+/** 받는 사람이 "열어 본" 편지 ID들(목록의 "새 편지" 표시를 끄는 데 써요). 내 폰에만 저장해요 */
+const OPENED_KEY = "saepyeonji.opened.v1";
+export function readOpened(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(OPENED_KEY) ?? "[]") as string[]); } catch { return new Set(); }
+}
+export function markOpened(id: string) {
+  try {
+    const s = readOpened();
+    if (s.has(id)) return;
+    s.add(id);
+    localStorage.setItem(OPENED_KEY, JSON.stringify([...s].slice(-500)));
+  } catch {}
+}
+
 /** 받은 편지함 샘플. 서버를 쓰지 않는 상태(내 폰 저장)에서만 화면 확인용으로 보여줌 */
 export const SAMPLE_INBOX = [
   { id: "in1", from: "엄마", birdId: "crane", routeId: "seoul-busan", preview: "밥은 잘 챙겨 먹고 있니?", when: "어제" },

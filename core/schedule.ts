@@ -39,3 +39,10 @@ export function dateTimeText(ms: number): string {
   const h = d.getHours();
   return `${d.getMonth() + 1}월 ${d.getDate()}일 ${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}:${pad(d.getMinutes())}`;
 }
+
+/** "오후 5시 20분" 같은 시각만 표시(분이 0이면 "오후 5시") */
+export function clockText(ms: number): string {
+  const d = new Date(ms);
+  const h = d.getHours(), m = d.getMinutes();
+  return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}시${m ? ` ${m}분` : ""}`;
+}
