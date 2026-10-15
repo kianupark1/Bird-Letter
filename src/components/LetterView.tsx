@@ -236,6 +236,7 @@ export default function LetterView({ id }: { id: string }) {
                 ))}
               </div>
             )}
+            <div className="bubble" style={{ display: "inline-block" }}>짹짹! {bird.id === "magpie" ? "반가운 소식이에요!" : "편지가 도착했어요!"}</div>
             <div className="big landing"><BirdIcon id={bird.id} size={112} letter /></div>
             <h2 style={{ margin: "10px 0 0", opacity: 1 }}>
               {bird.id === "magpie" ? "반가운 소식이 도착했어요!" : "편지가 도착했어요!"}

@@ -10,7 +10,8 @@ import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/l
 import { listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { clockText, dateTimeText, isScheduled } from "../../../core/schedule";
-import { avatarTone, buildThreads, initialOf, keyFromParams, type Thread, type ThreadEntry } from "../../../core/threads";
+import { buildThreads, keyFromParams, type Thread, type ThreadEntry } from "../../../core/threads";
+import Face from "@/components/Face";
 import { letterHref } from "@/lib/target";
 import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
@@ -80,7 +81,7 @@ function Room() {
           <div className="big">도착까지 <em>{formatMinutes(left)}</em></div>
           <div className="sm">{dateTimeText(arriveAt).split(" ").slice(0, 2).join(" ") === dateTimeText(now).split(" ").slice(0, 2).join(" ") ? "오늘" : dateTimeText(arriveAt).split(" ").slice(0, 2).join(" ")} {clockText(arriveAt)}쯤 도착해요 · {incoming ? "편지는 도착하면 열 수 있어요" : `내용은 ${name}님만 읽어요`}</div>
           <div className="sm">{bird.name} 시속 약 {bird.kmh}km</div>
-          <div className="progress"><i style={{ width: `${Math.round(pr.p * 100)}%` }} /></div>
+          <div className="mtrack"><i style={{ width: `${Math.round(pr.p * 100)}%` }} /><span className="mb" style={{ left: `${Math.round(pr.p * 100)}%` }}><BirdIcon id={bird.id} size={40} /></span></div>
         </div>
       </>
     );
@@ -96,7 +97,7 @@ function Room() {
     <main className="app room">
       <header className="roomhead">
         <Link href="/" className="roomback" aria-label="뒤로">‹</Link>
-        <span className={`tav sm tone${avatarTone(name)}`} aria-hidden>{initialOf(name)}</span>
+        <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} size={52} />
         <div>
           <div className="rname">{name}</div>
           {subtitle && <div className="rsub">{subtitle}</div>}

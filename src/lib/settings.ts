@@ -11,6 +11,8 @@ export type Profile = {
   homePlace: string;
   /** 글씨 크기(어르신용): 보통 / 크게 / 아주 크게. 모든 화면에 적용돼요 */
   fontScale: FontScale;
+  /** 내 새(내 얼굴이 되는 새 그림). 처음 가입할 때 직접 골라요. 비어 있으면 아직 안 고른 것 */
+  avatarBird: string;
 };
 export type FontScale = "normal" | "large" | "xlarge";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [
@@ -27,6 +29,7 @@ export const DEFAULT_PROFILE: Profile = {
   chirp: true,
   homePlace: "seoul",
   fontScale: "normal",
+  avatarBird: "",
 };
 
 export function useProfile() {

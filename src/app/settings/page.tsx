@@ -4,11 +4,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { placesByRegion } from "../../../core/places";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
+import Face from "@/components/Face";
+import BirdPicker from "@/components/BirdPicker";
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
 import { playChirp } from "@/lib/chirp";
+import { getBird } from "@/lib/birds";
 import { IS_TOSS } from "@/lib/target";
 import { LOGINS, linkAccount, linkedKinds, unlinkAccount, type LoginKind } from "@/lib/firebase/link";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
@@ -27,6 +30,7 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [msg, setMsg] = useState("");
+  const [pickBird, setPickBird] = useState(false);
   const [testMsg, setTestMsg] = useState("");
   const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
@@ -65,19 +69,14 @@ export default function Settings() {
     <main className="app">
       <h1>내 정보</h1>
 
-      <div className="profilecard">
-        <div className="avatar" aria-hidden>{initial}</div>
-        <div className="grow">
-          <input
-            className="nick"
-            aria-label="닉네임"
-            value={profile.nickname}
-            maxLength={12}
-            placeholder="닉네임"
-            onChange={(e) => update({ nickname: e.target.value })}
-          />
-          <div className="small">닉네임을 눌러서 바꿀 수 있어요</div>
-        </div>
+      <div className="mybird">
+        <Face name={profile.nickname || "새"} bird={profile.avatarBird} size={112} />
+        <input className="nick" style={{ textAlign: "center", marginTop: 8 }} aria-label="닉네임" value={profile.nickname} maxLength={12} placeholder="이름"
+          onChange={(e) => update({ nickname: e.target.value })} />
+        <button type="button" className="edit" onClick={() => setPickBird((v) => !v)}>
+          내 새 · {getBird(profile.avatarBird || "magpie").name} ✎ {pickBird ? "닫기" : "바꾸기"}
+        </button>
+        {pickBird && <div style={{ display: "flex", justifyContent: "center" }}><BirdPicker value={profile.avatarBird} onChange={(id) => { update({ avatarBird: id }); setPickBird(false); }} /></div>}
       </div>
 
       <div className="scalebox">

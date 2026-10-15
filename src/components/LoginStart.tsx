@@ -37,6 +37,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   return (
     <main className="start">
       <div className="start-hero">
+        <div className="bubble">짹짹! 반가워요 🌤</div>
         {bird ? <BirdIcon id={bird} size={200} letter className="bob" /> : <div style={birdSlot(200)} />}
         <h1>새 편지</h1>
         {inviter ? (
