@@ -8,12 +8,15 @@ import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { avatarTone, buildThreads, initialOf, type Thread } from "../../core/threads";
 import { listFriends, type Friend } from "@/lib/firebase/friends";
+import { firebaseEnabled } from "@/lib/firebase/client";
 import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
+import NameStep, { shouldAskName } from "@/components/NameStep";
+import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
 
 export default function Home() {
@@ -55,6 +58,14 @@ function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string>): Row
 }
 
 function Inbox() {
+  const { profile, ready: profileReady } = useProfile();
+  const [named, setNamed] = useState(false);
+  // 서버에 로그인한 사람이 처음이면, 친구들에게 보일 이름부터 물어봐요(서버 없이 개발할 때는 건너뜀)
+  if (profileReady && !named && firebaseEnabled && shouldAskName(profile.nickname)) return <NameStep onDone={() => setNamed(true)} />;
+  return <InboxList />;
+}
+
+function InboxList() {
   const { letters, received, ready } = useLetters();
   const now = useNow();
   const [friends, setFriends] = useState<Friend[]>([]);

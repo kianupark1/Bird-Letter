@@ -41,7 +41,7 @@ function SendForm() {
   const [fromId, setFromId] = useState("seoul");
   const [toId, setToId] = useState("busan");
   const [touched, setTouched] = useState(false);
-  const [birdId, setBirdId] = useState(BIRDS.some((b) => b.id === preset) ? (preset as string) : "swallow");
+  const [birdId, setBirdId] = useState(BIRDS.some((b) => b.id === preset) ? (preset as string) : "pigeon");
   const [message, setMessage] = useState("");
   const [geoMsg, setGeoMsg] = useState("");
   // 사진(폴라로이드)과 예약 발송
@@ -53,13 +53,19 @@ function SendForm() {
   // 친구에게 앱 안에서 바로 보내기(친구 목록에서 고르면 받는 사람이 정해져요)
   const [friends, setFriends] = useState<Friend[]>([]);
   const [toUid, setToUid] = useState<string | undefined>();
-  const presetFriend = params.get("friend");
+  // 대화방에서 "OO에게 편지 쓰기"를 누르고 오면 받는 사람이 정해져 있어요(?to=<친구 uid> 또는 ?name=<이름>)
+  const presetFriend = params.get("friend") ?? params.get("to");
+  const presetName = params.get("name");
+  const [locked, setLocked] = useState(false);
+  useEffect(() => {
+    if (presetName && !presetFriend) { setTo(presetName); setLocked(true); }
+  }, [presetName, presetFriend]);
   useEffect(() => {
     if (IS_TOSS || !firebaseEnabled) return;
     listFriends().then((f) => {
       setFriends(f);
       const hit = presetFriend ? f.find((x) => x.uid === presetFriend) : undefined;
-      if (hit) { setTo(hit.name); setToUid(hit.uid); }
+      if (hit) { setTo(hit.name); setToUid(hit.uid); setLocked(true); }
     }).catch(() => {});
   }, [presetFriend]);
   const pickFriend = (f: Friend) => { setTo(f.name); setToUid(f.uid); setReplyTo(undefined); };
@@ -156,7 +162,10 @@ function SendForm() {
 
   return (
     <main className="app">
-      <h1>편지 쓰기</h1>
+      <header className="sendhead">
+        {step === 1 ? <Link href={locked && toUid ? `/room?u=${encodeURIComponent(toUid)}` : "/"} className="roomback" aria-label="뒤로">‹</Link> : <button type="button" className="roomback" aria-label="이전" onClick={() => setStep(step - 1)}>‹</button>}
+        <h1>{locked && to ? `${to}에게 쓰는 편지` : "편지 쓰기"}</h1>
+      </header>
       <div className="steps" aria-label={`3단계 중 ${step}단계`}>
         {[1, 2, 3].map((n) => <i key={n} className={n <= step ? "on" : ""} />)}
       </div>
@@ -165,7 +174,7 @@ function SendForm() {
         <>
           <p className="sub">누구에게, 어디로 보낼까요?</p>
           {replyTo && <div className="small" role="status" style={{ marginTop: 0, marginBottom: 8 }}>↩ {replyName}님이 보낸 편지에 답장해요. 보낸 곳과 받는 곳을 바꿔 두었어요.</div>}
-          {!IS_TOSS && firebaseEnabled && !replyTo && (
+          {!IS_TOSS && firebaseEnabled && !replyTo && !locked && (
             <div className="friendpick">
               <div className="lab">친구에게 바로 보내기</div>
               <div className="chips">
@@ -177,7 +186,7 @@ function SendForm() {
               {friends.length === 0 && <div className="small" style={{ marginTop: 6 }}>친구를 연결하면 링크 없이 친구의 새편지함으로 바로 날아가요.</div>}
             </div>
           )}
-          <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />
+          {!locked && <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />}
 
           <div className="placerow">
             <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={pickFrom} />
@@ -202,15 +211,14 @@ function SendForm() {
 
       {step === 2 && (
         <>
-          <p className="sub">{route.title} · {route.km}km — 어떤 새가 날아갈까요?</p>
-          {BIRDS_SLOW_TO_FAST.map((b) => (
-            <button key={b.id} className="card wrapfoot" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
+          <p className="sub big">어떤 새로 보낼까요?<br /><span>{to}에게 · {route.title} · {route.km}km</span></p>
+          {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
+            <button key={b.id} className="card wrapfoot birdpick" aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
                 <BirdIcon id={b.id} size={60} />
                 <div>
-                  <div><span className="name">{b.name}</span><span className="badge">{b.badge}</span></div>
-                  <div className="note">{b.note}</div>
-                  <div className="note">시속 약 {b.kmh}km · {b.speedNote}</div>
+                  <div><span className="name">{b.name}</span></div>
+                  <div className="kmh">시속 {b.kmh}km</div>
                 </div>
               </div>
               <div className="time">{formatMinutes(Math.max(1, travelMinutes(b, route.km)))}</div>
@@ -218,8 +226,7 @@ function SendForm() {
             </button>
           ))}
           <div className="dock">
-            <button className="cta" onClick={() => setStep(3)}>다음: 편지 쓰기</button>
-            <button className="ghost" onClick={() => setStep(1)}>이전</button>
+            <button className="cta big" onClick={() => setStep(3)}>이 새로 보낼게요</button>
           </div>
         </>
       )}
@@ -298,7 +305,6 @@ function SendForm() {
           {error && <div className="small" role="alert" style={{ color: "var(--dahong)", opacity: 1 }}>{error}</div>}
           <div className="dock">
             <button className="cta" disabled={!message.trim() || busy || photoBusy || message.length > MAX_LETTER_CHARS || !!departError} onClick={send}>{busy ? "보내는 중..." : mode === "later" ? "예약하고 보내기" : `${bird.name}로 보내기`}</button>
-            <button className="ghost" onClick={() => setStep(2)}>이전</button>
           </div>
         </>
       )}

@@ -34,7 +34,7 @@ async function writeLetter({ to, bird, text, files = [], later = false }) {
   await p.fill("input[placeholder='받는 사람 이름']", to);
   await p.click("text=다음: 새 고르기");
   await p.click(`text=${bird} >> nth=0`);
-  await p.click("text=다음: 편지 쓰기");
+  await p.click("text=이 새로 보낼게요");
   await p.fill("textarea", text);
   if (files.length) { await p.setInputFiles("#photo-input", files); await p.waitForSelector(".thumb", { timeout: 15000 }); }
   if (later) await p.click("text=정한 때에 출발");
@@ -72,14 +72,16 @@ await p.waitForURL(/\/letter/);
 ok("예약 화면에 출발 예정이 보임", (await p.$eval("main", (e) => e.innerText)).includes("출발해요"));
 await p.goto(BASE + "/");
 await p.waitForTimeout(1000);
-ok("홈에 '출발을 기다리는 편지'가 보임", (await p.$$eval("h2", (e) => e.map((x) => x.textContent))).includes("출발을 기다리는 편지"));
-await p.click(".card >> nth=0");
+ok("홈에 '출발 예정'가 보임", (await p.$eval("main", (e) => e.innerText)).includes("출발 예정"));
+await p.click(".trow >> nth=0");
+await p.waitForURL(/\/room/);
+await p.click(".rcard >> nth=0");
 await p.waitForURL(/\/letter/);
 await p.click("text=예약 취소하기");
 await p.click("text=취소할게요");
 await p.waitForURL(`${BASE}/`);
 await p.waitForTimeout(800);
-ok("취소하면 홈에서 사라짐", !(await p.$$eval("h2", (e) => e.map((x) => x.textContent))).includes("출발을 기다리는 편지"));
+ok("취소하면 홈에서 사라짐", !(await p.$eval("main", (e) => e.innerText)).includes("출발 예정"));
 
 ok("화면에 스크립트 오류가 없음", errors.length === 0, errors.join(" | "));
 console.log(`\n결과: 통과 ${pass} / 실패 ${fail}`);

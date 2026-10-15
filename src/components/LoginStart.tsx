@@ -9,7 +9,7 @@ import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
  * 처음 열었을 때의 화면(시안 ⑫). 로그인이 곧 시작이에요: 카카오·구글·애플 버튼 하나로 끝, 가입 양식 없음.
  * 네이버는 서버 연결이 끝나면 여기에 추가해요.
  */
-export default function LoginStart({ onDone, inviter }: { onDone: () => void; inviter?: string }) {
+export default function LoginStart({ onDone, inviter, next }: { onDone: () => void; inviter?: string; /** 카카오 로그인이 끝난 뒤 돌아올 주소(기본은 홈) */ next?: string }) {
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [msg, setMsg] = useState("");
 
@@ -22,7 +22,7 @@ export default function LoginStart({ onDone, inviter }: { onDone: () => void; in
     setMsg("");
     if (kind === "kakao") {
       if (!KAKAO_LOGIN_READY) { setMsg("카카오 로그인이 아직 준비되지 않았어요."); return; }
-      startKakaoLogin("/"); // 카카오 화면으로 갔다가 돌아오면 홈으로
+      startKakaoLogin(next ?? "/"); // 카카오 화면으로 갔다가 돌아오면 홈으로
       return;
     }
     setBusy(kind);
