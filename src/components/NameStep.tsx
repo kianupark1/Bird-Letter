@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import { DEFAULT_PROFILE, useProfile } from "@/lib/settings";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
+import { birdSlot, useRandomBird } from "@/lib/randomBird";
 
 /** 처음 로그인한 사람에게 친구들에게 보일 이름을 한 번 물어봐요(이름이 "새 친구" 그대로면 이 화면) */
 export function needsName(nickname: string) {
@@ -18,6 +19,7 @@ export function shouldAskName(nickname: string) {
 export default function NameStep({ onDone }: { onDone: () => void }) {
   const { update } = useProfile();
   const [name, setName] = useState("");
+  const bird = useRandomBird();
   useEffect(() => {
     // 구글·애플이 알려 준 이름이 있으면 미리 채워 둬요
     if (firebaseEnabled) {
@@ -29,7 +31,7 @@ export default function NameStep({ onDone }: { onDone: () => void }) {
   return (
     <main className="start">
       <div className="start-hero">
-        <BirdIcon id="magpie" size={150} className="bob" />
+        {bird ? <BirdIcon id={bird} size={150} letter className="bob" /> : <div style={birdSlot(150)} />}
         <h1 style={{ fontSize: 28 }}>친구들에게 보일<br />이름을 알려 주세요</h1>
         <input className="field namefield" value={name} maxLength={12} placeholder="예: 지민" aria-label="내 이름" autoFocus
           onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} />

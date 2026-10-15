@@ -18,6 +18,7 @@ import { useSession } from "@/lib/session";
 import NameStep, { shouldAskName } from "@/components/NameStep";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
+import { birdSlot, useRandomBird } from "@/lib/randomBird";
 
 export default function Home() {
   const { state, recheck } = useSession();
@@ -67,6 +68,7 @@ function Inbox() {
 
 function InboxList() {
   const { letters, received, ready } = useLetters();
+  const heroBird = useRandomBird();
   const now = useNow();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [opened, setOpened] = useState<Set<string>>(new Set());
@@ -88,7 +90,7 @@ function InboxList() {
 
       {ready && threads.length === 0 && (
         <div className="inbox-empty">
-          <BirdIcon id="magpie" size={190} letter className="bob" />
+          {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
           <h2>친구를 초대하면<br />편지를 보낼 수 있어요</h2>
           <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
           <Link href="/friends" className="cta big">친구 초대하기</Link>

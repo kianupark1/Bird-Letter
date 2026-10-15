@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
+import { birdSlot, useRandomBird } from "@/lib/randomBird";
 
 /**
  * 처음 열었을 때의 화면(시안 ⑫). 로그인이 곧 시작이에요: 카카오·구글·애플 버튼 하나로 끝, 가입 양식 없음.
@@ -12,6 +13,7 @@ import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 export default function LoginStart({ onDone, inviter, next }: { onDone: () => void; inviter?: string; /** 카카오 로그인이 끝난 뒤 돌아올 주소(기본은 홈) */ next?: string }) {
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [msg, setMsg] = useState("");
+  const bird = useRandomBird();
 
   useEffect(() => {
     document.body.dataset.hideNav = "1"; // 이 화면에서는 하단 메뉴를 숨겨요
@@ -35,7 +37,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   return (
     <main className="start">
       <div className="start-hero">
-        <BirdIcon id="magpie" size={200} letter className="bob" />
+        {bird ? <BirdIcon id={bird} size={200} letter className="bob" /> : <div style={birdSlot(200)} />}
         <h1>새 편지</h1>
         {inviter ? (
           <p><b>{inviter}</b>님이 편지 친구로 초대했어요.<br />시작하면 바로 연결돼요</p>
