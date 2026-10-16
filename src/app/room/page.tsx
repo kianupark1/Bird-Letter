@@ -19,6 +19,7 @@ import ChatLetter from "@/components/ChatLetter";
 import RoomComposer from "@/components/RoomComposer";
 import { asLike, buildChat } from "@/lib/chat";
 import { readStats } from "@/lib/firebase/stats";
+import { usePeople } from "@/lib/people";
 
 export default function RoomPage() {
   return (
@@ -40,6 +41,9 @@ function Room() {
   const [opened, setOpened] = useState<Set<string>>(new Set());
   const endRef = useRef<HTMLDivElement>(null);
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
+  const [bigMap, setBigMap] = useState(false);
+  const [pickFriend, setPickFriend] = useState(false);
+  const { book, merge, rename } = usePeople();
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
   useEffect(() => {
@@ -48,7 +52,12 @@ function Room() {
   }, []);
 
   const key = keyFromParams(params.get("u"), params.get("n"));
-  const thread: Thread<Letter, Meta> | undefined = useMemo(() => buildThreads(letters, received, friends).find((t) => t.key === key), [letters, received, friends, key]);
+  const thread: Thread<Letter, Meta> | undefined = useMemo(() => buildThreads(letters, received, friends, book).find((t) => t.key === key), [letters, received, friends, book, key]);
+  // 이름만 적은 사람을 친구와 합쳤으면, 옛 주소(?n=이름)로 들어와도 친구 방으로 옮겨 줘요
+  const nParam = params.get("n");
+  useEffect(() => {
+    if (!thread && nParam && book.alias[nParam]) router.replace(`/room?u=${encodeURIComponent(book.alias[nParam])}`);
+  }, [thread, nParam, book, router]);
   const name = thread?.name ?? "";
   const theirUid = thread?.uid;
   // 친구가 직접 알려 준 동네(구)가 있으면 받는 곳으로 자동 사용해요. 못 읽거나 없으면 직접 골라요
@@ -87,10 +96,22 @@ function Room() {
     const left = Math.max(1, Math.ceil(pr.total - pr.elapsed));
     subtitle = `${route.title} · ${bird.name}`;
     map = (
-      <div className="ch-map" role="status" aria-live="polite">
-        <JourneyMap route={route} p={pr.p} birdId={bird.id} />
-        <div className="eta">도착까지 <em>{formatMinutes(left)}</em></div>
-      </div>
+      <>
+        <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
+          <JourneyMap route={route} p={pr.p} birdId={bird.id} />
+          <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
+          <span className="zoom" aria-hidden>⤢</span>
+        </button>
+        {bigMap && (
+          <div className="mapfull" role="dialog" aria-label={`${route.title} 지도`}>
+            <div className="mf-head">
+              <div><b>{route.title}</b><small>{bird.name} · 도착까지 {formatMinutes(left)}</small></div>
+              <button type="button" className="mf-close" aria-label="닫기" onClick={() => setBigMap(false)}>✕</button>
+            </div>
+            <div className="mf-body"><JourneyMap route={route} p={pr.p} birdId={bird.id} /></div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -109,12 +130,36 @@ function Room() {
       <header className="roomhead">
         <Link href="/" className="roomback" aria-label="뒤로">‹</Link>
         <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} size={52} />
-        <div>
-          <div className="rname">{name}</div>
+        <div style={{ minWidth: 0 }}>
+          {thread.uid ? (
+            <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
+              onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (내 폰에만 저장돼요)", name); if (v !== null) rename(thread.uid!, v); }}>{name} <span aria-hidden>✎</span></button>
+          ) : <div className="rname">{name}</div>}
           {subtitle && <div className="rsub">{subtitle}</div>}
         </div>
       </header>
       {map}
+      {!thread.uid && friends.length > 0 && (
+        <div className="mergecard">
+          <div><b>{name}님이 친구 목록에 있나요?</b><span>친구와 합치면 한 사람으로 모이고, 편지가 앱으로 바로 가요.</span></div>
+          <button type="button" className="chip" onClick={() => setPickFriend(true)}>친구와 합치기</button>
+        </div>
+      )}
+      {pickFriend && (
+        <>
+          <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setPickFriend(false)} />
+          <div className="ch-sheet" role="dialog" aria-label="친구와 합치기">
+            <h2>{name}님은 누구인가요?</h2>
+            {friends.map((f) => (
+              <button key={f.uid} type="button" className="trow" style={{ width: "100%", border: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
+                onClick={() => { merge(name, f.uid); setPickFriend(false); router.replace(`/room?u=${encodeURIComponent(f.uid)}`); }}>
+                <Face name={f.name} bird={f.bird} />
+                <span className="tmid"><span className="tname">{book.nick[f.uid] || f.name}</span><span className="tst">이 친구로 합치고 &quot;{name}&quot;(으)로 불러요</span></span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <div className="ch-feed">
         {items.length === 0 && (
           <div className="roomempty"><BirdIcon id="magpie" size={120} /><p>아직 주고받은 편지가 없어요.<br />아래에 첫 편지를 써 보세요</p></div>

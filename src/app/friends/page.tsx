@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePeople } from "@/lib/people";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { firebaseEnabled } from "@/lib/firebase/client";
@@ -33,6 +34,7 @@ function Friends() {
   const [naming, setNaming] = useState(false);
   const [code, setCode] = useState("");
   const [friends, setFriends] = useState<Friend[]>([]);
+  const { book } = usePeople();
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(true);
   const [canPick, setCanPick] = useState(false);
@@ -128,7 +130,7 @@ function Friends() {
             <div className="trow">
               <Link href={roomHref({ uid: f.uid, name: f.name })} className="tfriend">
                 <Face name={f.name} bird={f.bird} />
-                <span className="tname">{f.name}</span>
+                <span className="tname">{book.nick[f.uid] || f.name}{book.nick[f.uid] && book.nick[f.uid] !== f.name && <small style={{ fontWeight: 400, opacity: .6 }}> ({f.name})</small>}</span>
               </Link>
               <button type="button" className="chip" onClick={() => remove(f)} aria-label={`${f.name} 친구 끊기`}>끊기</button>
             </div>

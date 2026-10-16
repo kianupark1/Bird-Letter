@@ -29,25 +29,32 @@ export function keyFromParams(u: string | null, n: string | null): string | null
   return null;
 }
 
-export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S[], received: R[], friends: FriendLike[]): Thread<S, R>[] {
+/**
+ * 사람 정리(내 폰에만 저장): alias = 내가 이름만 적어 보낸 사람이 실제로는 어느 친구(uid)인지, nick = 친구를 내가 부르는 이름.
+ * 같은 사람이 "내가 정한 이름"과 "친구가 정한 이름"으로 둘로 갈라지지 않게 해요(사람은 이름이 아니라 uid로 구분).
+ */
+export type PeopleBook = { alias?: Record<string, string>; nick?: Record<string, string> };
+
+export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S[], received: R[], friends: FriendLike[], book: PeopleBook = {}): Thread<S, R>[] {
   const map = new Map<string, Thread<S, R>>();
-  const friendName = new Map(friends.map((f) => [f.uid, f.name]));
+  const alias = book.alias ?? {}, nick = book.nick ?? {};
+  const friendName = new Map(friends.map((f) => [f.uid, nick[f.uid] || f.name]));
   const get = (key: string, uid: string | undefined, name: string) => {
     let t = map.get(key);
     if (!t) { t = { key, uid, name, entries: [], lastAt: 0 }; map.set(key, t); }
     return t;
   };
-  for (const f of friends) get(keyForUid(f.uid), f.uid, f.name);
+  for (const f of friends) get(keyForUid(f.uid), f.uid, friendName.get(f.uid) ?? f.name);
   // 이름만 적어 보낸 편지도, 같은 이름의 친구가 있으면 그 친구 한 명으로 합쳐요(같은 사람이 둘로 갈라지지 않게)
   const friendByName = new Map<string, string>();
-  for (const f of friends) if (!friendByName.has(f.name)) friendByName.set(f.name, f.uid);
+  for (const f of friends) for (const n of [f.name, nick[f.uid]]) if (n && !friendByName.has(n)) friendByName.set(n, f.uid);
   for (const s of sent) {
-    const uid = s.toUid ?? friendByName.get(s.to);
-    const t = uid ? get(keyForUid(uid), uid, friendName.get(uid) ?? s.to) : get(keyForName(s.to), undefined, s.to);
+    const uid = s.toUid ?? alias[s.to] ?? friendByName.get(s.to);
+    const t = uid ? get(keyForUid(uid), uid, friendName.get(uid) ?? nick[uid] ?? s.to) : get(keyForName(s.to), undefined, s.to);
     t.entries.push({ dir: "sent", item: s, at: s.sentAt });
   }
   for (const r of received) {
-    const t = get(keyForUid(r.fromUid), r.fromUid, friendName.get(r.fromUid) ?? (r.fromName || "누군가"));
+    const t = get(keyForUid(r.fromUid), r.fromUid, friendName.get(r.fromUid) ?? nick[r.fromUid] ?? (r.fromName || "누군가"));
     t.entries.push({ dir: "received", item: r, at: r.sentAt });
   }
   const list = [...map.values()];

@@ -377,6 +377,16 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("여러 사람에게 보내도 하루 8통까지만", myStatsCapped([...mk(5, "a"), ...mk(5, "b"), ...mk(5, "c"), ...mk(5, "d"), ...mk(5, "e")]).count, PER_DAY);
   eq("다음 날엔 다시 반영", myStatsCapped([...mk(3, "a"), ...mk(3, "a", T + 86400000)]).count, PER_FRIEND_PER_DAY * 2);
   eq("한도 안의 거리 합", myStatsCapped(mk(2, "a")).km, 600);
+  const { buildThreads: bt } = await import("../core/threads");
+  const fr = [{ uid: "U1", name: "새 친구" }];
+  const sentA = [{ id: "a", to: "석영이", sentAt: 1 }, { id: "b", to: "새 친구", toUid: "U1", sentAt: 2 }];
+  eq("정리 전에는 둘로 나뉨", bt(sentA, [], fr).length, 2);
+  const merged = bt(sentA, [], fr, { alias: { "석영이": "U1" }, nick: { U1: "석영이" } });
+  eq("합치면 한 사람(uid 기준)", merged.length, 1);
+  eq("합친 방 이름은 내가 정한 이름", merged[0].name, "석영이");
+  eq("합친 방에 편지 2통", merged[0].entries.length, 2);
+  eq("받은 편지도 내가 정한 이름으로", bt([], [{ id: "r", fromUid: "U1", fromName: "새 친구", sentAt: 3 }], fr, { nick: { U1: "석영이" } })[0].name, "석영이");
+  eq("내가 정한 이름으로 적어 보낸 새 편지도 같은 방", bt([{ id: "c", to: "석영이", sentAt: 4 }], [], fr, { nick: { U1: "석영이" } }).length, 1);
   const { journeyOf, lapsText, MILESTONES } = await import("../core/journey");
   eq("0km는 첫 목적지 0%", journeyOf(0).pct, 0);
   eq("0km 다음 목적지는 한반도", journeyOf(0).next!.id, "korea");
