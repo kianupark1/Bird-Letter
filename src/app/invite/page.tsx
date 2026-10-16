@@ -44,7 +44,7 @@ function Invite() {
     if (shouldAskName(profile)) { setNaming(true); return; }
     started.current = true;
     setNaming(false);
-    addFriend(code, profile.nickname, profile.avatarBird).then(() => setResult("done")).catch((e) => setResult((e as Error).message === "self" ? "self" : "error"));
+    addFriend(code, profile.nickname, profile.avatarBird, profile.photo).then(() => setResult("done")).catch((e) => setResult((e as Error).message === "self" ? "self" : "error"));
   }, [state, inviter, profileReady, profile, code]);
 
   if (state === "checking" || inviter === undefined) return <main className="app" aria-busy="true" />;

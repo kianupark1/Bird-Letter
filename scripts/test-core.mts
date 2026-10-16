@@ -400,13 +400,14 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("합친 방 이름은 진짜 이름(기본 이름보다 우선)", bt([], [{ id: "r3", fromUid: "D1", fromName: "석영", sentAt: 1 }], [{ uid: "D1", name: "새 친구" }])[0].name, "석영");
   const { uidTag, isUnnamed } = await import("../core/threads");
   const unn = bt([], [], [{ uid: "B1", name: "새 친구" }, { uid: "B2", name: "새 친구" }]);
-  eq("이름 없는 친구는 '새 친구' 대신 표로", unn.every((t) => t.name.startsWith("친구 #")), true);
+  eq("이름 없는 친구는 '새 친구' 대신 번호로", unn.every((t) => t.name.startsWith("이름 없는 친구 ")), true);
   eq("이름 없는 두 친구의 이름이 서로 다름", unn[0].name !== unn[1].name, true);
   eq("표는 4글자", uidTag("abc").length, 4);
   eq("같은 계정은 늘 같은 표", uidTag("kakao:123"), uidTag("kakao:123"));
   let clash = 0; const seenT = new Set<string>(); for (let i = 0; i < 300; i++) { const t = uidTag(`u${i}`); if (seenT.has(t)) clash++; seenT.add(t); }
   eq("300명 중 표 겹침이 거의 없음", clash <= 1, true);
-  eq("기본 이름은 이름 없음으로 봄", isUnnamed("새 친구") && isUnnamed("친구 #K7Q2") && !isUnnamed("석영"), true);
+  eq("기본 이름은 이름 없음으로 봄", isUnnamed("새 친구") && isUnnamed("이름 없는 친구 2") && !isUnnamed("석영"), true);
+  eq("이름 없는 친구 번호는 늘 같음", JSON.stringify(unn.map((t) => t.name).sort()), JSON.stringify(["이름 없는 친구 1", "이름 없는 친구 2"]));
   const { journeyOf, lapsText, MILESTONES } = await import("../core/journey");
   eq("0km는 첫 목적지 0%", journeyOf(0).pct, 0);
   eq("0km 다음 목적지는 한반도", journeyOf(0).next!.id, "korea");

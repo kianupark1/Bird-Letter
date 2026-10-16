@@ -39,11 +39,13 @@ service cloud.firestore {
         allow read: if signedIn() && request.auth.uid == uid;
         allow create, update: if signedIn()
           && (request.auth.uid == uid || request.auth.uid == friendUid)
-          && request.resource.data.keys().hasOnly(['uid', 'name', 'at', 'bird'])
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'at', 'bird', 'photo'])
           && request.resource.data.uid == friendUid
           && request.resource.data.name is string && request.resource.data.name.size() <= 12
           // 친구가 고른 "내 새"(얼굴 그림). 없어도 되고, 있으면 12글자 이하 글자예요
-          && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12));
+          && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12))
+          // 친구의 프로필 사진(작은 JPEG). 없어도 됨
+          && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 30000 && request.resource.data.photo.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')));
         allow delete: if signedIn() && (request.auth.uid == uid || request.auth.uid == friendUid);
       }
     }
@@ -54,9 +56,10 @@ service cloud.firestore {
       allow create, update: if signedIn()
         && request.resource.data.uid == request.auth.uid
         && (resource == null || resource.data.uid == request.auth.uid) // 이미 있는 코드는 주인만 고칠 수 있음
-        && request.resource.data.keys().hasOnly(['uid', 'name', 'bird'])
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'bird', 'photo'])
         && request.resource.data.name is string && request.resource.data.name.size() <= 12
         && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12))
+        && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 30000 && request.resource.data.photo.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')))
         && code.size() == 8;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
     }

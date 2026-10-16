@@ -3,7 +3,7 @@
  * 거리는 각자 앱이 자기 편지의 노선 거리(km)로 계산해서 올려요. 친구끼리 즐기는 용도라 직접 입력한 값을 믿어요.
  */
 export type Stats = { km: number; maxKm: number; count: number };
-export type RankEntry = { uid: string; name: string; bird?: string; me: boolean; stats: Stats | null };
+export type RankEntry = { uid: string; name: string; bird?: string; photo?: string; me: boolean; stats: Stats | null };
 export type RankKind = "total" | "longest";
 
 const val = (e: RankEntry, kind: RankKind) => (e.stats ? (kind === "total" ? e.stats.km : e.stats.maxKm) : 0);

@@ -14,8 +14,7 @@ import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
 import GearLink from "@/components/GearLink";
 import { roomHref } from "@/lib/room";
-import { buildThreads, uidTag } from "../../../core/threads";
-import { auth } from "@/lib/firebase/client";
+import { buildThreads } from "../../../core/threads";
 
 export default function FriendsPage() {
   return (
@@ -53,7 +52,7 @@ function Friends() {
     if (shouldAskName(profile)) { setNaming(true); return; }
     setNaming(false);
     (async () => {
-      try { setCode(await ensureMyCode(profile.nickname, profile.avatarBird)); await reload(); }
+      try { setCode(await ensureMyCode(profile.nickname, profile.avatarBird, profile.photo)); await reload(); }
       catch { setMsg("서버에 연결하지 못했어요. 잠시 후 다시 열어 주세요."); }
       setLoading(false);
     })();
@@ -99,8 +98,8 @@ function Friends() {
     <main className="app friendsp">
       <header className="tabhead"><h1 className="pagetitle">친구</h1><GearLink /></header>
       <Link href="/settings" className="trow merow">
-        <Face name={profile.nickname} bird={profile.avatarBird || undefined} size={60} />
-        <span className="tmid"><span className="tname">{profile.nickname || "나"}</span><span className="tst">나 · 내 아이디 #{(() => { try { return uidTag(auth().currentUser?.uid ?? ""); } catch { return "----"; } })()}</span></span>
+        <Face name={profile.nickname} bird={profile.avatarBird || undefined} photo={profile.photo} size={60} />
+        <span className="tmid"><span className="tname">{profile.nickname || "나"}</span><span className="tst">나 · 프로필 사진·이름 바꾸기 ›</span></span>
       </Link>
 
       <h2 className="friendh">친구 {people.length > 0 && people.length}</h2>
@@ -113,8 +112,8 @@ function Friends() {
             <li key={t.key}>
               <div className="trow">
                 <Link href={roomHref({ uid: t.uid, name: t.name })} className="tfriend">
-                  <Face name={t.name} bird={f?.bird} />
-                  <span className="tmid"><span className="tname">{t.name}</span><span className="tst">#{uidTag(t.key.slice(2))}{own && !own.startsWith("새 친구") ? ` · 친구가 정한 이름: ${own}` : ""}</span></span>
+                  <Face name={t.name} bird={f?.bird} photo={f?.photo} />
+                  <span className="tmid"><span className="tname">{t.name}</span>{own && !own.startsWith("새 친구") && <span className="tst">친구가 정한 이름: {own}</span>}</span>
                 </Link>
                 <button type="button" className="chip" onClick={() => removeAll(t)} aria-label={`${t.name} 친구 끊기`}>끊기</button>
               </div>

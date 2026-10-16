@@ -76,3 +76,26 @@ export async function savePolaroid(photoUrl: string, caption: string, sub = ""):
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   return "downloaded";
 }
+
+/**
+ * 프로필 사진: 가운데를 정사각형으로 잘라 192px JPEG로 줄여요(친구 목록에 함께 저장돼서 아주 작게).
+ * 서버 규칙 한도 30,000글자 안에 들어올 때까지 화질을 낮춰요. 숨은 정보(EXIF)도 사라져요.
+ */
+export async function compressAvatar(file: File): Promise<string> {
+  if (!file.type.startsWith("image/")) throw new Error("not-image");
+  const img = await loadImage(file);
+  const s = Math.min(img.naturalWidth, img.naturalHeight);
+  for (const side of [192, 144, 112]) {
+    const c = document.createElement("canvas");
+    c.width = side; c.height = side;
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("canvas");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, side, side);
+    ctx.drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, side, side);
+    for (const q of [0.8, 0.68, 0.56, 0.44]) {
+      const url = c.toDataURL("image/jpeg", q);
+      if (url.length <= 30000) return url;
+    }
+  }
+  throw new Error("too-big");
+}
