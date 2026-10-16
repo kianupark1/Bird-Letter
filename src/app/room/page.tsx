@@ -18,6 +18,7 @@ import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
 import RoomComposer, { type Resend } from "@/components/RoomComposer";
 import { asLike, buildChat } from "@/lib/chat";
+import { WAITING_LINES, pickLine } from "../../../core/waiting";
 import { readStats } from "@/lib/firebase/stats";
 import { usePeople } from "@/lib/people";
 
@@ -196,6 +197,7 @@ function Room() {
               onResend={(e) => e.dir === "sent" && setResend({ replaceId: e.item.id, message: e.item.message, birdId: e.item.birdId })} />
           ),
         )}
+        {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
         <div ref={endRef} />
       </div>
       <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!!thread.uid && isUnnamed(name)} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />

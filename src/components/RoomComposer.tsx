@@ -43,6 +43,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const [later, setLater] = useState("");
   const [busy, setBusy] = useState(false);
   const [geo, setGeo] = useState("");
+  const [sent, setSent] = useState("");
   const declared = !!friendPlace && !!getPlace(friendPlace); // 친구가 직접 알려 준 동네면 보내는 사람이 바꿀 수 없어요
   /** 내 동네 바꾸기: 너무 빠른 이동은 막아요(거리를 일부러 늘리는 것 방지) */
   const moveHome = (id: string): boolean => {
@@ -122,6 +123,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       if (resend && cancel) { try { await cancel(resend.replaceId); } catch {} } // 다시 보냈으니 길 잃은 편지는 지워요
       if (resend) onResendDone?.();
       setMessage(""); setPhotos([]); setLater(""); setSheet("");
+      setSent(later ? "예약했어요! 출발하는 날까지 설레며 기다려요 ⏰" : `${bird.name}가 날아올랐어요! 기다리는 시간도 편지의 일부예요 🕊`);
+      setTimeout(() => setSent(""), 5000);
     } catch (e) {
       setInfo((e as Error).message === "timeout" ? "인터넷이 느려서 아직 보내지 못했어요. 연결을 확인하고 다시 눌러 주세요."
         : photos.length || later ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : "편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
@@ -203,6 +206,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <button type="button" className="chip" onClick={() => { setMessage(""); onResendDone?.(); }}>그만두기</button></div>
       )}
       {info && <div className="ch-info" role="alert">{info}</div>}
+      {sent && !info && <div className="ch-sent" role="status">{sent}</div>}
       {/* 새 고르기: 큰 새 그림을 옆으로 넘기며 바로 고를 수 있어요(누르면 바로 바뀜) */}
       <div className="ch-birds" role="radiogroup" aria-label="어떤 새로 보낼까요?">
         {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
