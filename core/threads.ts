@@ -115,7 +115,8 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   const friendByName = new Map<string, string>();
   for (const f of friends) for (const n of [shown(f.uid), real(f.uid), nick[f.uid]]) if (n && !isUnnamed(n) && !friendByName.has(nameKey(n))) friendByName.set(nameKey(n), f.uid);
   const sendTo = new Map<string, { uid: string; at: number }>(); // 방마다 최근에 쓰인 계정(보낼 대상)
-  const note = (t: T, uid: string, at: number) => { const cur = sendTo.get(t.key); if (!cur || at > cur.at) sendTo.set(t.key, { uid, at }); };
+  const note = (t: T, uid: string, at: number) => { const cur = sendTo.get(t.key); if (!cur || at > cur.at) sendTo.set(t.key, { uid, at }); acct.set(uid, Math.max(acct.get(uid) ?? 0, at)); };
+  const acct = new Map<string, number>(); // 계정마다 마지막으로 편지가 오간 시각
   for (const s of sent) {
     const uid = s.toUid ?? alias[s.to] ?? friendByName.get(nameKey(s.to));
     const t = uid ? forUid(uid) : get(keyForName(s.to), s.to);
@@ -157,6 +158,13 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
     gone.add(t);
   }
   for (const t of keep.values()) { t.entries.sort((a, b) => b.at - a.at); t.lastAt = t.entries[0]?.at ?? 0; }
+  // 보낼 계정: 지금 친구로 연결된 계정 중 가장 최근에 편지가 오간 계정(친구가 아니면 서버가 바로 보내기를 막아요).
+  // 친구 계정이 없으면 가장 최근 계정(답장 규칙으로 보낼 수 있을 때)
+  for (const t of list) {
+    if (!t.uids.size) continue;
+    const ids = [...t.uids].sort((a, b) => (acct.get(b) ?? 0) - (acct.get(a) ?? 0));
+    t.uid = ids.find((u) => friendName.has(u)) ?? ids[0];
+  }
   for (let i = list.length - 1; i >= 0; i--) if (gone.has(list[i])) list.splice(i, 1);
   // 이름이 없는 사람은 계정 순서대로 "이름 없는 친구 1, 2…"(늘 같은 번호, 대화방에서 이름을 정하면 그 이름으로)
   list.filter((t) => t.uids.size && !t.name).sort((a, b) => a.key.localeCompare(b.key)).forEach((t, i) => { t.name = unnamedLabel(i + 1); });

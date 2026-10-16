@@ -228,7 +228,7 @@ function Room() {
         {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
         <div ref={endRef} />
       </div>
-      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
+      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} replyTo={thread.entries.find((e) => e.dir === "received" && e.item.fromUid === thread.uid)?.item.id} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
     </main>
   );
 }
