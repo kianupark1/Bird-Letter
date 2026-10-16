@@ -338,5 +338,59 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("카카오 번호 형식이 이상하면 거절", !r7.ok, true);
 }
 
+
+// ── 스탬프·이야기·랭킹 한도·이동 제한 ──
+{
+  const { allStamps, stampsFromPasses, badgesFor } = await import("../core/stamps");
+  const { storiesFor, collectItems, STORY_POOL } = await import("../core/stories");
+  const { canMoveHome } = await import("../core/placeMove");
+  const { myStatsCapped, PER_DAY, PER_FRIEND_PER_DAY } = await import("../core/rank");
+  const { getPlace } = await import("../core/places");
+  const all = allStamps();
+  eq("도감에 명소가 40곳 넘게 있음", all.length > 40, true);
+  eq("도감 이름이 겹치지 않음", new Set(all.map((s) => s.name)).size, all.length);
+  eq("출발만 해도 출발지 스탬프 1개 이상", stampsFromPasses([{ routeId: "seoul-busan", p: 0.001 }]).size >= 1, true);
+  const half = stampsFromPasses([{ routeId: "seoul-busan", p: 0.5 }]).size, full = stampsFromPasses([{ routeId: "seoul-busan", p: 1 }]).size;
+  eq("멀리 갈수록 스탬프가 늘어남", half < full, true);
+  eq("진행률 0이면 스탬프 없음", stampsFromPasses([{ routeId: "seoul-busan", p: 0 }]).size, 0);
+  eq("첫 스탬프 배지", badgesFor(stampsFromPasses([{ routeId: "seoul-busan", p: 1 }])).find((b) => b.id === "first")!.got, true);
+  eq("스탬프가 없으면 배지도 없음", badgesFor(new Set()).every((b) => !b.got), true);
+  eq("이야기는 같은 편지면 늘 같음", JSON.stringify(storiesFor("abc", 325)), JSON.stringify(storiesFor("abc", 325)));
+  eq("멀면 이야기 3개", storiesFor("abc", 325).length, 3);
+  eq("가까우면 이야기 1개", storiesFor("abc", 50).length, 1);
+  eq("너무 가까우면 이야기 없음", storiesFor("abc", 10).length, 0);
+  eq("이야기 진행률 범위", storiesFor("q1", 325).every((s) => s.f >= 0.15 && s.f <= 0.85), true);
+  eq("한 편지 안에서 이야기가 겹치지 않음", new Set(storiesFor("q2", 325).map((s) => s.story.id)).size, 3);
+  eq("이야기 종류가 10가지 이상", STORY_POOL.length >= 10, true);
+  let diff = 0; for (let i = 0; i < 20; i++) if (storiesFor(`id${i}`, 325)[0].story.id !== storiesFor(`id${i + 1}`, 325)[0].story.id) diff++;
+  eq("편지마다 이야기가 다양함", diff >= 10, true);
+  eq("진행 전엔 주운 물건 없음", collectItems([{ id: "x", km: 325, p: 0 }]).size, 0);
+  eq("도착하면 물건을 주울 수 있음", [...collectItems(Array.from({ length: 30 }, (_, i) => ({ id: `z${i}`, km: 325, p: 1 }))).values()].reduce((a, b) => a + b, 0) > 0, true);
+  const seoul = getPlace("seoul")!, busan = getPlace("busan")!, gangnam = getPlace("gangnam")!;
+  eq("같은 동네 근처는 언제든 이동", canMoveHome(seoul, gangnam, 0).ok, true);
+  eq("서울→부산을 10분 만에는 이동 불가", canMoveHome(seoul, busan, 10 / 60).ok, false);
+  eq("서울→부산 1시간 뒤엔 이동 가능(비행기·KTX)", canMoveHome(seoul, busan, 1).ok, true);
+  eq("기다려야 하는 분이 계산됨", canMoveHome(seoul, busan, 0).waitMinutes > 20, true);
+  const T = Date.parse("2026-10-16T10:00:00+09:00");
+  const mk = (n: number, key: string, at = T) => Array.from({ length: n }, (_, i) => ({ km: 300, toKey: key, at: at + i * 1000 }));
+  eq("한 사람에게는 하루 2통만 반영", myStatsCapped(mk(5, "a")).count, PER_FRIEND_PER_DAY);
+  eq("여러 사람에게 보내도 하루 8통까지만", myStatsCapped([...mk(5, "a"), ...mk(5, "b"), ...mk(5, "c"), ...mk(5, "d"), ...mk(5, "e")]).count, PER_DAY);
+  eq("다음 날엔 다시 반영", myStatsCapped([...mk(3, "a"), ...mk(3, "a", T + 86400000)]).count, PER_FRIEND_PER_DAY * 2);
+  eq("한도 안의 거리 합", myStatsCapped(mk(2, "a")).km, 600);
+  const { journeyOf, lapsText, MILESTONES } = await import("../core/journey");
+  eq("0km는 첫 목적지 0%", journeyOf(0).pct, 0);
+  eq("0km 다음 목적지는 한반도", journeyOf(0).next!.id, "korea");
+  eq("1,000km는 아직 한반도 못 감", journeyOf(1000).reached.length, 0);
+  eq("2,000km는 한반도 끝에서 끝 달성", journeyOf(2000).reached.map((m) => m.id).join(), "korea");
+  eq("지구 한 바퀴 달성", journeyOf(40075).reached.some((m) => m.id === "earth"), true);
+  eq("달 다음은 화성", journeyOf(400000).next!.id, "mars");
+  eq("모두 넘으면 다음 없음", journeyOf(2e8).next, null);
+  eq("모두 넘으면 100%", journeyOf(2e8).pct, 100);
+  eq("이정표는 거리 순서", MILESTONES.every((m, i) => i === 0 || m.km > MILESTONES[i - 1].km), true);
+  eq("지구 0.5바퀴", lapsText(20037.5), "0.5바퀴");
+  eq("지구 1.5바퀴", lapsText(60112), "1.5바퀴");
+  eq("0바퀴", lapsText(0), "0바퀴");
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

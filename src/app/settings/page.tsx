@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { placesByRegion } from "../../../core/places";
+import { getPlace, placesByRegion } from "../../../core/places";
+import { locate as findDistrict } from "../../../core/districts";
+import { tryMoveHome } from "@/lib/homePlace";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import Face from "@/components/Face";
 import BirdPicker from "@/components/BirdPicker";
@@ -28,6 +30,23 @@ export default function Settings() {
   const router = useRouter();
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
+  const [homeMsg, setHomeMsg] = useState("");
+  /** 내 동네 바꾸기: 너무 빠른 이동은 막아요(거리를 일부러 늘리는 것 방지) */
+  const moveHome = (id: string) => {
+    const r = tryMoveHome(profile.homePlace, id);
+    if (!r.ok) { setHomeMsg(r.message); return false; }
+    update({ homePlace: id, homeLabel: undefined, homeSet: true }); setHomeMsg(""); return true;
+  };
+  const locateMe = () => {
+    if (!navigator.geolocation) return setHomeMsg("이 기기에서는 위치를 알 수 없어요. 직접 골라 주세요.");
+    setHomeMsg("위치를 찾는 중이에요...");
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만, 좌표는 저장하지 않아요
+      if (!moveHome(here.place.id)) return;
+      update({ homeLabel: here.label, homeSet: true });
+      setHomeMsg(here.label === here.place.name ? `${here.label} 근처로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
+    }, () => setHomeMsg("위치를 허용하지 않아서 직접 골라야 해요."), { timeout: 10000, maximumAge: 600000 });
+  };
   const [msg, setMsg] = useState("");
   const [pickBird, setPickBird] = useState(false);
   const [testMsg, setTestMsg] = useState("");
@@ -103,22 +122,38 @@ export default function Settings() {
         </div>
       </div>
 
-      <h2>내가 있는 곳</h2>
-      <div className="list">
-        <label className="listrow" htmlFor="home-place">
+      <h2>내 동네</h2>
+      <div className="list homecard">
+        <div className="listrow" style={{ flexWrap: "wrap" }}>
           <div className="grow">
-            <div className="name">편지를 보낼 때 출발하는 곳</div>
-            <div className="note">{profile.homeLabel ? `마지막으로 찾은 곳: ${profile.homeLabel} · ` : ""}새가 여기서 날아가요. 편지 쓸 때 바꿀 수도 있어요.</div>
+            <div className="name">{profile.homeLabel ?? getPlace(profile.homePlace)?.name ?? "서울 중구"}</div>
+            <div className="note">새가 여기서 날아가고, 친구가 보내는 편지는 여기로 와요. 정확한 위치는 저장하지 않고 구 이름만 써요.</div>
           </div>
-          <select id="home-place" className="field" style={{ width: "auto", margin: 0 }} value={profile.homePlace} onChange={(e) => update({ homePlace: e.target.value })}>
-            {placesByRegion().map((g) => (
-              <optgroup key={g.region} label={g.region}>
-                {g.places.map((pl) => <option key={pl.id} value={pl.id}>{pl.name}</option>)}
-              </optgroup>
-            ))}
-          </select>
-        </label>
+          <div className="row2b" style={{ width: "100%" }}>
+            <button type="button" className="chip locate" onClick={locateMe}>📍 내 위치로 찾기</button>
+            <select id="home-place" className="field" aria-label="내 동네 직접 고르기" style={{ width: "auto", margin: 0, flex: 1 }} value={profile.homePlace} onChange={(e) => moveHome(e.target.value)}>
+              {placesByRegion().map((g) => (
+                <optgroup key={g.region} label={g.region}>
+                  {g.places.map((pl) => <option key={pl.id} value={pl.id}>{pl.name}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+          {homeMsg && <div className="small" role="status" style={{ width: "100%", margin: "6px 0 0" }}>{homeMsg}</div>}
+        </div>
+        <div className="listrow">
+          <div className="grow">
+            <div className="name">친구에게 내 동네 알리기</div>
+            <div className="note">켜 두면 친구가 편지를 쓸 때 받는 곳이 자동으로 정해져요. 끄면 친구가 직접 골라요.</div>
+          </div>
+          <button role="switch" aria-checked={profile.sharePlace !== false} aria-label="친구에게 내 동네 알리기" className="switch" onClick={() => update({ sharePlace: profile.sharePlace === false })} />
+        </div>
       </div>
+      <Link href="/stamps" className="opt rankcard" style={{ marginTop: 8 }}>
+        <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏮</span>
+        <span><b>스탬프 도감</b><span>편지가 지나간 명소를 모아요</span></span>
+        <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
+      </Link>
 
       <h2>알림</h2>
       <div className="list">

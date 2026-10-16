@@ -46,13 +46,14 @@ ok("사진 두 장이 폴라로이드 모양으로 담김", (await p.$$(".thumb"
 await p.click("text=로 보내기");
 await p.waitForURL(/\/room/);
 await p.waitForSelector(".ch-feed");
-ok("보낸 뒤 대화방에 '출발했어요'가 쌓임", (await p.$eval(".ch-feed", (e) => e.innerText)).includes("출발했어요"));
+ok("보낸 뒤 대화방에 내 말풍선이 '비행 중'으로 보임", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("비행 중"));
 ok("도착 전에는 두루마리가 보이지 않음", (await p.$(".scroll-open")) === null);
-await p.waitForSelector(".ch-ev.hot", { timeout: 120000 });
-ok("도착하면 대화방에 '도착했어요'가 쌓임", true);
+await p.waitForFunction(() => document.querySelector(".ch-letter.me")?.textContent?.includes("도착 ✓"), null, { timeout: 120000 });
+ok("도착하면 말풍선이 '도착 ✓'로 바뀜", true);
 await p.click(".ch-letter.me .ch-tap");
 await p.waitForSelector(".scroll-open", { timeout: 20000 });
 ok("눌러서 그 자리에서 말린 두루마리와 '편지 펼치기'가 보임", true);
+ok("펼치면 비행 기록(출발·도착)이 보임", (await p.$eval(".ch-log", (e) => e.innerText)).includes("출발했어요") && (await p.$eval(".ch-log", (e) => e.innerText)).includes("도착했어요"));
 ok("펼치기 전에는 편지 글이 보이지 않음", !(await p.$eval(".reveal", (e) => e.innerText)).includes("봄 사진을"));
 await p.click(".scroll-open");
 await p.waitForTimeout(8000);
@@ -63,6 +64,27 @@ const dl = p.waitForEvent("download", { timeout: 10000 }).catch(() => null);
 await p.click(".pol-save >> nth=0");
 const d = await dl;
 ok("폴라로이드를 폰에 저장(파일 내려받기)", !!d);
+
+console.log("[1-2] 스탬프 도감과 내 동네");
+await p.goto(BASE + "/stamps");
+await p.waitForSelector(".stamps");
+ok("스탬프 도감에 명소가 보임", (await p.$$(".stp")).length > 40);
+ok("편지를 보낸 뒤 스탬프가 1개 이상 찍힘", (await p.$$(".stp.got")).length >= 1);
+ok("배지 칸이 보임", (await p.$$(".badge")).length >= 5);
+await p.goto(BASE + "/settings");
+await p.waitForSelector("#home-place");
+ok("내 동네 카드와 친구에게 알리기 스위치", (await p.$eval("main", (e) => e.innerText)).includes("친구에게 내 동네 알리기"));
+await p.selectOption("#home-place", "busan");
+await p.waitForTimeout(300);
+ok("처음 정하는 동네 이동은 제한 없음", (await p.$eval("#home-place", (e) => e.value)) === "busan");
+await p.selectOption("#home-place", "seoul");
+await p.waitForTimeout(300);
+ok("부산에서 서울로 바로 옮기면 안내가 나옴", (await p.$eval("main", (e) => e.innerText)).includes("뒤에 바꿀 수 있어요"));
+ok("막힌 이동은 동네가 그대로", (await p.$eval("#home-place", (e) => e.value)) === "busan");
+
+await p.goto(BASE + "/rank");
+await p.waitForSelector(".goalcard");
+ok("랭킹에 지구 몇 바퀴·다음 목적지(우주 여행)가 보임", (await p.$eval(".goalcard", (e) => e.innerText)).includes("지구") && (await p.$eval(".goalcard", (e) => e.innerText)).includes("한반도"));
 
 console.log("[2] 예약 발송: 입력 확인, 목록 표시, 취소");
 await writeLetter({ to: "엄마", bird: "두루미", text: "생일 축하해요", later: true });

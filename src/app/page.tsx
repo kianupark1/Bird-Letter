@@ -11,7 +11,7 @@ import Face from "@/components/Face";
 import { listFriends, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
-import { myStats } from "../../core/rank";
+import { myStatsCapped } from "../../core/rank";
 import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
@@ -87,11 +87,13 @@ function InboxList() {
   useEffect(() => {
     if (!ready || !firebaseEnabled) return;
     try { const u = auth().currentUser; if (!u || u.isAnonymous) return; } catch { return; }
-    const st = myStats(letters.filter((l) => l.sentAt <= Date.now()).map((l) => getRoute(l.routeId).km));
-    const sig = `${st.km}|${st.maxKm}|${st.count}|${me.nickname}|${me.avatarBird}`;
+    // 거리는 하루 한도(같은 사람 2통·전체 8통)를 넘는 편지는 빼고 셈해요
+    const st = myStatsCapped(letters.filter((l) => l.sentAt <= Date.now()).map((l) => ({ km: getRoute(l.routeId).km, toKey: l.toUid ?? l.to, at: l.sentAt })));
+    const place = me.sharePlace === false || !me.homeSet ? undefined : me.homePlace; // 친구가 받는 곳을 자동으로 정하는 데 써요
+    const sig = `${st.km}|${st.maxKm}|${st.count}|${me.nickname}|${me.avatarBird}|${place ?? ""}`;
     try { if (localStorage.getItem("saepyeonji.stats.sig") === sig) return; } catch {}
-    void publishStats(st, me.nickname, me.avatarBird).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
-  }, [ready, letters, me.nickname, me.avatarBird]);
+    void publishStats(st, me.nickname, me.avatarBird, place).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
+  }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
 
   const threads = useMemo(() => buildThreads(letters, received, friends), [letters, received, friends]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
@@ -105,6 +107,13 @@ function InboxList() {
           <div className="greet">오늘도 편지 날리기 좋은 날 ☀</div>
         </div>
       </header>
+
+      {ready && firebaseEnabled && !me.homeSet && (
+        <Link href="/settings" className="homeask">
+          <span aria-hidden style={{ fontSize: 28 }}>📍</span>
+          <span><b>내 동네를 정해 주세요</b><span>정해 두면 친구가 편지를 보낼 때 받는 곳이 자동으로 정해져요. 구 이름만 쓰고 언제든 끌 수 있어요.</span></span>
+        </Link>
+      )}
 
       {ready && threads.length === 0 && (
         <div className="inbox-empty">

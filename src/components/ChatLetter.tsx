@@ -9,11 +9,14 @@ import { letterProgress, markOpened } from "@/lib/letters";
 import * as remote from "@/lib/firebase/remote";
 import { savePolaroid } from "@/lib/photo";
 import { letterHref } from "@/lib/target";
-import { asLike, type Entry } from "@/lib/chat";
+import { asLike, letterEvents, type Entry } from "@/lib/chat";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
 
-/** 대화방 안의 편지 말풍선. 눌러서 그 자리에서 펼쳐 읽어요(새 화면으로 가지 않아요) */
+/**
+ * 대화방의 편지 말풍선(카카오톡처럼 깔끔하게): 한 줄 내용 + 작은 상태 한 줄 + 옆에 보낸 시각.
+ * 누르면 그 자리에서 펼쳐져서 비행 기록(출발·지난 곳·이야기·도착)과 편지 내용이 보여요.
+ */
 export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entry: Entry; name: string; now: number; isNew: boolean; onOpened: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const [body, setBody] = useState<string | null>(null);
@@ -26,58 +29,58 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
   const pr = letterProgress(l, now);
   const done = pr.done && !sched;
   const arriveAt = l.arriveAt ?? l.sentAt + pr.total * 60000;
-  const text = mine ? (entry.item as { message: string }).message : body;
+  const myText = mine ? (entry.item as { message: string }).message : "";
 
   // 펼쳤을 때: 받는 사람은 도착한 뒤에만 서버에서 내용·사진을 받아요(보낸 사람은 내 글을 언제든 봐요)
   useEffect(() => {
-    if (!open) return;
+    if (!open || !done) return;
     if (!mine) {
-      if (!done) return;
       markOpened(entry.item.id); onOpened(entry.item.id);
-      if (body === null) remote.getBody(entry.item.id).then((m) => m !== null && setBody(m));
+      if (body === null) remote.getBody(entry.item.id).then((m) => m !== null && setBody(m)).catch(() => {});
     }
-    if (done) {
-      const own = mine ? (entry.item as { photos?: string[] }).photos : undefined;
-      if (own?.length) setPhotos(own);
-      else remote.getPhotos(entry.item.id).then(setPhotos).catch(() => {});
-    }
+    const own = mine ? (entry.item as { photos?: string[] }).photos : undefined;
+    if (own?.length) setPhotos(own);
+    else remote.getPhotos(entry.item.id).then(setPhotos).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, done]);
 
-  const who = mine ? "내가 보낸 편지" : `${withIGa(name)} 보낸 편지`;
-  let sub: string;
-  if (sched) sub = `${dateTimeText(entry.at)} 출발 예정 · 눌러서 보기`;
-  else if (mine) sub = done ? "도착 ✓ · 눌러서 다시 보기" : "눌러서 보기";
-  else sub = done ? (isNew ? "도착했어요 · 눌러서 열기" : "눌러서 다시 읽기") : "🔒 도착하면 열 수 있어요";
-
-  const inner = (
-    <span className="top">
-      <BirdIcon id={bird.id} size={46} letter={!done} />
-      <span>
-        <b>{who}{isNew && <span className="stamp">새 편지</span>}</b>
-        <span className="d">{sub}</span>
-      </span>
-    </span>
-  );
-  const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""}`;
-  // 예약한 편지는 취소 같은 기능이 있는 기존 화면으로 가요
-  // 카카오톡처럼 말풍선 옆에 시간을 붙여요: 출발한 시각, 도착한(또는 도착할) 시각
-  const time = (
-    <span className="ch-time">
-      {sched ? <>출발 예정<br />{clockText(entry.at)}</> : <>출발 {clockText(l.sentAt)}<br />{done ? "도착" : "도착 예정"} {clockText(arriveAt)}</>}
-    </span>
-  );
+  // 말풍선에 보일 한 줄
+  const line = mine
+    ? (myText.split("\n")[0] || "(사진 편지)")
+    : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
+  // 작은 상태 한 줄
+  const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
+    : done ? `${bird.name} · 도착 ✓ ${clockText(arriveAt)}`
+    : pr.stalled ? `${bird.name} 쉬는 중 · ${clockText(arriveAt)} 도착 예정`
+    : `${bird.name} 비행 중 · ${clockText(arriveAt)} 도착 예정`;
+  const time = <span className="ch-time">{clockText(sched ? entry.at : l.sentAt)}</span>;
   const row = (bubble: React.ReactNode) => <div className={`ch-row ${mine ? "me" : "you"}`}>{mine && time}{bubble}{!mine && time}</div>;
-  if (sched) return row(<Link href={letterHref(entry.item.id)} className={cls}>{inner}</Link>);
-  const canOpen = mine || done;
+  const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""} ${open ? "open" : ""}`;
+  const head = (
+    <>
+      <span className="ch-line">{line}</span>
+      <span className="ch-status"><BirdIcon id={bird.id} size={22} letter={!done} /> {status}</span>
+      {!done && !sched && <span className="ch-bar" aria-hidden><i style={{ width: `${Math.round(pr.p * 100)}%` }} /></span>}
+    </>
+  );
+
+  // 예약 편지는 취소 같은 기능이 있는 기존 화면으로 가요
+  if (sched) return row(<Link href={letterHref(entry.item.id)} className={cls}>{head}</Link>);
+
   return row(
     <div className={cls}>
-      {canOpen ? <button type="button" className="ch-tap" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{inner}</button> : <div className="ch-tap locked">{inner}</div>}
-      {open && canOpen && (
-        done ? (
-          <div className="ch-open">
+      <button type="button" className="ch-tap" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{head}</button>
+      {open && (
+        <div className="ch-detail">
+          <ol className="ch-log" aria-label="비행 기록">
+            {letterEvents(entry, now).map((ev) => (
+              <li key={ev.key} className={ev.future ? "future" : ""}><span className="ic" aria-hidden>{ev.icon}</span><span><b>{ev.text}</b>{ev.sub && <small>{ev.sub}</small>}</span></li>
+            ))}
+          </ol>
+          <div className="ch-route">{route.title} · {route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
+          {done ? (
             <LetterReveal
-              message={text ?? ""} photos={photos} caption={`${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading={!mine}
+              message={mine ? myText : body ?? ""} photos={photos} caption={`${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading={!mine}
               onSave={async (src) => {
                 try {
                   const r = await savePolaroid(src, `${bird.name}가 물고 온 사진`, `${route.title} · ${dateTimeText(arriveAt)}`);
@@ -85,12 +88,12 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
                 } catch { setNotice("저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
               }}
             />
-            {notice && <div className="small" role="status">{notice}</div>}
-            {!mine && <Link href={letterHref(entry.item.id)} className="ch-more">신고·차단은 여기서</Link>}
-          </div>
-        ) : (
-          <div className="paper ch-open">{text || "(글이 없어요)"}</div>
-        )
+          ) : mine ? (
+            <div className="ch-paper">{myText || "(글이 없어요)"}<small>{name}님은 도착한 뒤에 읽을 수 있어요</small></div>
+          ) : null}
+          {notice && <div className="small" role="status">{notice}</div>}
+          {!mine && done && <Link href={letterHref(entry.item.id)} className="ch-more">신고·차단</Link>}
+        </div>
       )}
     </div>,
   );

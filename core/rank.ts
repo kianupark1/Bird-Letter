@@ -14,6 +14,27 @@ export function myStats(kmList: number[]): Stats {
   return { km: Math.round(ok.reduce((a, b) => a + b, 0)), maxKm: Math.round(Math.max(0, ...ok)), count: ok.length };
 }
 
+/** 하루에 같은 사람에게 반영되는 편지 수 / 하루 전체 반영 편지 수(거리를 부풀리려고 편지를 마구 보내는 것을 막아요) */
+export const PER_FRIEND_PER_DAY = 2;
+export const PER_DAY = 8;
+const DAY_MS = 86400000, KST_MS = 9 * 3600000;
+
+/** 랭킹에 반영되는 거리만 골라 기록을 만들어요: 편지마다 받는 사람(키)과 보낸 시각을 보고 하루 한도를 넘는 편지는 빼요 */
+export function myStatsCapped(items: { km: number; toKey: string; at: number }[]): Stats {
+  const sorted = [...items].sort((a, b) => a.at - b.at);
+  const perDay = new Map<number, number>(), perFriend = new Map<string, number>();
+  const kept: number[] = [];
+  for (const it of sorted) {
+    const day = Math.floor((it.at + KST_MS) / DAY_MS);
+    const fk = `${day}|${it.toKey}`;
+    if ((perDay.get(day) ?? 0) >= PER_DAY || (perFriend.get(fk) ?? 0) >= PER_FRIEND_PER_DAY) continue;
+    perDay.set(day, (perDay.get(day) ?? 0) + 1);
+    perFriend.set(fk, (perFriend.get(fk) ?? 0) + 1);
+    kept.push(it.km);
+  }
+  return myStats(kept);
+}
+
 /** 기록이 큰 순서로. 기록이 없는 친구(아직 새 버전을 안 연 친구)는 맨 뒤 */
 export function rankOf(entries: RankEntry[], kind: RankKind): RankEntry[] {
   return [...entries].sort((a, b) => {

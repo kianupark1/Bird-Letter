@@ -6,6 +6,7 @@ import type { Meta } from "./firebase/remote";
 import { clockText, isScheduled } from "../../core/schedule";
 import { withEulReul, withIGa } from "./korean";
 import type { ThreadEntry } from "../../core/threads";
+import { storiesFor } from "../../core/stories";
 
 export type Entry = ThreadEntry<Letter, Meta>;
 
@@ -14,8 +15,10 @@ export const asLike = (e: Entry) => (e.dir === "sent" ? e.item : { id: e.item.id
 
 export type ChatItem =
   | { kind: "day"; key: string; t: number; label: string }
-  | { kind: "letter"; key: string; t: number; entry: Entry }
-  | { kind: "event"; key: string; t: number; icon: string; text: string; sub?: string; tone?: "hot" | "soft" };
+  | { kind: "letter"; key: string; t: number; entry: Entry };
+
+/** 편지를 눌렀을 때 펼쳐 보이는 비행 기록 한 줄 */
+export type FlightEvent = { key: string; t: number; icon: string; text: string; sub?: string; future?: boolean };
 
 const dayKey = (t: number) => new Date(t).toDateString();
 export const dayLabel = (t: number, now: number) => {
@@ -26,46 +29,47 @@ export const dayLabel = (t: number, now: number) => {
 };
 
 /**
- * 대화방에 쌓을 것들을 오래된 것부터 시간 순서로 만들어요.
- * 편지 말풍선 → "새가 출발했어요" → "OO을 지나고 있어요"(날아가는 중일 때만) → "도착했어요". 날아가는 중이면 끝에 도착 예정도 붙여요.
- * 이미 도착한 편지는 출발·도착만 남겨서 대화가 길어지지 않게 해요.
+ * 대화방 목록: 카카오톡처럼 편지 말풍선만 시간 순서로 쌓고, 날짜가 바뀌면 구분선을 넣어요.
+ * 출발·지난 곳·이야기·도착 같은 자세한 기록은 말풍선을 눌렀을 때 letterEvents로 보여 줘요.
  */
-export function buildChat(entries: Entry[], now: number, name: string): ChatItem[] {
+export function buildChat(entries: Entry[], now: number): ChatItem[] {
+  const letters = entries.map((e) => ({ kind: "letter" as const, key: `${e.dir}-${e.item.id}`, t: e.at, entry: e })).sort((a, b) => a.t - b.t);
   const out: ChatItem[] = [];
-  for (const e of entries) {
-    const id = `${e.dir}-${e.item.id}`;
-    out.push({ kind: "letter", key: id, t: e.at, entry: e });
-    if (isScheduled(e.at, now)) continue; // 아직 출발 전: 말풍선만(출발 예정 표시는 말풍선 안에)
-    const l = asLike(e);
-    const bird = getBird(l.birdId), route = getRoute(l.routeId);
-    const pr = letterProgress(l, now);
-    const sub = `${route.points[0].name} → ${route.to.name}`;
-    out.push({ kind: "event", key: `${id}-go`, t: l.sentAt, icon: "🕊", text: `${withIGa(bird.name)} 출발했어요`, sub: `${clockText(l.sentAt)} · ${sub}` });
-    if (pr.done) {
-      const at = l.arriveAt ?? l.sentAt + pr.total * 60000;
-      out.push({ kind: "event", key: `${id}-end`, t: at, icon: "🎉", text: `${withIGa(bird.name)} 도착했어요!`, sub: clockText(at), tone: "hot" });
-      continue;
-    }
-    if (pr.mishap && pr.p >= pr.mishap.at - 0.0001) {
-      const msg = mishapMessage(pr.mishap.kind, bird.name);
-      out.push({ kind: "event", key: `${id}-mishap`, t: l.sentAt + elapsedAtFraction(pr.plan, pr.mishap.at), icon: pr.mishap.kind === "tree" ? "🌳" : "🧭", text: msg.title, sub: msg.body, tone: "soft" });
-    }
-    route.points.forEach((pt, i) => {
-      if (i === 0 || i === route.points.length - 1) return;
-      const at = l.sentAt + elapsedAtFraction(pr.plan, route.fractions[i]);
-      if (at <= now) out.push({ kind: "event", key: `${id}-p${i}`, t: at, icon: "📍", text: `${withEulReul(pt.name)} 지났어요`, sub: clockText(at) });
-    });
-    const arriveAt = l.arriveAt ?? l.sentAt + pr.total * 60000;
-    out.push({ kind: "event", key: `${id}-eta`, t: Math.max(now, l.sentAt + 1), icon: "⏳", text: `${clockText(arriveAt)}쯤 도착해요`, sub: e.dir === "sent" ? `${name}님만 읽어요` : "도착하면 열 수 있어요", tone: "soft" });
-  }
-  // 오래된 것부터. 시각이 같으면 넣은 순서(편지 → 출발 → 지남)를 지켜요
-  const sorted = out.map((x, i) => [x, i] as const).sort((a, b) => a[0].t - b[0].t || a[1] - b[1]).map((x) => x[0]);
-  const withDays: ChatItem[] = [];
   let last = "";
-  for (const it of sorted) {
+  for (const it of letters) {
     const k = dayKey(it.t);
-    if (k !== last) { withDays.push({ kind: "day", key: `day-${k}`, t: it.t, label: dayLabel(it.t, now) }); last = k; }
-    withDays.push(it);
+    if (k !== last) { out.push({ kind: "day", key: `day-${k}`, t: it.t, label: dayLabel(it.t, now) }); last = k; }
+    out.push(it);
   }
-  return withDays;
+  return out;
+}
+
+/** 편지 한 통의 비행 기록: 출발 → 지난 곳(🏮 스탬프) → 이야기 → 사고 → 도착(또는 도착 예정) */
+export function letterEvents(e: Entry, now: number): FlightEvent[] {
+  if (isScheduled(e.at, now)) return [{ key: "plan", t: e.at, icon: "⏰", text: "출발 예정", sub: clockText(e.at), future: true }];
+  const l = asLike(e);
+  const bird = getBird(l.birdId), route = getRoute(l.routeId);
+  const pr = letterProgress(l, now);
+  const arriveAt = l.arriveAt ?? l.sentAt + pr.total * 60000;
+  const out: FlightEvent[] = [{ key: "go", t: l.sentAt, icon: "🕊", text: `${withIGa(bird.name)} 출발했어요`, sub: `${clockText(l.sentAt)} · ${route.points[0].name}` }];
+  route.points.forEach((pt, i) => {
+    if (i === 0 || i === route.points.length - 1) return;
+    const at = l.sentAt + elapsedAtFraction(pr.plan, route.fractions[i]);
+    if (at <= now) out.push({ key: `p${i}`, t: at, icon: "📍", text: `${withEulReul(pt.name)} 지났어요`, sub: pt.kind === "sky" ? clockText(at) : `${clockText(at)} · 🏮 스탬프` });
+  });
+  // 비행 중 이야기(소나기, 도토리 줍기 …): 편지 ID로 정해지고 도착 시각에는 영향이 없어요
+  for (const { f, story } of storiesFor(l.id, route.km)) {
+    if (pr.p < f) continue;
+    const at = l.sentAt + elapsedAtFraction(pr.plan, f);
+    out.push({ key: `s${story.id}`, t: at, icon: story.icon, text: story.text, sub: story.item ? `${clockText(at)} · ${story.item.emoji} ${withEulReul(story.item.name)} 도감에 담았어요` : clockText(at) });
+  }
+  if (pr.mishap && pr.p >= pr.mishap.at - 0.0001) {
+    const msg = mishapMessage(pr.mishap.kind, bird.name);
+    out.push({ key: "mishap", t: l.sentAt + elapsedAtFraction(pr.plan, pr.mishap.at), icon: pr.mishap.kind === "tree" ? "🌳" : "🧭", text: msg.title, sub: msg.body });
+  }
+  out.sort((a, b) => a.t - b.t);
+  out.push(pr.done
+    ? { key: "end", t: arriveAt, icon: "🎉", text: `${route.to.name}에 도착했어요`, sub: clockText(arriveAt) }
+    : { key: "eta", t: arriveAt, icon: "⏳", text: `${route.to.name} 도착 예정`, sub: clockText(arriveAt), future: true });
+  return out;
 }

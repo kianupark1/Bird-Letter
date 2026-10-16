@@ -40,6 +40,9 @@ const st = (over = {}) => ({ km: 1200, maxKm: 452, count: 3, name: "에이", bir
 await ok("A가 자기 기록 쓰기", setDoc(doc(A, "stats", "uidA"), st()));
 await no("A가 B의 기록 쓰기", setDoc(doc(A, "stats", "uidB"), st()));
 await no("이상한 필드", setDoc(doc(A, "stats", "uidA"), st({ evil: 1 })));
+await ok("내 동네(place) 칸 쓰기", setDoc(doc(A, "stats", "uidA"), st({ place: "gangnam" })));
+await no("place가 너무 긺", setDoc(doc(A, "stats", "uidA"), st({ place: "x".repeat(40) })));
+await no("place가 숫자", setDoc(doc(A, "stats", "uidA"), st({ place: 5 })));
 await no("km가 너무 큼", setDoc(doc(A, "stats", "uidA"), st({ km: 99999999 })));
 await no("km가 음수", setDoc(doc(A, "stats", "uidA"), st({ km: -5 })));
 await no("km가 글자", setDoc(doc(A, "stats", "uidA"), st({ km: "많이" })));
