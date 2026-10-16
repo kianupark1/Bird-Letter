@@ -22,7 +22,13 @@ const read = (k: string) => { try { return localStorage.getItem(k) ?? ""; } catc
 const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
 
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
-export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add }: { threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn }) {
+export type Resend = { replaceId: string; message: string; birdId: string };
+
+export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel }: {
+  threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn;
+  /** 길 잃은 편지 다시 보내기: 같은 글을 채워 두고, 보내면 길 잃은 편지는 지워요 */
+  resend?: Resend | null; onResendDone?: () => void; cancel?: (id: string) => Promise<void>;
+}) {
   const { profile, ready, update } = useProfile();
   const [message, setMessage] = useState("");
   const [birdId, setBirdId] = useState("pigeon");
@@ -42,6 +48,13 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     update({ homePlace: id, homeSet: true }); setGeo(""); return true;
   };
   const speed = useRef(1);
+  // 길 잃은 편지를 다시 보낼 때: 같은 글을 채우고 다른 새를 고르게 해요
+  useEffect(() => {
+    if (!resend) return;
+    setMessage(resend.message);
+    setInfo("");
+    setSheet("bird");
+  }, [resend]);
 
   useEffect(() => {
     const b = read(LAST_BIRD);
@@ -101,6 +114,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
       await Promise.race([sending, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000))]);
       write(LAST_BIRD, birdId);
+      if (resend && cancel) { try { await cancel(resend.replaceId); } catch {} } // 다시 보냈으니 길 잃은 편지는 지워요
+      if (resend) onResendDone?.();
       setMessage(""); setPhotos([]); setLater(""); setSheet("");
     } catch (e) {
       setInfo((e as Error).message === "timeout" ? "인터넷이 느려서 아직 보내지 못했어요. 연결을 확인하고 다시 눌러 주세요."
@@ -177,6 +192,10 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
             <div key={i} className="thumb"><img src={src} alt={`담은 사진 ${i + 1}`} /><button type="button" aria-label={`사진 ${i + 1} 빼기`} onClick={() => setPhotos((p) => p.filter((_, k) => k !== i))}>×</button></div>
           ))}
         </div>
+      )}
+      {resend && (
+        <div className="ch-resend"><span>↺ 길 잃은 편지를 다시 보내요. 새를 골라 ➤를 누르면 길 잃은 편지는 사라지고 새 편지가 출발해요.</span>
+          <button type="button" className="chip" onClick={() => { setMessage(""); onResendDone?.(); }}>그만두기</button></div>
       )}
       {info && <div className="ch-info" role="alert">{info}</div>}
       <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => setSheet(ok ? "bird" : "place")}>

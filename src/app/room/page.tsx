@@ -16,7 +16,7 @@ import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
 import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
-import RoomComposer from "@/components/RoomComposer";
+import RoomComposer, { type Resend } from "@/components/RoomComposer";
 import { asLike, buildChat } from "@/lib/chat";
 import { readStats } from "@/lib/firebase/stats";
 import { usePeople } from "@/lib/people";
@@ -33,7 +33,7 @@ function Room() {
   const router = useRouter();
   const params = useSearchParams();
   const { state } = useSession();
-  const { letters, received, ready, add } = useLetters();
+  const { letters, received, ready, add, cancel } = useLetters();
   // 방금 보낸 편지가 '출발 예정'으로 잘못 보이지 않게, 시계가 갱신되기 전이라도 지금 시각보다 뒤처지지 않게 해요
   const tick = useNow(5000);
   const now = Math.max(tick, Date.now());
@@ -42,6 +42,7 @@ function Room() {
   const endRef = useRef<HTMLDivElement>(null);
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
   const [bigMap, setBigMap] = useState(false);
+  const [resend, setResend] = useState<Resend | null>(null);
   const [pickFriend, setPickFriend] = useState(false);
   const { book, merge, rename } = usePeople();
 
@@ -167,12 +168,13 @@ function Room() {
         {items.map((it) =>
           it.kind === "day" ? <div key={it.key} className="ch-day">{it.label}</div>
           : (
-            <ChatLetter key={it.key} entry={it.entry} name={name} now={now} isNew={it.entry.item.id === newestId} onOpened={(id) => setOpened((s) => new Set(s).add(id))} />
+            <ChatLetter key={it.key} entry={it.entry} name={name} now={now} isNew={it.entry.item.id === newestId} onOpened={(id) => setOpened((s) => new Set(s).add(id))}
+              onResend={(e) => e.dir === "sent" && setResend({ replaceId: e.item.id, message: e.item.message, birdId: e.item.birdId })} />
           ),
         )}
         <div ref={endRef} />
       </div>
-      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} />
+      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
     </main>
   );
 }
