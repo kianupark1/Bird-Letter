@@ -101,7 +101,7 @@ ok("대화방에 예약 편지가 '출발 예정'으로 보임", (await p.$eval(
 await p.goto(BASE + "/");
 await p.waitForTimeout(1000);
 ok("홈에 '출발 예정'가 보임", (await p.$eval("main", (e) => e.innerText)).includes("출발 예정"));
-await p.click(".trow >> nth=0");
+await p.click(".krow >> nth=0");
 await p.waitForURL(/\/room/);
 await p.click(".ch-letter >> nth=0");
 await p.waitForURL(/\/letter/);

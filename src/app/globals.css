@@ -812,3 +812,28 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 .trow.pen { background: linear-gradient(var(--card), rgba(30, 58, 92, .10)); }
 .ppbar { display: flex; gap: 8px; align-items: center; margin: 4px 14px 6px; background: var(--card); border-radius: 18px; padding: 10px 12px; font-size: 15px; box-shadow: var(--raise); }
 .ppbar span { flex: 1; line-height: 1.35; }
+
+/* 채팅 목록: 카카오톡처럼 얇고 깔끔하게(카드·그림자 없이 한 줄 소식) */
+.klist { list-style: none; margin: 4px -4px 0; padding: 0; }
+.klist .swrow { border-radius: 0; }
+.klist .swbody { background: var(--bg); }
+.krow { display: flex; align-items: center; gap: 14px; padding: 10px 6px; min-height: 78px; color: inherit; text-decoration: none; }
+.krow:active { background: var(--line); }
+.krow .face { box-shadow: none; border-radius: 22px; }
+.krow .face.photo img { border-radius: 22px; }
+.kmid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.kline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.kname { flex: 1; min-width: 0; font-size: 19px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ktime { flex: none; font-size: 13px; opacity: .55; }
+.kprev { flex: 1; min-width: 0; font-size: 16px; opacity: .65; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kprev.hot { opacity: 1; color: var(--dahong); font-weight: 700; }
+.kbadge { flex: none; min-width: 22px; height: 22px; border-radius: 11px; padding: 0 7px; background: #F0503C; color: #fff; font-size: 13px; font-weight: 800; display: grid; place-items: center; }
+.kbar { display: block; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 2px; }
+.kbar i { display: block; height: 100%; background: var(--hwangto); border-radius: 2px; }
+.krow.pen .face { box-shadow: 0 0 0 2px var(--namsaek); }
+.homeask.slim { padding: 10px 14px; gap: 8px; font-size: 15px; box-shadow: none; border-radius: 16px; }
+.homeask.slim b { display: inline; font-size: 16px; }
+.homeask.slim span:nth-child(2) { flex: 1; line-height: 1.35; }
+.kfab { position: fixed; right: 16px; bottom: calc(92px + env(safe-area-inset-bottom)); z-index: 20; background: var(--dahong); color: var(--on-dahong); font-weight: 800; font-size: 18px; border-radius: 30px; padding: 0 22px; min-height: 60px; display: flex; align-items: center; text-decoration: none; box-shadow: 0 6px 16px rgba(0,0,0,.25); }
+.swhint { font-size: 14px; }
+.inbox { padding-bottom: 180px; }
