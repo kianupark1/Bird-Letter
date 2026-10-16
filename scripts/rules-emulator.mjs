@@ -3,7 +3,7 @@
 //   npx firebase emulators:exec --only firestore --project demo-bl "node rules-emulator.mjs"  (firestore.rules·firebase.json 같은 폴더)
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, serverTimestamp, Timestamp, writeBatch } from "firebase/firestore";
+import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, serverTimestamp, Timestamp, writeBatch, query, orderBy, limit } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({ projectId: "demo-bl", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const A = env.authenticatedContext("uidA").firestore(), B = env.authenticatedContext("uidB").firestore(), C = env.authenticatedContext("uidC").firestore();
@@ -41,6 +41,18 @@ await no("프로필 사진이 너무 큼", setDoc(doc(A, "users", "uidA", "frien
 await ok("코드 문서에 프로필 사진 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie", photo: JPG }));
 
 console.log("[거리 랭킹 기록]");
+// 전체 랭킹
+const rk = (over = {}) => ({ name: "에이", bird: "magpie", km: 1200, maxKm: 452, count: 3, at: serverTimestamp(), ...over });
+await ok("전체 랭킹: 내 줄 쓰기", setDoc(doc(A, "ranking", "uidA"), rk()));
+await no("전체 랭킹: 남의 줄 쓰기", setDoc(doc(A, "ranking", "uidB"), rk()));
+await no("전체 랭킹: 동네(place) 넣기 금지", setDoc(doc(A, "ranking", "uidA"), rk({ place: "seoul" })));
+await no("전체 랭킹: 사진 넣기 금지", setDoc(doc(A, "ranking", "uidA"), rk({ photo: "data:image/jpeg;base64,AA==" })));
+await no("전체 랭킹: 빈 이름 금지", setDoc(doc(A, "ranking", "uidA"), rk({ name: "" })));
+await no("전체 랭킹: 말도 안 되는 거리", setDoc(doc(A, "ranking", "uidA"), rk({ km: 99999999 })));
+await ok("전체 랭킹: 친구 아닌 사람도 읽기(100명까지)", getDocs(query(collection(B, "ranking"), orderBy("km", "desc"), limit(50))));
+await no("전체 랭킹: 한 번에 너무 많이 읽기", getDocs(query(collection(B, "ranking"), orderBy("km", "desc"), limit(500))));
+await no("전체 랭킹: 개수 제한 없이 읽기", getDocs(collection(B, "ranking")));
+await ok("전체 랭킹: 내 줄 지우기", deleteDoc(doc(A, "ranking", "uidA")));
 const st = (over = {}) => ({ km: 1200, maxKm: 452, count: 3, name: "에이", bird: "magpie", ...over });
 await ok("A가 자기 기록 쓰기", setDoc(doc(A, "stats", "uidA"), st()));
 await no("A가 B의 기록 쓰기", setDoc(doc(A, "stats", "uidB"), st()));

@@ -110,6 +110,7 @@ export async function deleteFriendData(uid: string) {
     }
   } catch {}
   try { await deleteDoc(doc(d, "stats", uid)); } catch {}
+  try { await deleteDoc(doc(d, "ranking", uid)); } catch {}
   try {
     const me = await getDoc(doc(d, "users", uid));
     const code = me.exists() ? (me.data().code as string | undefined) : undefined;
