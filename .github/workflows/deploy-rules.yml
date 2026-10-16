@@ -1,12 +1,18 @@
 # Firestore 보안 규칙 자동 게시: main에 규칙 파일(firebase/firestore.rules)이 바뀌어 합쳐지면 Firebase에 자동으로 올려요.
-# 한 번만 준비: GitHub 저장소 Settings → Secrets and variables → Actions 에 FIREBASE_SERVICE_ACCOUNT(서비스 계정 키 JSON 전체)를 넣으면 돼요.
-# 열쇠가 없으면 게시를 건너뛰고 안내만 남겨요(실패로 표시하지 않음).
+# 방법 1(열쇠 필요 없음, 기본): 새 배포가 뜨길 기다렸다가 사이트의 /api/rules 를 불러요.
+#   GitHub가 이 작업에 발급한 신분증(OIDC)으로만 열리고, 우리 저장소 main에서 돈 이 작업만 통과해요.
+#   사이트는 Vercel에 이미 있는 Firebase 열쇠(카카오 로그인용)로 규칙을 올려요.
+# 방법 2: GitHub 비밀 값 FIREBASE_SERVICE_ACCOUNT(서비스 계정 키 JSON)가 있으면 firebase-tools로 직접 올려요.
 name: 규칙 자동 게시
 on:
   push:
     branches: [main]
-    paths: ["firebase/firestore.rules"]
+    paths: ["firebase/firestore.rules", ".github/workflows/deploy-rules.yml", "src/app/api/rules/**"]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   deploy:
@@ -21,13 +27,31 @@ jobs:
           SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
           if [ -z "$SA" ]; then
-            echo "::warning::FIREBASE_SERVICE_ACCOUNT 열쇠가 없어서 규칙 게시를 건너뛰어요. 콘솔에서 직접 게시하거나 열쇠를 넣어 주세요."
-            echo "SKIP=1" >> "$GITHUB_ENV"
+            echo "VIA_SITE=1" >> "$GITHUB_ENV"
           else
             printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
           fi
-      - name: 규칙 게시
-        if: env.SKIP != '1'
+      - name: 규칙 게시(사이트를 통해)
+        if: env.VIA_SITE == '1'
+        env:
+          SITE: https://bird-letter.vercel.app
+        run: |
+          want=$(sha256sum firebase/firestore.rules | cut -d' ' -f1)
+          echo "올릴 규칙 지문: $want"
+          # 새 배포(이 규칙이 들어간 것)가 뜰 때까지 최대 15분 기다려요
+          for i in $(seq 1 90); do
+            got=$(curl -fsS "$SITE/api/rules" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).sha||"")}catch{console.log("")}})' || true)
+            [ "$got" = "$want" ] && break
+            echo "새 배포 기다리는 중 ($i/90, 지금 지문: ${got:-없음})"; sleep 10
+          done
+          [ "$got" = "$want" ] || { echo "::error::15분이 지나도 새 배포가 안 떴어요. Vercel 배포 상태를 확인해 주세요."; exit 1; }
+          oidc=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bird-letter-rules" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).value))')
+          code=$(curl -sS -o out.json -w '%{http_code}' -X POST -H "Authorization: Bearer $oidc" "$SITE/api/rules")
+          echo "결과($code): $(cat out.json)"
+          rm -f out.json
+          [ "$code" = "200" ] || { echo "::error::규칙 게시 실패($code). 위 결과를 확인해 주세요."; exit 1; }
+      - name: 규칙 게시(열쇠로 직접)
+        if: env.VIA_SITE != '1'
         working-directory: firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json

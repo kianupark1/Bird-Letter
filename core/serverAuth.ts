@@ -78,3 +78,28 @@ export function verifyFirebaseIdToken(token: string, projectId: string, keyFor: 
     return null;
   }
 }
+
+/** GitHub 자동 작업(Actions)이 보낸 신분증(OIDC 토큰)을 확인할 때 따질 것 */
+export const GITHUB_OIDC = { iss: "https://token.actions.githubusercontent.com", aud: "bird-letter-rules", repo: "kianupark1/Bird-Letter", ref: "refs/heads/main" };
+
+/**
+ * GitHub OIDC 토큰 확인: 서명(GitHub 공개 키), 발급처, 대상(aud), 저장소, 브랜치(main), 만료를 모두 본다.
+ * 우리 저장소 main에서 돈 자동 작업만 통과한다(다른 저장소·다른 브랜치·포크는 거부).
+ */
+export function verifyGithubOidc(token: string, keyFor: (kid: string) => KeyObject | undefined, nowSec: number, want = GITHUB_OIDC): boolean {
+  try {
+    const [h, p, s] = token.split(".");
+    if (!h || !p || !s) return false;
+    const head = JSON.parse(fromB64u(h).toString("utf8"));
+    const body = JSON.parse(fromB64u(p).toString("utf8"));
+    if (head.alg !== "RS256" || typeof head.kid !== "string") return false;
+    const key = keyFor(head.kid);
+    if (!key || !createVerify("RSA-SHA256").update(`${h}.${p}`).verify(key, fromB64u(s))) return false;
+    if (body.iss !== want.iss || body.aud !== want.aud) return false;
+    if (typeof body.repository !== "string" || body.repository.toLowerCase() !== want.repo.toLowerCase() || body.ref !== want.ref) return false;
+    if (typeof body.exp !== "number" || body.exp <= nowSec || (typeof body.nbf === "number" && body.nbf > nowSec + 60)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
