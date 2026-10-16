@@ -57,15 +57,15 @@ function Rank() {
   }, [ready, mine, profile.nickname, profile.avatarBird, profile.homePlace, profile.sharePlace, profile.homeSet]);
 
   const entries: RankEntry[] = useMemo(() => [
-    { uid: "me", name: profile.nickname || "나", bird: profile.avatarBird, me: true, stats: mine },
-    // 같은 사람의 여러 계정은 한 줄로(기록이 큰 계정 기준), 이름은 친구 목록과 같게(내가 부르는 이름 > 진짜 이름 > "친구 #표")
+    { uid: "me", name: profile.nickname || "나", bird: profile.avatarBird, photo: profile.photo, me: true, stats: mine },
+    // 같은 사람의 여러 계정은 한 줄로(기록이 큰 계정 기준), 이름은 친구 목록과 같게(내가 부르는 이름 > 진짜 이름 > "이름 없는 친구 N")
     ...buildThreads([], [], friends, book).filter((t) => t.uid).map((t) => {
       const ids = t.uids ?? [t.uid!];
       const best = ids.map((u) => stats[u]).filter(Boolean).sort((a, b) => (b!.km - a!.km))[0] ?? null;
       const f = friends.find((x) => ids.includes(x.uid));
-      return { uid: t.key, name: t.name, bird: best?.bird ?? f?.bird, me: false, stats: best };
+      return { uid: t.key, name: t.name, bird: best?.bird ?? f?.bird, photo: f?.photo, me: false, stats: best };
     }),
-  ], [friends, stats, mine, profile.nickname, profile.avatarBird, book]);
+  ], [friends, stats, mine, profile.nickname, profile.avatarBird, profile.photo, book]);
 
   const sorted = useMemo(() => rankOf(entries, kind), [entries, kind]);
   const me = myPlace(sorted, kind);
@@ -99,7 +99,7 @@ function Rank() {
             return (
               <div key={e.uid} className={`pod ${first ? "first" : ""}`}>
                 {first && <div className="crown" aria-hidden>👑</div>}
-                <Face name={e.name} bird={e.bird} size={first ? 84 : 70} />
+                <Face name={e.name} bird={e.bird} photo={e.photo} size={first ? 84 : 70} />
                 <div className="pname">{e.me ? "나" : e.name}</div>
                 <div className="pkm">{km(rankValue(e, kind))}</div>
                 <div className="pstep" aria-hidden>{medal(e)}</div>
@@ -114,7 +114,7 @@ function Rank() {
           <li key={e.uid}>
             <div className={`trow ${e.me ? "fly" : ""}`}>
               <span className="rnum">{top3.length + i + 1}</span>
-              <Face name={e.name} bird={e.bird} size={52} />
+              <Face name={e.name} bird={e.bird} photo={e.photo} size={52} />
               <span className="tmid">
                 <span className="tname" style={{ fontSize: 20 }}>{e.me ? "나" : e.name}</span>
                 <span className="tst">{e.stats ? `편지 ${e.stats.count}통` : "아직 기록이 없어요"}</span>

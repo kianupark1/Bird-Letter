@@ -84,7 +84,7 @@ function InboxList() {
     listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
 
-  const friendBird = useMemo(() => new Map(friends.map((f) => [f.uid, f.bird])), [friends]);
+  const friendBird = useMemo(() => new Map(friends.map((f) => [f.uid, f])), [friends]);
   // 내 거리 기록을 서버에 올려 둬요(친구가 랭킹에서 볼 수 있게). 로그인한 사람만, 값이 바뀔 때만 올려요
   const { profile: me } = useProfile();
   useEffect(() => {
@@ -102,10 +102,10 @@ function InboxList() {
   // 내 이름·내 새가 바뀌었으면 친구들 목록 속 "나"도 같이 고쳐요(예전에 "새 친구"로 저장된 것 바로잡기)
   useEffect(() => {
     if (!firebaseEnabled || !friends.length || !me.nickname) return;
-    const sig = `${me.nickname}|${me.avatarBird}|${friends.map((f) => f.uid).sort().join(",")}`;
+    const sig = `${me.nickname}|${me.avatarBird}|${me.photo?.length ?? 0}:${me.photo?.slice(-16) ?? ""}|${friends.map((f) => f.uid).sort().join(",")}`;
     try { if (localStorage.getItem("saepyeonji.namesync.v1") === sig) return; } catch {}
-    void syncMyName(friends, me.nickname, me.avatarBird).then(() => { try { localStorage.setItem("saepyeonji.namesync.v1", sig); } catch {} });
-  }, [friends, me.nickname, me.avatarBird]);
+    void syncMyName(friends, me.nickname, me.avatarBird, me.photo).then(() => { try { localStorage.setItem("saepyeonji.namesync.v1", sig); } catch {} });
+  }, [friends, me.nickname, me.avatarBird, me.photo]);
   // 카카오톡 "채팅"처럼 편지를 주고받은 사람만 보여요(친구만 맺은 사람은 친구 탭에 있어요)
   const threads = useMemo(() => buildThreads(letters, received, friends, book).filter((t) => t.entries.length > 0), [letters, received, friends, book]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
@@ -143,7 +143,7 @@ function InboxList() {
           return (
             <li key={t.key}>
               <Link href={roomHref(t)} className={`trow ${info.badge ? "hot" : info.progress !== undefined ? "fly" : ""}`}>
-                <Face name={t.name} bird={t.uid ? friendBird.get(t.uid) : undefined} />
+                <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} />
                 <span className="tmid">
                   <span className="tname">{t.name}</span>
                   <span className="tst">{info.lead && <b>{info.lead}</b>}{info.lead && <br />}{info.sub}</span>

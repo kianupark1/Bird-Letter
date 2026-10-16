@@ -8,6 +8,7 @@ import { tryMoveHome } from "@/lib/homePlace";
 import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import Face from "@/components/Face";
 import BirdPicker from "@/components/BirdPicker";
+import { compressAvatar } from "@/lib/photo";
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
@@ -49,6 +50,7 @@ export default function Settings() {
   };
   const [msg, setMsg] = useState("");
   const [pickBird, setPickBird] = useState(false);
+  const [photoMsg, setPhotoMsg] = useState("");
   const [testMsg, setTestMsg] = useState("");
   const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
@@ -94,7 +96,19 @@ export default function Settings() {
       <header className="sendhead"><Link href="/" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>내 정보·설정</h1></header>
 
       <div className="mybird">
-        <Face name={profile.nickname || "새"} bird={profile.avatarBird} size={112} />
+        <label className="avatarpick" aria-label="프로필 사진 올리기">
+          <Face name={profile.nickname || "새"} bird={profile.avatarBird} photo={profile.photo} size={112} />
+          <span className="cam" aria-hidden>📷</span>
+          <input type="file" accept="image/*" hidden onChange={async (e) => {
+            const f = e.target.files?.[0]; e.target.value = "";
+            if (!f) return;
+            setPhotoMsg("사진을 줄이는 중…");
+            try { update({ photo: await compressAvatar(f) }); setPhotoMsg("프로필 사진을 바꿨어요. 친구에게도 보여요."); }
+            catch { setPhotoMsg("이 사진은 쓸 수 없어요. 다른 사진을 골라 주세요."); }
+          }} />
+        </label>
+        {profile.photo && <button type="button" className="linkbtn" onClick={() => { update({ photo: undefined }); setPhotoMsg("사진을 지웠어요. 내 새 얼굴이 보여요."); }}>사진 지우고 새 얼굴로</button>}
+        {photoMsg && <div className="small" role="status">{photoMsg}</div>}
         <input className="nick" style={{ textAlign: "center", marginTop: 8 }} aria-label="닉네임" value={profile.nickname} maxLength={12} placeholder="이름"
           onChange={(e) => update({ nickname: e.target.value })} />
         <button type="button" className="edit" onClick={() => setPickBird((v) => !v)}>

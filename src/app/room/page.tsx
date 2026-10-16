@@ -10,7 +10,7 @@ import { listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
-import { buildThreads, isUnnamed, keyFromParams, uidTag, type Thread } from "../../../core/threads";
+import { buildThreads, isUnnamed, keyFromParams, type Thread } from "../../../core/threads";
 import Face from "@/components/Face";
 import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
@@ -135,19 +135,19 @@ function Room() {
     <main className="app room chat">
       <header className="roomhead">
         <Link href="/" className="roomback" aria-label="뒤로">‹</Link>
-        <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} size={52} />
+        <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined} size={52} />
         <div style={{ minWidth: 0 }}>
           {thread.uid ? (
             <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
               onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (내 폰에만 저장돼요)", name); if (v !== null) rename(thread.uid!, v); }}>{name} <span aria-hidden>✎</span></button>
           ) : <div className="rname">{name}</div>}
-          {thread.uid ? <div className="rsub">#{uidTag(thread.key.slice(2))}{subtitle ? ` · ${subtitle}` : ""}</div> : subtitle && <div className="rsub">{subtitle}</div>}
+          {subtitle && <div className="rsub">{subtitle}</div>}
         </div>
       </header>
       {thread.uid && isUnnamed(name) && (
         <form className="namecard" onSubmit={(e) => { e.preventDefault(); if (nameDraft.trim()) { rename(thread.key.slice(2), nameDraft); setNameDraft(""); } }}>
           <b>이 친구의 이름을 정해 주세요</b>
-          <span>아직 이름이 없어서 #{uidTag(thread.key.slice(2))}로 보여요. 정한 이름은 나에게만 보이고 계속 그대로예요.</span>
+          <span>친구가 아직 이름을 정하지 않았어요. 내가 정한 이름은 나에게만 보이고, 친구가 이름을 정하면 그 이름으로 바뀌어요.</span>
           <div className="row"><input className="field" value={nameDraft} maxLength={12} placeholder="예: 석영" aria-label="친구 이름" onChange={(e) => setNameDraft(e.target.value)} />
             <button type="submit" className="chip hot" disabled={!nameDraft.trim()}>정하기</button></div>
         </form>
@@ -179,7 +179,7 @@ function Room() {
                     merge(name, t.uid!); setPickFriend(false); router.replace(`/room?u=${encodeURIComponent(t.uid!)}`);
                   }
                 }}>
-                <Face name={t.name} bird={friends.find((f) => f.uid === t.uid)?.bird} />
+                <Face name={t.name} bird={friends.find((f) => f.uid === t.uid)?.bird} photo={friends.find((f) => f.uid === t.uid)?.photo} />
                 <span className="tmid"><span className="tname">{t.name}</span><span className="tst">{t.entries.length ? `편지 ${t.entries.length}통` : "아직 편지 없음"} · 같은 사람으로 합치고 &quot;{name}&quot;(으)로 불러요</span></span>
               </button>
             ))}

@@ -19,6 +19,8 @@ export type Profile = {
   sharePlace?: boolean;
   /** 내 동네를 직접 정했는지. 정하기 전에는 기본값(서울)을 친구에게 알리지 않아요 */
   homeSet?: boolean;
+  /** 내 프로필 사진(가운데를 잘라 줄인 작은 JPEG 글자). 없으면 내 새 얼굴이 보여요 */
+  photo?: string;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [

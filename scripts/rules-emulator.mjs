@@ -34,6 +34,11 @@ await no("bird가 글자가 아님", setDoc(doc(A, "users", "uidA", "friends", "
 await no("bird가 너무 김", setDoc(doc(A, "users", "uidA", "friends", "uidY3"), { uid: "uidY3", name: "y", at: serverTimestamp(), bird: "x".repeat(13) }));
 await ok("코드 문서에 내 새(bird) 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie" }));
 await no("코드 문서의 bird가 글자가 아님", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: 5 }));
+const JPG = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ==";
+await ok("친구 문서에 프로필 사진 담기", setDoc(doc(A, "users", "uidA", "friends", "uidY"), { uid: "uidY", name: "y", at: serverTimestamp(), photo: JPG }));
+await no("프로필 사진이 JPEG 글자가 아님", setDoc(doc(A, "users", "uidA", "friends", "uidY"), { uid: "uidY", name: "y", at: serverTimestamp(), photo: "https://evil.example/x.png" }));
+await no("프로필 사진이 너무 큼", setDoc(doc(A, "users", "uidA", "friends", "uidY"), { uid: "uidY", name: "y", at: serverTimestamp(), photo: "data:image/jpeg;base64," + "A".repeat(30001) }));
+await ok("코드 문서에 프로필 사진 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie", photo: JPG }));
 
 console.log("[거리 랭킹 기록]");
 const st = (over = {}) => ({ km: 1200, maxKm: 452, count: 3, name: "에이", bird: "magpie", ...over });

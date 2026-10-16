@@ -53,10 +53,12 @@ export function uidTag(uid: string): string {
   for (let i = 0; i < 4; i++) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = (h ^ (h >>> 13)) >>> 0; out += A[h % A.length]; }
   return out;
 }
-/** 이름이 아직 없는 친구를 부르는 이름: "친구 #K7Q2" */
+/** 이름이 아직 없는 친구를 부르는 임시 이름(알아보기 쉽게 번호로): "이름 없는 친구 1" */
+export const unnamedLabel = (n: number) => `이름 없는 친구 ${n}`;
+/** 예전 방식 이름(친구 #표). 받은 편지 목록 등 순서를 모를 때만 써요 */
 export const unnamed = (uid: string) => `친구 #${uidTag(uid)}`;
-/** 이름이 정해지지 않은(기본 이름이거나 표로만 부르는) 사람인지 */
-export const isUnnamed = (name: string) => PLACEHOLDER_NAMES.has(name.trim()) || /^친구 #[A-Z2-9]{4}$/.test(name);
+/** 이름이 정해지지 않은(기본 이름이거나 임시 이름인) 사람인지 */
+export const isUnnamed = (name: string) => PLACEHOLDER_NAMES.has(name.trim()) || /^친구 #[A-Z2-9]{4}$/.test(name) || /^이름 없는 친구 \d+$/.test(name);
 
 export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S[], received: R[], friends: FriendLike[], book: PeopleBook = {}): Thread<S, R>[] {
   const alias = book.alias ?? {}, nick = book.nick ?? {};
@@ -113,9 +115,11 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
       t.uid = sendTo.get(t.key)?.uid ?? (friendName.has(r) ? r : ids.find((u) => friendName.has(u)) ?? r);
       // 이름: 내가 부르는 이름 > 친구가 정한 진짜 이름 > 받은 편지에 적힌 이름 > 기본 이름
       const names = [...ids.map((u) => nick[u]), ...ids.map((u) => friendName.get(u)), ...ids.map((u) => recvName.get(u))].filter((n): n is string => !!n);
-      t.name = names.find((n) => !PLACEHOLDER_NAMES.has(n)) ?? unnamed(r); // 이름이 없으면 "새 친구" 대신 겹치지 않는 표로
+      t.name = names.find((n) => !PLACEHOLDER_NAMES.has(n)) ?? ""; // 이름이 없으면 아래에서 "이름 없는 친구 N"으로
     }
   }
+  // 이름이 없는 사람은 계정 순서대로 "이름 없는 친구 1, 2…"(늘 같은 번호, 대화방에서 이름을 정하면 그 이름으로)
+  list.filter((t) => t.uids.size && !t.name).sort((a, b) => a.key.localeCompare(b.key)).forEach((t, i) => { t.name = unnamedLabel(i + 1); });
   return list.map(({ uids, ...t }): Thread<S, R> => ({ ...t, uids: [...uids] })).sort((a, b) => (b.lastAt - a.lastAt) || a.name.localeCompare(b.name, "ko"));
 }
 
