@@ -14,6 +14,7 @@ import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validate
 import type { Letter } from "@/lib/letters";
 import { IS_TOSS } from "@/lib/target";
 import { tryMoveHome } from "@/lib/homePlace";
+import { birdFx } from "@/lib/chirp";
 
 type AddFn = (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => Promise<string>;
 const LAST_BIRD = "saepyeonji.lastbird.v1";
@@ -114,6 +115,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
       await Promise.race([sending, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000))]);
       write(LAST_BIRD, birdId);
+      birdFx("depart", profile.chirp); // 출발: 푸드덕 + 짹 + 짧은 진동
       if (resend && cancel) { try { await cancel(resend.replaceId); } catch {} } // 다시 보냈으니 길 잃은 편지는 지워요
       if (resend) onResendDone?.();
       setMessage(""); setPhotos([]); setLater(""); setSheet("");
