@@ -10,7 +10,7 @@ import { listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
-import { buildThreads, keyFromParams, type Thread } from "../../../core/threads";
+import { buildThreads, isUnnamed, keyFromParams, uidTag, type Thread } from "../../../core/threads";
 import Face from "@/components/Face";
 import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
@@ -43,6 +43,7 @@ function Room() {
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
   const [bigMap, setBigMap] = useState(false);
   const [resend, setResend] = useState<Resend | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
   const [pickFriend, setPickFriend] = useState(false);
   const { book, merge, mergeSame, rename } = usePeople();
 
@@ -139,9 +140,17 @@ function Room() {
             <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
               onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (내 폰에만 저장돼요)", name); if (v !== null) rename(thread.uid!, v); }}>{name} <span aria-hidden>✎</span></button>
           ) : <div className="rname">{name}</div>}
-          {subtitle && <div className="rsub">{subtitle}</div>}
+          {thread.uid ? <div className="rsub">#{uidTag(thread.key.slice(2))}{subtitle ? ` · ${subtitle}` : ""}</div> : subtitle && <div className="rsub">{subtitle}</div>}
         </div>
       </header>
+      {thread.uid && isUnnamed(name) && (
+        <form className="namecard" onSubmit={(e) => { e.preventDefault(); if (nameDraft.trim()) { rename(thread.key.slice(2), nameDraft); setNameDraft(""); } }}>
+          <b>이 친구의 이름을 정해 주세요</b>
+          <span>아직 이름이 없어서 #{uidTag(thread.key.slice(2))}로 보여요. 정한 이름은 나에게만 보이고 계속 그대로예요.</span>
+          <div className="row"><input className="field" value={nameDraft} maxLength={12} placeholder="예: 석영" aria-label="친구 이름" onChange={(e) => setNameDraft(e.target.value)} />
+            <button type="submit" className="chip hot" disabled={!nameDraft.trim()}>정하기</button></div>
+        </form>
+      )}
       {map}
       {thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
         <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
@@ -189,7 +198,7 @@ function Room() {
         )}
         <div ref={endRef} />
       </div>
-      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
+      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!!thread.uid && isUnnamed(name)} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
     </main>
   );
 }

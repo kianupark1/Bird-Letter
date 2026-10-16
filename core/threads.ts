@@ -41,6 +41,23 @@ export function keyFromParams(u: string | null, n: string | null): string | null
 export type PeopleBook = { alias?: Record<string, string>; same?: Record<string, string>; nick?: Record<string, string> };
 export const PLACEHOLDER_NAMES = new Set(["", "새 친구", "누군가", "보낸 사람"]);
 
+/**
+ * 계정마다 겹치지 않는 짧은 표(카카오톡 아이디처럼): 계정 uid로 정해지는 4글자. 예: #K7Q2
+ * 이름이 없거나 같아도 이 표로 사람을 구분해요. "새 친구" 같은 기본 이름은 화면에 쓰지 않아요.
+ */
+export function uidTag(uid: string): string {
+  let h = 2166136261 >>> 0;
+  for (const ch of uid) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 헷갈리는 글자(0·O·1·I) 뺌
+  let out = "";
+  for (let i = 0; i < 4; i++) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = (h ^ (h >>> 13)) >>> 0; out += A[h % A.length]; }
+  return out;
+}
+/** 이름이 아직 없는 친구를 부르는 이름: "친구 #K7Q2" */
+export const unnamed = (uid: string) => `친구 #${uidTag(uid)}`;
+/** 이름이 정해지지 않은(기본 이름이거나 표로만 부르는) 사람인지 */
+export const isUnnamed = (name: string) => PLACEHOLDER_NAMES.has(name.trim()) || /^친구 #[A-Z2-9]{4}$/.test(name);
+
 export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S[], received: R[], friends: FriendLike[], book: PeopleBook = {}): Thread<S, R>[] {
   const alias = book.alias ?? {}, nick = book.nick ?? {};
   const same: Record<string, string> = { ...(book.same ?? {}) };
@@ -96,7 +113,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
       t.uid = sendTo.get(t.key)?.uid ?? (friendName.has(r) ? r : ids.find((u) => friendName.has(u)) ?? r);
       // 이름: 내가 부르는 이름 > 친구가 정한 진짜 이름 > 받은 편지에 적힌 이름 > 기본 이름
       const names = [...ids.map((u) => nick[u]), ...ids.map((u) => friendName.get(u)), ...ids.map((u) => recvName.get(u))].filter((n): n is string => !!n);
-      t.name = names.find((n) => !PLACEHOLDER_NAMES.has(n)) ?? names[0] ?? "누군가";
+      t.name = names.find((n) => !PLACEHOLDER_NAMES.has(n)) ?? unnamed(r); // 이름이 없으면 "새 친구" 대신 겹치지 않는 표로
     }
   }
   return list.map(({ uids, ...t }): Thread<S, R> => ({ ...t, uids: [...uids] })).sort((a, b) => (b.lastAt - a.lastAt) || a.name.localeCompare(b.name, "ko"));

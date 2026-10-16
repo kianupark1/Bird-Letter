@@ -25,10 +25,12 @@ const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } ca
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
 export type Resend = { replaceId: string; message: string; birdId: string };
 
-export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel }: {
+export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel, needName }: {
   threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn;
   /** 길 잃은 편지 다시 보내기: 같은 글을 채워 두고, 보내면 길 잃은 편지는 지워요 */
   resend?: Resend | null; onResendDone?: () => void; cancel?: (id: string) => Promise<void>;
+  /** 받는 친구 이름이 아직 없으면 보내기 전에 이름부터 정하게 해요 */
+  needName?: boolean;
 }) {
   const { profile, ready, update } = useProfile();
   const [message, setMessage] = useState("");
@@ -104,6 +106,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const send = async () => {
     // 왜 못 보내는지 알려 줘요(버튼을 눌러도 아무 일이 없으면 답답해요)
     if (busy) return;
+    if (needName) { setInfo("받는 친구의 이름을 먼저 정해 주세요(위쪽 칸)."); return; }
     if (!message.trim()) { setInfo("편지 내용을 먼저 써 주세요."); return; }
     if (!ok || !route) { setInfo("받는 곳을 골라 주세요."); setSheet("place"); return; }
     if (photoBusy) { setInfo("사진을 줄이는 중이에요. 잠시만 기다려 주세요."); return; }

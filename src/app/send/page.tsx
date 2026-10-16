@@ -17,6 +17,7 @@ import PlaceField from "@/components/PlaceField";
 import BirdIcon from "@/components/BirdIcon";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import { roomHref } from "@/lib/room";
+import { isUnnamed, unnamed } from "../../../core/threads";
 import { birdFx } from "@/lib/chirp";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
@@ -186,7 +187,7 @@ function SendForm() {
               <div className="lab">친구에게 바로 보내기</div>
               <div className="chips">
                 {friends.map((f) => (
-                  <button key={f.uid} type="button" className="chip" aria-pressed={toUid === f.uid} onClick={() => pickFriend(f)}>{f.name}</button>
+                  <button key={f.uid} type="button" className="chip" aria-pressed={toUid === f.uid} onClick={() => pickFriend(f)}>{isUnnamed(f.name) ? unnamed(f.uid) : f.name}</button>
                 ))}
                 <Link href="/friends" className="chip">＋ 친구 추가</Link>
               </div>

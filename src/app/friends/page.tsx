@@ -14,7 +14,8 @@ import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
 import GearLink from "@/components/GearLink";
 import { roomHref } from "@/lib/room";
-import { buildThreads } from "../../../core/threads";
+import { buildThreads, uidTag } from "../../../core/threads";
+import { auth } from "@/lib/firebase/client";
 
 export default function FriendsPage() {
   return (
@@ -99,7 +100,7 @@ function Friends() {
       <header className="tabhead"><h1 className="pagetitle">친구</h1><GearLink /></header>
       <Link href="/settings" className="trow merow">
         <Face name={profile.nickname} bird={profile.avatarBird || undefined} size={60} />
-        <span className="tmid"><span className="tname">{profile.nickname}</span><span className="tst">나 · 내 정보</span></span>
+        <span className="tmid"><span className="tname">{profile.nickname}</span><span className="tst">나 · 내 아이디 #{(() => { try { return uidTag(auth().currentUser?.uid ?? ""); } catch { return "----"; } })()}</span></span>
       </Link>
 
       <h2 className="friendh">친구 {people.length > 0 && people.length}</h2>
@@ -113,7 +114,7 @@ function Friends() {
               <div className="trow">
                 <Link href={roomHref({ uid: t.uid, name: t.name })} className="tfriend">
                   <Face name={t.name} bird={f?.bird} />
-                  <span className="tname">{t.name}{own && <small style={{ fontWeight: 400, opacity: .6 }}> ({own})</small>}</span>
+                  <span className="tmid"><span className="tname">{t.name}</span><span className="tst">#{uidTag(t.key.slice(2))}{own && !own.startsWith("새 친구") ? ` · 친구가 정한 이름: ${own}` : ""}</span></span>
                 </Link>
                 <button type="button" className="chip" onClick={() => removeAll(t)} aria-label={`${t.name} 친구 끊기`}>끊기</button>
               </div>
