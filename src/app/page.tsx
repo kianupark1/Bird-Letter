@@ -14,6 +14,7 @@ import { publishStats } from "@/lib/firebase/stats";
 import { myStatsCapped } from "../../core/rank";
 import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
+import GearLink from "@/components/GearLink";
 import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
@@ -116,6 +117,7 @@ function InboxList() {
           <h1>새 편지</h1>
           <div className="greet">오늘도 편지 날리기 좋은 날 ☀</div>
         </div>
+        <GearLink />
       </header>
 
       {ready && firebaseEnabled && !me.homeSet && (

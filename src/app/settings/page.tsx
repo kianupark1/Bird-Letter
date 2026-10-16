@@ -91,7 +91,7 @@ export default function Settings() {
 
   return (
     <main className="app">
-      <h1>내 정보</h1>
+      <header className="sendhead"><Link href="/" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>내 정보·설정</h1></header>
 
       <div className="mybird">
         <Face name={profile.nickname || "새"} bird={profile.avatarBird} size={112} />

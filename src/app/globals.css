@@ -762,3 +762,10 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 .ch-bird.on small { opacity: 1; color: var(--dahong); font-weight: 700; }
 .samebtn { display: block; margin: 8px auto 0; font-size: 14px; opacity: .7; }
 .merow { margin-bottom: 6px; text-decoration: none; color: inherit; }
+
+/* 오른쪽 위 톱니바퀴(설정), 탭 화면 머리 */
+.gearlink { margin-left: auto; width: 48px; height: 48px; flex: none; border-radius: 50%; display: grid; place-items: center; color: var(--text); background: var(--card); box-shadow: var(--raise); text-decoration: none; }
+.gearlink:active { transform: scale(.94); }
+.tabhead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.tabhead .pagetitle { margin: 0; }
+.inboxhead { align-items: center; }

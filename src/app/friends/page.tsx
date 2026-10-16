@@ -12,6 +12,7 @@ import { useSession } from "@/lib/session";
 import LoginStart from "@/components/LoginStart";
 import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
+import GearLink from "@/components/GearLink";
 import { roomHref } from "@/lib/room";
 import { buildThreads } from "../../../core/threads";
 
@@ -95,7 +96,7 @@ function Friends() {
   };
   return (
     <main className="app friendsp">
-      <h1 className="pagetitle">친구</h1>
+      <header className="tabhead"><h1 className="pagetitle">친구</h1><GearLink /></header>
       <Link href="/settings" className="trow merow">
         <Face name={profile.nickname} bird={profile.avatarBird || undefined} size={60} />
         <span className="tmid"><span className="tname">{profile.nickname}</span><span className="tst">나 · 내 정보</span></span>
@@ -141,12 +142,6 @@ function Friends() {
         </div>
       </div>
       {msg && <div className="small" role="status" style={{ fontSize: 16 }}>{msg}</div>}
-
-      <Link href="/rank" className="opt rankcard">
-        <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏆</span>
-        <span><b>우리 랭킹 보기</b><span>누가 제일 멀리 보냈을까?</span></span>
-        <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
-      </Link>
 
       <Link href="/stamps" className="opt rankcard">
         <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏮</span>
