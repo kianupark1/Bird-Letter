@@ -48,8 +48,17 @@ export async function finishKakaoLogin(search: string): Promise<KakaoOutcome> {
     if (res.status === 409) return { ok: false, message: "이 계정에는 이미 다른 카카오가 연결돼 있어요." };
     if (res.status === 503) return { ok: false, message: "카카오 연결이 아직 준비 중이에요." };
     if (!res.ok) return { ok: false, message: "카카오 연결에 실패했어요. 잠시 뒤에 다시 해 주세요." };
-    const { customToken, switched } = await res.json();
+    const { customToken, switched, nickname } = await res.json();
     await signInWithCustomToken(auth(), customToken);
+    // 카카오 닉네임을 앱 이름으로: 아직 이름을 안 정했으면 그대로 써요(이름 화면에서 바꿀 수 있어요)
+    if (typeof nickname === "string" && nickname.trim()) {
+      try { localStorage.setItem("saepyeonji.kakaoNick.v1", nickname.trim().slice(0, 12)); } catch {}
+      try {
+        const raw = localStorage.getItem("saepyeonji.profile.v1");
+        const p = raw ? JSON.parse(raw) : {};
+        if (!p.nickname || p.nickname === "새 친구") localStorage.setItem("saepyeonji.profile.v1", JSON.stringify({ ...p, nickname: nickname.trim().slice(0, 12) }));
+      } catch {}
+    }
     return { ok: true, switched: Boolean(switched) };
   } catch {
     return { ok: false, message: "인터넷 연결을 확인해 주세요." };

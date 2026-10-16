@@ -104,7 +104,8 @@ function InboxList() {
     try { if (localStorage.getItem("saepyeonji.namesync.v1") === sig) return; } catch {}
     void syncMyName(friends, me.nickname, me.avatarBird).then(() => { try { localStorage.setItem("saepyeonji.namesync.v1", sig); } catch {} });
   }, [friends, me.nickname, me.avatarBird]);
-  const threads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
+  // 카카오톡 "채팅"처럼 편지를 주고받은 사람만 보여요(친구만 맺은 사람은 친구 탭에 있어요)
+  const threads = useMemo(() => buildThreads(letters, received, friends, book).filter((t) => t.entries.length > 0), [letters, received, friends, book]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 
   return (
@@ -127,9 +128,9 @@ function InboxList() {
       {ready && threads.length === 0 && (
         <div className="inbox-empty">
           {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
-          <h2>친구를 초대하면<br />편지를 보낼 수 있어요</h2>
+          <h2>{friends.length ? <>친구에게<br />첫 편지를 보내 보세요</> : <>친구를 초대하면<br />편지를 보낼 수 있어요</>}</h2>
           <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
-          <Link href="/friends" className="cta big">친구 초대하기</Link>
+          <Link href="/friends" className="cta big">{friends.length ? "친구 목록에서 고르기" : "친구 초대하기"}</Link>
         </div>
       )}
 

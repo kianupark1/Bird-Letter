@@ -58,6 +58,7 @@ export async function POST(req: Request) {
     return access.token;
   };
 
+  let kakaoNick = "";
   const deps: KakaoDeps = {
     async kakaoUserId(code) {
       const form = new URLSearchParams({ grant_type: "authorization_code", client_id: restKey, redirect_uri: `${base}/auth/kakao`, code });
@@ -67,8 +68,11 @@ export async function POST(req: Request) {
       const { access_token } = await t.json();
       const me = await fetch("https://kapi.kakao.com/v2/user/me", { headers: { Authorization: `Bearer ${access_token}` } });
       if (!me.ok) throw new Error("kakao-me");
-      const { id } = await me.json();
-      return String(id);
+      const j = await me.json();
+      // 카카오 닉네임(동의항목 "닉네임"): 앱 이름으로 그대로 쓰도록 폰에 돌려줘요. 서버에는 저장하지 않아요
+      const n = j?.kakao_account?.profile?.nickname ?? j?.properties?.nickname;
+      if (typeof n === "string") kakaoNick = n.trim().slice(0, 12);
+      return String(j.id);
     },
     async verifyIdToken(idToken) {
       try {
@@ -99,7 +103,7 @@ export async function POST(req: Request) {
   try {
     const res = await loginWithKakao(input, deps);
     if (!res.ok) return NextResponse.json({ error: res.error }, { status: res.status });
-    return NextResponse.json({ customToken: res.customToken, switched: res.switched });
+    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: kakaoNick || undefined });
   } catch {
     return NextResponse.json({ error: "server-error" }, { status: 502 });
   }
