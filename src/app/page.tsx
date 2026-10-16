@@ -34,35 +34,50 @@ export default function Home() {
   return <Inbox />;
 }
 
-type Row = { lead?: string; sub: string; progress?: number; birdId?: string; badge?: string; side?: string };
+type Row = { preview: string; hot?: boolean; time: string; badge?: number; progress?: number };
 
-/** 대화방 한 줄에 보여줄 상태를 말로 정해요(시안 ①). 가장 눈에 띌 일이 먼저예요 */
+/** 카카오톡처럼 시각: 오늘은 "오후 3:12", 어제는 "어제", 그 전은 "10월 17일" */
+function listTime(ms: number, now: number): string {
+  if (!ms) return "";
+  const d = new Date(ms), n = new Date(now);
+  const day = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(n) - day(d)) / 86400000);
+  if (diff <= 0) return clockText(ms);
+  if (diff === 1) return "어제";
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+/** 채팅 목록 한 줄: 카카오톡처럼 이름·마지막 소식 한 줄·시각·안 읽은 수 */
 function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string>): Row {
   const recvLike = (m: Meta) => ({ id: m.id, birdId: m.birdId, routeId: m.routeId, sentAt: m.sentAt, arriveAt: m.arriveAt });
-  let flyingRecv: Meta | undefined, flyingSent: Letter | undefined, newRecv: Meta | undefined, scheduled: Letter | undefined;
+  let flyingRecv: Meta | undefined, flyingSent: Letter | undefined, scheduled: Letter | undefined, unread = 0, newAt = 0;
   for (const e of t.entries) {
     if (e.dir === "received") {
       const done = letterProgress(recvLike(e.item), now).done;
-      if (done && !opened.has(e.item.id) && !newRecv) newRecv = e.item;
+      if (done && !opened.has(e.item.id)) { unread++; newAt = Math.max(newAt, e.item.arriveAt); }
       if (!done && !isScheduled(e.item.sentAt, now) && !flyingRecv) flyingRecv = e.item;
     } else if (isScheduled(e.item.sentAt, now)) {
       if (!scheduled) scheduled = e.item;
     } else if (!letterProgress(e.item, now).done && !flyingSent) flyingSent = e.item;
   }
-  if (newRecv) return { lead: "새 편지가 도착했어요!", sub: "눌러서 열어 보세요", badge: "새 편지", side: dateTimeText(newRecv.arriveAt).split(" ").slice(0, 2).join(" ") };
+  const time = listTime(newAt || t.lastAt, now);
+  if (unread) return { preview: "💌 새 편지가 도착했어요. 눌러서 열어 보세요", hot: true, time, badge: unread };
   if (flyingRecv) {
     const pr = letterProgress(recvLike(flyingRecv), now);
-    return { lead: "편지가 오고 있어요", sub: `${clockText(flyingRecv.arriveAt)} 도착`, progress: pr.p, birdId: flyingRecv.birdId };
+    return { preview: `🕊 ${getBird(flyingRecv.birdId).name}가 편지를 물고 오는 중 · ${clockText(flyingRecv.arriveAt)} 도착`, time, progress: pr.p };
   }
   if (flyingSent) {
     const pr = letterProgress(flyingSent, now);
-    return { lead: "내 편지가 날아가는 중", sub: `${getRoute(flyingSent.routeId).title} · ${formatMinutes(Math.max(1, Math.ceil(pr.total - pr.elapsed)))} 남음`, progress: pr.p, birdId: flyingSent.birdId };
+    return { preview: `🕊 내 편지가 날아가는 중 · ${formatMinutes(Math.max(1, Math.ceil(pr.total - pr.elapsed)))} 남음`, time, progress: pr.p };
   }
-  if (scheduled) return { lead: "출발 예정", sub: dateTimeText(scheduled.sentAt), side: "예약" };
+  if (scheduled) return { preview: `⏰ ${dateTimeText(scheduled.sentAt)} 출발 예정`, time };
   const last = t.entries[0];
-  if (!last) return { sub: "편지를 보내 보세요" };
-  const when = dateTimeText(last.at).split(" ").slice(0, 2).join(" ");
-  return { sub: last.dir === "sent" ? "내가 보낸 편지가 도착했어요" : "받은 편지를 읽었어요", side: when };
+  if (!last) return { preview: "편지를 보내 보세요", time: "" };
+  if (last.dir === "sent") {
+    const line = last.item.message.split("\n").find((x) => x.trim())?.trim();
+    return { preview: line ? `나: ${line}` : "✓ 내 편지가 도착했어요", time };
+  }
+  return { preview: "받은 편지를 읽었어요", time };
 }
 
 function Inbox() {
@@ -138,9 +153,8 @@ function InboxList() {
       </header>
 
       {ready && firebaseEnabled && !me.homeSet && (
-        <Link href="/settings" className="homeask">
-          <span aria-hidden style={{ fontSize: 28 }}>📍</span>
-          <span><b>내 동네를 정해 주세요</b><span>정해 두면 친구가 편지를 보낼 때 받는 곳이 자동으로 정해져요. 구 이름만 쓰고 언제든 끌 수 있어요.</span></span>
+        <Link href="/settings" className="homeask slim">
+          <span aria-hidden>📍</span><span><b>내 동네를 정해 주세요</b> · 친구가 보낼 때 받는 곳이 자동으로 정해져요</span><span aria-hidden>›</span>
         </Link>
       )}
 
@@ -161,18 +175,13 @@ function InboxList() {
             <li key={t.key}>
               <SwipeRow label={`${t.name} 채팅방`} onLongPress={() => setMenu({ t, step: "menu" })}
                 actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), { label: "나가기", tone: "danger" as const, onClick: () => leave(t) }]}>
-              <Link href={roomHref(t)} className={`trow ${isPenpalThread(t) ? "pen " : ""}${info.badge ? "hot" : info.progress !== undefined ? "fly" : ""}`}>
-                <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} />
-                <span className="tmid">
-                  <span className="tname">{t.name}</span>
-                  <span className="tst">{info.lead && <b>{info.lead}</b>}{info.lead && <br />}{info.sub}</span>
-                  {info.progress !== undefined && info.birdId && (
-                    <span className="mtrack"><i style={{ width: `${Math.round(info.progress * 100)}%` }} /><span className="mb" style={{ left: `${Math.round(info.progress * 100)}%` }}><BirdIcon id={info.birdId} size={40} /></span></span>
-                  )}
+              <Link href={roomHref(t)} className={`krow ${isPenpalThread(t) ? "pen" : ""}`}>
+                <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} size={58} />
+                <span className="kmid">
+                  <span className="kline"><b className="kname">{t.name}</b><span className="ktime">{info.time}</span></span>
+                  <span className="kline"><span className={`kprev ${info.hot ? "hot" : ""}`}>{info.preview}</span>{info.badge ? <span className="kbadge" aria-label={`안 읽은 편지 ${info.badge}통`}>{info.badge}</span> : null}</span>
+                  {info.progress !== undefined && <span className="kbar"><i style={{ width: `${Math.round(info.progress * 100)}%` }} /></span>}
                 </span>
-                {(info.badge || info.side) && (
-                  <span className="tside">{info.side}{info.badge && <span className="tbadge">{info.badge}</span>}</span>
-                )}
               </Link>
               </SwipeRow>
             </li>
@@ -182,11 +191,11 @@ function InboxList() {
         return (
           <>
             {pen.length > 0 && mine.length > 0 && <div className="pphead">친구</div>}
-            <ul className="threads">{mine.map(row)}</ul>
+            <ul className="klist">{mine.map(row)}</ul>
             {pen.length > 0 && (
               <>
                 <div className="pphead">펜팔 🌏</div>
-                <ul className="threads">{pen.map(row)}</ul>
+                <ul className="klist">{pen.map(row)}</ul>
                 <Link href="/penpal" className="ppcard" style={{ padding: "12px 16px" }}><BirdIcon id="crane" size={40} /><div><b style={{ fontSize: 19 }}>또 다른 누군가에게 날려 보내기</b></div></Link>
               </>
             )}
@@ -233,9 +242,7 @@ function InboxList() {
       {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
 
       {threads.length > 0 && (
-        <div className="dock">
-          <Link href="/send" className="cta big">✉ 편지 쓰기</Link>
-        </div>
+        <Link href="/send" className="kfab" aria-label="편지 쓰기">✉ 편지 쓰기</Link>
       )}
     </main>
   );

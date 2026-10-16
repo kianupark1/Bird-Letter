@@ -497,5 +497,19 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("아무도 없으면 null", pick([{ uid: "me", tags: [], region: "서울" }], "me", new Set(), [], () => 0), null);
 }
 
+
+// 같은 이름 방 마지막 합치기: 친구 목록에 없는 계정(예: 끊은 계정)이라도 이름이 같으면 한 줄
+{
+  const { buildThreads: bt } = await import("../core/threads.ts");
+  const th = bt([
+    { id: "x1", to: "창재", toUid: "old1", sentAt: 100 },
+    { id: "x2", to: "창재", toUid: "kakao:9", sentAt: 200 },
+    { id: "x3", to: "창재", sentAt: 300 },
+  ], [], [{ uid: "kakao:9", name: "창재" }], {});
+  eq("같은 이름 창재는 한 줄", th.filter((x) => x.name === "창재").length, 1);
+  eq("편지 3통 모두 한 방", th.find((x) => x.name === "창재")!.entries.length, 3);
+  eq("대표는 친구 계정", th.find((x) => x.name === "창재")!.key, "u:kakao:9");
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

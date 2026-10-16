@@ -142,6 +142,22 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
       t.name = names.find((n) => !isUnnamed(n)) ?? ""; // 이름이 없으면 아래에서 "이름 없는 친구 N"으로
     }
   }
+  // 마지막으로, 이름이 같은 방은 한 사람으로 모아요("석영이"="석영"). 친구 계정 방이 대표가 돼요.
+  // (친구 목록에서 빠진 계정·이름만 적은 방도 같은 이름이면 한 줄로)
+  const order = [...list].sort((a, b) => Number(!!b.uid && friendName.has(b.uid)) - Number(!!a.uid && friendName.has(a.uid)) || Number(!!b.uid) - Number(!!a.uid) || a.key.localeCompare(b.key));
+  const keep = new Map<string, T>(), gone = new Set<T>();
+  for (const t of order) {
+    if (!t.name || isUnnamed(t.name)) continue;
+    const k = nameKey(t.name), first = keep.get(k);
+    if (!first) { keep.set(k, t); continue; }
+    first.entries.push(...t.entries);
+    t.uids.forEach((u) => first.uids.add(u));
+    const a = sendTo.get(first.key), b = sendTo.get(t.key);
+    if (!first.uid || (b && (!a || b.at > a.at))) { first.uid = t.uid ?? first.uid; if (b) sendTo.set(first.key, b); }
+    gone.add(t);
+  }
+  for (const t of keep.values()) { t.entries.sort((a, b) => b.at - a.at); t.lastAt = t.entries[0]?.at ?? 0; }
+  for (let i = list.length - 1; i >= 0; i--) if (gone.has(list[i])) list.splice(i, 1);
   // 이름이 없는 사람은 계정 순서대로 "이름 없는 친구 1, 2…"(늘 같은 번호, 대화방에서 이름을 정하면 그 이름으로)
   list.filter((t) => t.uids.size && !t.name).sort((a, b) => a.key.localeCompare(b.key)).forEach((t, i) => { t.name = unnamedLabel(i + 1); });
   return list.map(({ uids, ...t }): Thread<S, R> => ({ ...t, uids: [...uids] })).sort((a, b) => (b.lastAt - a.lastAt) || a.name.localeCompare(b.name, "ko"));
