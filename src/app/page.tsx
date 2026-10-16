@@ -22,6 +22,7 @@ import NameStep, { shouldAskName } from "@/components/NameStep";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
+import { usePeople } from "@/lib/people";
 
 export default function Home() {
   const { state, recheck } = useSession();
@@ -95,7 +96,8 @@ function InboxList() {
     void publishStats(st, me.nickname, me.avatarBird, place).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
   }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
 
-  const threads = useMemo(() => buildThreads(letters, received, friends), [letters, received, friends]);
+  const { book } = usePeople();
+  const threads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 
   return (
