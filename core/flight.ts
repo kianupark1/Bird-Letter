@@ -6,6 +6,7 @@
  * 사고가 나면 그만큼 도착 시각(arriveAt)이 늦어질 뿐이고, 편지는 사라지지 않아요.
  */
 import { getBird, type MishapKind } from "./birds";
+import { MIN_FLIGHT_MIN, REST_FACTOR } from "./geo";
 
 /** 이 시각 이후에 보낸 편지부터 사고 규칙을 적용해요(그전에 보낸 시험 편지는 옛 계산 그대로) */
 export const MISHAP_SINCE = Date.parse("2026-10-08T00:00:00+09:00");
@@ -14,6 +15,8 @@ export const MISHAP_SINCE = Date.parse("2026-10-08T00:00:00+09:00");
 export const SPEED_VARY_SINCE = Date.parse("2026-10-15T00:00:00+09:00");
 /** 속도 변동 폭: 평소 속도의 ±15% */
 export const SPEED_VARY = 0.15;
+/** 이 시각 뒤에 보낸 편지부터 쉬어 가며 날아요(더 오래 걸림) */
+export const SLOW_SINCE = Date.parse("2026-10-17T06:00:00+09:00");
 
 /** 길 잃음·나무 걸림이 편지를 붙잡아 두는 시간: 원래 비행 시간의 25%~75% */
 export const DELAY_RANGE = [0.25, 0.75] as const;
@@ -66,7 +69,9 @@ export const extraFrac = (m: Mishap | null) => (m ? m.delayFrac : 0);
 
 /** 보낼 때 쓰는 전체 비행 시간(분, 소수 포함). speed는 테스트 배속(평소 1) */
 export function totalMinutes(letterId: string, birdId: string, km: number, sentAt: number, speed = 1) {
-  const base = ((km / (getBird(birdId).kmh * speedFactor(letterId, birdId, sentAt))) * 60) / speed;
+  const cruise = (km / (getBird(birdId).kmh * speedFactor(letterId, birdId, sentAt))) * 60;
+  // 쉬어 가며 날기(core/geo.ts REST_FACTOR·MIN_FLIGHT_MIN): SLOW_SINCE 뒤에 보낸 편지부터
+  const base = (sentAt >= SLOW_SINCE ? Math.max(MIN_FLIGHT_MIN, cruise * REST_FACTOR) : cruise) / speed;
   return base * (1 + extraFrac(rollMishap(letterId, birdId, sentAt)));
 }
 
