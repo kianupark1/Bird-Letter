@@ -10,7 +10,7 @@ import * as remote from "@/lib/firebase/remote";
 import { savePolaroid } from "@/lib/photo";
 import { letterHref } from "@/lib/target";
 import { asLike, type Entry } from "@/lib/chat";
-import { dateTimeText, isScheduled } from "../../core/schedule";
+import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
 
 /** 대화방 안의 편지 말풍선. 눌러서 그 자리에서 펼쳐 읽어요(새 화면으로 가지 않아요) */
@@ -47,7 +47,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
   const who = mine ? "내가 보낸 편지" : `${withIGa(name)} 보낸 편지`;
   let sub: string;
   if (sched) sub = `${dateTimeText(entry.at)} 출발 예정 · 눌러서 보기`;
-  else if (mine) sub = done ? "도착 ✓ · 눌러서 다시 보기" : "눌러서 내가 쓴 글 보기";
+  else if (mine) sub = done ? "도착 ✓ · 눌러서 다시 보기" : "눌러서 보기";
   else sub = done ? (isNew ? "도착했어요 · 눌러서 열기" : "눌러서 다시 읽기") : "🔒 도착하면 열 수 있어요";
 
   const inner = (
@@ -61,9 +61,16 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
   );
   const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""}`;
   // 예약한 편지는 취소 같은 기능이 있는 기존 화면으로 가요
-  if (sched) return <Link href={letterHref(entry.item.id)} className={cls}>{inner}</Link>;
+  // 카카오톡처럼 말풍선 옆에 시간을 붙여요: 출발한 시각, 도착한(또는 도착할) 시각
+  const time = (
+    <span className="ch-time">
+      {sched ? <>출발 예정<br />{clockText(entry.at)}</> : <>출발 {clockText(l.sentAt)}<br />{done ? "도착" : "도착 예정"} {clockText(arriveAt)}</>}
+    </span>
+  );
+  const row = (bubble: React.ReactNode) => <div className={`ch-row ${mine ? "me" : "you"}`}>{mine && time}{bubble}{!mine && time}</div>;
+  if (sched) return row(<Link href={letterHref(entry.item.id)} className={cls}>{inner}</Link>);
   const canOpen = mine || done;
-  return (
+  return row(
     <div className={cls}>
       {canOpen ? <button type="button" className="ch-tap" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{inner}</button> : <div className="ch-tap locked">{inner}</div>}
       {open && canOpen && (
@@ -85,6 +92,6 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
           <div className="paper ch-open">{text || "(글이 없어요)"}</div>
         )
       )}
-    </div>
+    </div>,
   );
 }

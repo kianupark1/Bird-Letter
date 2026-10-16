@@ -664,9 +664,13 @@ main.app.room.chat { padding: 16px 16px 0; display: flex; flex-direction: column
 .ch-ev small { font-weight: 400; font-size: 14px; opacity: .75; }
 .ch-ev.hot { background: #F7D9CA; color: #6b2a10; }
 .ch-ev.soft { background: var(--card); }
-.ch-letter { max-width: 86%; border-radius: 24px; padding: 8px 8px; box-shadow: var(--raise); }
-.ch-letter.me { align-self: flex-end; background: var(--tint-hot); border-bottom-right-radius: 8px; }
-.ch-letter.you { align-self: flex-start; background: var(--card); border-bottom-left-radius: 8px; }
+.ch-row { display: flex; align-items: flex-end; gap: 6px; max-width: 100%; }
+.ch-row.me { align-self: flex-end; } .ch-row.you { align-self: flex-start; }
+.ch-time { flex: none; font-size: 13px; line-height: 1.35; opacity: .7; white-space: nowrap; padding-bottom: 4px; }
+.ch-row.me .ch-time { text-align: right; }
+.ch-letter { min-width: 0; flex: 0 1 auto; max-width: 78%; border-radius: 24px; padding: 8px 8px; box-shadow: var(--raise); }
+.ch-letter.me { background: var(--tint-hot); border-bottom-right-radius: 8px; }
+.ch-letter.you { background: var(--card); border-bottom-left-radius: 8px; }
 .ch-letter.arrived { box-shadow: 0 0 0 3px var(--dahong), var(--raise); }
 .ch-tap { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 6px 8px; min-height: 56px; cursor: pointer; text-decoration: none; }
 .ch-tap.locked { cursor: default; }
