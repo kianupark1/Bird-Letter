@@ -8,7 +8,7 @@ import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { buildThreads, type Thread } from "../../core/threads";
 import Face from "@/components/Face";
-import { listFriends, type Friend } from "@/lib/firebase/friends";
+import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
 import { myStatsCapped } from "../../core/rank";
@@ -97,6 +97,13 @@ function InboxList() {
   }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
 
   const { book } = usePeople();
+  // 내 이름·내 새가 바뀌었으면 친구들 목록 속 "나"도 같이 고쳐요(예전에 "새 친구"로 저장된 것 바로잡기)
+  useEffect(() => {
+    if (!firebaseEnabled || !friends.length || !me.nickname) return;
+    const sig = `${me.nickname}|${me.avatarBird}|${friends.map((f) => f.uid).sort().join(",")}`;
+    try { if (localStorage.getItem("saepyeonji.namesync.v1") === sig) return; } catch {}
+    void syncMyName(friends, me.nickname, me.avatarBird).then(() => { try { localStorage.setItem("saepyeonji.namesync.v1", sig); } catch {} });
+  }, [friends, me.nickname, me.avatarBird]);
   const threads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 

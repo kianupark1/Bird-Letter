@@ -387,6 +387,17 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("합친 방에 편지 2통", merged[0].entries.length, 2);
   eq("받은 편지도 내가 정한 이름으로", bt([], [{ id: "r", fromUid: "U1", fromName: "새 친구", sentAt: 3 }], fr, { nick: { U1: "석영이" } })[0].name, "석영이");
   eq("내가 정한 이름으로 적어 보낸 새 편지도 같은 방", bt([{ id: "c", to: "석영이", sentAt: 4 }], [], fr, { nick: { U1: "석영이" } }).length, 1);
+  // 같은 사람의 다른 계정
+  const two = [{ uid: "A1", name: "창재" }, { uid: "A2", name: "창재" }];
+  eq("이름이 같은 친구 계정 둘은 한 사람", bt([], [], two).length, 1);
+  eq("기본 이름(새 친구) 둘은 저절로 합치지 않음", bt([], [], [{ uid: "B1", name: "새 친구" }, { uid: "B2", name: "새 친구" }]).length, 2);
+  const sameB = bt([{ id: "s1", to: "새 친구", toUid: "B1", sentAt: 5 }], [], [{ uid: "B1", name: "새 친구" }, { uid: "B2", name: "새 친구" }], { same: { B2: "B1" }, nick: { B1: "석영이" } });
+  eq("직접 합친 두 계정은 한 방", sameB.length, 1);
+  eq("합친 방 이름은 내가 부르는 이름", sameB[0].name, "석영이");
+  eq("합친 방에 두 계정이 모두 들어 있음", (sameB[0].uids ?? []).sort().join(), "B1,B2");
+  const pick = bt([{ id: "s2", to: "x", toUid: "C1", sentAt: 1 }], [{ id: "r2", fromUid: "C2", fromName: "민지", sentAt: 9 }], [{ uid: "C1", name: "민지" }, { uid: "C2", name: "민지" }]);
+  eq("보낼 계정은 최근에 편지를 보내 온 계정", pick[0].uid, "C2");
+  eq("합친 방 이름은 진짜 이름(기본 이름보다 우선)", bt([], [{ id: "r3", fromUid: "D1", fromName: "석영", sentAt: 1 }], [{ uid: "D1", name: "새 친구" }])[0].name, "석영");
   const { journeyOf, lapsText, MILESTONES } = await import("../core/journey");
   eq("0km는 첫 목적지 0%", journeyOf(0).pct, 0);
   eq("0km 다음 목적지는 한반도", journeyOf(0).next!.id, "korea");

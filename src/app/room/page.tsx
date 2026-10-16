@@ -44,7 +44,7 @@ function Room() {
   const [bigMap, setBigMap] = useState(false);
   const [resend, setResend] = useState<Resend | null>(null);
   const [pickFriend, setPickFriend] = useState(false);
-  const { book, merge, rename } = usePeople();
+  const { book, merge, mergeSame, rename } = usePeople();
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
   useEffect(() => {
@@ -53,7 +53,10 @@ function Room() {
   }, []);
 
   const key = keyFromParams(params.get("u"), params.get("n"));
-  const thread: Thread<Letter, Meta> | undefined = useMemo(() => buildThreads(letters, received, friends, book).find((t) => t.key === key), [letters, received, friends, book, key]);
+  const uParam = params.get("u");
+  const allThreads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
+  // 같은 사람으로 합친 계정 주소(?u=다른 계정)로 들어와도 그 사람의 방을 찾아요
+  const thread: Thread<Letter, Meta> | undefined = useMemo(() => allThreads.find((t) => t.key === key || (!!uParam && !!t.uids?.includes(uParam))), [allThreads, key, uParam]);
   // 이름만 적은 사람을 친구와 합쳤으면, 옛 주소(?n=이름)로 들어와도 친구 방으로 옮겨 줘요
   const nParam = params.get("n");
   useEffect(() => {
@@ -140,6 +143,9 @@ function Room() {
         </div>
       </header>
       {map}
+      {thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
+        <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
+      )}
       {!thread.uid && friends.length > 0 && (
         <div className="mergecard">
           <div><b>{name}님이 친구 목록에 있나요?</b><span>친구와 합치면 한 사람으로 모이고, 편지가 앱으로 바로 가요.</span></div>
@@ -151,11 +157,20 @@ function Room() {
           <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setPickFriend(false)} />
           <div className="ch-sheet" role="dialog" aria-label="친구와 합치기">
             <h2>{name}님은 누구인가요?</h2>
-            {friends.map((f) => (
-              <button key={f.uid} type="button" className="trow" style={{ width: "100%", border: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
-                onClick={() => { merge(name, f.uid); setPickFriend(false); router.replace(`/room?u=${encodeURIComponent(f.uid)}`); }}>
-                <Face name={f.name} bird={f.bird} />
-                <span className="tmid"><span className="tname">{book.nick[f.uid] || f.name}</span><span className="tst">이 친구로 합치고 &quot;{name}&quot;(으)로 불러요</span></span>
+            <p className="small" style={{ margin: "0 0 4px", textAlign: "center" }}>같은 사람을 고르면 한 방으로 모이고, 앞으로도 계속 한 사람으로 보여요(내 계정에 저장).</p>
+            {allThreads.filter((t) => t.key !== thread.key && t.uid).map((t) => (
+              <button key={t.key} type="button" className="trow" style={{ width: "100%", border: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
+                onClick={() => {
+                  if (thread.uid) {
+                    // 친구 방끼리: 이 방(지금 보고 있는 이름)을 남기고 고른 사람을 여기로 모아요
+                    for (const u of t.uids ?? [t.uid!]) mergeSame(u, thread.key.slice(2), name);
+                    setPickFriend(false);
+                  } else {
+                    merge(name, t.uid!); setPickFriend(false); router.replace(`/room?u=${encodeURIComponent(t.uid!)}`);
+                  }
+                }}>
+                <Face name={t.name} bird={friends.find((f) => f.uid === t.uid)?.bird} />
+                <span className="tmid"><span className="tname">{t.name}</span><span className="tst">{t.entries.length ? `편지 ${t.entries.length}통` : "아직 편지 없음"} · 같은 사람으로 합치고 &quot;{name}&quot;(으)로 불러요</span></span>
               </button>
             ))}
           </div>
