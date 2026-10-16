@@ -15,6 +15,7 @@ import type { Letter } from "@/lib/letters";
 import { IS_TOSS } from "@/lib/target";
 import { tryMoveHome } from "@/lib/homePlace";
 import { birdFx } from "@/lib/chirp";
+import { cityLabel } from "../../core/penpal";
 
 type AddFn = (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => Promise<string>;
 const LAST_BIRD = "saepyeonji.lastbird.v1";
@@ -25,12 +26,14 @@ const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } ca
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
 export type Resend = { replaceId: string; message: string; birdId: string };
 
-export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel, needName }: {
+export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel, needName, penpal }: {
   threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn;
   /** 길 잃은 편지 다시 보내기: 같은 글을 채워 두고, 보내면 길 잃은 편지는 지워요 */
   resend?: Resend | null; onResendDone?: () => void; cancel?: (id: string) => Promise<void>;
   /** 받는 친구 이름이 아직 없으면 보내기 전에 이름부터 정하게 해요 */
   needName?: boolean;
+  /** 펜팔 방: 노선은 도시끼리 정해져 있고(바꿀 수 없음), 펜팔 이름으로 보내요. 사진·예약은 안 돼요 */
+  penpal?: { routeId: string; fromName: string; replyTo?: string };
 }) {
   const { profile, ready, update } = useProfile();
   const [message, setMessage] = useState("");
@@ -67,9 +70,10 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (!IS_TOSS && new URLSearchParams(window.location.search).get("test")) speed.current = 600; // 직접 써 보기용 빠른 속도
   }, [threadKey, guessPlace, friendPlace]);
 
-  const fromId = profile.homePlace;
-  const ok = !!toId && toId !== fromId && !!getPlace(toId);
-  const route = ok ? getRoute(routeIdOf(fromId, toId)) : null;
+  const fromId = penpal ? penpal.routeId.split("-")[0] : profile.homePlace;
+  const toPick = penpal ? penpal.routeId.split("-")[1] : toId;
+  const ok = !!toPick && toPick !== fromId && !!getPlace(toPick);
+  const route = ok ? getRoute(routeIdOf(fromId, toPick)) : null;
   const bird = getBird(birdId);
   const mins = route ? Math.max(1, Math.round(travelMinutes(bird, route.km) / speed.current)) : 0;
   const departMs = later ? fromInputValue(later) : null;
@@ -115,7 +119,9 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (departError) { setInfo(departError); setSheet("later"); return; }
     setBusy(true); setInfo("");
     try {
-      const sending = add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined });
+      const sending = penpal
+        ? add({ to: name, toUid, routeId: routeIdOf(fromId, toPick), birdId, message: message.trim(), fromName: penpal.fromName, speed: speed.current, replyTo: penpal.replyTo, penpal: true })
+        : add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined });
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
       await Promise.race([sending, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000))]);
       write(LAST_BIRD, birdId);
@@ -184,12 +190,13 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <h2>편지에 더하기</h2>
           <div className="ch-menu">
             <button type="button" onClick={() => setSheet("bird")}><BirdIcon id={bird.id} size={44} /><b>새 바꾸기</b><small>{bird.name}</small></button>
-            <button type="button" onClick={() => setSheet("place")}><span className="mi">📍</span><b>어디서 어디로</b><small>{ok ? `${route?.km}km` : "골라 주세요"}</small></button>
-            <label style={{ cursor: photos.length >= MAX_PHOTOS || photoBusy ? "default" : "pointer" }}>
+            {!penpal && <button type="button" onClick={() => setSheet("place")}><span className="mi">📍</span><b>어디서 어디로</b><small>{ok ? `${route?.km}km` : "골라 주세요"}</small></button>}
+            {!penpal && <label style={{ cursor: photos.length >= MAX_PHOTOS || photoBusy ? "default" : "pointer" }}>
               <span className="mi">📷</span><b>사진 담기</b><small>{photoBusy ? "줄이는 중..." : `${photos.length}/${MAX_PHOTOS}장`}</small>
               <input id="photo-input" className="sr-file" type="file" accept="image/*" multiple disabled={photos.length >= MAX_PHOTOS || photoBusy} onChange={(e) => { void addPhotos(e.target.files); e.target.value = ""; setSheet(""); }} />
-            </label>
-            <button type="button" onClick={toggleLater}><span className="mi">⏰</span><b>나중에 보내기</b><small>{later && departMs ? dateTimeText(departMs) : "정한 때 출발"}</small></button>
+            </label>}
+            {!penpal && <button type="button" onClick={toggleLater}><span className="mi">⏰</span><b>나중에 보내기</b><small>{later && departMs ? dateTimeText(departMs) : "정한 때 출발"}</small></button>}
+            {penpal && <p className="small" style={{ gridColumn: "1 / -1", textAlign: "center" }}>펜팔 편지는 사진·예약 없이 글로만 보내요. 연락처처럼 보이는 글은 가려져요.</p>}
           </div>
         </div>
       )}
@@ -218,9 +225,9 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           </button>
         ))}
       </div>
-      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => setSheet("place")}>
+      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => { if (!penpal) setSheet("place"); }}>
         <span aria-hidden>📍</span>
-        <span>{ok && route ? <>{getPlace(fromId)?.name} → {getPlace(toId)?.name} · {route.km}km{declared ? " ✓" : ""}</> : "받는 곳을 골라 주세요"}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
+        <span>{ok && route ? <>{penpal ? cityLabel(fromId) : getPlace(fromId)?.name} → {penpal ? cityLabel(toPick) : getPlace(toPick)?.name} · {route.km}km{declared ? " ✓" : ""}</> : "받는 곳을 골라 주세요"}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
         <span aria-hidden>›</span>
       </button>
       <div className="ch-inrow">

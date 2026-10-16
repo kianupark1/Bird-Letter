@@ -12,6 +12,7 @@ import { useSession } from "@/lib/session";
 import LoginStart from "@/components/LoginStart";
 import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
+import BirdIcon from "@/components/BirdIcon";
 import GearLink from "@/components/GearLink";
 import { roomHref } from "@/lib/room";
 import { buildThreads } from "../../../core/threads";
@@ -97,6 +98,12 @@ function Friends() {
   return (
     <main className="app friendsp">
       <header className="tabhead"><h1 className="pagetitle">친구</h1><GearLink /></header>
+      {firebaseEnabled && (
+        <Link href="/penpal" className="ppcard">
+          <BirdIcon id="crane" size={60} letter />
+          <div><b>어딘가로 새 날려 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div>
+        </Link>
+      )}
       <Link href="/settings" className="trow merow">
         <Face name={profile.nickname} bird={profile.avatarBird || undefined} photo={profile.photo} size={60} />
         <span className="tmid"><span className="tname">{profile.nickname || "나"}</span><span className="tst">나 · 프로필 사진·이름 바꾸기 ›</span></span>

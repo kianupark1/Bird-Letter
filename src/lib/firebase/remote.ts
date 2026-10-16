@@ -24,6 +24,8 @@ export type Meta = {
   recipientUid: string | null;
   /** 예약 발송이면 출발 시각, 아니면 null */
   departAt: number | null;
+  /** 펜팔(모르는 누군가와 주고받는) 편지 */
+  penpal?: boolean;
 };
 
 function toMeta(id: string, d: DocumentData): Meta {
@@ -39,6 +41,7 @@ function toMeta(id: string, d: DocumentData): Meta {
     arriveAt: d.arriveAt.toMillis(),
     recipientUid: d.recipientUid ?? null,
     departAt,
+    ...(d.penpal === true ? { penpal: true } : {}),
   };
 }
 
@@ -48,6 +51,8 @@ export async function sendLetter(p: {
   recipientUid?: string | null; photos?: string[]; departAt?: number;
   /** 답장이면 원래 편지의 ID(서버 규칙이 "내가 받은 편지의 보낸 사람에게만"을 확인해요) */
   replyTo?: string;
+  /** 펜팔 편지(받기를 켜 둔 모르는 사람에게. 서버 규칙이 받기·차단을 확인해요) */
+  penpal?: boolean;
 }) {
   const user = await ensureUser();
   const d = db();
@@ -69,6 +74,7 @@ export async function sendLetter(p: {
     // 예약하지 않은 편지에는 이 칸을 아예 넣지 않아요(예전 서버 규칙에서도 그대로 보내져요)
     ...(p.departAt ? { departAt: Timestamp.fromMillis(p.departAt) } : {}),
     ...(p.replyTo ? { replyTo: p.replyTo } : {}),
+    ...(p.penpal ? { penpal: true } : {}),
   });
   batch.set(doc(d, "letters", ref.id, "private", "body"), { message: p.message.trim().slice(0, MAX_LETTER_CHARS) });
   (p.photos ?? []).slice(0, MAX_PHOTOS).forEach((data, i) => batch.set(doc(d, "letters", ref.id, "private", `photo${i}`), { data }));

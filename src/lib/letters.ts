@@ -7,6 +7,7 @@ import { planFor, progressAt, totalMinutes, type Plan } from "./flight";
 import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
 import { isScheduled } from "../../core/schedule";
+import { maskContacts } from "../../core/penpal";
 
 export type Letter = {
   id: string;
@@ -22,6 +23,8 @@ export type Letter = {
   toUid?: string;
   /** 편지에 담은 사진(줄인 JPEG 글자). 서버 편지는 열 때 불러와요 */
   photos?: string[];
+  /** 펜팔(모르는 누군가에게 보낸) 편지 */
+  penpal?: boolean;
 };
 
 /** 같은 화면의 다른 부분(알림 담당 등)이 새로 보낸·받은 편지를 바로 알도록 전하는 신호 */
@@ -133,6 +136,7 @@ export function useLetters() {
               sentAt: m.sentAt,
               arriveAt: m.arriveAt,
               toUid: m.recipientUid ?? undefined,
+              ...(m.penpal ? { penpal: true } : {}),
             })),
           );
           if (cancelled) return;
@@ -183,16 +187,19 @@ export function useLetters() {
   /** 편지 보내기. 서버 저장이 실패하면 오류를 그대로 던져서 화면이 알려주게 한다(조용히 내 폰에만 저장하지 않음). */
   const add = useCallback(
     async (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => {
+      // 펜팔 편지는 연락처처럼 보이는 글을 가린 뒤에 보내요
+      if (l.penpal) l = { ...l, message: maskContacts(l.message).text };
       await settled.current!.promise; // 서버 연결 확인이 끝날 때까지 기다림
       if (backendRef.current === "firebase") {
         const id = await remote.sendLetter({
           toName: l.to, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, message: l.message, speed: l.speed, recipientUid: l.toUid ?? null,
-          photos: l.photos, departAt: l.departAt, replyTo: l.replyTo,
+          photos: l.photos, departAt: l.departAt, replyTo: l.replyTo, penpal: l.penpal,
         });
         const meta = await remote.getMeta(id);
         const letter: Letter = {
           id, to: l.to, routeId: l.routeId, birdId: l.birdId, message: l.message,
           sentAt: meta?.sentAt ?? l.departAt ?? Date.now(), arriveAt: meta?.arriveAt, toUid: l.toUid, photos: l.photos,
+          ...(l.penpal ? { penpal: true } : {}),
         };
         setLetters((prev) => [letter, ...prev]);
         announce({ type: "sent", letter });

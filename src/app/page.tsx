@@ -6,7 +6,7 @@ import { getRoute } from "@/lib/routes";
 import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
-import { buildThreads, isUnnamed, visibleThreads, type Thread } from "../../core/threads";
+import { buildThreads, isPenpalThread, isUnnamed, visibleThreads, type Thread } from "../../core/threads";
 import SwipeRow from "@/components/SwipeRow";
 import Face from "@/components/Face";
 import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
@@ -153,14 +153,15 @@ function InboxList() {
         </div>
       )}
 
-      <ul className="threads">
-        {threads.map((t) => {
+      {(() => {
+        // 친구 편지와 펜팔(모르는 누군가) 편지는 따로 모아요(시안 v5-4)
+        const row = (t: Thread<Letter, Meta>) => {
           const info = rowInfo(t, now, opened);
           return (
             <li key={t.key}>
               <SwipeRow label={`${t.name} 채팅방`} onLongPress={() => setMenu({ t, step: "menu" })}
                 actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), { label: "나가기", tone: "danger" as const, onClick: () => leave(t) }]}>
-              <Link href={roomHref(t)} className={`trow ${info.badge ? "hot" : info.progress !== undefined ? "fly" : ""}`}>
+              <Link href={roomHref(t)} className={`trow ${isPenpalThread(t) ? "pen " : ""}${info.badge ? "hot" : info.progress !== undefined ? "fly" : ""}`}>
                 <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} />
                 <span className="tmid">
                   <span className="tname">{t.name}</span>
@@ -176,8 +177,22 @@ function InboxList() {
               </SwipeRow>
             </li>
           );
-        })}
-      </ul>
+        };
+        const pen = threads.filter((t) => isPenpalThread(t)), mine = threads.filter((t) => !isPenpalThread(t));
+        return (
+          <>
+            {pen.length > 0 && mine.length > 0 && <div className="pphead">친구</div>}
+            <ul className="threads">{mine.map(row)}</ul>
+            {pen.length > 0 && (
+              <>
+                <div className="pphead">펜팔 🌏</div>
+                <ul className="threads">{pen.map(row)}</ul>
+                <Link href="/penpal" className="ppcard" style={{ padding: "12px 16px" }}><BirdIcon id="crane" size={40} /><div><b style={{ fontSize: 19 }}>또 다른 누군가에게 날려 보내기</b></div></Link>
+              </>
+            )}
+          </>
+        );
+      })()}
 
       {threads.some((t) => isUnnamed(t.name)) && (
         <p className="swhint">💡 이름 없는 친구가 이미 있는 친구라면 <b>길게 누르거나 옆으로 밀어서</b> 합칠 수 있어요</p>
