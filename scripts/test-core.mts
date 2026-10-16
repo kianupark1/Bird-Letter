@@ -1,7 +1,7 @@
 // 핵심 계산 단위 시험: npm run test:core
 // 한국어 조사, 하버사인 거리, 새별 도착 시간 계산이 의도대로인지 확인합니다.
 import { withIGa, withEulReul } from "../core/korean.ts";
-import { haversineKm, travelMinutes, formatMinutes } from "../core/geo.ts";
+import { haversineKm, travelMinutes, cruiseMinutes, formatMinutes } from "../core/geo.ts";
 import { BIRDS } from "../core/birds.ts";
 import { ROUTES, getRoute, routePosition, makeRoute } from "../core/routes.ts";
 import { PLACES, nearestPlace, getPlace } from "../core/places.ts";
@@ -40,9 +40,11 @@ near("서울→독도 직선거리(km)", dist(dokdo), dokdo.km, 40);
 
 // 도착 시간: 실제 비행 속도(시속)로 계산한 서울-부산 시간(분), 거리에 비례
 const base: Record<string, number> = { hawk: 217, swallow: 488, pigeon: 300, magpie: 557, bungbungi: 325, crane: 355 };
-for (const b of BIRDS) eq(`${b.name} 부산 기준 분`, travelMinutes(b, 325), base[b.id]);
-eq("매 제주(452km) 분", travelMinutes(BIRDS[0], 452), 301);
-eq("두루미 제주(452km) 분", travelMinutes(BIRDS[5], 452), 493);
+for (const b of BIRDS) eq(`${b.name} 부산 순항 분`, cruiseMinutes(b, 325), base[b.id]);
+for (const b of BIRDS) eq(`${b.name} 부산 쉬어 가며 3배`, travelMinutes(b, 325), Math.round((325 / b.kmh) * 180));
+eq("가까워도 최소 1시간", travelMinutes(BIRDS[0], 4), 60);
+eq("매 제주(452km) 순항 분", cruiseMinutes(BIRDS[0], 452), 301);
+eq("두루미 제주(452km) 순항 분", cruiseMinutes(BIRDS[5], 452), 493);
 eq("새 6종", BIRDS.length, 6);
 eq("노선 3개", ROUTES.length, 3);
 
@@ -522,6 +524,17 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   const one = th.filter((x) => x.entries.length);
   eq("석영 한 줄", one.length, 1);
   eq("보낼 계정은 친구 계정", one[0].uid, "kakao:5");
+}
+
+
+// 쉬어 가며 날기: SLOW_SINCE 뒤 편지는 3배·최소 1시간, 그 전 편지는 그대로
+{
+  const { totalMinutes: tm, SLOW_SINCE: S, speedFactor: sf, rollMishap: rm } = await import("../core/flight.ts");
+  const id = "slowtest01", t = S + 1000, f = sf(id, "pigeon", t), mi = rm(id, "pigeon", t);
+  near("새 편지는 3배", tm(id, "pigeon", 325, t), ((325 / (65 * f)) * 60 * 3) * (1 + (mi ? mi.delayFrac : 0)), 0.001);
+  eq("가까운 곳도 최소 1시간", tm("near01", "hawk", 4, t) >= 60, true);
+  const old = S - 86400e3, f0 = sf(id, "pigeon", old), m0 = rm(id, "pigeon", old);
+  near("예전 편지는 그대로", tm(id, "pigeon", 325, old), ((325 / (65 * f0)) * 60) * (1 + (m0 ? m0.delayFrac : 0)), 0.001);
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);

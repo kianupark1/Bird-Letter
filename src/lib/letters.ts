@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getBird } from "./birds";
 import { getRoute } from "./routes";
-import { travelMinutes } from "./geo";
+import { cruiseMinutes } from "./geo";
 import { planFor, progressAt, totalMinutes, type Plan } from "./flight";
 import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
@@ -60,7 +60,7 @@ export const SAMPLE_INBOX = [
 
 /** 편지의 비행 계획(사고 포함). 도착 시각이 없던 옛 편지는 사고 없이 계산해요 */
 export function letterPlan(l: Pick<Letter, "id" | "birdId" | "routeId" | "sentAt" | "arriveAt">): Plan {
-  const arriveAt = l.arriveAt ?? l.sentAt + travelMinutes(getBird(l.birdId), getRoute(l.routeId).km) * 60000;
+  const arriveAt = l.arriveAt ?? l.sentAt + cruiseMinutes(getBird(l.birdId), getRoute(l.routeId).km) * 60000; // 도착 시각이 없는 아주 예전 편지
   return planFor(l.arriveAt ? l.id : "", l.birdId, l.sentAt, arriveAt);
 }
 
