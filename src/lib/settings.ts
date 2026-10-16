@@ -17,6 +17,8 @@ export type Profile = {
   homeLabel?: string;
   /** 내 동네(구)를 친구에게 알려 줄지. 기본 켜짐. 끄면 친구가 받는 곳을 직접 골라요 */
   sharePlace?: boolean;
+  /** 내 동네를 직접 정했는지. 정하기 전에는 기본값(서울)을 친구에게 알리지 않아요 */
+  homeSet?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [

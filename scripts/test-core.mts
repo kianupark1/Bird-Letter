@@ -377,6 +377,19 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("여러 사람에게 보내도 하루 8통까지만", myStatsCapped([...mk(5, "a"), ...mk(5, "b"), ...mk(5, "c"), ...mk(5, "d"), ...mk(5, "e")]).count, PER_DAY);
   eq("다음 날엔 다시 반영", myStatsCapped([...mk(3, "a"), ...mk(3, "a", T + 86400000)]).count, PER_FRIEND_PER_DAY * 2);
   eq("한도 안의 거리 합", myStatsCapped(mk(2, "a")).km, 600);
+  const { journeyOf, lapsText, MILESTONES } = await import("../core/journey");
+  eq("0km는 첫 목적지 0%", journeyOf(0).pct, 0);
+  eq("0km 다음 목적지는 한반도", journeyOf(0).next!.id, "korea");
+  eq("1,000km는 아직 한반도 못 감", journeyOf(1000).reached.length, 0);
+  eq("2,000km는 한반도 끝에서 끝 달성", journeyOf(2000).reached.map((m) => m.id).join(), "korea");
+  eq("지구 한 바퀴 달성", journeyOf(40075).reached.some((m) => m.id === "earth"), true);
+  eq("달 다음은 화성", journeyOf(400000).next!.id, "mars");
+  eq("모두 넘으면 다음 없음", journeyOf(2e8).next, null);
+  eq("모두 넘으면 100%", journeyOf(2e8).pct, 100);
+  eq("이정표는 거리 순서", MILESTONES.every((m, i) => i === 0 || m.km > MILESTONES[i - 1].km), true);
+  eq("지구 0.5바퀴", lapsText(20037.5), "0.5바퀴");
+  eq("지구 1.5바퀴", lapsText(60112), "1.5바퀴");
+  eq("0바퀴", lapsText(0), "0바퀴");
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);

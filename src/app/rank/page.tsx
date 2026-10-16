@@ -12,8 +12,8 @@ import { myPlace, myStatsCapped, rankOf, rankValue, type RankEntry, type RankKin
 import Face from "@/components/Face";
 import LoginStart from "@/components/LoginStart";
 import BirdIcon from "@/components/BirdIcon";
+import { MILESTONES, journeyOf, lapsText } from "../../../core/journey";
 
-const EARTH_KM = 40075;
 const km = (n: number) => `${n.toLocaleString("ko-KR")}km`;
 
 /** 우리 랭킹: 친구와 나 중 누가 제일 멀리 보냈을까 (시안 v2-7) */
@@ -39,7 +39,7 @@ function Rank() {
     if (!ready) return;
     let off = false;
     (async () => {
-      void publishStats(mine, profile.nickname, profile.avatarBird, profile.sharePlace === false ? undefined : profile.homePlace); // 내 기록도 최신으로 올려 둬요
+      void publishStats(mine, profile.nickname, profile.avatarBird, profile.sharePlace === false || !profile.homeSet ? undefined : profile.homePlace); // 내 기록도 최신으로 올려 둬요
       if (!firebaseEnabled) { setLoading(false); return; }
       try {
         const f = await listFriends();
@@ -51,7 +51,7 @@ function Rank() {
       if (!off) setLoading(false);
     })();
     return () => { off = true; };
-  }, [ready, mine, profile.nickname, profile.avatarBird, profile.homePlace, profile.sharePlace]);
+  }, [ready, mine, profile.nickname, profile.avatarBird, profile.homePlace, profile.sharePlace, profile.homeSet]);
 
   const entries: RankEntry[] = useMemo(() => [
     { uid: "me", name: profile.nickname || "나", bird: profile.avatarBird, me: true, stats: mine },
@@ -79,12 +79,8 @@ function Rank() {
         <button type="button" role="radio" aria-checked={kind === "longest"} className={kind === "longest" ? "on" : ""} onClick={() => setKind("longest")}>가장 먼 한 통</button>
       </div>
 
-      <div className="eta2 goalcard" role="group" aria-label="우리가 함께 날린 거리">
-        <div className="gl">🌏 우리가 함께 날린 거리</div>
-        <div className="gv"><b>{km(togetherKm)}</b> <span>/ 지구 한 바퀴 {km(EARTH_KM)}</span></div>
-        <div className="mtrack"><i style={{ width: `${Math.min(100, Math.round((togetherKm / EARTH_KM) * 100))}%` }} /><span className="mb" style={{ left: `${Math.min(100, Math.round((togetherKm / EARTH_KM) * 100))}%` }}><BirdIcon id="magpie" size={40} /></span></div>
-        <div className="small" style={{ margin: "6px 0 0" }}>친구와 나의 거리를 모두 합친 값이에요. 지구 한 바퀴를 같이 채워 봐요!</div>
-      </div>
+      <Journey title="🚀 나의 우주 여행" km={mine.km} />
+      {friends.length > 0 && <Journey title="🌏 우리가 함께 날린 거리" km={togetherKm} together />}
 
       {mine.count === 0 && friends.length === 0 && !loading && (
         <div className="empty" style={{ marginTop: 14 }}>아직 보낸 편지가 없어요.<br />편지를 보내고 친구를 초대하면 랭킹이 생겨요.</div>
@@ -133,5 +129,27 @@ function Rank() {
         <div className="small" style={{ textAlign: "center", fontSize: 14 }}>친구가 새 버전을 열면 거리가 보여요.</div>
       )}
     </main>
+  );
+}
+
+/** 거리를 지구·달·화성에 빗댄 이정표 카드 */
+function Journey({ title, km: total, together }: { title: string; km: number; together?: boolean }) {
+  const j = journeyOf(total);
+  const p = Math.round(j.pct);
+  return (
+    <div className="eta2 goalcard" role="group" aria-label={title}>
+      <div className="gl">{title}</div>
+      <div className="gv"><b>{km(total)}</b> <span>= 지구 {lapsText(total)}</span></div>
+      {j.next ? (
+        <>
+          <div className="small" style={{ margin: "0 0 4px" }}>{j.prev ? `${j.prev.emoji} ${j.prev.name} 지났어요 · ` : ""}다음은 {j.next.emoji} <b>{j.next.name}</b> — {km(j.next.km)}</div>
+          <div className="mtrack"><i style={{ width: `${p}%` }} /><span className="mb" style={{ left: `${p}%` }}><BirdIcon id="magpie" size={40} /></span></div>
+          <div className="small" style={{ margin: "6px 0 0" }}>{j.next.name}까지 {p}% · 앞으로 {km(Math.round(j.leftKm))}{together ? " 같이 채워 봐요!" : ""}</div>
+        </>
+      ) : <div className="small">태양까지 다녀왔어요! 🎉</div>}
+      <div className="jstops" aria-hidden>
+        {MILESTONES.map((m) => <span key={m.id} className={total >= m.km ? "on" : ""} title={m.name}>{m.emoji}</span>)}
+      </div>
+    </div>
   );
 }

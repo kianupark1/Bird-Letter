@@ -718,3 +718,8 @@ main.app.room.chat { padding: 16px 16px 0; display: flex; flex-direction: column
 .item { background: var(--card); border-radius: 18px; padding: 6px 14px; font-size: 16px; font-weight: 700; box-shadow: var(--raise); }
 .item.none { opacity: .4; box-shadow: none; }
 .homecard .row2b { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+
+.jstops { display: flex; justify-content: space-between; margin-top: 10px; font-size: 22px; filter: grayscale(1); opacity: .45; }
+.jstops span.on { filter: none; opacity: 1; }
+.homeask { display: flex; align-items: center; gap: 12px; background: #FFF3C9; border-radius: 22px; padding: 12px 16px; margin: 0 0 12px; color: #5b4a1e; text-decoration: none; box-shadow: 0 3px 0 rgba(224,168,60,.4); }
+.homeask b { display: block; font-size: 18px; } .homeask span { font-size: 15px; }

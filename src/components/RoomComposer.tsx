@@ -39,7 +39,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const moveHome = (id: string): boolean => {
     const r = tryMoveHome(profile.homePlace, id);
     if (!r.ok) { setGeo(r.message); return false; }
-    update({ homePlace: id }); setGeo(""); return true;
+    update({ homePlace: id, homeSet: true }); setGeo(""); return true;
   };
   const speed = useRef(1);
 
@@ -77,7 +77,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     navigator.geolocation.getCurrentPosition((pos) => {
       const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만, 좌표는 저장하지 않아요
       if (!moveHome(here.place.id)) return;
-      update({ homeLabel: here.label });
+      update({ homeLabel: here.label, homeSet: true });
       setGeo(here.label === here.place.name ? `${here.label} 근처로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
     }, () => setGeo("위치를 허용하지 않아서 직접 골라야 해요."), { timeout: 10000, maximumAge: 600000 });
   };

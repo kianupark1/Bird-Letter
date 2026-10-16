@@ -35,7 +35,7 @@ export default function Settings() {
   const moveHome = (id: string) => {
     const r = tryMoveHome(profile.homePlace, id);
     if (!r.ok) { setHomeMsg(r.message); return false; }
-    update({ homePlace: id, homeLabel: undefined }); setHomeMsg(""); return true;
+    update({ homePlace: id, homeLabel: undefined, homeSet: true }); setHomeMsg(""); return true;
   };
   const locateMe = () => {
     if (!navigator.geolocation) return setHomeMsg("이 기기에서는 위치를 알 수 없어요. 직접 골라 주세요.");
@@ -43,7 +43,7 @@ export default function Settings() {
     navigator.geolocation.getCurrentPosition((pos) => {
       const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만, 좌표는 저장하지 않아요
       if (!moveHome(here.place.id)) return;
-      update({ homeLabel: here.label });
+      update({ homeLabel: here.label, homeSet: true });
       setHomeMsg(here.label === here.place.name ? `${here.label} 근처로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
     }, () => setHomeMsg("위치를 허용하지 않아서 직접 골라야 해요."), { timeout: 10000, maximumAge: 600000 });
   };
