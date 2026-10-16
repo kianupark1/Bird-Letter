@@ -77,7 +77,7 @@ function Invite() {
         {result === "error" && <><BirdIcon id="magpie" size={120} /><p>친구로 연결하지 못했어요.<br />잠시 뒤에 링크를 다시 눌러 주세요.</p></>}
       </div>
       <div className="start-btns">
-        {result === "done" && <Link href={`/send?to=${encodeURIComponent(inviter.uid)}`} className="cta big">{inviter.name}에게 첫 편지 쓰기</Link>}
+        {result === "done" && <Link href={`/room?u=${encodeURIComponent(inviter.uid)}`} className="cta big">{inviter.name}에게 첫 편지 쓰기</Link>}
         <Link href="/" className="ghost" style={{ minHeight: 56 }}>{result === "done" ? "나중에 쓸게요" : "처음으로"}</Link>
       </div>
     </main>
