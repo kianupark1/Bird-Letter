@@ -6,6 +6,7 @@ import type { Meta } from "./firebase/remote";
 import { clockText, isScheduled } from "../../core/schedule";
 import { withEulReul, withIGa } from "./korean";
 import type { ThreadEntry } from "../../core/threads";
+import { storiesFor } from "../../core/stories";
 
 export type Entry = ThreadEntry<Letter, Meta>;
 
@@ -53,8 +54,14 @@ export function buildChat(entries: Entry[], now: number, name: string): ChatItem
     route.points.forEach((pt, i) => {
       if (i === 0 || i === route.points.length - 1) return;
       const at = l.sentAt + elapsedAtFraction(pr.plan, route.fractions[i]);
-      if (at <= now) out.push({ kind: "event", key: `${id}-p${i}`, t: at, icon: "📍", text: `${withEulReul(pt.name)} 지났어요`, sub: clockText(at) });
+      if (at <= now) out.push({ kind: "event", key: `${id}-p${i}`, t: at, icon: "📍", text: `${withEulReul(pt.name)} 지났어요`, sub: pt.kind === "sky" ? clockText(at) : `${clockText(at)} · 🏮 스탬프` });
     });
+    // 비행 중 이야기(소나기, 도토리 줍기 …): 편지 ID로 정해지고 도착 시각에는 영향이 없어요
+    for (const { f, story } of storiesFor(l.id, route.km)) {
+      if (pr.p < f) continue;
+      const at = l.sentAt + elapsedAtFraction(pr.plan, f);
+      out.push({ kind: "event", key: `${id}-s${story.id}`, t: at, icon: story.icon, text: story.text, sub: story.item ? `${clockText(at)} · ${story.item.emoji} ${withEulReul(story.item.name)} 도감에 담았어요` : clockText(at), tone: "soft" });
+    }
     const arriveAt = l.arriveAt ?? l.sentAt + pr.total * 60000;
     out.push({ kind: "event", key: `${id}-eta`, t: Math.max(now, l.sentAt + 1), icon: "⏳", text: `${clockText(arriveAt)}쯤 도착해요`, sub: e.dir === "sent" ? `${name}님만 읽어요` : "도착하면 열 수 있어요", tone: "soft" });
   }

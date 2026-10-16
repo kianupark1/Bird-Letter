@@ -8,10 +8,12 @@ import { listFriends, type Friend } from "@/lib/firebase/friends";
 import { publishStats, readStats } from "@/lib/firebase/stats";
 import { firebaseEnabled } from "@/lib/firebase/client";
 import { useSession } from "@/lib/session";
-import { myPlace, myStats, rankOf, rankValue, type RankEntry, type RankKind } from "../../../core/rank";
+import { myPlace, myStatsCapped, rankOf, rankValue, type RankEntry, type RankKind } from "../../../core/rank";
 import Face from "@/components/Face";
 import LoginStart from "@/components/LoginStart";
+import BirdIcon from "@/components/BirdIcon";
 
+const EARTH_KM = 40075;
 const km = (n: number) => `${n.toLocaleString("ko-KR")}km`;
 
 /** 우리 랭킹: 친구와 나 중 누가 제일 멀리 보냈을까 (시안 v2-7) */
@@ -31,13 +33,13 @@ function Rank() {
   const [loading, setLoading] = useState(true);
 
   // 내 기록: 지금까지 출발한 내 편지의 노선 거리
-  const mine = useMemo(() => myStats(letters.filter((l) => l.sentAt <= Date.now()).map((l) => getRoute(l.routeId).km)), [letters]);
+  const mine = useMemo(() => myStatsCapped(letters.filter((l) => l.sentAt <= Date.now()).map((l) => ({ km: getRoute(l.routeId).km, toKey: l.toUid ?? l.to, at: l.sentAt }))), [letters]);
 
   useEffect(() => {
     if (!ready) return;
     let off = false;
     (async () => {
-      void publishStats(mine, profile.nickname, profile.avatarBird); // 내 기록도 최신으로 올려 둬요
+      void publishStats(mine, profile.nickname, profile.avatarBird, profile.sharePlace === false ? undefined : profile.homePlace); // 내 기록도 최신으로 올려 둬요
       if (!firebaseEnabled) { setLoading(false); return; }
       try {
         const f = await listFriends();
@@ -49,7 +51,7 @@ function Rank() {
       if (!off) setLoading(false);
     })();
     return () => { off = true; };
-  }, [ready, mine, profile.nickname, profile.avatarBird]);
+  }, [ready, mine, profile.nickname, profile.avatarBird, profile.homePlace, profile.sharePlace]);
 
   const entries: RankEntry[] = useMemo(() => [
     { uid: "me", name: profile.nickname || "나", bird: profile.avatarBird, me: true, stats: mine },
@@ -58,6 +60,7 @@ function Rank() {
 
   const sorted = useMemo(() => rankOf(entries, kind), [entries, kind]);
   const me = myPlace(sorted, kind);
+  const togetherKm = entries.reduce((a, e) => a + (e.stats?.km ?? 0), 0);
   const top3 = sorted.filter((e) => e.stats).slice(0, 3);
   // 시상대는 2위 1위 3위 순서로 놓아요
   const podium = [top3[1], top3[0], top3[2]].filter(Boolean) as RankEntry[];
@@ -74,6 +77,13 @@ function Rank() {
       <div className="seg" role="radiogroup" aria-label="랭킹 종류">
         <button type="button" role="radio" aria-checked={kind === "total"} className={kind === "total" ? "on" : ""} onClick={() => setKind("total")}>누적 거리</button>
         <button type="button" role="radio" aria-checked={kind === "longest"} className={kind === "longest" ? "on" : ""} onClick={() => setKind("longest")}>가장 먼 한 통</button>
+      </div>
+
+      <div className="eta2 goalcard" role="group" aria-label="우리가 함께 날린 거리">
+        <div className="gl">🌏 우리가 함께 날린 거리</div>
+        <div className="gv"><b>{km(togetherKm)}</b> <span>/ 지구 한 바퀴 {km(EARTH_KM)}</span></div>
+        <div className="mtrack"><i style={{ width: `${Math.min(100, Math.round((togetherKm / EARTH_KM) * 100))}%` }} /><span className="mb" style={{ left: `${Math.min(100, Math.round((togetherKm / EARTH_KM) * 100))}%` }}><BirdIcon id="magpie" size={40} /></span></div>
+        <div className="small" style={{ margin: "6px 0 0" }}>친구와 나의 거리를 모두 합친 값이에요. 지구 한 바퀴를 같이 채워 봐요!</div>
       </div>
 
       {mine.count === 0 && friends.length === 0 && !loading && (
@@ -118,6 +128,7 @@ function Rank() {
           {me.rank === 1 ? "내가 1위예요! 🕊" : `내 순위 ${me.rank}위 · 1위 ${me.leader.name}님까지 ${km(me.gapKm)} 🕊`}
         </div>
       )}
+      <div className="small" style={{ textAlign: "center", fontSize: 14 }}>공정하게 겨루도록 하루에 같은 친구는 2통, 전체는 8통까지만 거리에 더해요.</div>
       {firebaseEnabled && !loading && friends.length > 0 && Object.values(stats).every((x) => x === null) && (
         <div className="small" style={{ textAlign: "center", fontSize: 14 }}>친구가 새 버전을 열면 거리가 보여요.</div>
       )}

@@ -701,3 +701,20 @@ main.app.room.chat { padding: 16px 16px 0; display: flex; flex-direction: column
 .ch-sheet .birdpick { display: flex; align-items: center; justify-content: space-between; text-align: left; width: 100%; padding: 6px 14px 6px 8px; min-height: 76px; cursor: pointer; font: inherit; color: inherit; flex-wrap: wrap; }
 .ch-sheet .birdpick .row { display: flex; align-items: center; gap: 10px; }
 .ch-sheet .birdpick .risk { flex-basis: 100%; padding-left: 74px; }
+
+/* 공동 목표·스탬프 도감 */
+.goalcard { margin-top: 12px; }
+.goalcard .gl { font-size: 18px; font-weight: 700; }
+.goalcard .gv { font-size: 18px; margin: 2px 0 14px; } .goalcard .gv b { font-size: 28px; color: var(--dahong); } .goalcard .gv span { font-size: 15px; opacity: .7; }
+.stamps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 16px; padding: 0; list-style: none; }
+.stp { aspect-ratio: 1.15; border-radius: 20px; background: rgba(42,33,24,.06); border: 3px dashed rgba(42,33,24,.18); display: grid; place-items: center; text-align: center; font-size: 15px; font-weight: 700; color: rgba(42,33,24,.4); line-height: 1.25; padding: 4px; }
+.stp.got { background: var(--card); color: inherit; border: 3px solid var(--hwangto); box-shadow: 0 3px 0 rgba(224,168,60,.4); transform: rotate(-2deg); }
+.stp.got:nth-child(even) { transform: rotate(2deg); }
+.stp i { display: block; font-style: normal; font-size: 26px; margin-bottom: 2px; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+.badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 20px; padding: 6px 14px; font-size: 16px; font-weight: 700; background: rgba(42,33,24,.06); color: rgba(42,33,24,.45); }
+.badge.got { background: #FFF3C9; color: #5b4a1e; box-shadow: 0 2px 0 rgba(224,168,60,.4); }
+.items { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+.item { background: var(--card); border-radius: 18px; padding: 6px 14px; font-size: 16px; font-weight: 700; box-shadow: var(--raise); }
+.item.none { opacity: .4; box-shadow: none; }
+.homecard .row2b { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; }

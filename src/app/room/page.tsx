@@ -18,6 +18,7 @@ import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
 import RoomComposer from "@/components/RoomComposer";
 import { asLike, buildChat } from "@/lib/chat";
+import { readStats } from "@/lib/firebase/stats";
 
 export default function RoomPage() {
   return (
@@ -38,6 +39,7 @@ function Room() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [opened, setOpened] = useState<Set<string>>(new Set());
   const endRef = useRef<HTMLDivElement>(null);
+  const [friendPlace, setFriendPlace] = useState<string | undefined>();
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
   useEffect(() => {
@@ -48,6 +50,14 @@ function Room() {
   const key = keyFromParams(params.get("u"), params.get("n"));
   const thread: Thread<Letter, Meta> | undefined = useMemo(() => buildThreads(letters, received, friends).find((t) => t.key === key), [letters, received, friends, key]);
   const name = thread?.name ?? "";
+  const theirUid = thread?.uid;
+  // 친구가 직접 알려 준 동네(구)가 있으면 받는 곳으로 자동 사용해요. 못 읽거나 없으면 직접 골라요
+  useEffect(() => {
+    if (!theirUid) return;
+    let off = false;
+    readStats(theirUid).then((s) => { if (!off) setFriendPlace(s?.place); });
+    return () => { off = true; };
+  }, [theirUid]);
   const items = useMemo(() => (thread ? buildChat(thread.entries, now, name) : []), [thread, now, name]);
 
   // 새 소식이 쌓이면 맨 아래로 내려가요
@@ -119,7 +129,7 @@ function Room() {
         )}
         <div ref={endRef} />
       </div>
-      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} add={add} />
+      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} />
     </main>
   );
 }

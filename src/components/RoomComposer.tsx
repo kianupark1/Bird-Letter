@@ -13,6 +13,7 @@ import { locate as findDistrict } from "../../core/districts";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../core/schedule";
 import type { Letter } from "@/lib/letters";
 import { IS_TOSS } from "@/lib/target";
+import { tryMoveHome } from "@/lib/homePlace";
 
 type AddFn = (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => Promise<string>;
 const LAST_BIRD = "saepyeonji.lastbird.v1";
@@ -21,7 +22,7 @@ const read = (k: string) => { try { return localStorage.getItem(k) ?? ""; } catc
 const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
 
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
-export default function RoomComposer({ threadKey, name, toUid, guessPlace, add }: { threadKey: string; name: string; toUid?: string; guessPlace?: string; add: AddFn }) {
+export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add }: { threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn }) {
   const { profile, ready, update } = useProfile();
   const [message, setMessage] = useState("");
   const [birdId, setBirdId] = useState("pigeon");
@@ -33,14 +34,21 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, add }
   const [later, setLater] = useState("");
   const [busy, setBusy] = useState(false);
   const [geo, setGeo] = useState("");
+  const declared = !!friendPlace && !!getPlace(friendPlace); // 친구가 직접 알려 준 동네면 보내는 사람이 바꿀 수 없어요
+  /** 내 동네 바꾸기: 너무 빠른 이동은 막아요(거리를 일부러 늘리는 것 방지) */
+  const moveHome = (id: string): boolean => {
+    const r = tryMoveHome(profile.homePlace, id);
+    if (!r.ok) { setGeo(r.message); return false; }
+    update({ homePlace: id }); setGeo(""); return true;
+  };
   const speed = useRef(1);
 
   useEffect(() => {
     const b = read(LAST_BIRD);
     if (b) setBirdId(b);
-    setToId(read(placeKey(threadKey)) || guessPlace || "");
+    setToId(friendPlace && getPlace(friendPlace) ? friendPlace : read(placeKey(threadKey)) || guessPlace || "");
     if (!IS_TOSS && new URLSearchParams(window.location.search).get("test")) speed.current = 600; // 직접 써 보기용 빠른 속도
-  }, [threadKey, guessPlace]);
+  }, [threadKey, guessPlace, friendPlace]);
 
   const fromId = profile.homePlace;
   const ok = !!toId && toId !== fromId && !!getPlace(toId);
@@ -68,7 +76,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, add }
     setGeo("위치를 찾는 중이에요...");
     navigator.geolocation.getCurrentPosition((pos) => {
       const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만, 좌표는 저장하지 않아요
-      update({ homePlace: here.place.id, homeLabel: here.label });
+      if (!moveHome(here.place.id)) return;
+      update({ homeLabel: here.label });
       setGeo(here.label === here.place.name ? `${here.label} 근처로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
     }, () => setGeo("위치를 허용하지 않아서 직접 골라야 해요."), { timeout: 10000, maximumAge: 600000 });
   };
@@ -83,6 +92,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, add }
     setBusy(true); setInfo("");
     try {
       await add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined });
+      write(LAST_BIRD, birdId);
       setMessage(""); setPhotos([]); setLater(""); setSheet("");
     } catch {
       setInfo(photos.length || later ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : "편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
@@ -109,11 +119,18 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, add }
         <div className="ch-sheet" role="dialog" aria-label="보내는 곳과 받는 곳">
           <h2>어디서 어디로 날아갈까요?</h2>
           <div className="placerow">
-            <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={(id) => { update({ homePlace: id }); setGeo(""); }} />
+            <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={(id) => { moveHome(id); }} />
             {!IS_TOSS && <button type="button" className="chip locate" onClick={locate}>내 위치로</button>}
           </div>
           {geo && <div className="small" role="status">{geo}</div>}
-          <PlaceField id="to-place" label={`${name}님이 있는 곳`} value={toId || "busan"} onChange={pickTo} />
+          {declared ? (
+            <div className="eta2" role="status"><div className="small" style={{ margin: 0 }}>{name}님이 알려 준 곳이에요</div><div style={{ fontSize: 22, fontWeight: 700 }}>{getPlace(friendPlace!)?.name}</div></div>
+          ) : (
+            <>
+              <PlaceField id="to-place" label={`${name}님이 있는 곳`} value={toId || "busan"} onChange={pickTo} />
+              <div className="small" style={{ margin: 0 }}>{name}님이 내 동네를 알려 주면 자동으로 정해져요. 지금은 직접 골라 주세요.</div>
+            </>
+          )}
           <button type="button" className="chunky" disabled={!ok} onClick={() => setSheet("")}>{ok ? "이 길로 할게요" : "받는 곳을 다르게 골라 주세요"}</button>
         </div>
       )}
@@ -139,7 +156,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, add }
       )}
       <div className="ch-pills">
         <button type="button" className="ch-pill" onClick={() => setSheet("bird")}><BirdIcon id={bird.id} size={26} /> {bird.name}{mins ? ` · ${formatMinutes(mins)}` : ""}</button>
-        <button type="button" className={`ch-pill ${ok ? "" : "warn"}`} onClick={() => setSheet("place")}>📍 {ok && route ? `${getPlace(fromId)?.name} → ${getPlace(toId)?.name}` : "받는 곳 고르기"}</button>
+        <button type="button" className={`ch-pill ${ok ? "" : "warn"}`} onClick={() => setSheet("place")}>📍 {ok && route ? `${getPlace(fromId)?.name} → ${getPlace(toId)?.name}` : "받는 곳 고르기"}{declared ? " ✓" : ""}</button>
         <label className="ch-pill" style={{ cursor: photos.length >= MAX_PHOTOS || photoBusy ? "default" : "pointer" }}>
           {photoBusy ? "줄이는 중..." : `📷 ${photos.length}/${MAX_PHOTOS}`}
           <input id="photo-input" className="sr-file" type="file" accept="image/*" multiple disabled={photos.length >= MAX_PHOTOS || photoBusy} onChange={(e) => { void addPhotos(e.target.files); e.target.value = ""; }} />

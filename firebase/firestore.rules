@@ -43,7 +43,8 @@ service cloud.firestore {
           && request.resource.data.uid == friendUid
           && request.resource.data.name is string && request.resource.data.name.size() <= 12
           // 친구가 고른 "내 새"(얼굴 그림). 없어도 되고, 있으면 12글자 이하 글자예요
-          && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12));
+          && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12))
+        && (!('place' in request.resource.data) || (request.resource.data.place is string && request.resource.data.place.size() <= 20));
         allow delete: if signedIn() && (request.auth.uid == uid || request.auth.uid == friendUid);
       }
     }
@@ -66,12 +67,13 @@ service cloud.firestore {
       allow get: if signedIn()
         && (request.auth.uid == uid || exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid)));
       allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['km', 'maxKm', 'count', 'name', 'bird'])
+        && request.resource.data.keys().hasOnly(['km', 'maxKm', 'count', 'name', 'bird', 'place'])
         && request.resource.data.km is number && request.resource.data.km >= 0 && request.resource.data.km <= 1000000
         && request.resource.data.maxKm is number && request.resource.data.maxKm >= 0 && request.resource.data.maxKm <= 20000
         && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 100000
         && request.resource.data.name is string && request.resource.data.name.size() <= 12
-        && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12));
+        && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12))
+        && (!('place' in request.resource.data) || (request.resource.data.place is string && request.resource.data.place.size() <= 20));
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 

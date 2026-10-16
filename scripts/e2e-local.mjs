@@ -64,6 +64,23 @@ await p.click(".pol-save >> nth=0");
 const d = await dl;
 ok("폴라로이드를 폰에 저장(파일 내려받기)", !!d);
 
+console.log("[1-2] 스탬프 도감과 내 동네");
+await p.goto(BASE + "/stamps");
+await p.waitForSelector(".stamps");
+ok("스탬프 도감에 명소가 보임", (await p.$$(".stp")).length > 40);
+ok("편지를 보낸 뒤 스탬프가 1개 이상 찍힘", (await p.$$(".stp.got")).length >= 1);
+ok("배지 칸이 보임", (await p.$$(".badge")).length >= 5);
+await p.goto(BASE + "/settings");
+await p.waitForSelector("#home-place");
+ok("내 동네 카드와 친구에게 알리기 스위치", (await p.$eval("main", (e) => e.innerText)).includes("친구에게 내 동네 알리기"));
+await p.selectOption("#home-place", "busan");
+await p.waitForTimeout(300);
+ok("처음 정하는 동네 이동은 제한 없음", (await p.$eval("#home-place", (e) => e.value)) === "busan");
+await p.selectOption("#home-place", "seoul");
+await p.waitForTimeout(300);
+ok("부산에서 서울로 바로 옮기면 안내가 나옴", (await p.$eval("main", (e) => e.innerText)).includes("뒤에 바꿀 수 있어요"));
+ok("막힌 이동은 동네가 그대로", (await p.$eval("#home-place", (e) => e.value)) === "busan");
+
 console.log("[2] 예약 발송: 입력 확인, 목록 표시, 취소");
 await writeLetter({ to: "엄마", bird: "두루미", text: "생일 축하해요", later: true });
 await p.waitForSelector("#depart-at");

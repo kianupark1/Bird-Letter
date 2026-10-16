@@ -15,6 +15,8 @@ export type Profile = {
   avatarBird: string;
   /** 마지막으로 "내 위치로" 찾았을 때의 구 이름(예: 부산 해운대구). 표시용이고 좌표는 저장하지 않아요 */
   homeLabel?: string;
+  /** 내 동네(구)를 친구에게 알려 줄지. 기본 켜짐. 끄면 친구가 받는 곳을 직접 골라요 */
+  sharePlace?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [
