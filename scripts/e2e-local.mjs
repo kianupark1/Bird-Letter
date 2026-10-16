@@ -46,13 +46,14 @@ ok("사진 두 장이 폴라로이드 모양으로 담김", (await p.$$(".thumb"
 await p.click("text=로 보내기");
 await p.waitForURL(/\/room/);
 await p.waitForSelector(".ch-feed");
-ok("보낸 뒤 대화방에 '출발했어요'가 쌓임", (await p.$eval(".ch-feed", (e) => e.innerText)).includes("출발했어요"));
+ok("보낸 뒤 대화방에 내 말풍선이 '비행 중'으로 보임", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("비행 중"));
 ok("도착 전에는 두루마리가 보이지 않음", (await p.$(".scroll-open")) === null);
-await p.waitForSelector(".ch-ev.hot", { timeout: 120000 });
-ok("도착하면 대화방에 '도착했어요'가 쌓임", true);
+await p.waitForFunction(() => document.querySelector(".ch-letter.me")?.textContent?.includes("도착 ✓"), null, { timeout: 120000 });
+ok("도착하면 말풍선이 '도착 ✓'로 바뀜", true);
 await p.click(".ch-letter.me .ch-tap");
 await p.waitForSelector(".scroll-open", { timeout: 20000 });
 ok("눌러서 그 자리에서 말린 두루마리와 '편지 펼치기'가 보임", true);
+ok("펼치면 비행 기록(출발·도착)이 보임", (await p.$eval(".ch-log", (e) => e.innerText)).includes("출발했어요") && (await p.$eval(".ch-log", (e) => e.innerText)).includes("도착했어요"));
 ok("펼치기 전에는 편지 글이 보이지 않음", !(await p.$eval(".reveal", (e) => e.innerText)).includes("봄 사진을"));
 await p.click(".scroll-open");
 await p.waitForTimeout(8000);

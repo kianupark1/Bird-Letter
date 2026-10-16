@@ -58,7 +58,7 @@ function Room() {
     readStats(theirUid).then((s) => { if (!off) setFriendPlace(s?.place); });
     return () => { off = true; };
   }, [theirUid]);
-  const items = useMemo(() => (thread ? buildChat(thread.entries, now, name) : []), [thread, now, name]);
+  const items = useMemo(() => (thread ? buildChat(thread.entries, now) : []), [thread, now, name]);
 
   // 새 소식이 쌓이면 맨 아래로 내려가요
   const last = items[items.length - 1]?.key;
@@ -121,9 +121,7 @@ function Room() {
         )}
         {items.map((it) =>
           it.kind === "day" ? <div key={it.key} className="ch-day">{it.label}</div>
-          : it.kind === "event" ? (
-            <div key={it.key} className={`ch-ev ${it.tone ?? ""}`}><span>{it.icon} {it.text}</span>{it.sub && <small>{it.sub}</small>}</div>
-          ) : (
+          : (
             <ChatLetter key={it.key} entry={it.entry} name={name} now={now} isNew={it.entry.item.id === newestId} onOpened={(id) => setOpened((s) => new Set(s).add(id))} />
           ),
         )}
