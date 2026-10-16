@@ -170,3 +170,8 @@ export function avatarBirdFor(name: string, chosen?: string | null): string {
   if (chosen && (AVATAR_BIRDS as readonly string[]).includes(chosen)) return chosen;
   return AVATAR_BIRDS[mix(name) % AVATAR_BIRDS.length];
 }
+
+/** 펜팔(모르는 누군가와 주고받는) 방인지: 편지 중 하나라도 펜팔 편지면 */
+export function isPenpalThread(t: { entries: { item: unknown }[] }): boolean {
+  return t.entries.some((e) => (e.item as { penpal?: boolean }).penpal === true);
+}

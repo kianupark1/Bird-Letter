@@ -471,5 +471,31 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("나간 방은 숨김, 그 뒤 새 편지가 오면 다시 보임", vis.map((x) => x.key).join(), "b");
 }
 
+
+// 펜팔: 이름·연락처 가리기·상대 고르기
+{
+  const { penpalName: pn, maskContacts: mk, pickPenpal: pick, cityOf: co, cityLabel: cl } = await import("../core/penpal.ts");
+  eq("펜팔 이름", pn("부산", "crane"), "부산 사는 두루미");
+  eq("서울의 구는 서울로", co("gangnam"), "seoul");
+  eq("도시는 그대로", co("suwon"), "suwon");
+  eq("도시 이름", cl("seoul") + "," + cl("busan"), "서울,부산");
+  const m1 = mk("제 번호는 010-1234-5678 이에요");
+  eq("전화번호 가림", m1.text.includes("5678"), false); eq("가린 개수", m1.masked, 1);
+  eq("붙여 쓴 번호도", mk("01012345678로 연락").text.includes("1234"), false);
+  eq("이메일", mk("메일 abc@naver.com").text.includes("naver"), false);
+  eq("링크", mk("https://instagram.com/xx 봐").text.includes("instagram"), false);
+  eq("@아이디", mk("인스타 @bird_letter 팔로우").text.includes("bird_letter"), false);
+  eq("카톡 아이디", mk("카톡 아이디: sky123").text.includes("sky123"), false);
+  eq("평범한 글은 그대로", mk("오늘 날씨가 좋아서 2시에 산책했어요").text, "오늘 날씨가 좋아서 2시에 산책했어요");
+  eq("평범한 글은 가린 것 없음", mk("책을 3권 읽었어요").masked, 0);
+  const pool = [{ uid: "me", tags: ["book"], region: "서울" }, { uid: "a", tags: ["music"], region: "부산" }, { uid: "b", tags: ["book"], region: "대구" }, { uid: "c", tags: [], region: "제주" }];
+  eq("관심사 겹치는 사람 우선", pick(pool, "me", new Set(), ["book"], () => 0)?.uid, "b");
+  eq("나·넘긴 사람 제외", pick(pool, "me", new Set(["b"]), ["book"], () => 0)?.uid, "a");
+  const { penpalRoute: pr } = await import("../core/penpal.ts");
+  eq("펜팔 노선: 서울→부산", pr("seoul", "busan"), "seoul-busan");
+  eq("펜팔 노선: 같은 도시면 다른 지역", pr("seoul", "seoul").split("-")[0] !== pr("seoul", "seoul").split("-")[1], true);
+  eq("아무도 없으면 null", pick([{ uid: "me", tags: [], region: "서울" }], "me", new Set(), [], () => 0), null);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

@@ -27,6 +27,14 @@ export type Profile = {
   photoOff?: boolean;
   /** 전체 랭킹(가입한 모든 사람)에 내 이름·거리 보이기. 기본 켜짐 */
   publicRank?: boolean;
+  /** 펜팔 약속(만 14세 이상·규칙)에 동의했는지 */
+  penpalAgreed?: boolean;
+  /** 펜팔 이름(비어 있으면 "서울 사는 까치"처럼 자동) */
+  penpalName?: string;
+  /** 펜팔 관심사(core/penpal.ts PENPAL_TAGS의 id) */
+  penpalTags?: string[];
+  /** 모르는 누군가의 펜팔 편지 받기. 약속하면 켜져요 */
+  penpalOpen?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [

@@ -827,3 +827,90 @@ for (const s of v4) {
   execFileSync("convert", [resolve(OUT, "v4-전체-한눈에.png"), "-crop", `${5 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v4-전체-한눈에.png")]);
 }
 console.log("4차 시안:", v4.length + 1);
+
+/* ═════════ 5차 시안(v5): 펜팔 — 모르는 누군가에게 새 날려 보내기 ═════════ */
+const CSS5 = `
+.v2 .pp{background:linear-gradient(135deg,#1E3A5C,#2c5680);color:#fff;border-radius:28px;padding:18px 18px 16px;box-shadow:0 5px 0 #13263d}
+.v2 .pp b{font-size:24px;display:block}.v2 .pp small{display:block;font-size:16px;opacity:.85;margin-top:4px;line-height:1.4}
+.v2 .rule{display:flex;gap:10px;align-items:flex-start;font-size:18px;line-height:1.4;background:#fff;border-radius:18px;padding:10px 14px}
+.v2 .rule i{font-style:normal;font-size:24px;flex:none}
+.v2 .tagc{display:flex;flex-wrap:wrap;gap:8px}.v2 .tagc span{border:2px solid #cdbfa8;border-radius:20px;padding:6px 14px;font-size:17px;font-weight:700;color:#4a3f35}.v2 .tagc span.on{border-color:#C1481F;background:#F9E1D4;color:#C1481F}
+.v2 .warnb{background:#FFF3C9;border-radius:16px;padding:8px 12px;font-size:15px;color:#5b4a1e;line-height:1.4}
+.v2 .acts{display:flex;gap:8px}.v2 .acts div{flex:1;text-align:center;border-radius:20px;padding:14px 6px;font-size:18px;font-weight:700;background:#fff;box-shadow:0 3px 0 rgba(42,33,24,.1)}
+.v2 .acts .hot{background:#C1481F;color:#fff;box-shadow:0 4px 0 #8f3210}
+.v2 .menu{background:#fff;border-radius:28px 28px 0 0;padding:16px;box-shadow:0 -10px 28px rgba(42,33,24,.18)}
+.v2 .menu div{min-height:58px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;border-radius:18px;background:#FBF3E4;margin-bottom:8px}
+.v2 .menu .red{color:#C1481F}
+`;
+const tabs5 = (on: number) => `<div class="tabs">${[["편지", I.mail], ["친구", I.people], ["랭킹", `<span style="font-size:26px">🏆</span>`]].map(([l, ico], i) => `<div class="${i === on ? "on" : ""}"><span>${ico}</span>${l}</div>`).join("")}</div>`;
+const v5: { file: string; title: string; note: string; html: string }[] = [];
+const add5 = (file: string, title: string, note: string, html: string) => v5.push({ file, title, note, html });
+
+add5("v5-1-펜팔시작", "① 펜팔 시작: 어딘가로 새 날려 보내기", "친구 탭 맨 위에 입구. 처음 한 번 '펜팔 약속'(만 14세 이상·규칙)을 보고 시작해요.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><div><b style="font-size:26px">친구</b><small>함께 편지 나누는 사람들</small></div></div>
+<div class="body" style="gap:12px">
+  <div class="pp"><div style="display:flex;align-items:center;gap:10px">${bird("crane", 64, true)}<div><b>어딘가로 새 날려 보내기</b><small>모르는 누군가에게 편지가 날아가요.<br>답장이 오면 펜팔 친구가 돼요</small></div></div></div>
+  <div style="font-size:19px;font-weight:700;margin-top:4px">펜팔 약속 (처음 한 번)</div>
+  <div class="rule"><i>🎂</i><div>만 14세 이상만 쓸 수 있어요</div></div>
+  <div class="rule"><i>🙊</i><div>전화번호·주소·SNS 아이디는 적지 않아요<small style="display:block;font-size:15px;color:#6B5E52">적으면 자동으로 가려져요</small></div></div>
+  <div class="rule"><i>📷</i><div>첫 편지에는 사진을 담지 않아요</div></div>
+  <div class="rule"><i>🚩</i><div>불쾌하면 길게 눌러 신고·차단해요</div></div>
+</div>
+<div class="dock"><div class="chunky">약속하고 시작하기</div></div>`));
+
+add5("v5-2-펜팔쓰기", "② 쓰기: 받는 사람은 새가 정해요", "관심사를 고르면 비슷한 사람에게 날아가요(선택). 받는 곳은 상대가 정한 시·도까지만 알아요.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:24px">누군가에게 쓰는 편지</b><small>두루미가 어딘가로 데려다줘요</small></div></div>
+<div class="body" style="gap:12px">
+  <div style="font-size:18px;font-weight:700">이런 사람에게 닿았으면 (고르지 않아도 돼요)</div>
+  <div class="tagc"><span class="on">📚 책</span><span>🎵 음악</span><span class="on">✈️ 여행</span><span>🍳 요리</span><span>🐶 동물</span><span>🎮 게임</span><span>🌱 식물</span><span>⚽ 운동</span></div>
+  <div class="paper" style="min-height:230px;color:#2A2118">안녕하세요, 처음 보는 누군가에게 편지를 써 보는 건 처음이에요. 요즘 읽고 있는 책은…</div>
+  <div class="warnb">🙊 전화번호·주소·아이디처럼 보이는 글은 보내기 전에 가려져요 · 📷 첫 편지는 사진 없이</div>
+</div>
+<div class="dock"><div class="chunky">${bird("crane", 36)} 어딘가로 날려 보내기</div></div>`));
+
+add5("v5-3-받음", "③ 받는 사람: 모르는 누군가의 편지가 날아와요", "날아오는 동안 함께 기다리고, 도착하면 펼쳐요. 답장하면 펜팔 시작, 넘기면 끝.", wrap2(`
+${rhead("부산 사는 두루미", "모르는 누군가 · 📚 책 ✈️ 여행")}
+${chatMap(1, "crane", "도착했어요! <em>💌</em>")}
+<div class="chat">
+  <div class="ev">🕊 서울 어딘가에서 두루미가 출발했어요 <small>어제 오후 8:10</small></div>
+  <div class="lt you arrived"><div class="top">${bird("crane", 46, true)}<div><b>모르는 누군가의 편지</b><span class="d">오늘 오전 2:05 도착</span></div></div>
+    <div class="paper">안녕하세요, 처음 보는 누군가에게 편지를 써 보는 건 처음이에요. 요즘 읽고 있는 책은…</div></div>
+</div>
+<div style="padding:10px 14px 16px;background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -6px 18px rgba(42,33,24,.08)"><div class="acts"><div class="hot">✉ 답장하기</div><div>넘기기</div><div>🚩 신고</div></div><div class="st" style="text-align:center;font-size:14px;margin-top:6px">답장하면 펜팔 친구가 돼요 · 넘기면 다시 오지 않아요</div></div>`));
+
+add5("v5-4-펜팔목록", "④ 편지 탭: 펜팔은 따로 모아요", "친구 편지와 섞이지 않게 '펜팔' 묶음. 이름 대신 상대가 정한 펜팔 이름(지역은 시·도까지).", wrap2(`
+<div class="hello" style="padding-bottom:2px"><div><b style="font-size:26px">새 편지</b><small>기다림이 즐거운 편지</small></div></div>
+<div class="body" style="gap:10px">
+  <div style="font-size:17px;font-weight:700;color:#6B5E52">친구</div>
+  <div class="sticker">${face("석영")}<div style="flex:1"><b>석영</b><span class="d">내가 보낸 편지가 도착했어요</span></div><span class="d">10월 17일</span></div>
+  <div style="font-size:17px;font-weight:700;color:#6B5E52;margin-top:6px">펜팔 🌏</div>
+  <div class="sticker" style="background:#EAF0F7"><div class="face f1">${bird("crane", 54)}</div><div style="flex:1"><b>부산 사는 두루미</b><span class="d">편지가 날아오는 중 · 내일 오전 도착</span>${mini(58, "crane")}</div></div>
+  <div class="sticker" style="background:#EAF0F7"><div class="face f2">${bird("swallow", 54)}</div><div style="flex:1"><b>제주 사는 제비</b><span class="d">답장을 기다리는 중</span></div><span class="d">10월 15일</span></div>
+  <div class="pp" style="padding:12px 16px;margin-top:6px"><div style="display:flex;align-items:center;gap:8px">${bird("crane", 40)}<b style="font-size:19px">또 다른 누군가에게 날려 보내기</b></div></div>
+</div>
+${tabs5(0)}`));
+
+add5("v5-5-안전", "⑤ 안전: 길게 누르면 신고·차단", "신고가 쌓이면 그 사람은 펜팔을 잠시 쉬어요. 차단하면 서로 다시 만나지 않아요.", wrap2(`
+${rhead("제주 사는 제비", "펜팔 · 🎵 음악")}
+<div class="chat" style="position:relative"><div class="lt you"><div class="top">${bird("swallow", 46)}<div><b>제비가 보낸 편지</b><span class="d">읽었어요</span></div></div></div></div>
+<div class="dim"></div>
+<div class="menu" style="position:relative;z-index:2"><h4 style="text-align:center;font-size:20px;margin-bottom:10px">제주 사는 제비</h4>
+  <div>✎ 내가 부를 이름 정하기</div><div>👥 친구로 맺기 (서로 동의하면)</div><div class="red">🚩 신고하기</div><div class="red">⛔ 차단하기</div><div style="background:transparent;color:#8a7c6f">취소</div>
+</div>`));
+
+const page5 = (body: string) => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}${CSS2}${CSS3}${CSS4}${CSS5}body{background:#d9d2c4}</style></head><body>${body}</body></html>`;
+for (const s of v5) {
+  const f = resolve(OUT, `${s.file}.html`);
+  writeFileSync(f, page5(s.html));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=390,${844 + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, s.file + ".png")}`, "file://" + f], { stdio: "ignore" });
+  const png = resolve(OUT, s.file + ".png");
+  execFileSync("convert", [png, "-crop", `${390 * 2}x${844 * 2}+0+0`, "+repage", png]);
+}
+{
+  const sheet5 = `<div style="padding:30px;background:#d9d2c4;width:${5 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(5,390px);gap:30px"><div style="grid-column:1/-1;font-size:26px;font-weight:700">5차 시안: 펜팔 — 모르는 누군가에게 새 날려 보내기</div>${v5.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
+  const f = resolve(OUT, "v5-전체-한눈에.html");
+  writeFileSync(f, page5(sheet5));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${5 * 420 + 30},${1000 + 87}`, "--force-device-scale-factor=1", `--screenshot=${resolve(OUT, "v5-전체-한눈에.png")}`, "file://" + f], { stdio: "ignore" });
+  execFileSync("convert", [resolve(OUT, "v5-전체-한눈에.png"), "-crop", `${5 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v5-전체-한눈에.png")]);
+}
+console.log("5차 시안:", v5.length + 1);

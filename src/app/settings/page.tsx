@@ -9,6 +9,8 @@ import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/lett
 import Face from "@/components/Face";
 import BirdPicker from "@/components/BirdPicker";
 import { compressAvatar } from "@/lib/photo";
+import { saveMyPenpal } from "@/lib/firebase/penpal";
+import { cityLabel, cityOf, penpalName } from "../../../core/penpal";
 import { KAKAO_LOGIN_READY, isKakaoLinked, startKakaoLogin } from "@/lib/firebase/kakao";
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
@@ -52,6 +54,7 @@ export default function Settings() {
   const [msg, setMsg] = useState("");
   const [pickBird, setPickBird] = useState(false);
   const [photoMsg, setPhotoMsg] = useState("");
+  const penName = profile.penpalName?.trim() || penpalName(cityLabel(cityOf(profile.homePlace)), profile.avatarBird || "magpie");
   const [kakaoLinked, setKakaoLinked] = useState(false);
   // 카카오로 들어온 계정이면 "카카오톡 이름·사진 다시 가져오기"를 보여 줘요(로그인 정보가 준비된 뒤에 확인)
   useEffect(() => { if (KAKAO_LOGIN_READY) auth().authStateReady().then(isKakaoLinked).then(setKakaoLinked).catch(() => {}); }, []);
@@ -174,6 +177,21 @@ export default function Settings() {
           </div>
           <button role="switch" aria-checked={profile.publicRank !== false} aria-label="전체 랭킹에 내 이름 보이기" className="switch" onClick={() => update({ publicRank: profile.publicRank === false })} />
         </div>
+        {profile.penpalAgreed && (
+          <>
+            <div className="listrow">
+              <div className="grow">
+                <div className="name">모르는 누군가의 펜팔 편지 받기</div>
+                <div className="note">끄면 새 펜팔 편지가 오지 않아요(이미 주고받는 펜팔은 그대로). 펜팔 이름: {penName}</div>
+              </div>
+              <button role="switch" aria-checked={profile.penpalOpen !== false} aria-label="펜팔 편지 받기" className="switch" onClick={() => {
+                const open = profile.penpalOpen === false; update({ penpalOpen: open });
+                void saveMyPenpal({ name: penName, bird: profile.avatarBird || "magpie", region: cityOf(profile.homePlace), tags: profile.penpalTags ?? [], open }).catch(() => {});
+              }} />
+            </div>
+            <button type="button" className="linkbtn" onClick={() => { const v = window.prompt("펜팔 이름(진짜 이름은 쓰지 않는 게 좋아요)", penName); if (v !== null) update({ penpalName: v.trim().slice(0, 12) }); }}>✎ 펜팔 이름 바꾸기</button>
+          </>
+        )}
       </div>
       <Link href="/stamps" className="opt rankcard" style={{ marginTop: 8 }}>
         <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏮</span>

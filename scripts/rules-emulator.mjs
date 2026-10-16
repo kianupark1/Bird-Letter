@@ -3,7 +3,7 @@
 //   npx firebase emulators:exec --only firestore --project demo-bl "node rules-emulator.mjs"  (firestore.rules·firebase.json 같은 폴더)
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebase/rules-unit-testing";
-import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, serverTimestamp, Timestamp, writeBatch, query, orderBy, limit } from "firebase/firestore";
+import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, serverTimestamp, Timestamp, writeBatch, query, orderBy, limit, where } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({ projectId: "demo-bl", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
 const A = env.authenticatedContext("uidA").firestore(), B = env.authenticatedContext("uidB").firestore(), C = env.authenticatedContext("uidC").firestore();
@@ -41,6 +41,27 @@ await no("프로필 사진이 너무 큼", setDoc(doc(A, "users", "uidA", "frien
 await ok("코드 문서에 프로필 사진 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie", photo: JPG }));
 
 console.log("[거리 랭킹 기록]");
+const D = env.authenticatedContext("uidD").firestore(); // 펜팔 시험용(A와 친구 아님)
+// 펜팔
+const pp = (over = {}) => ({ name: "부산 사는 두루미", bird: "crane", region: "부산", tags: ["book"], open: true, at: serverTimestamp(), ...over });
+await ok("펜팔: 내 줄 쓰기", setDoc(doc(D, "penpals", "uidD"), pp()));
+await no("펜팔: 남의 줄 쓰기", setDoc(doc(A, "penpals", "uidD"), pp()));
+await no("펜팔: 진짜 이름 같은 다른 칸 금지", setDoc(doc(D, "penpals", "uidD"), pp({ realName: "비" })));
+await ok("펜팔: 명단 읽기(50명까지)", getDocs(query(collection(A, "penpals"), where("open", "==", true), limit(50))));
+await no("펜팔: 명단 너무 많이 읽기", getDocs(query(collection(A, "penpals"), limit(200))));
+const pl = (to, over = {}) => ({ fromUid: "uidA", fromName: "서울 사는 까치", toName: "부산 사는 두루미", routeId: "seoul-busan", birdId: "crane", sentAt: serverTimestamp(), arriveAt: Timestamp.fromMillis(Date.now() + 3600e3), recipientUid: to, penpal: true, ...over });
+await ok("펜팔 편지: 받기 켠 사람에게(친구 아님)", setDoc(doc(A, "letters", "P1"), pl("uidD")));
+{ const { penpal: _p, ...np } = pl("uidD"); await no("펜팔 편지: penpal 표시 없이는 친구 아니면 안 됨", setDoc(doc(A, "letters", "P2"), np)); }
+await no("펜팔 편지: penpal 값이 true가 아니면 안 됨", setDoc(doc(A, "letters", "P2b"), pl("uidD", { penpal: false })));
+await no("펜팔 편지: 예약 발송 금지", setDoc(doc(A, "letters", "P3"), pl("uidD", { departAt: Timestamp.fromMillis(Date.now() + 86400e3), arriveAt: Timestamp.fromMillis(Date.now() + 2 * 86400e3) })));
+await no("펜팔 편지: 명단에 없는 사람(C)에게", setDoc(doc(A, "letters", "P4"), pl("uidC")));
+await ok("펜팔: B가 받기 끄기", setDoc(doc(D, "penpals", "uidD"), pp({ open: false })));
+await no("펜팔 편지: 받기 끈 사람에게", setDoc(doc(A, "letters", "P5"), pl("uidD")));
+await ok("펜팔: B가 다시 켜기", setDoc(doc(D, "penpals", "uidD"), pp()));
+await ok("펜팔: B가 A 차단", setDoc(doc(D, "users", "uidD", "blocks", "uidA"), { at: serverTimestamp() }));
+await no("펜팔 편지: 나를 차단한 사람에게", setDoc(doc(A, "letters", "P6"), pl("uidD")));
+await ok("펜팔: 차단 풀기", deleteDoc(doc(D, "users", "uidD", "blocks", "uidA")));
+await ok("펜팔 답장: B가 받은 P1에 답장(replyTo)", setDoc(doc(D, "letters", "P7"), { ...pl("uidA", { fromUid: "uidD", fromName: "부산 사는 두루미", toName: "서울 사는 까치", routeId: "busan-seoul" }), replyTo: "P1" }));
 // 전체 랭킹
 const rk = (over = {}) => ({ name: "에이", bird: "magpie", km: 1200, maxKm: 452, count: 3, at: serverTimestamp(), ...over });
 await ok("전체 랭킹: 내 줄 쓰기", setDoc(doc(A, "ranking", "uidA"), rk()));

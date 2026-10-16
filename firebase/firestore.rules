@@ -95,6 +95,21 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // 펜팔 받기 명단(2026-10-17, 시안 v5): 펜팔 이름·새·시·도·관심사만. 로그인한 사람은 50명까지 읽어서 상대를 골라요. 내 줄은 나만 써요
+    match /penpals/{uid} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 50;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'bird', 'region', 'tags', 'open', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 12
+        && request.resource.data.bird is string && request.resource.data.bird.size() <= 12
+        && request.resource.data.region is string && request.resource.data.region.size() <= 20
+        && request.resource.data.tags is list && request.resource.data.tags.size() <= 5
+        && request.resource.data.open is bool
+        && request.resource.data.at == request.time;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
     // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다.
     match /letters/{letterId} {
@@ -110,7 +125,8 @@ service cloud.firestore {
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.sentAt == request.time
         && request.resource.data.arriveAt > request.time
-        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt', 'replyTo'])
+        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt', 'replyTo', 'penpal'])
+        && (!('penpal' in request.resource.data) || request.resource.data.penpal == true)
         // 예약 발송: 출발 시각은 지금부터 최대 366일 뒤까지, 도착은 항상 출발보다 뒤(core/schedule.ts의 MAX_SCHEDULE_DAYS와 같아야 해요)
         && (!('departAt' in request.resource.data)
             || (request.resource.data.departAt is timestamp
@@ -122,6 +138,13 @@ service cloud.firestore {
         && (request.resource.data.recipientUid == null
             || (request.resource.data.recipientUid is string
                 && exists(/databases/$(database)/documents/users/$(request.resource.data.recipientUid)/friends/$(request.auth.uid)))
+            // 펜팔: 펜팔 받기를 켜 둔 사람에게, 그 사람이 나를 차단하지 않았을 때만(예약 발송은 안 돼요)
+            || (request.resource.data.get('penpal', false) == true
+                && request.resource.data.recipientUid is string
+                && request.resource.data.recipientUid != request.auth.uid
+                && !('departAt' in request.resource.data)
+                && get(/databases/$(database)/documents/penpals/$(request.resource.data.recipientUid)).data.open == true
+                && !exists(/databases/$(database)/documents/users/$(request.resource.data.recipientUid)/blocks/$(request.auth.uid)))
             || (request.resource.data.replyTo is string
                 && get(/databases/$(database)/documents/letters/$(request.resource.data.replyTo)).data.recipientUid == request.auth.uid
                 && get(/databases/$(database)/documents/letters/$(request.resource.data.replyTo)).data.fromUid == request.resource.data.recipientUid))

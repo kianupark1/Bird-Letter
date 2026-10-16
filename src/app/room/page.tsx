@@ -10,7 +10,10 @@ import { listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
-import { buildThreads, isUnnamed, keyFromParams, type Thread } from "../../../core/threads";
+import { buildThreads, isPenpalThread, isUnnamed, keyFromParams, type Thread } from "../../../core/threads";
+import { cityLabel, cityOf, penpalName, penpalRoute } from "../../../core/penpal";
+import { useProfile } from "@/lib/settings";
+import { blockSender, reportLetter } from "@/lib/firebase/remote";
 import Face from "@/components/Face";
 import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
@@ -46,7 +49,8 @@ function Room() {
   const [resend, setResend] = useState<Resend | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [pickFriend, setPickFriend] = useState(false);
-  const { book, merge, mergeSame, rename } = usePeople();
+  const { book, merge, mergeSame, rename, hide } = usePeople();
+  const { profile } = useProfile();
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
   useEffect(() => {
@@ -129,6 +133,23 @@ function Room() {
     const g = lastEntry.dir === "sent" ? b : a;
     if (getPlace(g)) guess = g;
   }
+  // 펜팔 방(시안 v5-3): 도시끼리 노선, 펜팔 이름으로 답장, 넘기기·신고·차단
+  const pen = isPenpalThread(thread);
+  let penpal: { routeId: string; fromName: string; replyTo?: string } | undefined;
+  const lastRecv = thread.entries.find((e) => e.dir === "received");
+  if (pen) {
+    const myCity = cityOf(profile.homePlace);
+    const anyRoute = asLike(thread.entries[0]).routeId.split("-");
+    const theirCity = lastRecv ? cityOf(asLike(lastRecv).routeId.split("-")[0]) : cityOf(anyRoute[1]);
+    penpal = { routeId: penpalRoute(myCity, theirCity), fromName: profile.penpalName?.trim() || penpalName(cityLabel(myCity), profile.avatarBird || "magpie"), replyTo: lastRecv?.item.id };
+  }
+  const skip = () => { hide(thread.key); router.replace("/"); };
+  const reportBlock = async () => {
+    if (!thread.uid || !window.confirm(`${name}님을 신고하고 차단할까요?\n차단하면 서로 다시 편지를 주고받을 수 없어요.`)) return;
+    try { if (lastRecv) await reportLetter(lastRecv.item.id, "펜팔 신고"); } catch {}
+    try { await blockSender(thread.uid); } catch {}
+    skip();
+  };
   const newestId = thread.entries.find((e) => e.dir === "received" && letterProgress(asLike(e), now).done && !opened.has(e.item.id))?.item.id;
 
   return (
@@ -141,10 +162,17 @@ function Room() {
             <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
               onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (내 폰에만 저장돼요)", name); if (v !== null) rename(thread.uid!, v); }}>{name} <span aria-hidden>✎</span></button>
           ) : <div className="rname">{name}</div>}
-          {subtitle && <div className="rsub">{subtitle}</div>}
+          {(subtitle || pen) && <div className="rsub">{pen ? `펜팔 🌏${subtitle ? ` · ${subtitle}` : ""}` : subtitle}</div>}
         </div>
       </header>
-      {thread.uid && isUnnamed(name) && (
+      {pen && (
+        <div className="ppbar" role="note">
+          <span>모르는 누군가와의 펜팔이에요. 사진·연락처는 보내지 않아요</span>
+          <button type="button" className="chip" onClick={skip}>넘기기</button>
+          <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고·차단</button>
+        </div>
+      )}
+      {!pen && thread.uid && isUnnamed(name) && (
         <form className="namecard" onSubmit={(e) => { e.preventDefault(); if (nameDraft.trim()) { rename(thread.key.slice(2), nameDraft); setNameDraft(""); } }}>
           <b>이 친구의 이름을 정해 주세요</b>
           <span>친구가 아직 이름을 정하지 않았어요. 내가 정한 이름은 나에게만 보이고, 친구가 이름을 정하면 그 이름으로 바뀌어요.</span>
@@ -153,10 +181,10 @@ function Room() {
         </form>
       )}
       {map}
-      {thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
+      {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
         <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
       )}
-      {!thread.uid && friends.length > 0 && (
+      {!pen && !thread.uid && friends.length > 0 && (
         <div className="mergecard">
           <div><b>{name}님이 친구 목록에 있나요?</b><span>친구와 합치면 한 사람으로 모이고, 편지가 앱으로 바로 가요.</span></div>
           <button type="button" className="chip" onClick={() => setPickFriend(true)}>친구와 합치기</button>
@@ -200,7 +228,7 @@ function Room() {
         {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
         <div ref={endRef} />
       </div>
-      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!!thread.uid && isUnnamed(name)} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
+      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
     </main>
   );
 }
