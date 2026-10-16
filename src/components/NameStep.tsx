@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import BirdPicker from "@/components/BirdPicker";
-import { DEFAULT_PROFILE, useProfile, type Profile } from "@/lib/settings";
+import { useProfile, type Profile } from "@/lib/settings";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 
 /** 이름 또는 "내 새"가 아직 없으면 처음 한 번 물어봐요(이름이 "새 친구" 그대로이거나 새를 안 골랐을 때) */
 export function needsName(nickname: string) {
-  return nickname.trim() === "" || nickname === DEFAULT_PROFILE.nickname;
+  return nickname.trim() === "" || nickname.trim() === "새 친구";
 }
 export const needsProfile = (p: Pick<Profile, "nickname" | "avatarBird">) => needsName(p.nickname) || !p.avatarBird;
 

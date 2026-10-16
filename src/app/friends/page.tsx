@@ -60,7 +60,7 @@ function Friends() {
   }, [state, ready, profile, reload, legacy]);
 
   const link = () => `${location.origin}/invite?c=${code}`;
-  const text = `${profile.nickname}님이 새편지 친구로 초대했어요!`;
+  const text = `${profile.nickname || "친구"}님이 새편지 친구로 초대했어요!`;
   const inviteKakao = async () => {
     if (!code) return;
     if (KAKAO_SHARE_READY && (await shareInviteToKakao(code, profile.nickname))) return;
@@ -100,7 +100,7 @@ function Friends() {
       <header className="tabhead"><h1 className="pagetitle">친구</h1><GearLink /></header>
       <Link href="/settings" className="trow merow">
         <Face name={profile.nickname} bird={profile.avatarBird || undefined} size={60} />
-        <span className="tmid"><span className="tname">{profile.nickname}</span><span className="tst">나 · 내 아이디 #{(() => { try { return uidTag(auth().currentUser?.uid ?? ""); } catch { return "----"; } })()}</span></span>
+        <span className="tmid"><span className="tname">{profile.nickname || "나"}</span><span className="tst">나 · 내 아이디 #{(() => { try { return uidTag(auth().currentUser?.uid ?? ""); } catch { return "----"; } })()}</span></span>
       </Link>
 
       <h2 className="friendh">친구 {people.length > 0 && people.length}</h2>

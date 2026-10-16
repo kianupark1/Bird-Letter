@@ -11,6 +11,8 @@ import { myPlace, myStatsCapped, rankOf, rankValue, type RankEntry, type RankKin
 import Face from "@/components/Face";
 import LoginStart from "@/components/LoginStart";
 import BirdIcon from "@/components/BirdIcon";
+import { buildThreads } from "../../../core/threads";
+import { usePeople } from "@/lib/people";
 import GearLink from "@/components/GearLink";
 import { MILESTONES, journeyOf, lapsText } from "../../../core/journey";
 
@@ -30,6 +32,7 @@ function Rank() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [stats, setStats] = useState<Record<string, Awaited<ReturnType<typeof readStats>>>>({});
   const [kind, setKind] = useState<RankKind>("total");
+  const { book } = usePeople();
   const [loading, setLoading] = useState(true);
 
   // 내 기록: 지금까지 출발한 내 편지의 노선 거리
@@ -55,8 +58,14 @@ function Rank() {
 
   const entries: RankEntry[] = useMemo(() => [
     { uid: "me", name: profile.nickname || "나", bird: profile.avatarBird, me: true, stats: mine },
-    ...friends.map((f) => ({ uid: f.uid, name: f.name, bird: stats[f.uid]?.bird ?? f.bird, me: false, stats: stats[f.uid] ?? null })),
-  ], [friends, stats, mine, profile.nickname, profile.avatarBird]);
+    // 같은 사람의 여러 계정은 한 줄로(기록이 큰 계정 기준), 이름은 친구 목록과 같게(내가 부르는 이름 > 진짜 이름 > "친구 #표")
+    ...buildThreads([], [], friends, book).filter((t) => t.uid).map((t) => {
+      const ids = t.uids ?? [t.uid!];
+      const best = ids.map((u) => stats[u]).filter(Boolean).sort((a, b) => (b!.km - a!.km))[0] ?? null;
+      const f = friends.find((x) => ids.includes(x.uid));
+      return { uid: t.key, name: t.name, bird: best?.bird ?? f?.bird, me: false, stats: best };
+    }),
+  ], [friends, stats, mine, profile.nickname, profile.avatarBird, book]);
 
   const sorted = useMemo(() => rankOf(entries, kind), [entries, kind]);
   const me = myPlace(sorted, kind);

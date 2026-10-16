@@ -10,7 +10,7 @@ export async function publishStats(s: Stats, name: string, bird?: string, place?
   try {
     const user = await ensureUser();
     const b = bird && BIRDS_OK.includes(bird) ? bird : undefined;
-    await setDoc(doc(db(), "stats", user.uid), { km: s.km, maxKm: s.maxKm, count: s.count, name: (name.trim() || "새 친구").slice(0, 12), ...(b ? { bird: b } : {}), ...(place ? { place: place.slice(0, 20) } : {}) });
+    await setDoc(doc(db(), "stats", user.uid), { km: s.km, maxKm: s.maxKm, count: s.count, name: (name.trim() === "새 친구" ? "" : name.trim()).slice(0, 12), ...(b ? { bird: b } : {}), ...(place ? { place: place.slice(0, 20) } : {}) });
     return true;
   } catch {
     return false;
