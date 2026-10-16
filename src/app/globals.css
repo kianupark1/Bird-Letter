@@ -780,3 +780,16 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 /* 프로필 사진 올리기(설정): 얼굴을 누르면 사진 고르기 */
 .avatarpick { position: relative; display: block; width: 112px; margin: 0 auto; cursor: pointer; }
 .avatarpick .cam { position: absolute; right: -4px; bottom: -2px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; background: var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+
+/* 채팅 목록: 옆으로 밀기·길게 누르기(카카오톡처럼) */
+.swrow { position: relative; border-radius: 26px; overflow: hidden; }
+.swbody { touch-action: pan-y; -webkit-user-drag: none; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; position: relative; z-index: 1; }
+.swbody a, .swbody img { -webkit-user-drag: none; }
+.swacts { position: absolute; top: 0; bottom: 0; display: flex; }
+.swacts.right { right: 0; } .swacts.left { left: 0; }
+.swbtn { flex: 1; border: 0; font: inherit; font-size: 17px; font-weight: 800; color: #fff; background: var(--namsaek); min-height: 60px; }
+.swbtn.danger { background: var(--dahong); color: var(--on-dahong); }
+.swhint { margin: 10px 4px 0; font-size: 15px; color: var(--text); opacity: .7; text-align: center; }
+.sheetbtn { display: block; width: 100%; min-height: 60px; margin: 6px 0; border: 0; border-radius: 18px; font: inherit; font-size: 18px; font-weight: 700; background: var(--bg); color: var(--text); cursor: pointer; }
+.sheetbtn.danger { color: var(--dahong); }
+.sheetbtn.plain { background: transparent; color: var(--text); opacity: .7; }

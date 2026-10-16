@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
-import { buildThreads, type Thread } from "../../core/threads";
+import { buildThreads, isUnnamed, visibleThreads, type Thread } from "../../core/threads";
+import SwipeRow from "@/components/SwipeRow";
 import Face from "@/components/Face";
 import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
@@ -98,7 +99,10 @@ function InboxList() {
     void publishStats(st, me.nickname, me.avatarBird, place).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
   }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
 
-  const { book } = usePeople();
+  const { book, merge, mergeSame, rename, hide } = usePeople();
+  const [menu, setMenuRaw] = useState<{ t: Thread<Letter, Meta>; step: "menu" | "merge" } | null>(null);
+  const menuAt = useRef(0);
+  const setMenu = (m: typeof menu) => { if (m && !menu) menuAt.current = Date.now(); setMenuRaw(m); };
   // 내 이름·내 새가 바뀌었으면 친구들 목록 속 "나"도 같이 고쳐요(예전에 "새 친구"로 저장된 것 바로잡기)
   useEffect(() => {
     if (!firebaseEnabled || !friends.length || !me.nickname) return;
@@ -107,7 +111,19 @@ function InboxList() {
     void syncMyName(friends, me.nickname, me.avatarBird, me.photo).then(() => { try { localStorage.setItem("saepyeonji.namesync.v1", sig); } catch {} });
   }, [friends, me.nickname, me.avatarBird, me.photo]);
   // 카카오톡 "채팅"처럼 편지를 주고받은 사람만 보여요(친구만 맺은 사람은 친구 탭에 있어요)
-  const threads = useMemo(() => buildThreads(letters, received, friends, book).filter((t) => t.entries.length > 0), [letters, received, friends, book]);
+  const allThreads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
+  const threads = useMemo(() => visibleThreads(allThreads.filter((t) => t.entries.length > 0), book.hidden), [allThreads, book.hidden]);
+  const leave = (t: Thread<Letter, Meta>) => {
+    if (!window.confirm(`${t.name} 채팅방을 목록에서 지울까요?\n내 화면에서만 지워지고, 새 편지가 오면 다시 나타나요.`)) return;
+    hide(t.key); setMenu(null);
+  };
+  const others = (t: Thread<Letter, Meta>) => allThreads.filter((x) => x.key !== t.key && x.uid && !isUnnamed(x.name));
+  const joinInto = (t: Thread<Letter, Meta>, to: Thread<Letter, Meta>) => {
+    const toUid = to.key.slice(2);
+    if (t.uid) for (const u of t.uids ?? [t.uid]) mergeSame(u, toUid, to.name);
+    else merge(t.name, to.uid!);
+    setMenu(null);
+  };
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 
   return (
@@ -142,6 +158,8 @@ function InboxList() {
           const info = rowInfo(t, now, opened);
           return (
             <li key={t.key}>
+              <SwipeRow label={`${t.name} 채팅방`} onLongPress={() => setMenu({ t, step: "menu" })}
+                actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), { label: "나가기", tone: "danger" as const, onClick: () => leave(t) }]}>
               <Link href={roomHref(t)} className={`trow ${info.badge ? "hot" : info.progress !== undefined ? "fly" : ""}`}>
                 <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} />
                 <span className="tmid">
@@ -155,10 +173,46 @@ function InboxList() {
                   <span className="tside">{info.side}{info.badge && <span className="tbadge">{info.badge}</span>}</span>
                 )}
               </Link>
+              </SwipeRow>
             </li>
           );
         })}
       </ul>
+
+      {threads.some((t) => isUnnamed(t.name)) && (
+        <p className="swhint">💡 이름 없는 친구가 이미 있는 친구라면 <b>길게 누르거나 옆으로 밀어서</b> 합칠 수 있어요</p>
+      )}
+
+      {menu && (
+        <>
+          {/* 길게 누르다 손을 뗄 때의 누르기가 바로 닫기로 잡히지 않게, 연 직후 잠깐은 무시해요 */}
+          <button type="button" className="ch-dim" aria-label="닫기" onClick={() => { if (Date.now() - menuAt.current > 600) setMenu(null); }} />
+          <div className="ch-sheet" role="dialog" aria-label={`${menu.t.name} 메뉴`}>
+            {menu.step === "menu" ? (
+              <>
+                <h2>{menu.t.name}</h2>
+                {menu.t.uid && (
+                  <button type="button" className="sheetbtn" onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (나에게만 보여요)", isUnnamed(menu.t.name) ? "" : menu.t.name); if (v !== null) rename(menu.t.key.slice(2), v); setMenu(null); }}>✎ 이름 정하기</button>
+                )}
+                {others(menu.t).length > 0 && <button type="button" className="sheetbtn" onClick={() => setMenu({ t: menu.t, step: "merge" })}>👥 이미 있는 친구와 합치기</button>}
+                <button type="button" className="sheetbtn danger" onClick={() => leave(menu.t)}>🗑 채팅방 나가기</button>
+                <button type="button" className="sheetbtn plain" onClick={() => setMenu(null)}>취소</button>
+              </>
+            ) : (
+              <>
+                <h2>{menu.t.name}님은 누구인가요?</h2>
+                <p className="small" style={{ margin: "0 0 4px", textAlign: "center" }}>같은 사람을 고르면 한 방으로 모이고, 앞으로도 계속 한 사람으로 보여요.</p>
+                {others(menu.t).map((o) => (
+                  <button key={o.key} type="button" className="trow" style={{ width: "100%", border: 0, font: "inherit", color: "inherit", cursor: "pointer" }} onClick={() => joinInto(menu.t, o)}>
+                    <Face name={o.name} bird={o.uid ? friendBird.get(o.uid)?.bird : undefined} photo={o.uid ? friendBird.get(o.uid)?.photo : undefined} />
+                    <span className="tmid"><span className="tname">{o.name}</span><span className="tst">{o.entries.length ? `편지 ${o.entries.length}통` : "아직 편지 없음"}</span></span>
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        </>
+      )}
 
       {flyingAny && <PushPrompt birdId={flyingAny.birdId} />}
       {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
