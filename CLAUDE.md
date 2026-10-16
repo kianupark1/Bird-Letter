@@ -95,6 +95,7 @@
 ## 규칙 자동 게시 (2026-10-16, 사용자: "규칙 매번 귀찮아, 너가 해주면 안 돼?")
 
 - `.github/workflows/deploy-rules.yml`: main에 `firebase/firestore.rules`가 바뀌어 합쳐지면 Firebase에 자동 게시(수동 실행도 가능). **한 번만** GitHub 저장소 Actions 비밀 값 `FIREBASE_SERVICE_ACCOUNT`(서비스 계정 키 JSON)가 필요. 없으면 경고만 남기고 건너뜀. 서비스 계정에 규칙 게시 권한이 있는지는 「미확인」(첫 실행 결과로 확인, 없으면 Google Cloud IAM에서 "Firebase Rules Admin" 역할 추가).
+- **열쇠 없이 자동 게시(2026-10-16, 대표님 허락 "허용")**: GitHub 비밀 값이 없으면 작업이 새 배포가 뜰 때까지 기다렸다가(`GET /api/rules`의 규칙 지문 비교) `POST /api/rules`를 부름. 이 입구는 **GitHub OIDC 신분증으로만 열림**(`core/serverAuth.ts verifyGithubOidc`: 저장소 kianupark1/Bird-Letter·main·aud `bird-letter-rules`만, 시험 9개), 올리는 규칙은 배포에 든 파일 하나뿐(요청으로 못 바꿈), 같은 규칙이면 건너뜀. 열쇠는 Vercel의 `FIREBASE_SERVICE_ACCOUNT_JSON`(카카오 로그인용). 서비스 계정에 규칙 게시 권한이 없으면 오류 → Google Cloud IAM에서 "Firebase Rules Admin" 추가.
 - 대화방 정리(d9b7a9b)는 규칙 없이도 동작. 규칙이 필요한 것은 내 동네 공유(`stats.place`)·친구 랭킹뿐이고, 규칙 전에는 조용히 건너뜀.
 
 ## 사람은 uid로 구분·지도 크게 보기 (2026-10-16, 사용자: "같은 사람인데 두 명으로 나뉘면 안 돼", "지도 누르면 전체화면")

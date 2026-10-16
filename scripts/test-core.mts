@@ -11,7 +11,7 @@ import { MAX_PHOTOS, MAX_PHOTO_CHARS } from "../core/limits.ts";
 import { MAX_LETTER_CHARS } from "../core/limits.ts";
 import { validateSchedule, dedupKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
 import { generateKeyPairSync, createVerify, createSign } from "node:crypto";
-import { createCustomToken, createAccessAssertion, verifyFirebaseIdToken, parseServiceAccount } from "../core/serverAuth.ts";
+import { createCustomToken, createAccessAssertion, verifyFirebaseIdToken, parseServiceAccount, verifyGithubOidc } from "../core/serverAuth.ts";
 import { loginWithKakao, type KakaoDeps } from "../core/kakaoLogin.ts";
 
 let pass = 0, fail = 0;
@@ -421,6 +421,31 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("지구 0.5바퀴", lapsText(20037.5), "0.5바퀴");
   eq("지구 1.5바퀴", lapsText(60112), "1.5바퀴");
   eq("0바퀴", lapsText(0), "0바퀴");
+}
+
+
+// GitHub 자동 작업 신분증(OIDC) 확인: 우리 저장소 main만 통과
+{
+  const { generateKeyPairSync, createSign: cs } = await import("node:crypto");
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const now = 1_800_000_000;
+  const mk = (over: Record<string, unknown> = {}, kid = "k1") => {
+    const h = Buffer.from(JSON.stringify({ alg: "RS256", kid })).toString("base64url");
+    const b = Buffer.from(JSON.stringify({ iss: "https://token.actions.githubusercontent.com", aud: "bird-letter-rules", repository: "kianupark1/Bird-Letter", ref: "refs/heads/main", exp: now + 300, nbf: now - 10, ...over })).toString("base64url");
+    return `${h}.${b}.${cs("RSA-SHA256").update(`${h}.${b}`).sign(privateKey).toString("base64url")}`;
+  };
+  const key = (kid: string) => (kid === "k1" ? publicKey : undefined);
+  eq("OIDC: 우리 저장소 main 통과", verifyGithubOidc(mk(), key, now), true);
+  eq("OIDC: 다른 저장소 거부", verifyGithubOidc(mk({ repository: "evil/Bird-Letter" }), key, now), false);
+  eq("OIDC: 다른 브랜치 거부", verifyGithubOidc(mk({ ref: "refs/heads/claude/x" }), key, now), false);
+  eq("OIDC: 다른 대상 거부", verifyGithubOidc(mk({ aud: "other" }), key, now), false);
+  eq("OIDC: 다른 발급처 거부", verifyGithubOidc(mk({ iss: "https://evil.example" }), key, now), false);
+  eq("OIDC: 만료 거부", verifyGithubOidc(mk({ exp: now - 1 }), key, now), false);
+  eq("OIDC: 모르는 열쇠 거부", verifyGithubOidc(mk({}, "zz"), key, now), false);
+  const [h, b, sg] = mk().split(".");
+  const forged = Buffer.from(JSON.stringify({ ...JSON.parse(Buffer.from(b, "base64url").toString()), repository: "evil/x" })).toString("base64url");
+  eq("OIDC: 내용 바꾼 위조 거부", verifyGithubOidc(`${h}.${forged}.${sg}`, key, now), false);
+  eq("OIDC: 엉터리 글자 거부", verifyGithubOidc("abc", key, now), false);
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
