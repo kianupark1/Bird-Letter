@@ -448,5 +448,28 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("OIDC: 엉터리 글자 거부", verifyGithubOidc("abc", key, now), false);
 }
 
+
+// 같은 사람 찾기: 이름 없는 계정에 내가 "석영이"라고 적어 보낸 적이 있으면 "석영" 친구와 한 사람
+{
+  const { buildThreads: bt, nameKey: nk, visibleThreads: vt } = await import("../core/threads.ts");
+  eq("이름 비교: 석영이=석영", nk("석영이"), nk("석영"));
+  eq("이름 비교: 지민님=지민", nk("지민님"), "지민");
+  eq("이름 비교: 두 글자는 그대로(민이)", nk("민이"), "민이");
+  const fr = [{ uid: "kakao:1", name: "석영" }, { uid: "anonA", name: "" }, { uid: "anonB", name: "" }];
+  const sent = [
+    { id: "s1", to: "석영이", toUid: "anonA", sentAt: 100 },
+    { id: "s2", to: "이름 없는 친구 2", toUid: "anonB", sentAt: 200 },
+    { id: "s3", to: "석영이", sentAt: 300 },
+  ];
+  const th = bt(sent, [], fr, {});
+  const sy = th.find((x) => x.uids?.includes("kakao:1"))!;
+  eq("이름 단서로 합침: 석영 방에 anonA 포함", sy.uids?.includes("anonA"), true);
+  eq("이름만 적은 '석영이' 편지도 석영 방으로", sy.entries.some((e) => e.item.id === "s3"), true);
+  eq("단서 없는 anonB는 따로(이름 없는 친구)", th.some((x) => x.uids?.includes("anonB") && x.name.startsWith("이름 없는 친구")), true);
+  eq("석영 방 이름은 진짜 이름", sy.name, "석영");
+  const vis = vt([{ key: "a", lastAt: 100 }, { key: "b", lastAt: 300 }], { a: "150", b: "150" });
+  eq("나간 방은 숨김, 그 뒤 새 편지가 오면 다시 보임", vis.map((x) => x.key).join(), "b");
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

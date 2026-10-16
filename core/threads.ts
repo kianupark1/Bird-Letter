@@ -38,7 +38,23 @@ export function keyFromParams(u: string | null, n: string | null): string | null
  * - nick: 친구를 내가 부르는 이름
  * 이름을 아직 안 정한 기본 이름("새 친구")은 서로 다른 사람일 수 있어서 저절로 합치지 않아요.
  */
-export type PeopleBook = { alias?: Record<string, string>; same?: Record<string, string>; nick?: Record<string, string> };
+export type PeopleBook = { alias?: Record<string, string>; same?: Record<string, string>; nick?: Record<string, string>; /** 나간 채팅방(방 key → 나간 시각 ms, 글자로). 그 뒤에 새 편지가 오면 다시 보여요 */ hidden?: Record<string, string> };
+
+/**
+ * 이름 비교용: "석영이"와 "석영", "지민님"과 "지민"을 같은 이름으로 봐요(부르는 말끝만 떼고 비교).
+ * 화면에 보이는 이름은 바꾸지 않아요.
+ */
+export function nameKey(name: string): string {
+  let n = name.trim().replace(/\s+/g, "");
+  n = n.replace(/(님|씨)$/, "");
+  if (n.length >= 3 && /[가-힣]이$/.test(n)) n = n.slice(0, -1);
+  return n;
+}
+
+/** 채팅 목록에서 나간 방은 빼요(나간 뒤에 새 편지가 오면 다시 보여요) */
+export function visibleThreads<T extends { key: string; lastAt: number }>(list: T[], hidden: Record<string, string> = {}): T[] {
+  return list.filter((t) => { const h = Number(hidden[t.key]); return !h || t.lastAt > h; });
+}
 export const PLACEHOLDER_NAMES = new Set(["", "새 친구", "누군가", "보낸 사람"]);
 
 /**
@@ -64,14 +80,22 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   const alias = book.alias ?? {}, nick = book.nick ?? {};
   const same: Record<string, string> = { ...(book.same ?? {}) };
   const friendName = new Map(friends.map((f) => [f.uid, f.name]));
-  const shown = (uid: string) => nick[uid] || friendName.get(uid) || "";
-  // 이름이 똑같은 친구 계정들은 같은 사람으로 봐요(기본 이름 "새 친구"는 제외)
+  // 이름 없는 친구에게 내가 이름을 직접 적어 보낸 적이 있으면(예: 받는 사람 "석영이") 그 이름이 단서예요
+  const sentName = new Map<string, { name: string; at: number }>();
+  for (const s of sent) {
+    if (!s.toUid || isUnnamed(s.to)) continue;
+    const cur = sentName.get(s.toUid);
+    if (!cur || s.sentAt > cur.at) sentName.set(s.toUid, { name: s.to.trim(), at: s.sentAt });
+  }
+  const real = (uid: string) => { const n = friendName.get(uid) ?? ""; return isUnnamed(n) ? "" : n; };
+  const shown = (uid: string) => nick[uid] || real(uid) || sentName.get(uid)?.name || "";
+  // 이름이 같은 친구 계정들은 같은 사람으로 봐요("석영이"="석영", 이름 없는 계정은 제외)
   const byName = new Map<string, string>();
   for (const f of [...friends].sort((x, y) => x.uid.localeCompare(y.uid))) {
     const n = shown(f.uid);
-    if (PLACEHOLDER_NAMES.has(n)) continue;
-    const first = byName.get(n);
-    if (!first) byName.set(n, f.uid);
+    if (isUnnamed(n)) continue;
+    const k = nameKey(n), first = byName.get(k);
+    if (!first) byName.set(k, f.uid);
     else if (!same[f.uid] && first !== f.uid) same[f.uid] = first;
   }
   const root = (uid: string) => { let x = uid; for (let i = 0; i < 10 && same[x] && same[x] !== x; i++) x = same[x]; return x; };
@@ -89,11 +113,11 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   for (const f of friends) forUid(f.uid);
   // 이름만 적어 보낸 편지도, 같은 이름(친구가 정한 이름이나 내가 부르는 이름)의 친구가 있으면 그 친구 한 명으로 합쳐요
   const friendByName = new Map<string, string>();
-  for (const f of friends) for (const n of [f.name, nick[f.uid]]) if (n && !PLACEHOLDER_NAMES.has(n) && !friendByName.has(n)) friendByName.set(n, f.uid);
+  for (const f of friends) for (const n of [shown(f.uid), real(f.uid), nick[f.uid]]) if (n && !isUnnamed(n) && !friendByName.has(nameKey(n))) friendByName.set(nameKey(n), f.uid);
   const sendTo = new Map<string, { uid: string; at: number }>(); // 방마다 최근에 쓰인 계정(보낼 대상)
   const note = (t: T, uid: string, at: number) => { const cur = sendTo.get(t.key); if (!cur || at > cur.at) sendTo.set(t.key, { uid, at }); };
   for (const s of sent) {
-    const uid = s.toUid ?? alias[s.to] ?? friendByName.get(s.to);
+    const uid = s.toUid ?? alias[s.to] ?? friendByName.get(nameKey(s.to));
     const t = uid ? forUid(uid) : get(keyForName(s.to), s.to);
     if (uid && s.toUid) note(t, s.toUid, s.sentAt);
     t.entries.push({ dir: "sent", item: s, at: s.sentAt });
@@ -114,8 +138,8 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
       const r = root(ids[0]);
       t.uid = sendTo.get(t.key)?.uid ?? (friendName.has(r) ? r : ids.find((u) => friendName.has(u)) ?? r);
       // 이름: 내가 부르는 이름 > 친구가 정한 진짜 이름 > 받은 편지에 적힌 이름 > 기본 이름
-      const names = [...ids.map((u) => nick[u]), ...ids.map((u) => friendName.get(u)), ...ids.map((u) => recvName.get(u))].filter((n): n is string => !!n);
-      t.name = names.find((n) => !PLACEHOLDER_NAMES.has(n)) ?? ""; // 이름이 없으면 아래에서 "이름 없는 친구 N"으로
+      const names = [...ids.map((u) => nick[u]), ...ids.map((u) => real(u)), ...ids.map((u) => recvName.get(u)), ...ids.map((u) => sentName.get(u)?.name)].filter((n): n is string => !!n);
+      t.name = names.find((n) => !isUnnamed(n)) ?? ""; // 이름이 없으면 아래에서 "이름 없는 친구 N"으로
     }
   }
   // 이름이 없는 사람은 계정 순서대로 "이름 없는 친구 1, 2…"(늘 같은 번호, 대화방에서 이름을 정하면 그 이름으로)
