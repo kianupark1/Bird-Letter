@@ -511,5 +511,18 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("대표는 친구 계정", th.find((x) => x.name === "창재")!.key, "u:kakao:9");
 }
 
+
+// 보낼 계정은 지금 친구인 계정(예전 계정에 더 최근에 보냈어도)
+{
+  const { buildThreads: bt } = await import("../core/threads.ts");
+  const th = bt([
+    { id: "y1", to: "석영이", toUid: "kakao:5", sentAt: 100 },
+    { id: "y2", to: "석영이", toUid: "anonOld", sentAt: 900 },
+  ], [], [{ uid: "kakao:5", name: "석영" }], {});
+  const one = th.filter((x) => x.entries.length);
+  eq("석영 한 줄", one.length, 1);
+  eq("보낼 계정은 친구 계정", one[0].uid, "kakao:5");
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

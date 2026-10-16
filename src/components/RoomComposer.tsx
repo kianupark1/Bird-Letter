@@ -26,7 +26,12 @@ const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } ca
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
 export type Resend = { replaceId: string; message: string; birdId: string };
 
-export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel, needName, penpal }: {
+/** 원인을 찾기 쉽게 오류 이름을 작게 덧붙여요(예: "(unavailable)") */
+const errCode = (e: unknown) => { const c = (e as { code?: string })?.code; return c ? ` (${String(c).replace(/^firestore\//, "")})` : ""; };
+/** 서버 규칙이 막은 오류(친구가 아니거나 권한이 없을 때) */
+const isDenied = (e: unknown) => /permission/i.test(String((e as { code?: string })?.code ?? (e as Error)?.message ?? ""));
+
+export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel, needName, penpal, replyTo }: {
   threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn;
   /** 길 잃은 편지 다시 보내기: 같은 글을 채워 두고, 보내면 길 잃은 편지는 지워요 */
   resend?: Resend | null; onResendDone?: () => void; cancel?: (id: string) => Promise<void>;
@@ -34,6 +39,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   needName?: boolean;
   /** 펜팔 방: 노선은 도시끼리 정해져 있고(바꿀 수 없음), 펜팔 이름으로 보내요. 사진·예약은 안 돼요 */
   penpal?: { routeId: string; fromName: string; replyTo?: string };
+  /** 받는 사람이 보낸 편지 ID(친구 연결이 끊겼을 때 답장으로 보내기) */
+  replyTo?: string;
 }) {
   const { profile, ready, update } = useProfile();
   const [message, setMessage] = useState("");
@@ -119,9 +126,11 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (departError) { setInfo(departError); setSheet("later"); return; }
     setBusy(true); setInfo("");
     try {
+      const normal = (replyTo?: string) => add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined, replyTo });
       const sending = penpal
         ? add({ to: name, toUid, routeId: routeIdOf(fromId, toPick), birdId, message: message.trim(), fromName: penpal.fromName, speed: speed.current, replyTo: penpal.replyTo, penpal: true })
-        : add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined });
+        // 친구 연결이 끊긴 계정이라 서버가 막으면, 그 사람이 보낸 편지에 "답장"으로 한 번 더 보내 봐요
+        : normal().catch((e) => { if (isDenied(e) && replyTo) return normal(replyTo); throw e; });
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
       await Promise.race([sending, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000))]);
       write(LAST_BIRD, birdId);
@@ -133,7 +142,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       setTimeout(() => setSent(""), 5000);
     } catch (e) {
       setInfo((e as Error).message === "timeout" ? "인터넷이 느려서 아직 보내지 못했어요. 연결을 확인하고 다시 눌러 주세요."
-        : photos.length || later ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : "편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
+        : isDenied(e) ? `${name}님에게 바로 보낼 수 없어요. 친구 연결이 끊긴 것 같아요. 친구 탭에서 다시 초대해 주세요.`
+        : photos.length || later ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : `편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.${errCode(e)}`);
     }
     setBusy(false);
   };
