@@ -13,7 +13,7 @@ const BASE = `http://localhost:${PORT}`;
 const PAGES = [
   ["/", null], // 첫 방문자는 온보딩으로 이동하므로 응답만 확인
   ["/onboarding", "소식은 날아서 와요"],
-  ["/send", "편지 쓰기"],
+  ["/send", null], // 주소(?to 등)를 읽는 화면이라 서버가 그리는 글자가 없음: 응답만 확인
   ["/settings", null], // 브라우저 저장소를 읽는 화면: 응답만 확인
   ["/welcome", "소식은 날아서 와요"],
   ["/bungbungi", "붕붕이"],
