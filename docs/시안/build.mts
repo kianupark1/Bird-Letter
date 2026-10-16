@@ -736,3 +736,94 @@ const sheet3 = `<div style="padding:30px;background:#d9d2c4;width:${4 * 420 + 30
   execFileSync("convert", [resolve(OUT, "v3-전체-한눈에.png"), "-crop", `${4 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v3-전체-한눈에.png")]);
 }
 console.log("3차 시안:", v3.length + 1);
+
+/* ═════════ 4차 시안(v4): 위치 알려 주는 범위 · 전체 랭킹 · 스탬프 도감 · 비행 중 재미 이벤트 ═════════ */
+const CSS4 = `
+.v2 .opt{display:flex;align-items:center;gap:12px;background:#fff;border-radius:22px;padding:12px 16px;min-height:72px;box-shadow:0 3px 0 rgba(42,33,24,.08);font-size:19px;font-weight:700}
+.v2 .opt small{display:block;font-weight:400;font-size:15px;color:#6B5E52;margin-top:2px}
+.v2 .opt.on{box-shadow:0 0 0 4px #C1481F}
+.v2 .opt .rd{width:26px;height:26px;border-radius:50%;border:3px solid #cdbfa8;flex:none}.v2 .opt.on .rd{border-color:#C1481F;background:radial-gradient(#C1481F 45%,transparent 50%)}
+.v2 .chips{display:flex;flex-wrap:wrap;gap:8px}.v2 .chips span{background:#F8E6BC;color:#1E3A5C;border-radius:20px;padding:8px 16px;font-size:18px;font-weight:700}.v2 .chips span.on{background:#C1481F;color:#fff}
+.v2 .stamps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.v2 .stp{aspect-ratio:1;border-radius:20px;background:#EFE6D2;display:grid;place-items:center;text-align:center;font-size:16px;font-weight:700;color:#a99b86;border:3px dashed #d6c9b0;line-height:1.2}
+.v2 .stp.got{background:#fff;color:#2A2118;border:3px solid #E0A83C;box-shadow:0 3px 0 rgba(224,168,60,.4);transform:rotate(-2deg)}
+.v2 .stp.got:nth-child(even){transform:rotate(2deg)}.v2 .stp b{display:block;font-size:26px;margin-bottom:2px}
+`;
+const v4: { file: string; title: string; note: string; html: string }[] = [];
+const add4 = (file: string, title: string, note: string, html: string) => v4.push({ file, title, note, html });
+
+add4("v4-1-내동네", "① 내 동네: 알려 줄 범위를 내가 정해요", "GPS는 내 폰에서만 쓰고 구까지만 찾아요. 친구에게는 내가 고른 범위만 보여요(기본: 시·도).", wrap2(`
+<div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:24px">내 동네</b><small>편지가 이곳으로 날아와요</small></div></div>
+<div class="body" style="gap:12px">
+  <div class="eta2" style="text-align:center"><div style="font-size:17px;color:#6B5E52">내 폰이 찾은 곳</div><div style="font-size:32px;font-weight:700;margin:2px 0">서울 강남구</div><div class="chips" style="justify-content:center;margin-top:6px"><span>📍 다시 찾기</span><span>직접 고르기</span></div></div>
+  <div style="font-size:19px;font-weight:700;margin-top:4px">친구에게 보이는 범위</div>
+  <div class="opt on"><span class="rd"></span><div>시·도까지만<small>"서울" 정도만 보여요 (추천)</small></div></div>
+  <div class="opt"><span class="rd"></span><div>구까지<small>"서울 강남구"</small></div></div>
+  <div class="opt"><span class="rd"></span><div>알리지 않기<small>보내는 친구가 직접 골라요</small></div></div>
+  <div class="st" style="font-size:15px;text-align:center">정확한 위치는 저장하지 않고, 이름만 써요 · 언제든 바꿀 수 있어요</div>
+</div>
+<div class="dock"><div class="chunky">저장</div></div>`));
+
+add4("v4-2-받는곳", "② 받는 곳: 친구가 알려 준 곳을 자동으로", "친구가 정한 범위만큼만 쓰고, 안 알려 줬으면 큰 도시에서 골라요.", wrap2(`
+${rhead("지민", "받는 곳을 정해 볼까요?")}
+<div class="body" style="gap:14px;justify-content:center">
+  <div class="bubble">지민이 알려 준 곳이에요</div>
+  <div class="eta2" style="text-align:center"><div style="font-size:36px;font-weight:700">부산</div><div class="st">지민이 "시·도까지"만 알려 줬어요</div></div>
+  <div style="font-size:18px;font-weight:700;margin-top:6px">지민이 아직 안 알려 줬다면</div>
+  <div class="chips"><span>서울</span><span>인천</span><span>대전</span><span>광주</span><span>대구</span><span class="on">부산</span><span>울산</span><span>제주</span></div>
+  <div class="st" style="font-size:15px">직접 고른 곳은 나만 알고, 지민의 위치를 알아내는 게 아니에요</div>
+</div>
+<div class="dock"><div class="chunky">서울 → 부산 · 325km</div></div>`));
+
+add4("v4-3-전체랭킹", "③ 전체 랭킹: 친구 + 모든 새 편지 사용자", "내가 원할 때만 이름을 보여요(기본은 '익명 새'). 이번 주·전체로 겨뤄요.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:26px">랭킹 🏆</b><small>편지가 날아간 거리의 합이에요</small></div></div>
+<div class="body" style="gap:10px">
+  <div class="seg"><div>친구</div><div class="on">전체</div></div>
+  <div class="seg"><div class="on">이번 주</div><div>전체 기간</div></div>
+  <div class="sticker" style="background:#FFF3C9"><div style="font-size:26px;width:34px;text-align:center;font-weight:700">1</div><div class="face f2" style="width:52px;height:52px">${bird("crane", 42)}</div><div style="flex:1"><b>익명의 두루미</b><span class="d">서울 · 편지 14통</span></div><b style="color:#C1481F">5,820km</b></div>
+  <div class="sticker"><div style="font-size:24px;width:34px;text-align:center;font-weight:700">2</div><div class="face f0" style="width:52px;height:52px">${bird("hawk", 42)}</div><div style="flex:1"><b>지민</b><span class="d">부산 · 편지 9통</span></div><b>4,310km</b></div>
+  <div class="sticker"><div style="font-size:24px;width:34px;text-align:center;font-weight:700">3</div><div class="face f1" style="width:52px;height:52px">${bird("swallow", 42)}</div><div style="flex:1"><b>익명의 제비</b><span class="d">대전 · 편지 7통</span></div><b>3,950km</b></div>
+  <div class="sticker" style="background:#F9E1D4"><div style="font-size:24px;width:34px;text-align:center;font-weight:700">128</div><div class="face f3" style="width:52px;height:52px">${bird("magpie", 42)}</div><div style="flex:1"><b>나</b><span class="d">서울 · 편지 3통</span></div><b>980km</b></div>
+  <div class="opt" style="min-height:60px"><span class="rd" style="border-radius:8px"></span><div style="font-size:17px">전체 랭킹에 내 이름 보이기<small>끄면 '익명의 까치'로 나와요</small></div></div>
+</div>
+${tabs2(1)}`));
+
+const STP = ["서울","인천","경기","강원","충북","충남","대전","세종","전북","전남","광주","경북","대구","경남","부산","울산","제주"];
+const GOT = new Set(["서울","경기","대전","충남","대구","부산","경북","제주"]);
+add4("v4-4-스탬프", "④ 스탬프 도감: 편지가 지나간 곳을 모아요", "편지가 지나가면 그 지역 스탬프가 찍혀요. 17곳을 다 모으면 '전국 일주' 배지.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><span style="font-size:34px;margin-left:-6px">‹</span><div><b style="font-size:26px">스탬프 도감</b><small>편지가 지나간 곳 8 / 17</small></div></div>
+<div class="body" style="gap:12px">
+  <div class="track" style="margin:6px 4px 14px"><i style="width:47%"></i><div class="bd" style="left:47%">${bird("magpie", 40)}</div></div>
+  <div class="stamps">${STP.map((n) => `<div class="stp ${GOT.has(n) ? "got" : ""}"><div><b>${GOT.has(n) ? "🏮" : "?"}</b>${n}</div></div>`).join("")}</div>
+  <div class="bubble" style="font-size:17px">짹짹! 강원·전남·울산… 아직 안 가 본 곳이 많아요</div>
+</div>
+${tabs2(2)}`));
+
+add4("v4-5-비행이벤트", "⑤ 비행 중 이야기: 날아가며 생기는 일", "편지마다 정해진 작은 사건(도착 시각은 그대로). 지날 때마다 스탬프와 이야기가 대화에 쌓여요.", wrap2(`
+${rhead("지민", "서울 → 부산 · 제비")}
+${chatMap(0.55, "swallow", "도착까지 <em>3시간 40분</em>")}
+<div class="chat">
+  <div class="ev">🕊 제비가 출발했어요 <small>오전 9:00</small></div>
+  <div class="ev">📍 천안을 지났어요 <small>오전 10:20 · 🏮 충남 스탬프!</small></div>
+  <div class="ev" style="background:#E4EFE8">🌦 대전 상공에 소나기! 처마 밑에서 잠깐 쉬었어요 <small>오전 11:40</small></div>
+  <div class="ev" style="background:#F8E6BC">🌰 속리산에서 도토리를 주웠어요 <small>오후 12:30 · 도감에 모았어요</small></div>
+  <div class="ev" style="background:#fff">⏳ 오후 5:20쯤 도착해요 <small>지민님만 읽어요</small></div>
+</div>
+${comp("편지가 날아가는 중이에요", ["swallow", "제비"], false)}`));
+
+const page4 = (body: string) => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}${CSS2}${CSS3}${CSS4}body{background:#d9d2c4}</style></head><body>${body}</body></html>`;
+for (const s of v4) {
+  const f = resolve(OUT, `${s.file}.html`);
+  writeFileSync(f, page4(s.html));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=390,${844 + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, s.file + ".png")}`, "file://" + f], { stdio: "ignore" });
+  const png = resolve(OUT, s.file + ".png");
+  execFileSync("convert", [png, "-crop", `${390 * 2}x${844 * 2}+0+0`, "+repage", png]);
+}
+{
+  const sheet4 = `<div style="padding:30px;background:#d9d2c4;width:${5 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(5,390px);gap:30px"><div style="grid-column:1/-1;font-size:26px;font-weight:700">4차 시안: 위치 범위 · 전체 랭킹 · 스탬프 도감 · 비행 중 이야기</div>${v4.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
+  const f = resolve(OUT, "v4-전체-한눈에.html");
+  writeFileSync(f, page4(sheet4));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${5 * 420 + 30},${1000 + 87}`, "--force-device-scale-factor=1", `--screenshot=${resolve(OUT, "v4-전체-한눈에.png")}`, "file://" + f], { stdio: "ignore" });
+  execFileSync("convert", [resolve(OUT, "v4-전체-한눈에.png"), "-crop", `${5 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v4-전체-한눈에.png")]);
+}
+console.log("4차 시안:", v4.length + 1);
