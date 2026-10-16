@@ -30,7 +30,7 @@ export const FONT_SCALES: { id: FontScale; label: string }[] = [
 export const PROFILE_KEY = "saepyeonji.profile.v1";
 
 export const DEFAULT_PROFILE: Profile = {
-  nickname: "새 친구",
+  nickname: "", // 기본 이름("새 친구")은 쓰지 않아요: 같은 이름이 여러 명 생겨 헷갈려서. 카카오 닉네임이나 직접 정한 이름만
   notify: { arrival: true, passing: false, reply: true },
   chirp: true,
   homePlace: "seoul",
@@ -47,6 +47,7 @@ export function useProfile() {
       const raw = localStorage.getItem(PROFILE_KEY);
       if (raw) {
         const saved = JSON.parse(raw);
+        if (saved.nickname === "새 친구") saved.nickname = ""; // 옛 기본 이름은 지워요
         setProfile({ ...DEFAULT_PROFILE, ...saved, fontScale: saved.fontScale === "xlarge" ? "large" : saved.fontScale ?? "normal", notify: { ...DEFAULT_PROFILE.notify, ...saved.notify } });
       }
     } catch {}

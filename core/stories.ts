@@ -18,7 +18,7 @@ export const STORY_POOL: Story[] = [
   { id: "tailwind", icon: "💨", text: "뒷바람을 탔어요! 기분 좋게 날아가요" },
   { id: "fog", icon: "🌫", text: "안개 속을 조심조심 지나가요" },
   { id: "sunset", icon: "🌇", text: "노을이 예뻐서 잠깐 구경했어요" },
-  { id: "friend", icon: "🕊", text: "길에서 새 친구를 만나 인사했어요" },
+  { id: "friend", icon: "🕊", text: "길에서 다른 새를 만나 인사했어요" },
   { id: "bread", icon: "🍞", text: "누가 빵 부스러기를 나눠 줬어요", item: { id: "bread", name: "빵 부스러기", emoji: "🍞" } },
   { id: "flower", icon: "🌸", text: "꽃잎이 바람에 날려 왔어요", item: { id: "flower", name: "꽃잎", emoji: "🌸" } },
 ];

@@ -18,7 +18,7 @@ function newCode() {
   return Array.from(a, (n) => ALPHABET[n % ALPHABET.length]).join("");
 }
 
-const nick = (n: string) => (n.trim() || "새 친구").slice(0, 12);
+const nick = (n: string) => (n.trim() === "새 친구" ? "" : n.trim()).slice(0, 12); // 이름이 없으면 비워 두고, 친구 화면에서 "친구 #표"로 보여요
 
 /** 내 친구 코드. 처음이면 만들고, 닉네임이 바뀌었으면 코드에 붙은 이름도 고쳐요 */
 export async function ensureMyCode(name: string, bird?: string): Promise<string> {
