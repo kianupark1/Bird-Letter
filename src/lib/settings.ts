@@ -21,6 +21,10 @@ export type Profile = {
   homeSet?: boolean;
   /** 내 프로필 사진(가운데를 잘라 줄인 작은 JPEG 글자). 없으면 내 새 얼굴이 보여요 */
   photo?: string;
+  /** 프로필 사진이 카카오에서 가져온 것인지(직접 올린 사진은 카카오 사진으로 덮어쓰지 않아요) */
+  photoFromKakao?: boolean;
+  /** 사진을 직접 지웠는지(지웠으면 카카오 사진을 다시 넣지 않아요) */
+  photoOff?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [

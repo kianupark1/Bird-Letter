@@ -81,7 +81,7 @@ export async function savePolaroid(photoUrl: string, caption: string, sub = ""):
  * 프로필 사진: 가운데를 정사각형으로 잘라 192px JPEG로 줄여요(친구 목록에 함께 저장돼서 아주 작게).
  * 서버 규칙 한도 30,000글자 안에 들어올 때까지 화질을 낮춰요. 숨은 정보(EXIF)도 사라져요.
  */
-export async function compressAvatar(file: File): Promise<string> {
+export async function compressAvatar(file: Blob): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("not-image");
   const img = await loadImage(file);
   const s = Math.min(img.naturalWidth, img.naturalHeight);

@@ -59,6 +59,7 @@ export async function POST(req: Request) {
   };
 
   let kakaoNick = "";
+  let kakaoThumb = "";
   const deps: KakaoDeps = {
     async kakaoUserId(code) {
       const form = new URLSearchParams({ grant_type: "authorization_code", client_id: restKey, redirect_uri: `${base}/auth/kakao`, code });
@@ -72,6 +73,10 @@ export async function POST(req: Request) {
       // 카카오 닉네임(동의항목 "닉네임"): 앱 이름으로 그대로 쓰도록 폰에 돌려줘요. 서버에는 저장하지 않아요
       const n = j?.kakao_account?.profile?.nickname ?? j?.properties?.nickname;
       if (typeof n === "string") kakaoNick = n.trim().slice(0, 12);
+      // 카카오 프로필 사진(동의항목 "프로필 사진"): 기본 그림이 아닐 때만 작은 사진 주소를 받아 둬요
+      const pr = j?.kakao_account?.profile;
+      const th = pr?.thumbnail_image_url ?? j?.properties?.thumbnail_image;
+      if (typeof th === "string" && pr?.is_default_image !== true) kakaoThumb = th;
       return String(j.id);
     },
     async verifyIdToken(idToken) {
@@ -103,8 +108,25 @@ export async function POST(req: Request) {
   try {
     const res = await loginWithKakao(input, deps);
     if (!res.ok) return NextResponse.json({ error: res.error }, { status: res.status });
-    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: kakaoNick || undefined });
+    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: kakaoNick || undefined, photo: (await fetchThumb(kakaoThumb)) || undefined });
   } catch {
     return NextResponse.json({ error: "server-error" }, { status: 502 });
   }
+}
+
+/**
+ * 카카오 프로필 사진을 서버에서 받아 폰에 그대로 넘겨요(폰이 카카오 사진 서버에서 직접 읽으면 막힐 수 있어서).
+ * 카카오 사진 서버 주소만, 300KB 이하 그림만. 서버에는 저장하지 않아요. 실패하면 사진 없이 진행.
+ */
+async function fetchThumb(url: string): Promise<string> {
+  try {
+    const u = new URL(url.replace(/^http:/, "https:"));
+    if (u.protocol !== "https:" || !/(^|\.)kakaocdn\.net$/.test(u.hostname)) return "";
+    const r = await fetch(u, { signal: AbortSignal.timeout(4000) });
+    const type = r.headers.get("content-type") ?? "";
+    if (!r.ok || !/^image\/(jpeg|png|webp|gif)/.test(type)) return "";
+    const buf = Buffer.from(await r.arrayBuffer());
+    if (buf.length > 300_000) return "";
+    return `data:${type.split(";")[0]};base64,${buf.toString("base64")}`;
+  } catch { return ""; }
 }

@@ -9,6 +9,7 @@ import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/lett
 import Face from "@/components/Face";
 import BirdPicker from "@/components/BirdPicker";
 import { compressAvatar } from "@/lib/photo";
+import { KAKAO_LOGIN_READY, isKakaoLinked, startKakaoLogin } from "@/lib/firebase/kakao";
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
@@ -51,6 +52,9 @@ export default function Settings() {
   const [msg, setMsg] = useState("");
   const [pickBird, setPickBird] = useState(false);
   const [photoMsg, setPhotoMsg] = useState("");
+  const [kakaoLinked, setKakaoLinked] = useState(false);
+  // 카카오로 들어온 계정이면 "카카오톡 이름·사진 다시 가져오기"를 보여 줘요(로그인 정보가 준비된 뒤에 확인)
+  useEffect(() => { if (KAKAO_LOGIN_READY) auth().authStateReady().then(isKakaoLinked).then(setKakaoLinked).catch(() => {}); }, []);
   const [testMsg, setTestMsg] = useState("");
   const { state: push, enable: enablePush, disable: disablePush } = usePushState();
 
@@ -103,12 +107,13 @@ export default function Settings() {
             const f = e.target.files?.[0]; e.target.value = "";
             if (!f) return;
             setPhotoMsg("사진을 줄이는 중…");
-            try { update({ photo: await compressAvatar(f) }); setPhotoMsg("프로필 사진을 바꿨어요. 친구에게도 보여요."); }
+            try { update({ photo: await compressAvatar(f), photoFromKakao: false, photoOff: false }); setPhotoMsg("프로필 사진을 바꿨어요. 친구에게도 보여요."); }
             catch { setPhotoMsg("이 사진은 쓸 수 없어요. 다른 사진을 골라 주세요."); }
           }} />
         </label>
-        {profile.photo && <button type="button" className="linkbtn" onClick={() => { update({ photo: undefined }); setPhotoMsg("사진을 지웠어요. 내 새 얼굴이 보여요."); }}>사진 지우고 새 얼굴로</button>}
+        {profile.photo && <button type="button" className="linkbtn" onClick={() => { update({ photo: undefined, photoFromKakao: false, photoOff: true }); setPhotoMsg("사진을 지웠어요. 내 새 얼굴이 보여요."); }}>사진 지우고 새 얼굴로</button>}
         {photoMsg && <div className="small" role="status">{photoMsg}</div>}
+        {kakaoLinked && <button type="button" className="linkbtn" onClick={() => startKakaoLogin("/settings", true)}>카카오톡 이름·사진 다시 가져오기</button>}
         <input className="nick" style={{ textAlign: "center", marginTop: 8 }} aria-label="닉네임" value={profile.nickname} maxLength={12} placeholder="이름"
           onChange={(e) => update({ nickname: e.target.value })} />
         <button type="button" className="edit" onClick={() => setPickBird((v) => !v)}>
