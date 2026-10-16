@@ -640,3 +640,99 @@ const sheet2 = `<div style="padding:30px;background:#d9d2c4;width:${3 * 420 + 30
 shoot2("v2-전체-한눈에", sheet2, 3 * 420 + 30, 3 * 960 + 130);
 console.log("2차 시안:", v2.length + 2);
 
+
+/* ═════════ 3차 시안(v3): 모든 걸 '대화방 한 창' 안에서 ═════════ */
+const CSS3 = `
+.v2 .rhead{display:flex;align-items:center;gap:10px;padding:2px 14px 8px;flex:none}
+.v2 .rhead b{font-size:24px}.v2 .rhead small{display:block;font-size:15px;color:#6B5E52}
+.v2 .mapmini{margin:0 14px;border-radius:22px;overflow:hidden;border:3px solid #fff;box-shadow:0 3px 0 rgba(42,33,24,.1);position:relative;flex:none}
+.v2 .mapmini .eta{position:absolute;left:8px;bottom:8px;background:#fff;border-radius:14px;padding:4px 12px;font-size:16px;font-weight:700}
+.v2 .mapmini .eta em{font-style:normal;color:#C1481F}
+.v2 .chat{flex:1;overflow:hidden;padding:10px 14px 0;display:flex;flex-direction:column;gap:10px;justify-content:flex-end}
+.v2 .day{align-self:center;font-size:14px;color:#8a7c6f;background:rgba(255,255,255,.7);border-radius:12px;padding:2px 12px}
+.v2 .ev{align-self:center;display:flex;align-items:center;gap:8px;background:#FFF3C9;border-radius:18px;padding:7px 14px;font-size:16px;font-weight:700;color:#5b4a1e}
+.v2 .ev small{font-weight:400;color:#8a7c6f;font-size:14px}
+.v2 .lt{max-width:300px;border-radius:24px;padding:12px 16px;box-shadow:0 3px 0 rgba(42,33,24,.08);font-size:18px;line-height:1.45}
+.v2 .lt.me{align-self:flex-end;background:#F9E1D4;border-bottom-right-radius:8px}
+.v2 .lt.you{align-self:flex-start;background:#fff;border-bottom-left-radius:8px}
+.v2 .lt .top{display:flex;align-items:center;gap:10px}
+.v2 .lt b{font-size:18px;display:block}.v2 .lt .d{font-size:15px;color:#6B5E52}
+.v2 .lt.arrived{background:linear-gradient(#FFF3EC,#F7D9CA);box-shadow:0 0 0 3px #C1481F}
+.v2 .paper{background:#FFFDF4;border:2px solid #E7D9B5;border-radius:14px;padding:12px 14px;margin-top:8px;font-size:19px;line-height:1.55}
+.v2 .stamp{display:inline-block;font-size:13px;font-weight:700;color:#C1481F;border:2px solid #C1481F;border-radius:8px;padding:0 6px;transform:rotate(-6deg);margin-left:6px}
+.v2 .comp{display:flex;align-items:center;gap:8px;padding:10px 12px 14px;background:#fff;box-shadow:0 -6px 18px rgba(42,33,24,.08);border-radius:24px 24px 0 0;flex:none}
+.v2 .comp .bc{display:flex;flex-direction:column;align-items:center;font-size:12px;font-weight:700;color:#1E3A5C;background:#F8E6BC;border-radius:18px;padding:2px 8px;flex:none}
+.v2 .comp .in{flex:1;min-height:52px;border-radius:26px;background:#F4EEDF;padding:13px 16px;font-size:19px;color:#8a7c6f}
+.v2 .comp .go{width:54px;height:54px;border-radius:50%;background:#C1481F;color:#fff;display:grid;place-items:center;font-size:24px;box-shadow:0 4px 0 #8f3210;flex:none}
+.v2 .sheet{background:#fff;border-radius:28px 28px 0 0;padding:14px 14px 16px;box-shadow:0 -10px 28px rgba(42,33,24,.18);flex:none}
+.v2 .sheet h4{font-size:20px;text-align:center;margin-bottom:8px}
+.v2 .dim{position:absolute;inset:0;background:rgba(42,33,24,.35)}
+.v2 .pk.s{min-height:62px;padding:4px 14px 4px 6px;margin-bottom:6px}.v2 .pk.s .pic{width:62px}.v2 .pk.s b{font-size:20px}
+`;
+const chatMap = (p: number, id: string, eta: string) => `<div class="mapmini">${mapSvg(362, 158, p, id, route)}<div class="eta">${eta}</div></div>`;
+const rhead = (n: string, sub: string) => `<div class="rhead"><span style="font-size:34px;margin-left:-4px">‹</span>${face(n)}<div><b>${n}</b><small>${sub}</small></div></div>`;
+const comp = (txt = "지민에게 편지를 써 보세요", chip = ["pigeon", "비둘기"], go = true) => `<div class="comp"><div class="bc">${bird(chip[0], 34)}${chip[1]}</div><div class="in">${txt}</div><div class="go" style="${go ? "" : "opacity:.35"}">➤</div></div>`;
+
+const v3: { file: string; title: string; note: string; html: string }[] = [];
+const add3 = (file: string, title: string, note: string, html: string) => v3.push({ file, title, note, html });
+
+add3("v3-1-보낸사람", "① 내가 보낸 편지: 한 창에서 쭉", "새 출발 → 중간 지점 → 도착 예정이 대화처럼 쌓여요. 내용은 도착 전까지 나만 봐요.", wrap2(`
+${rhead("지민", "서울 → 부산 · 비둘기")}
+${chatMap(0.62, "pigeon", "도착까지 <em>1시간 55분</em>")}
+<div class="chat">
+  <div class="day">오늘</div>
+  <div class="lt me"><div class="top">${bird("pigeon", 46, true)}<div><b>내가 보낸 편지</b><span class="d">눌러서 내 글 보기</span></div></div></div>
+  <div class="ev">🕊 비둘기가 출발했어요 <small>오전 10:00</small></div>
+  <div class="ev">📍 대전을 지나고 있어요 <small>오후 12:30</small></div>
+  <div class="ev" style="background:#fff">⏳ 오후 5:20쯤 도착해요 <small>지민님만 읽어요</small></div>
+</div>
+${comp("편지가 날아가는 중이에요", ["pigeon", "비둘기"], false)}`));
+
+add3("v3-2-쓰기", "② 쓰기도 같은 창에서", "아래 입력줄에 쓰고, 새 알약을 누르면 새 고르기가 올라와요. 화면 이동 없음.", wrap2(`
+${rhead("지민", "서울 → 부산 325km")}
+<div class="chat" style="position:relative"><div class="day">오늘</div><div class="lt you"><div class="top">${bird("swallow", 46)}<div><b>지민이 보낸 편지</b><span class="d">읽었어요</span></div></div></div></div>
+<div class="dim"></div>
+<div class="sheet" style="position:relative;margin-top:-420px;z-index:2"><h4>어떤 새로 보낼까요?</h4>
+  ${pk2("hawk", "매", "약 3시간 37분", 5, false, "체험")}${pk2("pigeon", "비둘기", "약 5시간", 0, true)}${pk2("crane", "두루미", "약 5시간 55분", 1)}
+  <div class="st" style="text-align:center;font-size:15px">아래로 밀면 제비·까치·붕붕이도 있어요</div>
+</div>
+<div style="position:relative;z-index:2">${comp("보고 싶어서 새 편에 몇 자 적어요", ["pigeon", "비둘기"])}</div>`));
+
+add3("v3-3-받는사람", "③ 받는 사람도 같은 창", "날아오는 모습·도착 시각은 같이 보고, 내용은 도착해야 열려요.", wrap2(`
+${rhead("지민", "부산 → 서울 · 제비")}
+${chatMap(0.3, "swallow", "도착까지 <em>5시간 40분</em>")}
+<div class="chat">
+  <div class="day">오늘</div>
+  <div class="ev">🕊 제비가 출발했어요 <small>오전 9:00</small></div>
+  <div class="lt you"><div class="top">${bird("swallow", 46, true)}<div><b>지민이 보낸 편지</b><span class="d">🔒 도착하면 열 수 있어요</span></div></div></div>
+  <div class="ev" style="background:#fff">⏳ 오후 6:30쯤 도착해요</div>
+</div>
+${comp("답장은 편지가 도착한 뒤에 써요", ["pigeon", "비둘기"], false)}`));
+
+add3("v3-4-도착", "④ 도착하면 눌러서 그 자리에서 펼침", "새 화면으로 가지 않고 말풍선이 두루마리처럼 펼쳐져요.", wrap2(`
+${rhead("지민", "부산 → 서울 · 제비")}
+<div class="chat">
+  <div class="day">오늘</div>
+  <div class="ev" style="background:#F7D9CA">🎉 제비가 도착했어요! <small>오후 6:24</small></div>
+  <div class="lt you arrived"><div class="top">${bird("swallow", 46)}<div><b>지민이 보낸 편지 <span class="stamp">도착</span></b><span class="d">부산 → 서울 · 약 8시간</span></div></div>
+    <div class="paper">보고 싶다 🥲<br>이번 주말에 부산 오면<br>회 먹으러 가자!<br><span style="float:right;font-size:16px;color:#6B5E52">- 지민</span></div></div>
+  <div class="lt me"><div class="top">${bird("pigeon", 46)}<div><b>내가 보낸 편지</b><span class="d">도착 ✓ · 눌러서 보기</span></div></div></div>
+</div>
+${comp("답장 쓰기", ["pigeon", "비둘기"])}`));
+
+const page3 = (body: string, bg = "#d9d2c4") => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}${CSS2}${CSS3}body{background:${bg}}</style></head><body>${body}</body></html>`;
+for (const s of v3) {
+  const f = resolve(OUT, `${s.file}.html`);
+  writeFileSync(f, page3(s.html));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=390,${844 + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, s.file + ".png")}`, "file://" + f], { stdio: "ignore" });
+  const png = resolve(OUT, s.file + ".png");
+  execFileSync("convert", [png, "-crop", `${390 * 2}x${844 * 2}+0+0`, "+repage", png]);
+}
+const sheet3 = `<div style="padding:30px;background:#d9d2c4;width:${4 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(4,390px);gap:30px"><div style="grid-column:1/-1;font-size:26px;font-weight:700">3차 시안: 편지 쓰기·기다림·읽기가 모두 한 대화창 안에서</div>${v3.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
+{
+  const f = resolve(OUT, "v3-전체-한눈에.html");
+  writeFileSync(f, page3(sheet3));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${4 * 420 + 30},${1000 + 87}`, "--force-device-scale-factor=1", `--screenshot=${resolve(OUT, "v3-전체-한눈에.png")}`, "file://" + f], { stdio: "ignore" });
+  execFileSync("convert", [resolve(OUT, "v3-전체-한눈에.png"), "-crop", `${4 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v3-전체-한눈에.png")]);
+}
+console.log("3차 시안:", v3.length + 1);
