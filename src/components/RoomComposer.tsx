@@ -200,9 +200,20 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <button type="button" className="chip" onClick={() => { setMessage(""); onResendDone?.(); }}>그만두기</button></div>
       )}
       {info && <div className="ch-info" role="alert">{info}</div>}
-      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => setSheet(ok ? "bird" : "place")}>
-        <BirdIcon id={bird.id} size={24} />
-        <span>{ok && route ? <>{bird.name} · {formatMinutes(mins)} 걸려요 · {getPlace(fromId)?.name} → {getPlace(toId)?.name}{declared ? " ✓" : ""}</> : "📍 받는 곳을 골라 주세요"}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
+      {/* 새 고르기: 큰 새 그림을 옆으로 넘기며 바로 고를 수 있어요(누르면 바로 바뀜) */}
+      <div className="ch-birds" role="radiogroup" aria-label="어떤 새로 보낼까요?">
+        {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
+          <button key={b.id} type="button" role="radio" aria-checked={b.id === birdId} className={`ch-bird ${b.id === birdId ? "on" : ""}`}
+            onClick={() => { setBirdId(b.id); write(LAST_BIRD, b.id); }}>
+            <BirdIcon id={b.id} size={46} letter={b.id === birdId} />
+            <b>{b.name}</b>
+            <small>{route ? formatMinutes(Math.max(1, Math.round(travelMinutes(b, route.km) / speed.current))) : `시속 ${b.kmh}km`}</small>
+          </button>
+        ))}
+      </div>
+      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => setSheet("place")}>
+        <span aria-hidden>📍</span>
+        <span>{ok && route ? <>{getPlace(fromId)?.name} → {getPlace(toId)?.name} · {route.km}km{declared ? " ✓" : ""}</> : "받는 곳을 골라 주세요"}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
         <span aria-hidden>›</span>
       </button>
       <div className="ch-inrow">
