@@ -461,10 +461,11 @@ textarea.letterbox { min-height: 240px; line-height: 1.7; resize: vertical; }
 /* ───── 메신저형 개편(시안 docs/시안): 큰 글씨·큰 버튼 ───── */
 body[data-hide-nav] .bottomnav { display: none; }
 /* 글씨 크기: 보통이 기본(0.9배), 크게가 제일 커요(1.15배) */
-body { zoom: .9; }
-html[data-scale="small"] body { zoom: .8; }
-html[data-scale="normal"] body { zoom: .9; }
-html[data-scale="large"] body { zoom: 1.15; }
+html { --zoom: .9; }
+body { zoom: var(--zoom); }
+html[data-scale="small"] { --zoom: .8; }
+html[data-scale="normal"] { --zoom: .9; }
+html[data-scale="large"] { --zoom: 1.15; }
 
 .start { max-width: 420px; margin: 0 auto; min-height: 100dvh; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
 .start-hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; }
@@ -650,3 +651,49 @@ body { background: radial-gradient(120px 60px at 12% 40px, #FFFDF6 60%, transpar
 .rnum { width: 30px; text-align: center; font-size: 22px; font-weight: 700; flex: none; }
 .rkm { font-size: 18px; flex: none; }
 .rankcard { background: var(--tint-fly); margin-top: 6px; }
+
+/* 대화방 채팅형(시안 v3): 쓰기·기다림·읽기를 한 창에서 */
+main.app.room.chat { padding: 16px 16px 0; display: flex; flex-direction: column; min-height: calc(100dvh / var(--zoom)); }
+.ch-map { position: relative; border-radius: 22px; overflow: hidden; border: 3px solid var(--card); box-shadow: var(--raise); flex: none; max-height: 190px; }
+.ch-map .map { display: block; border-radius: 0; }
+.ch-map .eta { position: absolute; left: 8px; bottom: 8px; background: var(--card); border-radius: 14px; padding: 4px 12px; font-size: 16px; font-weight: 700; }
+.ch-map .eta em { font-style: normal; color: var(--dahong); }
+.ch-feed { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 12px 0 10px; justify-content: flex-end; }
+.ch-day { align-self: center; font-size: 14px; opacity: .65; background: rgba(255,255,255,.7); border-radius: 12px; padding: 2px 12px; }
+.ch-ev { align-self: center; display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 4px 8px; background: #FFF3C9; color: #5b4a1e; border-radius: 18px; padding: 7px 14px; font-size: 16px; font-weight: 700; text-align: center; max-width: 92%; }
+.ch-ev small { font-weight: 400; font-size: 14px; opacity: .75; }
+.ch-ev.hot { background: #F7D9CA; color: #6b2a10; }
+.ch-ev.soft { background: var(--card); }
+.ch-letter { max-width: 86%; border-radius: 24px; padding: 8px 8px; box-shadow: var(--raise); }
+.ch-letter.me { align-self: flex-end; background: var(--tint-hot); border-bottom-right-radius: 8px; }
+.ch-letter.you { align-self: flex-start; background: var(--card); border-bottom-left-radius: 8px; }
+.ch-letter.arrived { box-shadow: 0 0 0 3px var(--dahong), var(--raise); }
+.ch-tap { display: block; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 6px 8px; min-height: 56px; cursor: pointer; text-decoration: none; }
+.ch-tap.locked { cursor: default; }
+.ch-tap .top { display: flex; align-items: center; gap: 10px; }
+.ch-tap b { display: block; font-size: 18px; }
+.ch-tap .d { display: block; font-size: 15px; opacity: .75; margin-top: 2px; }
+.ch-letter > .top { display: flex; align-items: center; gap: 10px; padding: 6px 8px; color: inherit; text-decoration: none; }
+.ch-letter > .top b { display: block; font-size: 18px; } .ch-letter > .top .d { display: block; font-size: 15px; opacity: .75; }
+.stamp { display: inline-block; font-size: 13px; font-weight: 700; color: var(--dahong); border: 2px solid var(--dahong); border-radius: 8px; padding: 0 6px; transform: rotate(-6deg); margin-left: 6px; }
+.ch-open { margin-top: 6px; padding: 4px 4px 6px; }
+.ch-open.paper { background: #FFFDF4; border: 2px solid #E7D9B5; border-radius: 14px; padding: 12px 14px; font-size: 19px; line-height: 1.55; white-space: pre-wrap; color: #2A2118; }
+.ch-more { display: block; text-align: center; font-size: 14px; opacity: .6; margin-top: 8px; color: inherit; }
+.ch-comp { position: sticky; bottom: 0; z-index: 20; margin: 0 -16px; padding: 8px 14px calc(12px + env(safe-area-inset-bottom)); background: var(--card); border-radius: 24px 24px 0 0; box-shadow: 0 -6px 18px rgba(42,33,24,.1); }
+.ch-pills { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 8px; scrollbar-width: none; }
+.ch-pill { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 14px; border-radius: 22px; border: 0; background: #F8E6BC; color: #1E3A5C; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.ch-pill[aria-pressed="true"] { background: var(--dahong); color: var(--on-dahong); }
+.ch-pill.warn { background: #F7D9CA; color: #8f3210; }
+.ch-pill:focus-within { outline: 3px solid var(--namsaek); outline-offset: 2px; }
+.ch-inrow { display: flex; gap: 8px; align-items: flex-end; }
+.ch-in { flex: 1; min-height: 52px; max-height: 140px; border: 0; border-radius: 26px; background: #F4EEDF; color: inherit; padding: 13px 16px; font: inherit; font-size: 19px; resize: none; field-sizing: content; }
+.ch-go { width: 54px; height: 54px; flex: none; border-radius: 50%; border: 0; background: var(--dahong); color: var(--on-dahong); font-size: 24px; box-shadow: 0 4px 0 #8f3210; cursor: pointer; }
+.ch-go:disabled { opacity: .35; box-shadow: none; cursor: default; }
+.ch-info { color: var(--dahong); opacity: 1; margin: 0 0 6px; }
+.ch-thumbs { margin-bottom: 6px; }
+.ch-dim { position: fixed; inset: 0; z-index: 25; border: 0; background: rgba(42,33,24,.4); }
+.ch-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-width: 520px; margin: 0 auto; max-height: 82dvh; overflow-y: auto; background: var(--bg); border-radius: 28px 28px 0 0; padding: 16px 14px calc(18px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 28px rgba(42,33,24,.25); display: flex; flex-direction: column; gap: 8px; }
+.ch-sheet h2 { font-size: 20px; text-align: center; margin: 0 0 4px; }
+.ch-sheet .birdpick { display: flex; align-items: center; justify-content: space-between; text-align: left; width: 100%; padding: 6px 14px 6px 8px; min-height: 76px; cursor: pointer; font: inherit; color: inherit; flex-wrap: wrap; }
+.ch-sheet .birdpick .row { display: flex; align-items: center; gap: 10px; }
+.ch-sheet .birdpick .risk { flex-basis: 100%; padding-left: 74px; }
