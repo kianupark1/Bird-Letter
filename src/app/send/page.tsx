@@ -17,6 +17,8 @@ import PlaceField from "@/components/PlaceField";
 import BirdIcon from "@/components/BirdIcon";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import { roomHref } from "@/lib/room";
+import { isUnnamed, unnamed } from "../../../core/threads";
+import { birdFx } from "@/lib/chirp";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
@@ -158,6 +160,7 @@ function SendForm() {
         to: to.trim(), toUid: uid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed,
         photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined, replyTo,
       });
+      birdFx("depart", profile.chirp);
       router.push(IS_TOSS ? letterHref(id) : roomHref({ uid, name: to.trim() })); // 보낸 뒤에는 그 사람과의 대화방으로
     } catch {
       setError(photos.length || mode === "later" ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : "편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
@@ -184,7 +187,7 @@ function SendForm() {
               <div className="lab">친구에게 바로 보내기</div>
               <div className="chips">
                 {friends.map((f) => (
-                  <button key={f.uid} type="button" className="chip" aria-pressed={toUid === f.uid} onClick={() => pickFriend(f)}>{f.name}</button>
+                  <button key={f.uid} type="button" className="chip" aria-pressed={toUid === f.uid} onClick={() => pickFriend(f)}>{isUnnamed(f.name) ? unnamed(f.uid) : f.name}</button>
                 ))}
                 <Link href="/friends" className="chip">＋ 친구 추가</Link>
               </div>

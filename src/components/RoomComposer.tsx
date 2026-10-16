@@ -14,6 +14,7 @@ import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validate
 import type { Letter } from "@/lib/letters";
 import { IS_TOSS } from "@/lib/target";
 import { tryMoveHome } from "@/lib/homePlace";
+import { birdFx } from "@/lib/chirp";
 
 type AddFn = (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => Promise<string>;
 const LAST_BIRD = "saepyeonji.lastbird.v1";
@@ -22,7 +23,15 @@ const read = (k: string) => { try { return localStorage.getItem(k) ?? ""; } catc
 const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
 
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
-export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add }: { threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn }) {
+export type Resend = { replaceId: string; message: string; birdId: string };
+
+export default function RoomComposer({ threadKey, name, toUid, guessPlace, friendPlace, add, resend, onResendDone, cancel, needName }: {
+  threadKey: string; name: string; toUid?: string; guessPlace?: string; friendPlace?: string; add: AddFn;
+  /** 길 잃은 편지 다시 보내기: 같은 글을 채워 두고, 보내면 길 잃은 편지는 지워요 */
+  resend?: Resend | null; onResendDone?: () => void; cancel?: (id: string) => Promise<void>;
+  /** 받는 친구 이름이 아직 없으면 보내기 전에 이름부터 정하게 해요 */
+  needName?: boolean;
+}) {
   const { profile, ready, update } = useProfile();
   const [message, setMessage] = useState("");
   const [birdId, setBirdId] = useState("pigeon");
@@ -34,6 +43,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const [later, setLater] = useState("");
   const [busy, setBusy] = useState(false);
   const [geo, setGeo] = useState("");
+  const [sent, setSent] = useState("");
   const declared = !!friendPlace && !!getPlace(friendPlace); // 친구가 직접 알려 준 동네면 보내는 사람이 바꿀 수 없어요
   /** 내 동네 바꾸기: 너무 빠른 이동은 막아요(거리를 일부러 늘리는 것 방지) */
   const moveHome = (id: string): boolean => {
@@ -42,6 +52,13 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     update({ homePlace: id, homeSet: true }); setGeo(""); return true;
   };
   const speed = useRef(1);
+  // 길 잃은 편지를 다시 보낼 때: 같은 글을 채우고 다른 새를 고르게 해요
+  useEffect(() => {
+    if (!resend) return;
+    setMessage(resend.message);
+    setInfo("");
+    setSheet("bird");
+  }, [resend]);
 
   useEffect(() => {
     const b = read(LAST_BIRD);
@@ -90,6 +107,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const send = async () => {
     // 왜 못 보내는지 알려 줘요(버튼을 눌러도 아무 일이 없으면 답답해요)
     if (busy) return;
+    if (needName) { setInfo("받는 친구의 이름을 먼저 정해 주세요(위쪽 칸)."); return; }
     if (!message.trim()) { setInfo("편지 내용을 먼저 써 주세요."); return; }
     if (!ok || !route) { setInfo("받는 곳을 골라 주세요."); setSheet("place"); return; }
     if (photoBusy) { setInfo("사진을 줄이는 중이에요. 잠시만 기다려 주세요."); return; }
@@ -101,7 +119,12 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
       await Promise.race([sending, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000))]);
       write(LAST_BIRD, birdId);
+      birdFx("depart", profile.chirp); // 출발: 푸드덕 + 짹 + 짧은 진동
+      if (resend && cancel) { try { await cancel(resend.replaceId); } catch {} } // 다시 보냈으니 길 잃은 편지는 지워요
+      if (resend) onResendDone?.();
       setMessage(""); setPhotos([]); setLater(""); setSheet("");
+      setSent(later ? "예약했어요! 출발하는 날까지 설레며 기다려요 ⏰" : `${bird.name}가 날아올랐어요! 기다리는 시간도 편지의 일부예요 🕊`);
+      setTimeout(() => setSent(""), 5000);
     } catch (e) {
       setInfo((e as Error).message === "timeout" ? "인터넷이 느려서 아직 보내지 못했어요. 연결을 확인하고 다시 눌러 주세요."
         : photos.length || later ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : "편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
@@ -178,10 +201,26 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           ))}
         </div>
       )}
+      {resend && (
+        <div className="ch-resend"><span>↺ 길 잃은 편지를 다시 보내요. 새를 골라 ➤를 누르면 길 잃은 편지는 사라지고 새 편지가 출발해요.</span>
+          <button type="button" className="chip" onClick={() => { setMessage(""); onResendDone?.(); }}>그만두기</button></div>
+      )}
       {info && <div className="ch-info" role="alert">{info}</div>}
-      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => setSheet(ok ? "bird" : "place")}>
-        <BirdIcon id={bird.id} size={24} />
-        <span>{ok && route ? <>{bird.name} · {formatMinutes(mins)} 걸려요 · {getPlace(fromId)?.name} → {getPlace(toId)?.name}{declared ? " ✓" : ""}</> : "📍 받는 곳을 골라 주세요"}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
+      {sent && !info && <div className="ch-sent" role="status">{sent}</div>}
+      {/* 새 고르기: 큰 새 그림을 옆으로 넘기며 바로 고를 수 있어요(누르면 바로 바뀜) */}
+      <div className="ch-birds" role="radiogroup" aria-label="어떤 새로 보낼까요?">
+        {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
+          <button key={b.id} type="button" role="radio" aria-checked={b.id === birdId} className={`ch-bird ${b.id === birdId ? "on" : ""}`}
+            onClick={() => { setBirdId(b.id); write(LAST_BIRD, b.id); }}>
+            <BirdIcon id={b.id} size={46} letter={b.id === birdId} />
+            <b>{b.name}</b>
+            <small>{route ? formatMinutes(Math.max(1, Math.round(travelMinutes(b, route.km) / speed.current))) : `시속 ${b.kmh}km`}</small>
+          </button>
+        ))}
+      </div>
+      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => setSheet("place")}>
+        <span aria-hidden>📍</span>
+        <span>{ok && route ? <>{getPlace(fromId)?.name} → {getPlace(toId)?.name} · {route.km}km{declared ? " ✓" : ""}</> : "받는 곳을 골라 주세요"}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
         <span aria-hidden>›</span>
       </button>
       <div className="ch-inrow">

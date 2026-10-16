@@ -8,12 +8,14 @@ import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { buildThreads, type Thread } from "../../core/threads";
 import Face from "@/components/Face";
-import { listFriends, type Friend } from "@/lib/firebase/friends";
+import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
 import { myStatsCapped } from "../../core/rank";
 import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
+import GearLink from "@/components/GearLink";
+import { todayLine } from "../../core/waiting";
 import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
@@ -97,7 +99,15 @@ function InboxList() {
   }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
 
   const { book } = usePeople();
-  const threads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
+  // 내 이름·내 새가 바뀌었으면 친구들 목록 속 "나"도 같이 고쳐요(예전에 "새 친구"로 저장된 것 바로잡기)
+  useEffect(() => {
+    if (!firebaseEnabled || !friends.length || !me.nickname) return;
+    const sig = `${me.nickname}|${me.avatarBird}|${friends.map((f) => f.uid).sort().join(",")}`;
+    try { if (localStorage.getItem("saepyeonji.namesync.v1") === sig) return; } catch {}
+    void syncMyName(friends, me.nickname, me.avatarBird).then(() => { try { localStorage.setItem("saepyeonji.namesync.v1", sig); } catch {} });
+  }, [friends, me.nickname, me.avatarBird]);
+  // 카카오톡 "채팅"처럼 편지를 주고받은 사람만 보여요(친구만 맺은 사람은 친구 탭에 있어요)
+  const threads = useMemo(() => buildThreads(letters, received, friends, book).filter((t) => t.entries.length > 0), [letters, received, friends, book]);
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
 
   return (
@@ -106,8 +116,9 @@ function InboxList() {
         <BirdIcon id="magpie" size={52} />
         <div>
           <h1>새 편지</h1>
-          <div className="greet">오늘도 편지 날리기 좋은 날 ☀</div>
+          <div className="greet">{todayLine(now)}</div>
         </div>
+        <GearLink />
       </header>
 
       {ready && firebaseEnabled && !me.homeSet && (
@@ -120,9 +131,9 @@ function InboxList() {
       {ready && threads.length === 0 && (
         <div className="inbox-empty">
           {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
-          <h2>친구를 초대하면<br />편지를 보낼 수 있어요</h2>
+          <h2>{friends.length ? <>친구에게<br />첫 편지를 보내 보세요</> : <>친구를 초대하면<br />편지를 보낼 수 있어요</>}</h2>
           <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
-          <Link href="/friends" className="cta big">친구 초대하기</Link>
+          <Link href="/friends" className="cta big">{friends.length ? "친구 목록에서 고르기" : "친구 초대하기"}</Link>
         </div>
       )}
 

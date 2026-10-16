@@ -209,21 +209,25 @@ export function useLetters() {
         id: newId, to: l.to, routeId: l.routeId, birdId: l.birdId,
         message: l.message, sentAt, arriveAt: sentAt + minutes * 60000, photos: l.photos,
       };
-      persist([letter, ...letters]);
+      // 최신 목록에 더해요(바로 이어서 지우기·보내기를 해도 서로 덮어쓰지 않게)
+      setLetters((prev) => { const next = [letter, ...prev]; try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {} return next; });
       announce({ type: "sent", letter });
       return letter.id;
     },
-    [letters, persist],
+    [],
   );
 
   /** 보낸 편지를 지워요(출발 전 예약 취소). 서버 편지는 글·사진까지 함께 지워요 */
   const cancel = useCallback(
     async (id: string) => {
       if (backendRef.current === "firebase") await remote.cancelLetter(id);
-      else persist(letters.filter((x) => x.id !== id));
-      setLetters((prev) => prev.filter((x) => x.id !== id));
+      setLetters((prev) => {
+        const next = prev.filter((x) => x.id !== id);
+        if (backendRef.current !== "firebase") try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+        return next;
+      });
     },
-    [letters, persist],
+    [],
   );
 
   /** 데모용(내 폰 저장에서만): 보낸 시각을 앞당겨 도착 연출을 빨리 본다 */

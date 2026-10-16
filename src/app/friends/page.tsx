@@ -12,7 +12,10 @@ import { useSession } from "@/lib/session";
 import LoginStart from "@/components/LoginStart";
 import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
+import GearLink from "@/components/GearLink";
 import { roomHref } from "@/lib/room";
+import { buildThreads, uidTag } from "../../../core/threads";
+import { auth } from "@/lib/firebase/client";
 
 export default function FriendsPage() {
   return (
@@ -86,11 +89,42 @@ function Friends() {
   if (state === "login") return <LoginStart onDone={recheck} next="/friends" />;
   if (naming) return <NameStep onDone={() => setNaming(false)} />;
 
+  // 카카오톡 친구 목록처럼: 맨 위에 나, 그 아래 친구들(같은 사람의 여러 계정은 한 줄로), 그다음 초대
+  const people = buildThreads([], [], friends, book).filter((t) => t.uid);
+  const removeAll = async (t: (typeof people)[number]) => {
+    if (!window.confirm(`${t.name}님과 친구를 끊을까요? 서로에게 바로 보내기가 멈춰요.`)) return;
+    try { for (const u of t.uids ?? [t.uid!]) await removeFriend(u); await reload(); } catch { setMsg("끊지 못했어요. 다시 시도해 주세요."); }
+  };
   return (
     <main className="app friendsp">
-      <h1 className="pagetitle">친구 초대</h1>
-      <p className="sub big"><span>링크를 받은 친구가 시작하면<br />자동으로 친구가 돼요</span></p>
+      <header className="tabhead"><h1 className="pagetitle">친구</h1><GearLink /></header>
+      <Link href="/settings" className="trow merow">
+        <Face name={profile.nickname} bird={profile.avatarBird || undefined} size={60} />
+        <span className="tmid"><span className="tname">{profile.nickname}</span><span className="tst">나 · 내 아이디 #{(() => { try { return uidTag(auth().currentUser?.uid ?? ""); } catch { return "----"; } })()}</span></span>
+      </Link>
 
+      <h2 className="friendh">친구 {people.length > 0 && people.length}</h2>
+      {!loading && people.length === 0 && <div className="empty">아직 친구가 없어요.<br />아래에서 카카오톡으로 초대해 보세요.</div>}
+      <ul className="threads">
+        {people.map((t) => {
+          const f = friends.find((x) => x.uid === t.uid);
+          const own = f?.name && f.name !== t.name ? f.name : "";
+          return (
+            <li key={t.key}>
+              <div className="trow">
+                <Link href={roomHref({ uid: t.uid, name: t.name })} className="tfriend">
+                  <Face name={t.name} bird={f?.bird} />
+                  <span className="tmid"><span className="tname">{t.name}</span><span className="tst">#{uidTag(t.key.slice(2))}{own && !own.startsWith("새 친구") ? ` · 친구가 정한 이름: ${own}` : ""}</span></span>
+                </Link>
+                <button type="button" className="chip" onClick={() => removeAll(t)} aria-label={`${t.name} 친구 끊기`}>끊기</button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <h2 className="friendh">친구 초대</h2>
+      <p className="small" style={{ marginTop: -4 }}>링크를 받은 친구가 시작하면 자동으로 친구가 돼요</p>
       <button type="button" className="sbtn kakao" disabled={!code} onClick={inviteKakao} style={{ width: "100%", height: 72 }}>
         <span aria-hidden>💬</span> 카카오톡으로 초대하기
       </button>
@@ -110,33 +144,12 @@ function Friends() {
       </div>
       {msg && <div className="small" role="status" style={{ fontSize: 16 }}>{msg}</div>}
 
-      <Link href="/rank" className="opt rankcard">
-        <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏆</span>
-        <span><b>우리 랭킹 보기</b><span>누가 제일 멀리 보냈을까?</span></span>
-        <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
-      </Link>
-
       <Link href="/stamps" className="opt rankcard">
         <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏮</span>
         <span><b>스탬프 도감</b><span>편지가 지나간 명소를 모아요</span></span>
         <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
       </Link>
 
-      <h2 className="friendh">내 친구 {friends.length > 0 && `(${friends.length})`}</h2>
-      {!loading && friends.length === 0 && <div className="empty">아직 친구가 없어요.<br />위에서 카카오톡으로 초대해 보세요.</div>}
-      <ul className="threads">
-        {friends.map((f) => (
-          <li key={f.uid}>
-            <div className="trow">
-              <Link href={roomHref({ uid: f.uid, name: f.name })} className="tfriend">
-                <Face name={f.name} bird={f.bird} />
-                <span className="tname">{book.nick[f.uid] || f.name}{book.nick[f.uid] && book.nick[f.uid] !== f.name && <small style={{ fontWeight: 400, opacity: .6 }}> ({f.name})</small>}</span>
-              </Link>
-              <button type="button" className="chip" onClick={() => remove(f)} aria-label={`${f.name} 친구 끊기`}>끊기</button>
-            </div>
-          </li>
-        ))}
-      </ul>
     </main>
   );
 }

@@ -12,16 +12,18 @@ import { letterHref } from "@/lib/target";
 import { asLike, letterEvents, type Entry } from "@/lib/chat";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
+import { mishapMessage } from "@/lib/flight";
 
 /**
  * 대화방의 편지 말풍선(카카오톡처럼 깔끔하게): 한 줄 내용 + 작은 상태 한 줄 + 옆에 보낸 시각.
  * 누르면 그 자리에서 펼쳐져서 비행 기록(출발·지난 곳·이야기·도착)과 편지 내용이 보여요.
  */
-export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entry: Entry; name: string; now: number; isNew: boolean; onOpened: (id: string) => void }) {
+export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend }: { entry: Entry; name: string; now: number; isNew: boolean; onOpened: (id: string) => void; onResend?: (e: Entry) => void }) {
   const [open, setOpen] = useState(false);
   const [body, setBody] = useState<string | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
+  const [waitOk, setWaitOk] = useState(false);
   const mine = entry.dir === "sent";
   const l = asLike(entry);
   const bird = getBird(l.birdId), route = getRoute(l.routeId);
@@ -51,7 +53,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
     : done ? `${bird.name} · 도착 ✓ ${clockText(arriveAt)}`
-    : pr.stalled ? `${bird.name} 쉬는 중 · ${clockText(arriveAt)} 도착 예정`
+    : pr.stalled && pr.mishap ? `${pr.mishap.kind === "tree" ? "🌳 나무에 걸림" : "🧭 길 잃음"} · 다시 찾으면 ${clockText(arriveAt)} 도착`
     : `${bird.name} 비행 중 · ${clockText(arriveAt)} 도착 예정`;
   const time = <span className="ch-time">{clockText(sched ? entry.at : l.sentAt)}</span>;
   const row = (bubble: React.ReactNode) => <div className={`ch-row ${mine ? "me" : "you"}`}>{mine && time}{bubble}{!mine && time}</div>;
@@ -67,9 +69,25 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened }: { entr
   // 예약 편지는 취소 같은 기능이 있는 기존 화면으로 가요
   if (sched) return row(<Link href={letterHref(entry.item.id)} className={cls}>{head}</Link>);
 
+  // 길을 잃었거나 나무에 걸려 멈춘 동안: 채팅에 바로 알리고, 보낸 사람은 기다리거나 다른 새로 다시 보낼 수 있어요
+  const lostMsg = !done && pr.stalled && pr.mishap ? mishapMessage(pr.mishap.kind, bird.name) : null;
+  const lost = lostMsg && (
+    <div className="ch-lost" role="status">
+      <b>{pr.mishap!.kind === "tree" ? "🌳" : "🧭"} {lostMsg.title}</b>
+      <span>{mine ? `기다리면 ${clockText(arriveAt)}쯤 꼭 도착해요. 다른 새로 다시 보낼 수도 있어요.` : `길을 다시 찾는 중이에요. ${clockText(arriveAt)}쯤 도착해요.`}</span>
+      {mine && onResend && !waitOk && (
+        <span className="ch-lost-btns">
+          <button type="button" className="chip" onClick={() => setWaitOk(true)}>기다릴게요</button>
+          <button type="button" className="chip hot" onClick={() => onResend(entry)}>↺ 다른 새로 다시 보내기</button>
+        </span>
+      )}
+    </div>
+  );
+
   return row(
     <div className={cls}>
       <button type="button" className="ch-tap" aria-expanded={open} onClick={() => setOpen((v) => !v)}>{head}</button>
+      {lost}
       {open && (
         <div className="ch-detail">
           <ol className="ch-log" aria-label="비행 기록">

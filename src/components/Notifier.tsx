@@ -17,7 +17,7 @@ import { arrivalText, passingText } from "@/lib/notifyText";
 import { hasPushSub, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
-import { playChirp } from "@/lib/chirp";
+import { birdFx } from "@/lib/chirp";
 
 const STORE = "saepyeonji.notified.v1";
 const RECENT_MS = 24 * 3600 * 1000;
@@ -94,7 +94,7 @@ export default function Notifier() {
     if (out.length) {
       const here = pathname;
       const fresh = out.filter((o) => letterHref(o.id) !== here && !here.startsWith(`/letter/${o.id}`));
-      if (fresh.length && profile.chirp) playChirp();
+      if (fresh.length) birdFx("arrive", profile.chirp); // 도착하면 짹짹 + 진동
       if (fresh.length) setQueue((q) => [...q, ...fresh.filter((f) => !q.some((x) => x.key === f.key))]);
       // 화면이 가려져 있으면(다른 탭) 브라우저 알림도 보내요(허용했을 때만)
       if (!IS_TOSS && !hasPushSub() && typeof document !== "undefined" && document.hidden && typeof Notification !== "undefined" && Notification.permission === "granted") {

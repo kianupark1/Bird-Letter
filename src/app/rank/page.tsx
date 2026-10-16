@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { getRoute } from "@/lib/routes";
 import { useLetters } from "@/lib/letters";
@@ -12,6 +11,7 @@ import { myPlace, myStatsCapped, rankOf, rankValue, type RankEntry, type RankKin
 import Face from "@/components/Face";
 import LoginStart from "@/components/LoginStart";
 import BirdIcon from "@/components/BirdIcon";
+import GearLink from "@/components/GearLink";
 import { MILESTONES, journeyOf, lapsText } from "../../../core/journey";
 
 const km = (n: number) => `${n.toLocaleString("ko-KR")}km`;
@@ -69,18 +69,15 @@ function Rank() {
 
   return (
     <main className="app rankpage">
-      <header className="sendhead">
-        <Link href="/friends" className="roomback" aria-label="뒤로">‹</Link>
-        <div><h1>우리 랭킹 🏆</h1><div className="greet">편지가 날아간 거리의 합이에요</div></div>
+      <header className="tabhead">
+        <div><h1 className="pagetitle">누가누가 멀리 보냈나 🏆</h1><div className="greet">친구와 나, 편지가 날아간 거리</div></div>
+        <GearLink />
       </header>
 
       <div className="seg" role="radiogroup" aria-label="랭킹 종류">
         <button type="button" role="radio" aria-checked={kind === "total"} className={kind === "total" ? "on" : ""} onClick={() => setKind("total")}>누적 거리</button>
         <button type="button" role="radio" aria-checked={kind === "longest"} className={kind === "longest" ? "on" : ""} onClick={() => setKind("longest")}>가장 먼 한 통</button>
       </div>
-
-      <Journey title="🚀 나의 우주 여행" km={mine.km} />
-      {friends.length > 0 && <Journey title="🌏 우리가 함께 날린 거리" km={togetherKm} together />}
 
       {mine.count === 0 && friends.length === 0 && !loading && (
         <div className="empty" style={{ marginTop: 14 }}>아직 보낸 편지가 없어요.<br />편지를 보내고 친구를 초대하면 랭킹이 생겨요.</div>
@@ -118,6 +115,9 @@ function Rank() {
           </li>
         ))}
       </ul>
+
+      <Journey title="🚀 나의 우주 여행" km={mine.km} />
+      {friends.length > 0 && <Journey title="🌏 우리가 함께 날린 거리" km={togetherKm} together />}
 
       {me && sorted.length > 1 && (
         <div className="bubble" style={{ marginTop: 16, fontSize: 17 }}>

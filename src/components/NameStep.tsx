@@ -25,7 +25,8 @@ export default function NameStep({ onDone }: { onDone: () => void }) {
     if (!ready) return;
     setBird(profile.avatarBird);
     if (!needsName(profile.nickname)) { setName(profile.nickname); return; }
-    // 구글·애플이 알려 준 이름이 있으면 미리 채워 둬요
+    // 카카오·구글·애플이 알려 준 이름이 있으면 미리 채워 둬요
+    try { const k = localStorage.getItem("saepyeonji.kakaoNick.v1"); if (k) { setName(k); return; } } catch {}
     if (firebaseEnabled) {
       try { const n = auth().currentUser?.displayName?.trim(); if (n) setName(n.slice(0, 12)); } catch {}
     }

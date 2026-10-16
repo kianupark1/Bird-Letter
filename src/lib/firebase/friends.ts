@@ -1,5 +1,5 @@
 "use client";
-import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, writeBatch } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { db, ensureUser } from "./client";
 
 export type Friend = { uid: string; name: string; /** 친구가 고른 "내 새"(없으면 이름으로 정해요) */ bird?: string };
@@ -102,4 +102,19 @@ export async function deleteFriendData(uid: string) {
     const code = me.exists() ? (me.data().code as string | undefined) : undefined;
     if (code) await deleteDoc(doc(d, "codes", code)).catch(() => {});
   } catch {}
+}
+
+/**
+ * 내 지금 이름·내 새를 친구들 목록 속 "나" 칸에 다시 적어요.
+ * 친구로 맺을 때의 이름(예: 이름을 정하기 전의 "새 친구")이 친구 화면에 계속 남는 문제를 고쳐요(규칙상 내 칸은 내가 고칠 수 있어요).
+ */
+export async function syncMyName(friends: Friend[], myName: string, myBird?: string) {
+  const user = await ensureUser();
+  if (user.isAnonymous || !myName.trim() || myName.trim() === "새 친구") return;
+  const d = db();
+  const b = okBird(myBird);
+  // updateDoc: 친구가 나를 이미 끊었으면(칸이 없으면) 다시 만들지 않고 조용히 실패해요
+  await Promise.all(friends.map(async (f) => {
+    try { await updateDoc(doc(d, "users", f.uid, "friends", user.uid), { name: nick(myName), ...(b ? { bird: b } : {}) }); } catch {}
+  }));
 }

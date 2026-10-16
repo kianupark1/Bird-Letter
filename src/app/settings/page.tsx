@@ -91,7 +91,7 @@ export default function Settings() {
 
   return (
     <main className="app">
-      <h1>내 정보</h1>
+      <header className="sendhead"><Link href="/" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>내 정보·설정</h1></header>
 
       <div className="mybird">
         <Face name={profile.nickname || "새"} bird={profile.avatarBird} size={112} />
@@ -174,8 +174,8 @@ export default function Settings() {
         ))}
         <div className="listrow">
           <div className="grow">
-            <div className="name">새 짹짹 소리</div>
-            <div className="note">앱이 열려 있을 때 알림과 함께 새가 짹짹여요. <button className="linkbtn" style={{ display: "inline", margin: "0 0 0 4px", padding: 0, minHeight: 0, opacity: 1 }} onClick={() => playChirp()}>들어보기</button></div>
+            <div className="name">새 소리·진동</div>
+            <div className="note">편지가 출발하면 푸드덕, 도착하면 짹짹! 진동도 함께 와요(아이폰은 진동 없음). <button className="linkbtn" style={{ display: "inline", margin: "0 0 0 4px", padding: 0, minHeight: 0, opacity: 1 }} onClick={() => playChirp()}>들어보기</button></div>
           </div>
           <button
             role="switch"
