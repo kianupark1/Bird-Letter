@@ -25,6 +25,8 @@ export type Profile = {
   photoFromKakao?: boolean;
   /** 사진을 직접 지웠는지(지웠으면 카카오 사진을 다시 넣지 않아요) */
   photoOff?: boolean;
+  /** 전체 랭킹(가입한 모든 사람)에 내 이름·거리 보이기. 기본 켜짐 */
+  publicRank?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [

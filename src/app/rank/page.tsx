@@ -5,6 +5,8 @@ import { useLetters } from "@/lib/letters";
 import { useProfile } from "@/lib/settings";
 import { listFriends, type Friend } from "@/lib/firebase/friends";
 import { publishStats, readStats } from "@/lib/firebase/stats";
+import { listPublicRank, publishPublicRank, type PublicRow } from "@/lib/firebase/ranking";
+import { auth } from "@/lib/firebase/client";
 import { firebaseEnabled } from "@/lib/firebase/client";
 import { useSession } from "@/lib/session";
 import { myPlace, myStatsCapped, rankOf, rankValue, type RankEntry, type RankKind } from "../../../core/rank";
@@ -32,6 +34,10 @@ function Rank() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [stats, setStats] = useState<Record<string, Awaited<ReturnType<typeof readStats>>>>({});
   const [kind, setKind] = useState<RankKind>("total");
+  // 친구끼리 / 가입한 사람 전체(2026-10-17 대표님: "가입된 사람 모두 보이게")
+  const [scope, setScope] = useState<"all" | "friends">("all");
+  const [pub, setPub] = useState<PublicRow[] | null>(null);
+  const showMe = profile.publicRank !== false;
   const { book } = usePeople();
   const [loading, setLoading] = useState(true);
 
@@ -43,6 +49,7 @@ function Rank() {
     let off = false;
     (async () => {
       void publishStats(mine, profile.nickname, profile.avatarBird, profile.sharePlace === false || !profile.homeSet ? undefined : profile.homePlace); // 내 기록도 최신으로 올려 둬요
+      if (firebaseEnabled) void publishPublicRank(mine, profile.nickname, profile.avatarBird, showMe);
       if (!firebaseEnabled) { setLoading(false); return; }
       try {
         const f = await listFriends();
@@ -54,7 +61,16 @@ function Rank() {
       if (!off) setLoading(false);
     })();
     return () => { off = true; };
-  }, [ready, mine, profile.nickname, profile.avatarBird, profile.homePlace, profile.sharePlace, profile.homeSet]);
+  }, [ready, mine, profile.nickname, profile.avatarBird, profile.homePlace, profile.sharePlace, profile.homeSet, showMe]);
+
+  // 전체 랭킹: 위에서부터 50명(내 기록을 올린 직후에 읽도록 조금 기다려요)
+  useEffect(() => {
+    if (!firebaseEnabled || scope !== "all") return;
+    let off = false;
+    setPub(null);
+    const t = setTimeout(() => { listPublicRank(kind).then((r) => { if (!off) setPub(r); }).catch(() => { if (!off) setPub([]); }); }, 400);
+    return () => { off = true; clearTimeout(t); };
+  }, [scope, kind, mine.km, mine.maxKm]);
 
   const entries: RankEntry[] = useMemo(() => [
     { uid: "me", name: profile.nickname || "나", bird: profile.avatarBird, photo: profile.photo, me: true, stats: mine },
@@ -67,7 +83,14 @@ function Rank() {
     }),
   ], [friends, stats, mine, profile.nickname, profile.avatarBird, profile.photo, book]);
 
-  const sorted = useMemo(() => rankOf(entries, kind), [entries, kind]);
+  const myUid = (() => { try { return auth().currentUser?.uid; } catch { return undefined; } })();
+  const pubEntries: RankEntry[] = useMemo(() => {
+    const rows = (pub ?? []).map((r): RankEntry => ({ uid: r.uid, name: r.name, bird: r.bird, me: r.uid === myUid, photo: r.uid === myUid ? profile.photo : undefined, stats: { km: r.km, maxKm: r.maxKm, count: r.count } }));
+    return rows;
+  }, [pub, myUid, profile.photo]);
+  const global = scope === "all" && firebaseEnabled;
+  const sorted = useMemo(() => rankOf(global ? pubEntries : entries, kind), [global, pubEntries, entries, kind]);
+  const meInTop = !global || sorted.some((e) => e.me);
   const me = myPlace(sorted, kind);
   const togetherKm = entries.reduce((a, e) => a + (e.stats?.km ?? 0), 0);
   const top3 = sorted.filter((e) => e.stats).slice(0, 3);
@@ -79,16 +102,25 @@ function Rank() {
   return (
     <main className="app rankpage">
       <header className="tabhead">
-        <div><h1 className="pagetitle">누가누가 멀리 보냈나 🏆</h1><div className="greet">친구와 나, 편지가 날아간 거리</div></div>
+        <div><h1 className="pagetitle">누가누가 멀리 보냈나 🏆</h1><div className="greet">{global ? "새 편지를 쓰는 모든 사람" : "친구와 나"}, 편지가 날아간 거리</div></div>
         <GearLink />
       </header>
+
+      {firebaseEnabled && (
+        <div className="seg" role="radiogroup" aria-label="랭킹 범위" style={{ marginBottom: 8 }}>
+          <button type="button" role="radio" aria-checked={scope === "all"} className={scope === "all" ? "on" : ""} onClick={() => setScope("all")}>🌏 전체</button>
+          <button type="button" role="radio" aria-checked={scope === "friends"} className={scope === "friends" ? "on" : ""} onClick={() => setScope("friends")}>👥 친구</button>
+        </div>
+      )}
 
       <div className="seg" role="radiogroup" aria-label="랭킹 종류">
         <button type="button" role="radio" aria-checked={kind === "total"} className={kind === "total" ? "on" : ""} onClick={() => setKind("total")}>누적 거리</button>
         <button type="button" role="radio" aria-checked={kind === "longest"} className={kind === "longest" ? "on" : ""} onClick={() => setKind("longest")}>가장 먼 한 통</button>
       </div>
 
-      {mine.count === 0 && friends.length === 0 && !loading && (
+      {global && pub === null && <div className="empty" style={{ marginTop: 14 }}>랭킹을 불러오는 중…</div>}
+      {global && pub !== null && pub.length === 0 && <div className="empty" style={{ marginTop: 14 }}>아직 전체 랭킹에 올라온 사람이 없어요.<br />편지를 보내면 내가 첫 번째예요!</div>}
+      {!global && mine.count === 0 && friends.length === 0 && !loading && (
         <div className="empty" style={{ marginTop: 14 }}>아직 보낸 편지가 없어요.<br />편지를 보내고 친구를 초대하면 랭킹이 생겨요.</div>
       )}
 
@@ -125,10 +157,17 @@ function Rank() {
         ))}
       </ul>
 
+      {global && pub !== null && !meInTop && (
+        <div className="bubble" style={{ marginTop: 12, fontSize: 17 }}>
+          {!showMe ? "전체 랭킹에서 내 이름을 숨겨 두었어요(설정에서 바꿀 수 있어요)" : mine.count === 0 ? "편지를 보내면 나도 랭킹에 올라가요 🕊" : `내 기록 ${km(rankValue({ uid: "me", name: "", me: true, stats: mine }, kind))} · 50위 안에 들면 이름이 보여요 🕊`}
+        </div>
+      )}
+      {global && <div className="small" style={{ textAlign: "center", fontSize: 14 }}>전체 랭킹에는 이름·내 새·거리만 보여요(동네·사진은 안 보여요). 설정에서 내 이름을 숨길 수 있어요.</div>}
+
       <Journey title="🚀 나의 우주 여행" km={mine.km} />
       {friends.length > 0 && <Journey title="🌏 우리가 함께 날린 거리" km={togetherKm} together />}
 
-      {me && sorted.length > 1 && (
+      {me && sorted.length > 1 && meInTop && (
         <div className="bubble" style={{ marginTop: 16, fontSize: 17 }}>
           {me.rank === 1 ? "내가 1위예요! 🕊" : `내 순위 ${me.rank}위 · 1위 ${me.leader.name}님까지 ${km(me.gapKm)} 🕊`}
         </div>

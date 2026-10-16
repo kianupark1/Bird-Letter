@@ -167,6 +167,13 @@ export default function Settings() {
           </div>
           <button role="switch" aria-checked={profile.sharePlace !== false} aria-label="친구에게 내 동네 알리기" className="switch" onClick={() => update({ sharePlace: profile.sharePlace === false })} />
         </div>
+        <div className="listrow">
+          <div className="grow">
+            <div className="name">전체 랭킹에 내 이름 보이기</div>
+            <div className="note">가입한 모든 사람이 보는 랭킹이에요. 이름·내 새·거리만 보이고 동네·사진은 안 보여요.</div>
+          </div>
+          <button role="switch" aria-checked={profile.publicRank !== false} aria-label="전체 랭킹에 내 이름 보이기" className="switch" onClick={() => update({ publicRank: profile.publicRank === false })} />
+        </div>
       </div>
       <Link href="/stamps" className="opt rankcard" style={{ marginTop: 8 }}>
         <span className="oic" aria-hidden style={{ background: "var(--card)" }}>🏮</span>

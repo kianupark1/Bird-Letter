@@ -79,6 +79,22 @@ service cloud.firestore {
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
+    // 전체 랭킹(2026-10-17, 대표님: "가입된 사람 모두 보이게"): 로그인한 사람은 누구나 읽고(한 번에 100명까지), 내 줄은 나만 써요.
+    // 위치(동네)·사진은 넣지 않아요(모르는 사람에게 보이니까). 이름·새·거리만
+    match /ranking/{uid} {
+      allow get: if signedIn();
+      allow list: if signedIn() && request.query.limit <= 100;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'bird', 'km', 'maxKm', 'count', 'at'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 12
+        && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12))
+        && request.resource.data.km is number && request.resource.data.km >= 0 && request.resource.data.km <= 1000000
+        && request.resource.data.maxKm is number && request.resource.data.maxKm >= 0 && request.resource.data.maxKm <= 20000
+        && request.resource.data.count is number && request.resource.data.count >= 0 && request.resource.data.count <= 100000
+        && request.resource.data.at == request.time;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
     // 편지 겉정보(누가, 어디로, 어떤 새로, 언제 도착). 편지 내용은 아래 private 문서에 따로 둔다.
     // 문서 ID가 길고 무작위라서, 링크를 받은 사람만 이 문서를 열 수 있다.
     match /letters/{letterId} {
