@@ -160,5 +160,26 @@ await no("B가 답장으로 엉뚱한 사람(C)에게 보내기", setDoc(doc(B, 
 await no("받는 사람이 아닌 A가 자기 편지에 답장", setDoc(doc(A, "letters", "R4"), rep("uidB", "L7", { fromUid: "uidA" })));
 await no("replyTo가 없는 편지를 가리킴", setDoc(doc(B, "letters", "R5"), rep("uidA", "NOPE")));
 
+console.log("[응원하기]");
+{
+  const hr = Math.floor(Date.now() / 3600000);
+  const ch = (kind = "seed", over = {}) => ({ uid: "uidD", kind, at: serverTimestamp(), ...over });
+  await ok("받는 사람(D)이 날아가는 편지(P1)에 모이 주기", setDoc(doc(D, "letters", "P1", "cheers", `uidD_${hr}`), ch()));
+  await no("같은 시간에 두 번(덮어쓰기)", setDoc(doc(D, "letters", "P1", "cheers", `uidD_${hr}`), ch("song")));
+  await no("시간 번호가 너무 멀면 안 됨", setDoc(doc(D, "letters", "P1", "cheers", `uidD_${hr + 5}`), ch()));
+  await no("남의 uid로 응원", setDoc(doc(D, "letters", "P1", "cheers", `uidA_${hr}`), ch("seed", { uid: "uidA" })));
+  await ok("보낸 사람(A)도 노래 불러 주기", setDoc(doc(A, "letters", "P1", "cheers", `uidA_${hr}`), { uid: "uidA", kind: "song", at: serverTimestamp() }));
+  await no("이상한 응원 종류", setDoc(doc(A, "letters", "P1", "cheers", `uidA_${hr + 1}`), { uid: "uidA", kind: "speedup", at: serverTimestamp() }));
+  await no("다른 칸 금지", setDoc(doc(A, "letters", "P1", "cheers", `uidA_${hr + 1}`), { uid: "uidA", kind: "seed", at: serverTimestamp(), boost: 1 }));
+  await no("편지와 상관없는 C는 응원 불가", setDoc(doc(C, "letters", "P1", "cheers", `uidC_${hr}`), { uid: "uidC", kind: "seed", at: serverTimestamp() }));
+  await ok("두 사람은 응원 목록 읽기", getDocs(collection(D, "letters", "P1", "cheers")));
+  await no("C는 응원 목록 못 읽음", getDocs(collection(C, "letters", "P1", "cheers")));
+  await env.withSecurityRulesDisabled((c) => setDoc(doc(c.firestore(), "letters", "DONE1"), { fromUid: "uidA", fromName: "에이", toName: "디", routeId: "seoul-busan", birdId: "crane", sentAt: Timestamp.fromMillis(Date.now() - 7200e3), arriveAt: Timestamp.fromMillis(Date.now() - 60e3), recipientUid: "uidD" }));
+  await no("도착한 편지에는 응원 불가", setDoc(doc(D, "letters", "DONE1", "cheers", `uidD_${hr}`), ch()));
+  await env.withSecurityRulesDisabled((c) => setDoc(doc(c.firestore(), "letters", "LATER1"), { fromUid: "uidA", fromName: "에이", toName: "디", routeId: "seoul-busan", birdId: "crane", sentAt: Timestamp.fromMillis(Date.now() + 86400e3), departAt: Timestamp.fromMillis(Date.now() + 86400e3), arriveAt: Timestamp.fromMillis(Date.now() + 2 * 86400e3), recipientUid: "uidD" }));
+  await no("출발 전 예약 편지에는 응원 불가", setDoc(doc(A, "letters", "LATER1", "cheers", `uidA_${hr}`), { uid: "uidA", kind: "seed", at: serverTimestamp() }));
+  await ok("내 응원 지우기", deleteDoc(doc(D, "letters", "P1", "cheers", `uidD_${hr}`)));
+}
+
 console.log(`\n통과 ${pass} / 실패 ${fail}`);
 await env.cleanup(); process.exit(fail ? 1 : 0);

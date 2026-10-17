@@ -8,6 +8,7 @@ import { formatMinutes } from "@/lib/geo";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { buildThreads, isPenpalThread, isUnnamed, visibleThreads, type Thread } from "../../core/threads";
 import SwipeRow from "@/components/SwipeRow";
+import HomeCountdown from "@/components/HomeCountdown";
 import Face from "@/components/Face";
 import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
@@ -157,6 +158,8 @@ function InboxList() {
           <span aria-hidden>📍</span><span><b>내 동네를 정해 주세요</b> · 친구가 보낼 때 받는 곳이 자동으로 정해져요</span><span aria-hidden>›</span>
         </Link>
       )}
+
+      {ready && threads.length > 0 && <HomeCountdown threads={threads} />}
 
       {ready && threads.length === 0 && (
         <div className="inbox-empty">

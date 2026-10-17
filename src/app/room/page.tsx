@@ -25,6 +25,8 @@ import { asLike, buildChat } from "@/lib/chat";
 import { WAITING_LINES, pickLine } from "../../../core/waiting";
 import { readStats } from "@/lib/firebase/stats";
 import { usePeople } from "@/lib/people";
+import CheerBar from "@/components/CheerBar";
+import { useCheers } from "@/lib/cheers";
 
 export default function RoomPage() {
   return (
@@ -79,6 +81,10 @@ function Room() {
     return () => { off = true; };
   }, [theirUid]);
   const items = useMemo(() => (thread ? buildChat(thread.entries, now) : []), [thread, now, name]);
+
+  // 날아가는 편지들의 응원(모이·노래) 목록. 출발한 뒤 아직 도착하지 않은 편지만
+  const flyingIds = useMemo(() => (thread ? thread.entries.filter((e) => !isScheduled(e.at, now) && !letterProgress(asLike(e), now).done).map((e) => e.item.id) : []), [thread, now]);
+  const cheers = useCheers(flyingIds);
 
   // 새 소식이 쌓이면 맨 아래로 내려가요
   const last = items[items.length - 1]?.key;
@@ -218,10 +224,11 @@ function Room() {
           it.kind === "day" ? <div key={it.key} className="ch-day">{it.label}</div>
           : (
             <ChatLetter key={it.key} entry={it.entry} name={name} now={now} isNew={it.entry.item.id === newestId} onOpened={(id) => setOpened((s) => new Set(s).add(id))}
-              onResend={(e) => e.dir === "sent" && setResend({ replaceId: e.item.id, message: e.item.message, birdId: e.item.birdId })} />
+              onResend={(e) => e.dir === "sent" && setResend({ replaceId: e.item.id, message: e.item.message, birdId: e.item.birdId })} cheers={cheers[it.entry.item.id]} />
           ),
         )}
         {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
+        {active && <CheerBar letterId={active.item.id} birdName={getBird(asLike(active).birdId).name} name={name} cheers={cheers[active.item.id] ?? []} now={now} sound={profile.chirp !== false} />}
         <div ref={endRef} />
       </div>
       <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} replyTo={thread.entries.find((e) => e.dir === "received" && e.item.fromUid === thread.uid)?.item.id} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
