@@ -35,6 +35,8 @@ export type Profile = {
   penpalTags?: string[];
   /** 모르는 누군가의 펜팔 편지 받기. 약속하면 켜져요 */
   penpalOpen?: boolean;
+  /** 모르는 누군가의 랜덤(펜팔) 편지를 받겠다고 신청했는지. 신청한 사람에게만 랜덤 편지가 가요(기본 꺼짐) */
+  penpalRecv?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [

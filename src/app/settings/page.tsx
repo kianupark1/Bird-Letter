@@ -177,15 +177,23 @@ export default function Settings() {
           </div>
           <button role="switch" aria-checked={profile.publicRank !== false} aria-label="전체 랭킹에 내 이름 보이기" className="switch" onClick={() => update({ publicRank: profile.publicRank === false })} />
         </div>
+        {!profile.penpalAgreed && (
+          <Link href="/penpal" className="listrow" style={{ textDecoration: "none", color: "inherit" }}>
+            <div className="grow">
+              <div className="name">모르는 누군가의 랜덤 편지 받기</div>
+              <div className="note">신청한 사람에게만 랜덤 편지가 가요. 처음 한 번 약속을 확인해요 ›</div>
+            </div>
+          </Link>
+        )}
         {profile.penpalAgreed && (
           <>
             <div className="listrow">
               <div className="grow">
-                <div className="name">모르는 누군가의 펜팔 편지 받기</div>
-                <div className="note">끄면 새 펜팔 편지가 오지 않아요(이미 주고받는 펜팔은 그대로). 펜팔 이름: {penName}</div>
+                <div className="name">모르는 누군가의 랜덤 편지 받기</div>
+                <div className="note">신청한 사람에게만 랜덤 편지가 가요(이미 주고받는 펜팔은 그대로). 펜팔 이름: {penName}</div>
               </div>
-              <button role="switch" aria-checked={profile.penpalOpen !== false} aria-label="펜팔 편지 받기" className="switch" onClick={() => {
-                const open = profile.penpalOpen === false; update({ penpalOpen: open });
+              <button role="switch" aria-checked={profile.penpalRecv === true} aria-label="랜덤 편지 받기" className="switch" onClick={() => {
+                const open = profile.penpalRecv !== true; update({ penpalRecv: open });
                 void saveMyPenpal({ name: penName, bird: profile.avatarBird || "magpie", region: cityOf(profile.homePlace), tags: profile.penpalTags ?? [], open }).catch(() => {});
               }} />
             </div>

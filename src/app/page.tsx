@@ -13,6 +13,8 @@ import Face from "@/components/Face";
 import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
+import { saveMyPenpal } from "@/lib/firebase/penpal";
+import { cityLabel, cityOf, penpalName } from "../../core/penpal";
 import { myStatsCapped } from "../../core/rank";
 import type { Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
@@ -114,6 +116,17 @@ function InboxList() {
     try { if (localStorage.getItem("saepyeonji.stats.sig") === sig) return; } catch {}
     void publishStats(st, me.nickname, me.avatarBird, place).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
   }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
+
+  // 랜덤(펜팔) 편지는 받겠다고 신청한 사람에게만 가요: 예전에 약속만 하고 신청하지 않은 사람은 받기 명단에서 내려요
+  useEffect(() => {
+    if (!ready || !firebaseEnabled || !me.penpalAgreed) return;
+    const open = me.penpalRecv === true;
+    const sig = `recv:${open}`;
+    try { if (localStorage.getItem("saepyeonji.penpalsync.v1") === sig) return; } catch {}
+    const city = cityOf(me.homePlace);
+    void saveMyPenpal({ name: me.penpalName?.trim() || penpalName(cityLabel(city), me.avatarBird || "magpie"), bird: me.avatarBird || "magpie", region: city, tags: me.penpalTags ?? [], open })
+      .then(() => { try { localStorage.setItem("saepyeonji.penpalsync.v1", sig); } catch {} }).catch(() => {});
+  }, [ready, me.penpalAgreed, me.penpalRecv]);
 
   const { book, merge, mergeSame, rename, hide } = usePeople();
   const [menu, setMenuRaw] = useState<{ t: Thread<Letter, Meta>; step: "menu" | "merge" } | null>(null);

@@ -892,3 +892,8 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 .pcgrid .pcard .pc-ill { height: 80px; }
 .pcgrid .pcard .pc-ill svg { width: 68px; height: 64px; }
 .pcgrid .pcard figcaption b { font-size: 13px; }
+
+/* 친구 탭: 목록만, 친구 추가는 오른쪽 위 */
+.tabhead .addbtn { margin-left: auto; border: 0; cursor: pointer; font: inherit; }
+.tabhead .addbtn + .gearlink { margin-left: 0; }
+.friendsp .merow { border-bottom: 1px solid var(--line); margin-bottom: 4px; }

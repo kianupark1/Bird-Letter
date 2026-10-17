@@ -30,6 +30,7 @@ function Penpal() {
   const { letters, received, add } = useLetters();
   const { book } = usePeople();
   const [age, setAge] = useState(false);
+  const [recv, setRecv] = useState(false);
   const [msg, setMsg] = useState("");
   const [bird, setBird] = useState("crane");
   const [pickBird, setPickBird] = useState(false);
@@ -44,8 +45,8 @@ function Penpal() {
   // 약속한 사람은 펜팔 받기 명단에 내 줄을 최신으로 올려 둬요(이름·관심사·도시가 바뀌었을 때)
   useEffect(() => {
     if (!ready || !profile.penpalAgreed || !firebaseEnabled) return;
-    void saveMyPenpal({ name: myName, bird: profile.avatarBird || "magpie", region: city, tags, open: profile.penpalOpen !== false }).catch(() => {});
-  }, [ready, profile.penpalAgreed, profile.penpalOpen, myName, city, tags.join(","), profile.avatarBird]);
+    void saveMyPenpal({ name: myName, bird: profile.avatarBird || "magpie", region: city, tags, open: profile.penpalRecv === true }).catch(() => {});
+  }, [ready, profile.penpalAgreed, profile.penpalRecv, myName, city, tags.join(","), profile.avatarBird]);
 
   if (!ready) return <main className="app" aria-busy="true" />;
 
@@ -63,8 +64,9 @@ function Penpal() {
           <li><span aria-hidden>📍</span><span>상대에게는 &quot;{cityLabel(city)}&quot;까지만 보여요<small>펜팔 이름: {myName}</small></span></li>
         </ul>
         <label className="ppage"><input type="checkbox" checked={age} onChange={(e) => setAge(e.target.checked)} /> 저는 만 14세 이상이에요</label>
+        <label className="ppage"><input type="checkbox" checked={recv} onChange={(e) => setRecv(e.target.checked)} /> 나도 모르는 누군가의 편지를 받을래요 <small>(안 해도 보낼 수 있어요 · 설정에서 언제든 바꿔요)</small></label>
         <div className="dock">
-          <button type="button" className="cta big" disabled={!age} onClick={() => update({ penpalAgreed: true, penpalOpen: true })}>약속하고 시작하기</button>
+          <button type="button" className="cta big" disabled={!age} onClick={() => update({ penpalAgreed: true, penpalRecv: recv })}>약속하고 시작하기</button>
         </div>
       </main>
     );
