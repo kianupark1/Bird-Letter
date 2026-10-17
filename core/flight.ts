@@ -17,6 +17,8 @@ export const SPEED_VARY_SINCE = Date.parse("2026-10-15T00:00:00+09:00");
 export const SPEED_VARY = 0.15;
 /** 이 시각 뒤에 보낸 편지부터 쉬어 가며 날아요(더 오래 걸림) */
 export const SLOW_SINCE = Date.parse("2026-10-17T06:00:00+09:00");
+/** 이 시각 뒤에 보낸 편지부터 새마다 다른 성격(core/birds.ts rest·minMin)으로 날아요 */
+export const TIER_SINCE = Date.parse("2026-10-17T21:00:00+09:00");
 
 /** 길 잃음·나무 걸림이 편지를 붙잡아 두는 시간: 원래 비행 시간의 25%~75% */
 export const DELAY_RANGE = [0.25, 0.75] as const;
@@ -71,7 +73,9 @@ export const extraFrac = (m: Mishap | null) => (m ? m.delayFrac : 0);
 export function totalMinutes(letterId: string, birdId: string, km: number, sentAt: number, speed = 1) {
   const cruise = (km / (getBird(birdId).kmh * speedFactor(letterId, birdId, sentAt))) * 60;
   // 쉬어 가며 날기(core/geo.ts REST_FACTOR·MIN_FLIGHT_MIN): SLOW_SINCE 뒤에 보낸 편지부터
-  const base = (sentAt >= SLOW_SINCE ? Math.max(MIN_FLIGHT_MIN, cruise * REST_FACTOR) : cruise) / speed;
+  // 새마다 다른 성격(TIER_SINCE 뒤): 매는 몇 분, 비둘기는 한 시간쯤, 까치는 아무리 가까워도 하루
+  const b = getBird(birdId);
+  const base = (sentAt >= TIER_SINCE ? Math.max(b.minMin, cruise * b.rest) : sentAt >= SLOW_SINCE ? Math.max(MIN_FLIGHT_MIN, cruise * REST_FACTOR) : cruise) / speed;
   return base * (1 + extraFrac(rollMishap(letterId, birdId, sentAt)));
 }
 
