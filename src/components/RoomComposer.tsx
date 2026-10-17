@@ -229,7 +229,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
         {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
           <button key={b.id} type="button" role="radio" aria-checked={b.id === birdId} className={`ch-bird ${b.id === birdId ? "on" : ""}`}
             onClick={() => { setBirdId(b.id); write(LAST_BIRD, b.id); }}>
-            <BirdIcon id={b.id} size={46} letter={b.id === birdId} />
+            <BirdIcon id={b.id} size={36} letter={b.id === birdId} />
             <b>{b.name}</b>
             <small>{route ? formatMinutes(Math.max(1, Math.round(travelMinutes(b, route.km) / speed.current))) : `시속 ${b.kmh}km`}</small>
           </button>

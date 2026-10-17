@@ -50,6 +50,7 @@ for (const b of BIRDS) eq(`${b.name} 부산은 새 성격대로`, travelMinutes(
   eq("가까운 곳은 새마다 모두 다름", new Set(BIRDS.map((b) => travelMinutes(b, 4))).size, BIRDS.length);
   eq("서울-부산도 매가 가장 빠르고 까치가 가장 느림", [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).map((b) => b.id).join(",").startsWith("hawk") && [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).at(-1)!.id === "magpie", true);
 }
+{ const { BIRDS_SLOW_TO_FAST: SF } = await import("../core/birds.ts"); eq("빠른 순서: 매·붕붕이·비둘기·제비·두루미·까치", [...SF].reverse().map((b) => b.id).join(","), "hawk,bungbungi,pigeon,swallow,crane,magpie"); }
 eq("하루 넘으면 일로 표시", formatMinutes(1440 + 7 * 60 + 5), "1일 7시간");
 eq("딱 하루", formatMinutes(1440), "1일");
 eq("매 제주(452km) 순항 분", cruiseMinutes(BIRDS[0], 452), 301);
