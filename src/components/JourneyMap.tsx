@@ -156,7 +156,7 @@ export default function JourneyMap({ route, p, birdId, compact, view, h = 300, f
   const barKm = [100, 50, 20, 10, 5, 2, 1].find((k) => k * scale <= 150) ?? 1;
   const barLen = barKm * scale;
   const placed: Box[] = [
-    { x0: bx - 26, y0: by - 26, x1: bx + 26, y1: by + 26 }, // 새가 있는 자리
+    { x0: bx - 18, y0: by - 16, x1: bx + 18, y1: by + 18 }, // 새가 있는 자리
     { x0: 4, y0: H - 30, x1: 20 + barLen + 28, y1: H - 2 }, // 축척 막대
     { x0: W - 30, y0: 6, x1: W - 2, y1: 40 }, // 나침반
   ];
@@ -262,7 +262,7 @@ export default function JourneyMap({ route, p, birdId, compact, view, h = 300, f
         </g>
       )}
       <g className="mapbird" aria-hidden>
-        <FlyBird birdId={birdId} x={f1(bx)} y={f1(by)} angle={heading} size={compact ? 0.8 : h >= 400 ? 1.25 : 1} still={still || p >= 1} />
+        <FlyBird birdId={birdId} x={f1(bx)} y={f1(by)} angle={heading} size={compact ? 0.6 : h >= 400 ? 0.7 : 0.85} still={still || p >= 1} />
       </g>
 
       {fx && (

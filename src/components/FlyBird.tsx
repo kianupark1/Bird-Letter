@@ -23,7 +23,7 @@ export default function FlyBird({ birdId, x, y, angle = 0, size = 1, still }: { 
   if (birdId === "bungbungi") {
     return (
       <g transform={`translate(${x} ${y})`} className="flybird" aria-hidden>
-        <ellipse cx="4" cy="24" rx="15" ry="3.6" className="fb-shadow" />
+        <ellipse cx={4 * size} cy={24 * size} rx={15 * size} ry={3.6 * size} className="fb-shadow" />
         <g transform={`scale(${size}) ${flip} rotate(${tilt * 0.5})`}>
           <g>{anim("0 0; 0 -3; 0 0", "1.1s", "translate")}
             <path d="M-12 -14 h24 M0 -14 v6" stroke="#5B3A29" strokeWidth="2" strokeLinecap="round" />
@@ -59,7 +59,7 @@ export default function FlyBird({ birdId, x, y, angle = 0, size = 1, still }: { 
   return (
     <g transform={`translate(${x} ${y})`} className="flybird" aria-hidden>
       {/* 땅에 비친 그림자: 둥실거릴 때 같이 커졌다 작아져요 */}
-      <ellipse cx="4" cy="26" rx="16" ry="3.8" className="fb-shadow">{anim("1 1; 0.86 0.86; 1 1", "1.2s", "scale")}</ellipse>
+      <ellipse cx={4 * size} cy={26 * size} rx={16 * size} ry={3.8 * size} className="fb-shadow">{anim("1 1; 0.86 0.86; 1 1", "1.2s", "scale")}</ellipse>
       <g transform={`scale(${size}) ${flip} rotate(${tilt})`}>
         <g>
           {anim("0 0; 0 -3.5; 0 0", "1.2s", "translate")}
@@ -70,13 +70,13 @@ export default function FlyBird({ birdId, x, y, angle = 0, size = 1, still }: { 
           <ellipse cx="3" cy="3.5" rx="11" ry="5" fill={L.belly} />
           {L.extra === "hawk" && <path d="M-1 2 l2 2 M3 2.5 l2 2 M7 2 l2 2" stroke="#8A5A3C" strokeWidth="1" strokeLinecap="round" />}
           {birdId === "crane" && <path d="M12 -2 C17 -4 20 -6 23 -6" stroke="#FBF8F2" strokeWidth="5" strokeLinecap="round" fill="none" />}
-          <circle cx={headX} cy="-5" r="7.5" fill={L.head} />
+          <circle cx={headX} cy="-5" r="8.6" fill={L.head} />
           {L.extra === "pigeon" && <path d={`M${headX - 6} -1 q6 4 11 0`} stroke="#3EA890" strokeWidth="2.2" fill="none" strokeLinecap="round" />}
           {L.extra === "swallow" && <circle cx={headX + 3} cy="-1.5" r="3.4" fill="#C1481F" />}
           {birdId === "crane" && <circle cx={headX - 1} cy="-11" r="2.6" fill="#C1481F" />}
           {(birdId === "magpie" || birdId === "swallow") && <circle cx={headX - 3} cy="-1" r="2.4" fill={L.belly} opacity=".9" />}
           {L.cheek && L.extra !== "swallow" && <ellipse cx={headX + 1} cy="-1" rx="2.4" ry="1.5" fill={L.cheek} opacity=".75" />}
-          <circle cx={headX + 3} cy="-7" r="2.1" fill="#241a12" /><circle cx={headX + 3.8} cy="-7.8" r=".8" fill="#fff" />
+          <circle cx={headX + 3} cy="-7" r="2.6" fill="#241a12" /><circle cx={headX + 4} cy="-8" r="1" fill="#fff" />
           {L.extra === "hawk"
             ? <path d={`M${headX + 6} -7 q6 1 5 6 q-2 -2 -5 -2z`} fill={L.beak} />
             : <path d={`M${headX + 6} -7 L${headX + (birdId === "crane" ? 15 : 12)} -4.5 L${headX + 6} -3Z`} fill={L.beak} />}
