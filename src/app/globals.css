@@ -672,6 +672,9 @@ main.app.room.chat { padding: 16px 16px 0; display: flex; flex-direction: column
 .ch-letter.open { max-width: 92%; }
 .ch-tap, a.ch-letter { display: flex; flex-direction: column; gap: 4px; width: 100%; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 10px 14px; min-height: 48px; cursor: pointer; text-decoration: none; }
 .ch-line { font-size: 18px; line-height: 1.4; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ch-line.full { display: block; -webkit-line-clamp: unset; overflow: visible; white-space: pre-wrap; }
+.ch-thumbs { display: flex; gap: 6px; flex-wrap: wrap; }
+.ch-thumbs img { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; border: 3px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
 .ch-status { display: flex; align-items: center; gap: 4px; font-size: 13px; opacity: .7; }
 .ch-bar { display: block; height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; }
 .ch-bar i { display: block; height: 100%; background: var(--hwangto); border-radius: 4px; }

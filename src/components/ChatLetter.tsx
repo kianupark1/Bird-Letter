@@ -33,6 +33,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const done = pr.done && !sched;
   const arriveAt = l.arriveAt ?? l.sentAt + pr.total * 60000;
   const myText = mine ? (entry.item as { message: string }).message : "";
+  const ownPhotos = mine ? (entry.item as { photos?: string[] }).photos ?? [] : [];
 
   // 펼쳤을 때: 받는 사람은 도착한 뒤에만 서버에서 내용·사진을 받아요(보낸 사람은 내 글을 언제든 봐요)
   useEffect(() => {
@@ -42,14 +43,14 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
       if (body === null) remote.getBody(entry.item.id).then((m) => m !== null && setBody(m)).catch(() => {});
     }
     const own = mine ? (entry.item as { photos?: string[] }).photos : undefined;
-    if (own?.length) setPhotos(own);
+    if (own?.length) return; // 내 폰에 있는 사진은 말풍선에 바로 보여요
     else remote.getPhotos(entry.item.id).then(setPhotos).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, done]);
 
-  // 말풍선에 보일 한 줄
+  // 말풍선에 보일 내용: 내 편지는 메신저처럼 쓴 글 전체가 바로 보여요(2026-10-17 대표님)
   const line = mine
-    ? "💌 내가 보낸 편지 · 눌러서 펼치기"
+    ? (myText.trim() || "(사진 편지)")
     : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
@@ -61,7 +62,8 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""} ${open ? "open" : ""}`;
   const head = (
     <>
-      <span className="ch-line">{line}</span>
+      <span className={`ch-line${mine ? " full" : ""}`}>{line}</span>
+      {mine && ownPhotos.length > 0 && <span className="ch-thumbs">{ownPhotos.map((src, i) => <img key={i} src={src} alt={`보낸 사진 ${i + 1}`} />)}</span>}
       <span className="ch-status"><BirdIcon id={bird.id} size={22} letter={!done} /> {status}</span>
       {!done && !sched && <span className="ch-bar" aria-hidden><i style={{ width: `${Math.round(pr.p * 100)}%` }} /></span>}
     </>
@@ -103,9 +105,10 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
             ))}
           </ol>
           <div className="ch-route">{route.title} · {route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
-          {done || mine ? (
+          {mine && !ownPhotos.length && photos.length > 0 && <span className="ch-thumbs">{photos.map((src, i) => <img key={i} src={src} alt={`보낸 사진 ${i + 1}`} />)}</span>}
+          {done && !mine ? (
             <LetterReveal
-              message={mine ? myText : body ?? ""} photos={photos} caption={`${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading={!mine}
+              message={body ?? ""} photos={photos} caption={`${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading
               onSave={async (src) => {
                 try {
                   const r = await savePolaroid(src, `${bird.name}가 물고 온 사진`, `${route.title} · ${dateTimeText(arriveAt)}`);
