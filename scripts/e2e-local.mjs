@@ -40,30 +40,21 @@ async function writeLetter({ to, bird, text, files = [], later = false }) {
   if (later) await p.click("text=정한 때에 출발");
 }
 
-console.log("[1] 사진 두 장과 함께 보내기 → 두루마리로 펼치기");
+console.log("[1] 사진 두 장과 함께 보내기 → 메신저처럼 바로 보임");
 await writeLetter({ to: "민지", bird: "매", text: "봄 사진을 폴라로이드로 보내요.", files: photos });
 ok("사진 두 장이 폴라로이드 모양으로 담김", (await p.$$(".thumb")).length === 2);
 await p.click("text=로 보내기");
 await p.waitForURL(/\/room/);
 await p.waitForSelector(".ch-feed");
 ok("보낸 뒤 대화방에 내 말풍선이 '비행 중'으로 보임", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("비행 중"));
-ok("도착 전에는 두루마리가 보이지 않음", (await p.$(".scroll-open")) === null);
+ok("내 편지는 쓴 글이 말풍선에 바로 보임", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("봄 사진을 폴라로이드로 보내요."));
+ok("내 편지 사진 두 장이 말풍선에 작게 보임", (await p.$$(".ch-letter.me .ch-thumbs img")).length === 2);
+ok("내 편지에는 두루마리가 없음", (await p.$(".scroll-open")) === null);
 await p.waitForFunction(() => document.querySelector(".ch-letter.me")?.textContent?.includes("도착 ✓"), null, { timeout: 120000 });
 ok("도착하면 말풍선이 '도착 ✓'로 바뀜", true);
 await p.click(".ch-letter.me .ch-tap");
-await p.waitForSelector(".scroll-open", { timeout: 20000 });
-ok("눌러서 그 자리에서 말린 두루마리와 '편지 펼치기'가 보임", true);
-ok("펼치면 비행 기록(출발·도착)이 보임", (await p.$eval(".ch-log", (e) => e.innerText)).includes("출발했어요") && (await p.$eval(".ch-log", (e) => e.innerText)).includes("도착했어요"));
-ok("펼치기 전에는 편지 글이 보이지 않음", !(await p.$eval(".reveal", (e) => e.innerText)).includes("봄 사진을"));
-await p.click(".scroll-open");
-await p.waitForTimeout(8000);
-const txt = await p.$eval(".reveal", (e) => e.innerText);
-ok("펼친 뒤 편지 글이 보임", txt.includes("봄 사진을 폴라로이드로 보내요"));
-ok("사진 두 장이 폴라로이드로 보임", (await p.$$(".polaroid")).length === 2);
-const dl = p.waitForEvent("download", { timeout: 10000 }).catch(() => null);
-await p.click(".pol-save >> nth=0");
-const d = await dl;
-ok("폴라로이드를 폰에 저장(파일 내려받기)", !!d);
+await p.waitForSelector(".ch-log", { timeout: 20000 });
+ok("누르면 비행 기록(출발·도착)이 보임", (await p.$eval(".ch-log", (e) => e.innerText)).includes("출발했어요") && (await p.$eval(".ch-log", (e) => e.innerText)).includes("도착했어요"));
 
 console.log("[1-2] 스탬프 도감과 내 동네");
 await p.goto(BASE + "/stamps");
