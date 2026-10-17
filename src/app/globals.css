@@ -898,3 +898,21 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 .tabhead .addbtn { margin-left: auto; border: 0; cursor: pointer; font: inherit; }
 .tabhead .addbtn + .gearlink { margin-left: 0; }
 .friendsp .merow { border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+
+/* 지도 꾸밈 2차(2026-10-17): 강·공원·산·곡선 길·날아가는 새 */
+.map .river { fill: none; stroke: var(--sea); stroke-linecap: round; stroke-linejoin: round; }
+.map .river-lbl { font-size: 9.5px; font-style: italic; font-weight: 700; fill: var(--namsaek); opacity: .55; letter-spacing: .15em; stroke: none; }
+.map .park { fill: #6FA86A; opacity: .22; }
+.map .road { fill: none; stroke: #FFF7E6; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.map .road.major { stroke: #F3D79A; }
+.map .road-case { fill: none; stroke: rgba(120, 95, 60, .22); stroke-linecap: round; stroke-linejoin: round; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map .road { stroke: #4A3F33; } :root:not([data-theme="light"]) .map .road.major { stroke: #5E4E36; } :root:not([data-theme="light"]) .map .road-case { stroke: rgba(0,0,0,.25); } }
+:root[data-theme="dark"] .map .road { stroke: #4A3F33; } :root[data-theme="dark"] .map .road.major { stroke: #5E4E36; }
+.map .peak { fill: #8A7A5C; opacity: .55; }
+.map text.lbl.peak { font-size: 9.5px; font-weight: 600; opacity: .55; stroke-width: 2.4px; }
+.map .route-glow { fill: none; stroke: var(--hwangto); stroke-width: 9; stroke-linecap: round; opacity: .13; }
+.map .route-line, .map .route-done { fill: none; }
+.map .fb-shadow { fill: #000; opacity: .16; }
+.map .fx-cloud { fill: #fff; opacity: .5; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map .fx-cloud { opacity: .1; } :root:not([data-theme="light"]) .map .park { opacity: .2; } :root:not([data-theme="light"]) .map .fb-shadow { opacity: .35; } }
+:root[data-theme="dark"] .map .fx-cloud { opacity: .1; }

@@ -49,7 +49,8 @@ export function makeRoute(from: Place, to: Place): Route {
   const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
 
   // 직선 가까이에 있는 랜드마크 후보
-  const corridor = Math.min(CORRIDOR_MAX_KM, Math.max(8, len * 0.2));
+  // 가까운 노선(30km 미만)은 길 폭을 좁게: 엉뚱한 곳으로 크게 돌아가는 삼각형 길이 되지 않게(2026-10-17)
+  const corridor = len < 30 ? Math.max(0.6, len * 0.22) : Math.min(CORRIDOR_MAX_KM, Math.max(8, len * 0.2));
   const seen = new Set<string>([a.name, b.name]);
   const cands: { lm: Landmark; t: number; off: number }[] = [];
   // 서울 구·작은 도시의 랜드마크는 가까운(120km 미만) 노선에서만 경유지로 써요
