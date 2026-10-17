@@ -49,7 +49,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
 
   // 말풍선에 보일 한 줄
   const line = mine
-    ? "💌 내가 보낸 편지 · 눌러서 펼치기"
+    ? (myText.split("\n").find((x) => x.trim())?.trim() || "(사진 편지)") // 내가 쓴 글은 첫 줄이 바로 보여요(누르면 두루마리로 펼침)
     : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
