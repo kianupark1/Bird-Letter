@@ -37,7 +37,8 @@ export const BIRDS: Bird[] = [
 ];
 
 /** 소개 화면용: 느린 새부터 빠른 새 순서 */
-export const BIRDS_SLOW_TO_FAST: Bird[] = [...BIRDS].sort((a, b) => a.kmh - b.kmh);
+/** 느린 새부터(실제 걸리는 시간 기준: 까치 → 두루미 → 제비 → 비둘기 → 붕붕이 → 매). 가까운 곳·먼 곳 모두 같은 순서예요 */
+export const BIRDS_SLOW_TO_FAST: Bird[] = [...BIRDS].sort((a, b) => b.minutesSeoulBusan - a.minutesSeoulBusan || a.kmh - b.kmh);
 
 export const getBird = (id: string) => BIRDS.find((b) => b.id === id) ?? BIRDS[2];
 
