@@ -46,7 +46,7 @@ export function buildChat(entries: Entry[], now: number): ChatItem[] {
 }
 
 /** 편지 한 통의 비행 기록: 출발 → 지난 곳(🏮 스탬프) → 이야기 → 사고 → 도착(또는 도착 예정) */
-export function letterEvents(e: Entry, now: number, cheers: { at: number; icon: string; text: string }[] = []): FlightEvent[] {
+export function letterEvents(e: Entry, now: number): FlightEvent[] {
   if (isScheduled(e.at, now)) return [{ key: "plan", t: e.at, icon: "⏰", text: "출발 예정", sub: clockText(e.at), future: true }];
   const l = asLike(e);
   const bird = getBird(l.birdId), route = getRoute(l.routeId);
@@ -74,8 +74,6 @@ export function letterEvents(e: Entry, now: number, cheers: { at: number; icon: 
     const msg = mishapMessage(pr.mishap.kind, bird.name);
     out.push({ key: "mishap", t: l.sentAt + elapsedAtFraction(pr.plan, pr.mishap.at), icon: pr.mishap.kind === "tree" ? "🌳" : "🧭", text: msg.title, sub: msg.body });
   }
-  // 응원(모이 주기·노래): 도착 시각에는 영향이 없어요
-  cheers.forEach((c, i) => out.push({ key: `ch${i}-${c.at}`, t: c.at, icon: c.icon, text: c.text, sub: clockText(c.at) }));
   out.sort((a, b) => a.t - b.t);
   out.push(pr.done
     ? { key: "end", t: arriveAt, icon: "🎉", text: `${route.to.name}에 도착했어요`, sub: clockText(arriveAt) }

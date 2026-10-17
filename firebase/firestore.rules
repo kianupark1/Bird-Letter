@@ -181,25 +181,6 @@ service cloud.firestore {
               && request.resource.data.data.size() > 0 && request.resource.data.data.size() <= 450000)); // core/limits.ts의 MAX_PHOTO_CHARS와 같아야 해요
         allow delete: if isSender(letterId);
       }
-
-      // 응원하기(모이 주기·노래 불러 주기): 보낸 사람·받는 사람만, 날아가는 동안만, 한 사람이 한 시간에 한 번.
-      // 문서 이름이 "uid_시간번호"라서 같은 시간에 두 번 쓸 수 없어요(폰 시계가 조금 달라도 되게 앞뒤 한 시간은 허용).
-      // 도착 시각과는 아무 상관이 없어요(편지 문서는 바뀌지 않음).
-      match /cheers/{cheerId} {
-        function letterDoc() { return get(/databases/$(database)/documents/letters/$(letterId)).data; }
-        function party() { return letterDoc().fromUid == request.auth.uid || letterDoc().get('recipientUid', null) == request.auth.uid; }
-        function hourNo() { return request.time.toMillis() / 3600000; } // 정수끼리 나누면 정수(몇 번째 시간인지)
-        allow read: if signedIn() && party();
-        allow create: if signedIn() && party()
-          && request.resource.data.keys().hasOnly(['uid', 'kind', 'at'])
-          && request.resource.data.uid == request.auth.uid
-          && request.resource.data.kind in ['seed', 'song']
-          && request.resource.data.at == request.time
-          && cheerId in [request.auth.uid + '_' + string(hourNo() - 1), request.auth.uid + '_' + string(hourNo()), request.auth.uid + '_' + string(hourNo() + 1)]
-          && letterDoc().arriveAt > request.time
-          && letterDoc().get('departAt', request.time) <= request.time;
-        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isSender(letterId));
-      }
     }
 
     // 신고: 쓰기만 가능(읽기는 운영자가 콘솔에서)
