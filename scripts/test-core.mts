@@ -41,8 +41,17 @@ near("서울→독도 직선거리(km)", dist(dokdo), dokdo.km, 40);
 // 도착 시간: 실제 비행 속도(시속)로 계산한 서울-부산 시간(분), 거리에 비례
 const base: Record<string, number> = { hawk: 217, swallow: 488, pigeon: 300, magpie: 557, bungbungi: 325, crane: 355 };
 for (const b of BIRDS) eq(`${b.name} 부산 순항 분`, cruiseMinutes(b, 325), base[b.id]);
-for (const b of BIRDS) eq(`${b.name} 부산 쉬어 가며 3배`, travelMinutes(b, 325), Math.round((325 / b.kmh) * 180));
-eq("가까워도 최소 1시간", travelMinutes(BIRDS[0], 4), 60);
+for (const b of BIRDS) eq(`${b.name} 부산은 새 성격대로`, travelMinutes(b, 325), Math.round(Math.max(b.minMin, (325 / b.kmh) * 60 * b.rest)));
+{
+  const g = (id: string) => BIRDS.find((b) => b.id === id)!;
+  eq("가까운 곳: 매는 몇 분", travelMinutes(g("hawk"), 4), 10);
+  eq("가까운 곳: 비둘기는 1시간", travelMinutes(g("pigeon"), 4), 60);
+  eq("가까운 곳: 까치는 하루", travelMinutes(g("magpie"), 4), 1440);
+  eq("가까운 곳은 새마다 모두 다름", new Set(BIRDS.map((b) => travelMinutes(b, 4))).size, BIRDS.length);
+  eq("서울-부산도 매가 가장 빠르고 까치가 가장 느림", [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).map((b) => b.id).join(",").startsWith("hawk") && [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).at(-1)!.id === "magpie", true);
+}
+eq("하루 넘으면 일로 표시", formatMinutes(1440 + 7 * 60 + 5), "1일 7시간");
+eq("딱 하루", formatMinutes(1440), "1일");
 eq("매 제주(452km) 순항 분", cruiseMinutes(BIRDS[0], 452), 301);
 eq("두루미 제주(452km) 순항 분", cruiseMinutes(BIRDS[5], 452), 493);
 eq("새 6종", BIRDS.length, 6);
@@ -532,7 +541,11 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   const { totalMinutes: tm, SLOW_SINCE: S, speedFactor: sf, rollMishap: rm } = await import("../core/flight.ts");
   const id = "slowtest01", t = S + 1000, f = sf(id, "pigeon", t), mi = rm(id, "pigeon", t);
   near("새 편지는 3배", tm(id, "pigeon", 325, t), ((325 / (65 * f)) * 60 * 3) * (1 + (mi ? mi.delayFrac : 0)), 0.001);
-  eq("가까운 곳도 최소 1시간", tm("near01", "hawk", 4, t) >= 60, true);
+  eq("가까운 곳도 최소 1시간(새 성격 전)", tm("near01", "hawk", 4, t) >= 60, true);
+  const { TIER_SINCE: T } = await import("../core/flight.ts");
+  const nm = tm("near01", "hawk", 4, T + 1000);
+  eq("새 성격 뒤: 가까운 매는 10분쯤(사고 없을 때)", nm >= 10 && nm < 20, true);
+  eq("새 성격 뒤: 가까운 까치는 하루 이상", tm("near02", "magpie", 4, T + 1000) >= 1440, true);
   const old = S - 86400e3, f0 = sf(id, "pigeon", old), m0 = rm(id, "pigeon", old);
   near("예전 편지는 그대로", tm(id, "pigeon", 325, old), ((325 / (65 * f0)) * 60) * (1 + (m0 ? m0.delayFrac : 0)), 0.001);
 }

@@ -21,13 +21,18 @@ export const MIN_FLIGHT_MIN = 60;
 export function cruiseMinutes(bird: Bird, km: number) {
   return Math.round((km / bird.kmh) * 60);
 }
-/** 새가 도착까지 걸리는 분(사고가 없을 때, 쉬어 가는 시간 포함) */
+/** 새가 도착까지 걸리는 분(사고가 없을 때). 새마다 쉬는 정도(rest)·최소 시간(minMin)이 달라요(core/birds.ts) */
 export function travelMinutes(bird: Bird, km: number) {
-  return Math.round(Math.max(MIN_FLIGHT_MIN, (km / bird.kmh) * 60 * REST_FACTOR));
+  return Math.round(Math.max(bird.minMin, (km / bird.kmh) * 60 * bird.rest));
 }
 
+/** "40분", "2시간 5분", 하루가 넘으면 "1일 7시간"(분은 빼요) */
 export function formatMinutes(min: number) {
   if (min < 60) return `${min}분`;
+  if (min >= 1440) {
+    const d = Math.floor(min / 1440), hh = Math.floor((min % 1440) / 60);
+    return hh ? `${d}일 ${hh}시간` : `${d}일`;
+  }
   const h = Math.floor(min / 60), m = min % 60;
   return m ? `${h}시간 ${m}분` : `${h}시간`;
 }
