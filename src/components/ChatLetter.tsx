@@ -11,8 +11,6 @@ import { savePolaroid } from "@/lib/photo";
 import { letterHref } from "@/lib/target";
 import { asLike, latestPostcard, letterEvents, type Entry } from "@/lib/chat";
 import PostcardView from "@/components/Postcard";
-import { CHEER_LABEL, myUid, type Cheer } from "@/lib/cheers";
-import { cheerWho } from "@/components/CheerBar";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
 import { mishapMessage } from "@/lib/flight";
@@ -21,7 +19,7 @@ import { mishapMessage } from "@/lib/flight";
  * 대화방의 편지 말풍선(카카오톡처럼 깔끔하게): 한 줄 내용 + 작은 상태 한 줄 + 옆에 보낸 시각.
  * 누르면 그 자리에서 펼쳐져서 비행 기록(출발·지난 곳·이야기·도착)과 편지 내용이 보여요.
  */
-export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend, cheers = [] }: { entry: Entry; name: string; now: number; isNew: boolean; onOpened: (id: string) => void; onResend?: (e: Entry) => void; cheers?: Cheer[] }) {
+export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend}: { entry: Entry; name: string; now: number; isNew: boolean; onOpened: (id: string) => void; onResend?: (e: Entry) => void}) {
   const [open, setOpen] = useState(false);
   const [body, setBody] = useState<string | null>(null);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -57,7 +55,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
     : done ? `${bird.name} · 도착 ✓ ${clockText(arriveAt)}`
     : pr.stalled && pr.mishap ? `${pr.mishap.kind === "tree" ? "🌳 나무에 걸림" : "🧭 길 잃음"} · 다시 찾으면 ${clockText(arriveAt)} 도착`
-    : `${bird.name} 비행 중 · ${clockText(arriveAt)} 도착 예정${cheers.length ? ` · 💪 ${cheers.length}` : ""}`;
+    : `${bird.name} 비행 중 · ${clockText(arriveAt)} 도착 예정`;
   const time = <span className="ch-time">{clockText(sched ? entry.at : l.sentAt)}</span>;
   const row = (bubble: React.ReactNode) => <div className={`ch-row ${mine ? "me" : "you"}`}>{mine && time}{bubble}{!mine && time}</div>;
   const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""} ${open ? "open" : ""}`;
@@ -98,7 +96,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
       {open && (
         <div className="ch-detail">
           <ol className="ch-log" aria-label="비행 기록">
-            {letterEvents(entry, now, cheers.map((c) => ({ at: c.at, icon: CHEER_LABEL[c.kind].icon, text: `${cheerWho(c, myUid(), name)} ${bird.name}에게 ${CHEER_LABEL[c.kind].verb}` }))).map((ev) => (
+            {letterEvents(entry, now).map((ev) => (
               ev.card
                 ? <li key={ev.key} className="card"><PostcardView card={ev.card} birdId={bird.id} birdName={bird.name} sub={`${bird.name}의 엽서 · ${ev.sub}`} small /></li>
                 : <li key={ev.key} className={ev.future ? "future" : ""}><span className="ic" aria-hidden>{ev.icon}</span><span><b>{ev.text}</b>{ev.sub && <small>{ev.sub}</small>}</span></li>
