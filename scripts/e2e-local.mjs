@@ -83,8 +83,9 @@ ok("부산에서 서울로 바로 옮기면 안내가 나옴", (await p.$eval("m
 ok("막힌 이동은 동네가 그대로", (await p.$eval("#home-place", (e) => e.value)) === "busan");
 
 await p.goto(BASE + "/rank");
-await p.waitForSelector(".goalcard");
-ok("랭킹에 지구 몇 바퀴·다음 목적지(우주 여행)가 보임", (await p.$eval(".goalcard", (e) => e.innerText)).includes("지구") && (await p.$eval(".goalcard", (e) => e.innerText)).includes("한반도"));
+await p.waitForSelector(".rankpage");
+await p.waitForTimeout(500);
+ok("랭킹에 우주 여행 카드가 없고 순위만 보임", !(await p.$(".goalcard")) && (await p.$eval("main", (e) => e.innerText)).includes("누적 거리"));
 
 console.log("[2] 예약 발송: 입력 확인, 목록 표시, 취소");
 await writeLetter({ to: "엄마", bird: "두루미", text: "생일 축하해요", later: true });

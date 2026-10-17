@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import BirdPicker from "@/components/BirdPicker";
 import LoginStart from "@/components/LoginStart";
@@ -13,7 +13,7 @@ import { getBird } from "@/lib/birds";
 import { birdFx } from "@/lib/chirp";
 import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
 import { listBlocked } from "@/lib/firebase/remote";
-import { listPool, saveMyPenpal } from "@/lib/firebase/penpal";
+import { listPool, readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
 import { PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpal } from "../../../core/penpal";
 
 /** 펜팔: 모르는 누군가에게 새 날려 보내기 (시안 v5-1·v5-2) */
@@ -21,11 +21,18 @@ export default function PenpalPage() {
   const { state, recheck } = useSession();
   if (state === "checking") return <main className="app" aria-busy="true" />;
   if (state === "login") return <LoginStart onDone={recheck} next="/penpal" />;
-  return <Penpal />;
+  return <Suspense fallback={<main className="app" aria-busy="true" />}><Penpal /></Suspense>;
 }
 
 function Penpal() {
   const router = useRouter();
+  // 랭킹에서 고른 사람에게 보낼 때(?to=uid). 그 사람이 랜덤 편지 받기를 켜 뒀을 때만 보낼 수 있어요
+  const toUid = useSearchParams().get("to") ?? "";
+  const [chosen, setChosen] = useState<{ uid: string; name: string; region: string } | null | "no">(null);
+  useEffect(() => {
+    if (!toUid) return;
+    readPenpal(toUid).then((p) => setChosen(p?.open ? { uid: p.uid, name: p.name || "어딘가의 새", region: p.region } : "no")).catch(() => setChosen("no"));
+  }, [toUid]);
   const { profile, ready, update } = useProfile();
   const { letters, received, add } = useLetters();
   const { book } = usePeople();
@@ -77,15 +84,16 @@ function Penpal() {
     setBusy(true); setNote("");
     try {
       const me = await ensureUser();
-      const [pool, blocked] = await Promise.all([listPool(), listBlocked(me.uid).catch(() => new Set<string>())]);
+      const [pool, blocked] = await Promise.all([chosen && chosen !== "no" ? Promise.resolve([]) : listPool(), listBlocked(me.uid).catch(() => new Set<string>())]);
       // 이미 편지를 주고받은 사람, 나간 방(넘긴 사람), 차단한 사람은 빼요
       const exclude = new Set<string>([...blocked]);
       for (const l of letters) if (l.toUid) exclude.add(l.toUid);
       for (const r of received) exclude.add(r.fromUid);
       for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) exclude.add(k.slice(2));
-      const target = pickPenpal(pool, me.uid, exclude, tags);
+      const picked = chosen && chosen !== "no" && chosen.uid !== me.uid ? chosen : null;
+      const target = picked ?? pickPenpal(pool, me.uid, exclude, tags);
       if (!target) { setNote("지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊"); setBusy(false); return; }
-      const toName = (pool.find((p) => p.uid === target.uid)?.name || "어딘가의 새").slice(0, 20);
+      const toName = (picked?.name ?? pool.find((p) => p.uid === target.uid)?.name ?? "어딘가의 새").slice(0, 20);
       await add({ to: toName, toUid: target.uid, routeId: penpalRoute(city, target.region), birdId: bird, message: masked.text.trim(), fromName: myName, penpal: true });
       birdFx("depart", profile.chirp !== false);
       router.push(`/room?u=${encodeURIComponent(target.uid)}`);
@@ -97,21 +105,22 @@ function Penpal() {
 
   return (
     <main className="app penpal">
-      <header className="sendhead"><Link href="/friends" className="roomback" aria-label="뒤로">‹</Link><div><h1 style={{ margin: 0 }}>누군가에게 쓰는 편지</h1><div className="greet">{getBird(bird).name}가 어딘가로 데려다줘요 · 나는 &quot;{myName}&quot;</div></div></header>
-      <h2 className="friendh" style={{ marginTop: 6 }}>이런 사람에게 닿았으면 <small>(고르지 않아도 돼요)</small></h2>
-      <div className="pptags" role="group" aria-label="관심사">
+      <header className="sendhead"><Link href="/friends" className="roomback" aria-label="뒤로">‹</Link><div><h1 style={{ margin: 0 }}>{chosen && chosen !== "no" ? `${chosen.name}에게 쓰는 편지` : "누군가에게 쓰는 편지"}</h1><div className="greet">{getBird(bird).name}가 어딘가로 데려다줘요 · 나는 &quot;{myName}&quot;</div></div></header>
+      {chosen === "no" && <div className="bubble" style={{ fontSize: 16 }}>이 분은 지금 모르는 사람의 편지를 받지 않아요. 대신 랜덤으로 날려 보낼게요 🕊</div>}
+      {!(chosen && chosen !== "no") && <h2 className="friendh" style={{ marginTop: 6 }}>이런 사람에게 닿았으면 <small>(고르지 않아도 돼요)</small></h2>}
+      {!(chosen && chosen !== "no") && <div className="pptags" role="group" aria-label="관심사">
         {PENPAL_TAGS.map((t) => {
           const on = tags.includes(t.id);
           return <button key={t.id} type="button" aria-pressed={on} className={on ? "on" : ""} onClick={() => update({ penpalTags: on ? tags.filter((x) => x !== t.id) : [...tags, t.id].slice(0, 5) })}>{t.label}</button>;
         })}
-      </div>
+      </div>}
       <textarea className="pppaper" rows={8} value={msg} maxLength={5000} placeholder="안녕하세요, 처음 보는 누군가에게 편지를 써 보는 건 처음이에요…" aria-label="펜팔 편지 내용" onChange={(e) => setMsg(e.target.value)} />
       <div className="ppwarn">{masked.masked ? `🙊 연락처처럼 보이는 글 ${masked.masked}곳을 가리고 보내요` : "🙊 전화번호·주소·아이디처럼 보이는 글은 보내기 전에 가려져요"} · 📷 펜팔 편지는 사진 없이</div>
       <button type="button" className="linkbtn" onClick={() => setPickBird((v) => !v)}>새 바꾸기 · 지금은 {getBird(bird).name} ›</button>
       {pickBird && <div style={{ display: "flex", justifyContent: "center" }}><BirdPicker value={bird} onChange={(id) => { setBird(id); setPickBird(false); }} /></div>}
       {note && <div className="small" role="status" style={{ textAlign: "center" }}>{note}</div>}
       <div className="dock">
-        <button type="button" className="cta big" disabled={!msg.trim() || busy} onClick={send}><BirdIcon id={bird} size={34} /> {busy ? "날려 보내는 중…" : "어딘가로 날려 보내기"}</button>
+        <button type="button" className="cta big" disabled={!msg.trim() || busy || (!!toUid && chosen === null)} onClick={send}><BirdIcon id={bird} size={34} /> {busy ? "날려 보내는 중…" : chosen && chosen !== "no" ? `${chosen.name}에게 날려 보내기` : "어딘가로 날려 보내기"}</button>
       </div>
     </main>
   );
