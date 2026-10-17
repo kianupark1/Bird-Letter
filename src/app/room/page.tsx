@@ -17,6 +17,7 @@ import { blockSender, reportLetter } from "@/lib/firebase/remote";
 import Face from "@/components/Face";
 import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
+import LiveMap from "@/components/LiveMap";
 import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
 import RoomComposer, { type Resend } from "@/components/RoomComposer";
@@ -108,18 +109,13 @@ function Room() {
     map = (
       <>
         <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
-          <JourneyMap route={route} p={pr.p} birdId={bird.id} />
+          <JourneyMap route={route} p={pr.p} birdId={bird.id} fx />
           <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
           <span className="zoom" aria-hidden>⤢</span>
         </button>
         {bigMap && (
-          <div className="mapfull" role="dialog" aria-label={`${route.title} 지도`}>
-            <div className="mf-head">
-              <div><b>{route.title}</b><small>{bird.name} · 도착까지 {formatMinutes(left)}</small></div>
-              <button type="button" className="mf-close" aria-label="닫기" onClick={() => setBigMap(false)}>✕</button>
-            </div>
-            <div className="mf-body"><JourneyMap route={route} p={pr.p} birdId={bird.id} /></div>
-          </div>
+          <LiveMap route={route} birdId={bird.id} title={route.title} onClose={() => setBigMap(false)}
+            progress={(t) => { const r = letterProgress(l, t); return { p: r.p, leftMin: Math.ceil(r.total - r.elapsed), arriveAt: l.sentAt + r.total * 60000, stalled: r.stalled }; }} />
         )}
       </>
     );

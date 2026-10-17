@@ -914,3 +914,83 @@ for (const s of v5) {
   execFileSync("convert", [resolve(OUT, "v5-전체-한눈에.png"), "-crop", `${5 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v5-전체-한눈에.png")]);
 }
 console.log("5차 시안:", v5.length + 1);
+
+/* ═════════ 6차 시안(v6): 기다리는 동안의 재미 ═════════ */
+const CSS6 = `
+.v2 .pc6{background:#fff;border-radius:22px;padding:10px;box-shadow:0 4px 0 rgba(42,33,24,.1);transform:rotate(-2deg);max-width:270px;align-self:flex-start}
+.v2 .pc6 .ill{height:120px;border-radius:14px;background:linear-gradient(#BFDDEB,#F4E7C8);display:grid;place-items:center;font-size:64px;position:relative}
+.v2 .pc6 .ill .b{position:absolute;right:14px;top:10px}
+.v2 .pc6 b{display:block;font-size:17px;margin-top:6px}.v2 .pc6 span{font-size:14px;color:#6B5E52}
+.v2 .stamp6{position:absolute;left:10px;bottom:8px;font-size:13px;font-weight:800;color:#C1481F;border:2px solid #C1481F;border-radius:8px;padding:0 6px;transform:rotate(-8deg);background:#fff8}
+.v2 .cheer{display:flex;gap:8px;align-items:center;justify-content:center}
+.v2 .cheer div{border-radius:22px;padding:10px 16px;font-size:18px;font-weight:700;background:#fff;box-shadow:0 3px 0 rgba(42,33,24,.1)}
+.v2 .cheer .hot{background:#F8E6BC;color:#5b4a1e}
+.v2 .burst{font-size:26px;position:absolute;animation:none}
+.v2 .guess{background:#fff;border-radius:22px;padding:14px;box-shadow:0 3px 0 rgba(42,33,24,.08)}
+.v2 .guess .t{font-size:34px;font-weight:800;text-align:center;letter-spacing:1px}
+.v2 .guess .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.v2 .guess .row div{width:54px;height:54px;border-radius:50%;background:#F4EEDF;display:grid;place-items:center;font-size:28px;font-weight:800}
+.v2 .count{background:linear-gradient(135deg,#1E3A5C,#2c5680);color:#fff;border-radius:26px;padding:16px;text-align:center;box-shadow:0 5px 0 #13263d;position:relative;overflow:hidden}
+.v2 .count .n{font-size:44px;font-weight:800;letter-spacing:1px;margin:2px 0}
+.v2 .count small{font-size:15px;opacity:.85}
+`;
+const v6: { file: string; title: string; note: string; html: string }[] = [];
+const add6 = (file: string, title: string, note: string, html: string) => v6.push({ file, title, note, html });
+
+add6("v6-1-새의엽서", "① 새가 보내는 엽서", "명소를 지날 때 새가 그림엽서를 보내요(보낸 사람·받는 사람 둘 다). 엽서는 도감에 모여요.", wrap2(`
+${rhead("지민", "서울 → 부산 · 비둘기")}
+${chatMap(0.42, "pigeon", "도착까지 <em>8시간 40분</em>")}
+<div class="chat">
+  <div class="ev">🕊 비둘기가 출발했어요 <small>오전 9:00</small></div>
+  <div class="pc6"><div class="ill">🏯<span class="b">${bird("pigeon", 44, true)}</span><span class="stamp6">대전 · 엽서</span></div><b>"엑스포 다리 위에서 잠깐 쉬어 가요!"</b><span>비둘기의 엽서 · 오후 1:20 · 도감에 모았어요</span></div>
+  <div class="ev" style="background:#fff">⏳ 내일 새벽 2시쯤 도착해요</div>
+</div>
+${comp("편지가 날아가는 중이에요", ["pigeon", "비둘기"], false)}`));
+
+add6("v6-2-응원하기", "② 응원하기(모이 주기)", "기다리는 사람이 새를 응원해요. 한 시간에 한 번, 도착 시간은 그대로(빨라지지 않아요). 둘 다 응원 수를 봐요.", wrap2(`
+${rhead("지민", "서울 → 부산 · 비둘기")}
+${chatMap(0.55, "pigeon", "도착까지 <em>6시간 50분</em>")}
+<div class="chat">
+  <div class="ev">🌾 지민이 비둘기에게 모이를 줬어요 <small>오후 2:05</small></div>
+  <div class="ev">🌾 내가 모이를 줬어요 · 비둘기가 힘을 냈어요! <small>오후 3:10</small></div>
+  <div class="ev" style="background:#fff">💪 응원 5번 · 비둘기가 기분 좋게 날고 있어요</div>
+</div>
+<div style="padding:8px 14px 0"><div class="cheer"><div class="hot">🌾 모이 주기</div><div>🎵 노래 불러 주기</div></div><div class="st" style="text-align:center;font-size:14px;margin-top:6px">한 시간에 한 번 · 응원해도 도착 시간은 그대로예요</div></div>
+${comp("편지가 날아가는 중이에요", ["pigeon", "비둘기"], false)}`));
+
+add6("v6-3-도착맞히기", "③ 도착 시간 맞히기", "새마다 그날 컨디션·사고가 있어 정확한 시간은 아무도 몰라요. 받는 사람이 맞히면 배지!", wrap2(`
+${rhead("민수", "부산 → 서울 · 두루미")}
+<div class="body" style="gap:12px;justify-content:center">
+  <div class="bubble">두루미가 몇 시에 도착할까요?</div>
+  <div class="guess"><div style="text-align:center;font-size:16px;color:#6B5E52">내 예상</div><div class="t">내일 오전 4:30</div>
+    <div class="row"><div>−</div><span style="font-size:15px;color:#6B5E52">10분씩 바꿔요</span><div>+</div></div></div>
+  <div class="st" style="font-size:15px;text-align:center">평소라면 오전 4시쯤 · 바람과 컨디션에 따라 달라져요</div>
+  <div class="eta2" style="text-align:center"><b style="font-size:18px">🎯 10분 안에 맞히면 "족집게" 배지</b><div class="st">민수도 맞히는 중이에요 · 누가 더 가까울까?</div></div>
+</div>
+<div class="dock"><div class="chunky">이 시간으로 맞혀 보기</div></div>`));
+
+add6("v6-4-카운트다운", "④ 홈 맨 위 카운트다운", "기다리는 편지가 있으면 홈 맨 위에 큰 카운트다운. 새가 지금 어디쯤인지 한눈에.", wrap2(`
+<div class="hello" style="padding-bottom:2px"><div><b style="font-size:26px">새 편지</b><small>기다림이 즐거운 편지</small></div></div>
+<div class="body" style="gap:10px">
+  <div class="count"><div style="font-size:16px">💌 민수의 편지가 오고 있어요</div><div class="n">3:12:45</div><small>두루미 · 지금 대구 위를 지나는 중 · 내일 오전 4시쯤</small>${mini(64, "crane")}</div>
+  <div class="sticker">${face("지민")}<div style="flex:1"><b>지민</b><span class="d">🕊 내 편지가 날아가는 중 · 6시간 남음</span></div><span class="d">오후 3:10</span></div>
+  <div class="sticker">${face("석영")}<div style="flex:1"><b>석영</b><span class="d">나: 오늘 저녁 같이 먹자</span></div><span class="d">어제</span></div>
+</div>
+${tabs5(0)}`));
+
+const page6 = (body: string) => `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}${boardCss}${CSS2}${CSS3}${CSS4}${CSS5}${CSS6}body{background:#d9d2c4}</style></head><body>${body}</body></html>`;
+for (const s of v6) {
+  const f = resolve(OUT, `${s.file}.html`);
+  writeFileSync(f, page6(s.html));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=390,${844 + 87}`, "--force-device-scale-factor=2", `--screenshot=${resolve(OUT, s.file + ".png")}`, "file://" + f], { stdio: "ignore" });
+  const png = resolve(OUT, s.file + ".png");
+  execFileSync("convert", [png, "-crop", `${390 * 2}x${844 * 2}+0+0`, "+repage", png]);
+}
+{
+  const sheet6 = `<div style="padding:30px;background:#d9d2c4;width:${4 * 420 + 30}px"><div style="display:grid;grid-template-columns:repeat(4,390px);gap:30px"><div style="grid-column:1/-1;font-size:26px;font-weight:700">6차 시안: 기다리는 동안의 재미 (도착 시간은 절대 빨라지지 않아요)</div>${v6.map((s) => `<div><div style="font-size:20px;font-weight:700;margin-bottom:8px">${s.title}</div>${s.html}<div style="font-size:15px;color:#4a3f35;margin-top:6px;line-height:1.4">${s.note}</div></div>`).join("")}</div></div>`;
+  const f = resolve(OUT, "v6-전체-한눈에.html");
+  writeFileSync(f, page6(sheet6));
+  execFileSync("/opt/pw-browsers/chromium", ["--headless", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--allow-file-access-from-files", `--window-size=${4 * 420 + 30},${1000 + 87}`, "--force-device-scale-factor=1", `--screenshot=${resolve(OUT, "v6-전체-한눈에.png")}`, "file://" + f], { stdio: "ignore" });
+  execFileSync("convert", [resolve(OUT, "v6-전체-한눈에.png"), "-crop", `${4 * 420 + 30}x1000+0+0`, "+repage", resolve(OUT, "v6-전체-한눈에.png")]);
+}
+console.log("6차 시안:", v6.length + 1);
