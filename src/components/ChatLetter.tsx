@@ -36,7 +36,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
 
   // 펼쳤을 때: 받는 사람은 도착한 뒤에만 서버에서 내용·사진을 받아요(보낸 사람은 내 글을 언제든 봐요)
   useEffect(() => {
-    if (!open || !done) return;
+    if (!open || (!done && !mine)) return; // 내 편지는 날아가는 중에도 펼쳐 봐요
     if (!mine) {
       markOpened(entry.item.id); onOpened(entry.item.id);
       if (body === null) remote.getBody(entry.item.id).then((m) => m !== null && setBody(m)).catch(() => {});
@@ -49,7 +49,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
 
   // 말풍선에 보일 한 줄
   const line = mine
-    ? (myText.split("\n")[0] || "(사진 편지)")
+    ? "💌 내가 보낸 편지 · 눌러서 펼치기"
     : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
@@ -103,7 +103,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
             ))}
           </ol>
           <div className="ch-route">{route.title} · {route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
-          {done ? (
+          {done || mine ? (
             <LetterReveal
               message={mine ? myText : body ?? ""} photos={photos} caption={`${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading={!mine}
               onSave={async (src) => {
@@ -113,9 +113,8 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
                 } catch { setNotice("저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
               }}
             />
-          ) : mine ? (
-            <div className="ch-paper">{myText || "(글이 없어요)"}<small>{name}님은 도착한 뒤에 읽을 수 있어요</small></div>
           ) : null}
+          {mine && !done && <div className="small" style={{ textAlign: "center" }}>{name}님은 편지가 도착한 뒤에 읽을 수 있어요</div>}
           {notice && <div className="small" role="status">{notice}</div>}
           {!mine && done && <Link href={letterHref(entry.item.id)} className="ch-more">신고·차단</Link>}
         </div>

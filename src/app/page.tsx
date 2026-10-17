@@ -13,6 +13,7 @@ import Face from "@/components/Face";
 import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
+import { publishPublicRank } from "@/lib/firebase/ranking";
 import { saveMyPenpal } from "@/lib/firebase/penpal";
 import { cityLabel, cityOf, penpalName } from "../../core/penpal";
 import { myStatsCapped } from "../../core/rank";
@@ -113,9 +114,12 @@ function InboxList() {
     const st = myStatsCapped(letters.filter((l) => l.sentAt <= Date.now()).map((l) => ({ km: getRoute(l.routeId).km, toKey: l.toUid ?? l.to, at: l.sentAt })));
     const place = me.sharePlace === false || !me.homeSet ? undefined : me.homePlace; // 친구가 받는 곳을 자동으로 정하는 데 써요
     const sig = `${st.km}|${st.maxKm}|${st.count}|${me.nickname}|${me.avatarBird}|${place ?? ""}`;
+    // 전체 랭킹에도 홈을 열 때 올려요(랭킹 화면을 한 번도 안 연 사람도 보이게)
+    const rsig = `${sig}|${me.publicRank !== false}`;
+    try { if (localStorage.getItem("saepyeonji.rank.sig") !== rsig) void publishPublicRank(st, me.nickname, me.avatarBird, me.publicRank !== false).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.rank.sig", rsig); } catch {} }); } catch {}
     try { if (localStorage.getItem("saepyeonji.stats.sig") === sig) return; } catch {}
     void publishStats(st, me.nickname, me.avatarBird, place).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
-  }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet]);
+  }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet, me.publicRank]);
 
   // 랜덤(펜팔) 편지는 받겠다고 신청한 사람에게만 가요: 예전에 약속만 하고 신청하지 않은 사람은 받기 명단에서 내려요
   useEffect(() => {

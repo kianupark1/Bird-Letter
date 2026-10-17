@@ -1,0 +1,55 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:Pretendard;font-weight:400;src:url(file:///home/user/Bird-Letter/node_modules/pretendard/dist/web/static/woff2/Pretendard-Regular.woff2)}
+@font-face{font-family:Pretendard;font-weight:700;src:url(file:///home/user/Bird-Letter/node_modules/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2)}
+@font-face{font-family:Pretendard;font-weight:800;src:url(file:///home/user/Bird-Letter/node_modules/pretendard/dist/web/static/woff2/Pretendard-ExtraBold.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--dahong:#C1481F;--namsaek:#1E3A5C;--hwangto:#E0A83C;--cheongrok:#1B6E5C;--b-cream:#FBF3E4;--b-ink:#2A2118;--b-brown:#8A5A3C;--b-brown2:#5B3A29;--b-grey:#9AA8B8;--b-grey2:#6F8094;--b-edge:rgba(42,33,24,.35)}
+.dk{--dahong:#E8683F;--namsaek:#5C8AB8;--hwangto:#F0BC5C;--cheongrok:#3EA890}
+body{font-family:Pretendard,sans-serif;background:#d9d2c4;color:#2A2118}
+.ph{width:390px;height:844px;background:#FBF3E4;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.ph.dk{background:#1A1613;color:#F2E8D8}
+.sb{height:44px;display:flex;justify-content:space-between;align-items:center;padding:6px 26px 0;font-size:15px;font-weight:700}
+.top{display:flex;align-items:center;gap:10px;padding:4px 16px 6px}.top h1{font-size:26px;flex:1}
+.ib{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:20px}
+.ph:not(.dk) .ib{background:#fff}
+.row{display:flex;align-items:center;gap:12px;padding:7px 16px}
+.fc{width:48px;height:48px;border-radius:17px;background:#1f3b34;display:grid;place-items:center;overflow:hidden;flex:none}
+.fc.me{width:58px;height:58px;border-radius:20px}
+.nm{font-size:17px;font-weight:700}.sm{font-size:13px;opacity:.6;margin-top:2px}
+.mid{flex:1;min-width:0}
+.stt{font-size:13px;border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:3px 9px;opacity:.85;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec{font-size:13px;opacity:.6;padding:12px 16px 4px;display:flex;justify-content:space-between}
+.hr{height:1px;background:rgba(255,255,255,.1);margin:6px 16px}
+.tabs{margin-top:auto;display:flex;padding:10px 0 22px;border-radius:26px 26px 0 0;background:#241e1a}
+.ph:not(.dk) .tabs{background:#fff}
+.tabs div{flex:1;text-align:center;font-size:13px;opacity:.65}.tabs .on{color:#E8683F;opacity:1;font-weight:700}
+.shelf{display:flex;gap:4px;padding:2px 12px;overflow:hidden}
+.shelf div{flex:none;background:rgba(255,255,255,.06);border-radius:16px;padding:2px}
+.chat{flex:1;padding:6px 14px;display:flex;flex-direction:column;gap:10px}
+.b{max-width:250px;border-radius:20px;padding:10px 14px;font-size:16px;line-height:1.4}
+.b.me{align-self:flex-end;background:#F8D9CC;color:#2A2118}
+.b.you{align-self:flex-start;background:#fff}
+.bst{align-self:flex-end;text-align:right}
+.bst small,.b small{display:block;font-size:12px;opacity:.6;margin-top:4px}
+.comp{display:flex;align-items:center;gap:8px;padding:8px 12px 10px;background:#fff;border-top:1px solid rgba(42,33,24,.1)}
+.comp .in{flex:1;height:44px;border-radius:22px;background:#F4EEDF;display:flex;align-items:center;padding:0 14px;color:#8a7d70;font-size:15px}
+.comp .k{width:42px;height:42px;border-radius:50%;background:#F4EEDF;display:grid;place-items:center;font-size:22px}
+.comp .k.on{background:#F8E6BC;box-shadow:0 0 0 2px #C1481F inset}
+.comp .go{width:44px;height:44px;border-radius:50%;background:#C1481F;color:#fff;display:grid;place-items:center;font-size:20px}
+.sheet{background:#fff;padding:8px 8px 18px;border-top:1px solid rgba(42,33,24,.1)}
+.sheet .tt{display:flex;gap:8px;padding:4px 6px 8px;font-size:14px}
+.sheet .tt span{padding:5px 11px;border-radius:14px;background:#F4EEDF}.sheet .tt .on{background:#1E3A5C;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+.grid div{display:grid;place-items:center;border-radius:14px;padding:2px}
+.grid .sel{background:#F8E6BC}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 14px}
+.board div{background:#fff;border-radius:18px;display:grid;place-items:center;padding:2px 0}
+.note{font-size:14px;line-height:1.5;padding:4px 18px;opacity:.8}
+</style></head><body><div class="ph"><div class="sb"><span>9:41</span><span>●●● ▮</span></div>
+<div class="top"><span style="font-size:30px">‹</span><div class="fc"><svg viewBox="0 0 200 160" width="42" height="33.6" class="birdicon " aria-hidden="true" focusable="false"><path d="M46 86 L8 104 L12 118 L50 108 Z" style="fill:var(--b-grey2)"></path><path d="M10 106 L14 118" style="stroke:rgba(30,20,12,.55);stroke-width:5;stroke-linecap:round;fill:none;opacity:0.7"></path><path d="M46 92 L14 98" style="stroke:var(--b-cream);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.4"></path><ellipse cx="96" cy="92" rx="54" ry="38" style="fill:var(--b-grey)"></ellipse><path d="M52 108 Q96 140 146 106 Q124 128 96 128 Q68 128 52 108 Z" style="fill:rgba(20,12,6,.22)"></path><ellipse cx="118" cy="104" rx="26" ry="16" style="fill:rgba(255,255,255,.30)"></ellipse><path d="M58 90 Q96 52 134 90 Q100 108 58 90 Z" style="fill:var(--b-grey2)"></path><path d="M76 84 q14 -11 30 -5 M74 94 q16 -9 34 -2" style="stroke:var(--b-cream);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M72 78 q16 -10 34 -5" style="stroke:rgba(30,20,12,.55);stroke-width:3;stroke-linecap:round;fill:none;opacity:0.55"></path><path d="M62 92 q4 9 12 7 M76 96 q4 9 12 5 M92 98 q5 8 12 3 M108 95 q4 7 11 0" style="stroke:var(--b-ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.3"></path><circle cx="141" cy="60" r="20" style="fill:var(--b-grey)"></circle><ellipse cx="130" cy="80" rx="18" ry="13" style="fill:var(--cheongrok)"></ellipse><path d="M118 78 q10 -7 22 -2 M120 85 q10 -6 22 -1" style="stroke:var(--b-cream);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.45"></path><path d="M124 70 Q134 78 144 72" style="stroke:var(--dahong);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:0.45"></path><path d="M126 46 Q140 36 154 46" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:3;stroke-linecap:round"></path><circle cx="148" cy="57" r="4.8" style="fill:var(--hwangto)"></circle><circle cx="148.4" cy="57" r="3.6" style="fill:var(--b-cream)"></circle><circle cx="149.3" cy="57.2" r="2.232" style="fill:#241a12"></circle><circle cx="150.6" cy="55.5" r="0.864" style="fill:#fff"></circle><path d="M158 56 L180 63 L158 70 Z" style="fill:var(--b-ink)"></path><ellipse cx="160" cy="58" rx="5" ry="3.4" style="fill:var(--b-cream)"></ellipse><path d="M86 126 L82 146 M106 126 L110 146" style="stroke:var(--dahong);stroke-width:4.6;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M72 148 h14 M100 148 h14" style="stroke:var(--dahong);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;fill:none"></path></svg></div><h1 style="font-size:22px">박성하</h1></div>
+<div class="chat">
+  <div class="b me">주말에 갈게! 기다려 🙌<small>오전 10시 · 도착 ✓</small></div>
+  <div style="align-self:flex-start"><svg viewBox="0 -8 120 146" width="130" height="158.16666666666666" role="img" aria-label="새티콘: 좋아!"><g><path d="M52 24 Q54 10 62 14 Q64 6 72 12 Q66 20 64 28Z" style="fill:#152B45"></path><path d="M26 66 Q8 44 16 30 Q30 46 32 64Z" style="fill:#152B45"></path><path d="M94 66 Q112 44 104 30 Q90 46 88 64Z" style="fill:#152B45"></path><ellipse cx="60" cy="66" rx="36" ry="38" style="fill:#1E3A5C"></ellipse><ellipse cx="60" cy="82" rx="24" ry="20" style="fill:#FBF3E4"></ellipse><ellipse cx="48" cy="40" rx="10" ry="6" style="fill:rgba(255,255,255,.18)" transform="rotate(-25 48 40)"></ellipse><ellipse cx="38" cy="68" rx="6" ry="4" style="fill:#F29B8E;opacity:0.85"></ellipse><ellipse cx="82" cy="68" rx="6" ry="4" style="fill:#F29B8E;opacity:0.85"></ellipse><path d="M40 58 Q46 50 52 58" style="stroke:#241a12;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M68 58 Q74 50 80 58" style="stroke:#241a12;stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M53 64 L67 64 L60 71Z" style="fill:#E0A83C"></path><path d="M54 70 Q60 80 66 70Z" style="fill:#C1481F"></path><path d="M50 103 v6 m-4 0 h8 M70 103 v6 m-4 0 h8" style="stroke:#E0A83C;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><path d="M14 16 L15.6 20.4 L20 22 L15.6 23.6 L14 28 L12.4 23.6 L8 22 L12.4 20.4Z" style="fill:#E0A83C"></path><path d="M106 13.2 L107.28 16.72 L110.8 18 L107.28 19.28 L106 22.8 L104.72 19.28 L101.2 18 L104.72 16.72Z" style="fill:#E0A83C"></path></g><text x="60" y="131" text-anchor="middle" style="font:800 19px Pretendard, &#x27;Apple SD Gothic Neo&#x27;, sans-serif;fill:#241a12;stroke:#fff;stroke-width:5;paint-order:stroke;stroke-linejoin:round">좋아!</text></svg><div style="font-size:12px;opacity:.6">비둘기가 물고 온 새티콘 · 도착 ✓ 오후 9시</div></div>
+  <div style="align-self:flex-start"><svg viewBox="0 -8 120 146" width="110" height="133.83333333333331" role="img" aria-label="새티콘: 기다릴게"><g><path d="M52 24 Q54 10 62 14 Q64 6 72 12 Q66 20 64 28Z" style="fill:#152B45"></path><path d="M26 72 Q34 92 52 92 Q42 80 32 66Z" style="fill:#152B45"></path><path d="M94 72 Q86 92 68 92 Q78 80 88 66Z" style="fill:#152B45"></path><ellipse cx="60" cy="66" rx="36" ry="38" style="fill:#1E3A5C"></ellipse><ellipse cx="60" cy="82" rx="24" ry="20" style="fill:#FBF3E4"></ellipse><ellipse cx="48" cy="40" rx="10" ry="6" style="fill:rgba(255,255,255,.18)" transform="rotate(-25 48 40)"></ellipse><circle cx="46" cy="56" r="4.6" style="fill:#241a12"></circle><circle cx="47.5" cy="54.5" r="1.5" style="fill:#fff"></circle><circle cx="74" cy="56" r="4.6" style="fill:#241a12"></circle><circle cx="75.5" cy="54.5" r="1.5" style="fill:#fff"></circle><path d="M56 64 L64 64 L60 68Z" style="fill:#E0A83C"></path><path d="M50 103 v6 m-4 0 h8 M70 103 v6 m-4 0 h8" style="stroke:#E0A83C;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none"></path><g><path d="M50 84 h20 l-7 9 7 9 h-20 l7 -9z" style="fill:#fff;stroke:#152B45;stroke-width:2"></path><path d="M54 87 h12 l-6 6z" style="fill:#E0A83C"></path><path d="M56 100 h8 l-4 -3z" style="fill:#E0A83C"></path><text x="98" y="30" style="font:700 14px sans-serif;fill:#E0A83C">…</text></g></g><text x="60" y="131" text-anchor="middle" style="font:800 19px Pretendard, &#x27;Apple SD Gothic Neo&#x27;, sans-serif;fill:#241a12;stroke:#fff;stroke-width:5;paint-order:stroke;stroke-linejoin:round">기다릴게</text></svg><div style="font-size:12px;opacity:.6">글 없이 새티콘만 보낸 편지도 새가 날아서 가요</div></div>
+</div>
+<div class="comp"><div class="k">＋</div><div class="in">편지를 써 보세요</div><div class="k">😊</div><div class="go" style="opacity:.4">➤</div></div></div></body></html>

@@ -12,11 +12,12 @@ import { useSession } from "@/lib/session";
 import { myPlace, myStatsCapped, rankOf, rankValue, type RankEntry, type RankKind } from "../../../core/rank";
 import Face from "@/components/Face";
 import LoginStart from "@/components/LoginStart";
-import BirdIcon from "@/components/BirdIcon";
 import { buildThreads } from "../../../core/threads";
 import { usePeople } from "@/lib/people";
 import GearLink from "@/components/GearLink";
-import { MILESTONES, journeyOf, lapsText } from "../../../core/journey";
+import Link from "next/link";
+import { readPenpal } from "@/lib/firebase/penpal";
+import { roomHref } from "@/lib/room";
 
 const km = (n: number) => `${n.toLocaleString("ko-KR")}km`;
 
@@ -40,6 +41,13 @@ function Rank() {
   const showMe = profile.publicRank !== false;
   const { book } = usePeople();
   const [loading, setLoading] = useState(true);
+  // 랭킹에서 누군가를 누르면: 친구면 대화방, 아니면 랜덤(펜팔) 편지를 받는 사람인지 보고 펜팔 편지로 이어져요
+  const [sel, setSel] = useState<{ uid: string; name: string; bird?: string; open: boolean | null } | null>(null);
+  const choose = (e: RankEntry) => {
+    if (e.me || !global) return;
+    setSel({ uid: e.uid, name: e.name, bird: e.bird, open: null });
+    readPenpal(e.uid).then((p) => setSel((s) => (s && s.uid === e.uid ? { ...s, open: !!p?.open } : s))).catch(() => setSel((s) => (s ? { ...s, open: false } : s)));
+  };
 
   // 내 기록: 지금까지 출발한 내 편지의 노선 거리
   const mine = useMemo(() => myStatsCapped(letters.filter((l) => l.sentAt <= Date.now()).map((l) => ({ km: getRoute(l.routeId).km, toKey: l.toUid ?? l.to, at: l.sentAt }))), [letters]);
@@ -92,7 +100,6 @@ function Rank() {
   const sorted = useMemo(() => rankOf(global ? pubEntries : entries, kind), [global, pubEntries, entries, kind]);
   const meInTop = !global || sorted.some((e) => e.me);
   const me = myPlace(sorted, kind);
-  const togetherKm = entries.reduce((a, e) => a + (e.stats?.km ?? 0), 0);
   const top3 = sorted.filter((e) => e.stats).slice(0, 3);
   // 시상대는 2위 1위 3위 순서로 놓아요
   const podium = [top3[1], top3[0], top3[2]].filter(Boolean) as RankEntry[];
@@ -118,6 +125,11 @@ function Rank() {
         <button type="button" role="radio" aria-checked={kind === "longest"} className={kind === "longest" ? "on" : ""} onClick={() => setKind("longest")}>가장 먼 한 통</button>
       </div>
 
+      {global && (
+        <Link href="/penpal" className="homeask slim" style={{ marginTop: 8 }}>
+          <span aria-hidden>🌏</span><span><b>랭킹 속 누군가에게 랜덤 편지 보내기</b> · 사람을 누르면 그 사람에게도 보낼 수 있어요</span><span aria-hidden>›</span>
+        </Link>
+      )}
       {global && pub === null && <div className="empty" style={{ marginTop: 14 }}>랭킹을 불러오는 중…</div>}
       {global && pub !== null && pub.length === 0 && <div className="empty" style={{ marginTop: 14 }}>아직 전체 랭킹에 올라온 사람이 없어요.<br />편지를 보내면 내가 첫 번째예요!</div>}
       {!global && mine.count === 0 && friends.length === 0 && !loading && (
@@ -129,7 +141,7 @@ function Rank() {
           {podium.map((e) => {
             const first = e === top3[0];
             return (
-              <div key={e.uid} className={`pod ${first ? "first" : ""}`}>
+              <div key={e.uid} className={`pod ${first ? "first" : ""}`} role={global && !e.me ? "button" : undefined} tabIndex={global && !e.me ? 0 : undefined} onClick={() => choose(e)} style={global && !e.me ? { cursor: "pointer" } : undefined}>
                 {first && <div className="crown" aria-hidden>👑</div>}
                 <Face name={e.name} bird={e.bird} photo={e.photo} size={first ? 84 : 70} />
                 <div className="pname">{e.me ? "나" : e.name}</div>
@@ -144,7 +156,7 @@ function Rank() {
       <ul className="threads" style={{ marginTop: 12 }}>
         {rest.map((e, i) => (
           <li key={e.uid}>
-            <div className={`trow ${e.me ? "fly" : ""}`}>
+            <div className={`trow ${e.me ? "fly" : ""}`} role={global && !e.me ? "button" : undefined} tabIndex={global && !e.me ? 0 : undefined} onClick={() => choose(e)} style={global && !e.me ? { cursor: "pointer" } : undefined}>
               <span className="rnum">{top3.length + i + 1}</span>
               <Face name={e.name} bird={e.bird} photo={e.photo} size={52} />
               <span className="tmid">
@@ -164,8 +176,6 @@ function Rank() {
       )}
       {global && <div className="small" style={{ textAlign: "center", fontSize: 14 }}>전체 랭킹에는 이름·내 새·거리만 보여요(동네·사진은 안 보여요). 설정에서 내 이름을 숨길 수 있어요.</div>}
 
-      <Journey title="🚀 나의 우주 여행" km={mine.km} />
-      {friends.length > 0 && <Journey title="🌏 우리가 함께 날린 거리" km={togetherKm} together />}
 
       {me && sorted.length > 1 && meInTop && (
         <div className="bubble" style={{ marginTop: 16, fontSize: 17 }}>
@@ -176,28 +186,28 @@ function Rank() {
       {firebaseEnabled && !loading && friends.length > 0 && Object.values(stats).every((x) => x === null) && (
         <div className="small" style={{ textAlign: "center", fontSize: 14 }}>친구가 새 버전을 열면 거리가 보여요.</div>
       )}
-    </main>
-  );
-}
-
-/** 거리를 지구·달·화성에 빗댄 이정표 카드 */
-function Journey({ title, km: total, together }: { title: string; km: number; together?: boolean }) {
-  const j = journeyOf(total);
-  const p = Math.round(j.pct);
-  return (
-    <div className="eta2 goalcard" role="group" aria-label={title}>
-      <div className="gl">{title}</div>
-      <div className="gv"><b>{km(total)}</b> <span>= 지구 {lapsText(total)}</span></div>
-      {j.next ? (
+      {sel && (
         <>
-          <div className="small" style={{ margin: "0 0 4px" }}>{j.prev ? `${j.prev.emoji} ${j.prev.name} 지났어요 · ` : ""}다음은 {j.next.emoji} <b>{j.next.name}</b> — {km(j.next.km)}</div>
-          <div className="mtrack"><i style={{ width: `${p}%` }} /><span className="mb" style={{ left: `${p}%` }}><BirdIcon id="magpie" size={40} /></span></div>
-          <div className="small" style={{ margin: "6px 0 0" }}>{j.next.name}까지 {p}% · 앞으로 {km(Math.round(j.leftKm))}{together ? " 같이 채워 봐요!" : ""}</div>
+          <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setSel(null)} />
+          <div className="ch-sheet" role="dialog" aria-label={`${sel.name}님`}>
+            <div style={{ display: "flex", justifyContent: "center" }}><Face name={sel.name} bird={sel.bird} size={72} /></div>
+            <h2>{sel.name}</h2>
+            {friends.some((f) => f.uid === sel.uid) ? (
+              <Link href={roomHref({ uid: sel.uid, name: sel.name })} className="cta big" style={{ textDecoration: "none" }}>💌 편지 쓰기</Link>
+            ) : sel.open === null ? (
+              <div className="small" style={{ textAlign: "center" }}>확인하는 중…</div>
+            ) : sel.open ? (
+              <>
+                <Link href={`/penpal?to=${encodeURIComponent(sel.uid)}`} className="cta big" style={{ textDecoration: "none" }}>💌 펜팔 편지 보내기</Link>
+                <div className="small" style={{ textAlign: "center" }}>펜팔 편지는 도시까지만 보이고, 사진·연락처는 보내지 않아요</div>
+              </>
+            ) : (
+              <div className="small" style={{ textAlign: "center", fontSize: 16 }}>이 분은 아직 모르는 사람의 편지를 받지 않아요.<br />대신 <Link href="/penpal">랜덤 편지</Link>를 보내 보세요 🕊</div>
+            )}
+            <button type="button" className="sheetbtn plain" onClick={() => setSel(null)}>닫기</button>
+          </div>
         </>
-      ) : <div className="small">태양까지 다녀왔어요! 🎉</div>}
-      <div className="jstops" aria-hidden>
-        {MILESTONES.map((m) => <span key={m.id} className={total >= m.km ? "on" : ""} title={m.name}>{m.emoji}</span>)}
-      </div>
-    </div>
+      )}
+    </main>
   );
 }
