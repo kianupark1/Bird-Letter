@@ -198,7 +198,7 @@ export default function LetterView({ id }: { id: string }) {
       <h1>{isRecipient ? `${withIGa(view.fromName || "누군가")} 보낸 편지` : `${view.to}에게 가는 편지`}</h1>
       <p className="sub"><BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {route.title} · {route.km}km</p>
 
-      <JourneyMap route={route} p={pr.p} birdId={bird.id} />
+      <JourneyMap route={route} p={pr.p} birdId={bird.id} fx />
 
       {!pr.done && (
         <>

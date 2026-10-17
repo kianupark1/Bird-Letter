@@ -13,12 +13,22 @@ type Props = {
   birdId: string;
   /** 편지 쓰기 첫 화면처럼 작게 미리 보여줄 때(도시 이름을 줄여요) */
   compact?: boolean;
+  /** 확대해서 보기(크게 보기 화면): zoom 배율과 가운데 좌표. 없으면 노선 전체가 보이게 */
+  view?: { zoom: number; lng: number; lat: number };
+  /** 지도 높이(너비는 320 기준). 크게 보기 화면은 더 길쭉하게 */
+  h?: number;
+  /** 움직이는 꾸밈(구름·반짝이는 자취·도착지 물결·밤하늘) */
+  fx?: boolean;
+  /** 밤인지(밤하늘·별). 없으면 지금 시각으로 정해요 */
+  night?: boolean;
+  /** 화면을 꽉 채우기(가장자리는 조금 잘릴 수 있어요) */
+  fill?: boolean;
 };
 
-const W = 320, H = 300;
+let W = 320, H = 300;
 
 /** 경로가 한 화면에 잘 들어오도록 확대·이동을 정하고, 경도·위도를 화면 좌표로 바꾸는 함수를 만들어요 */
-function makeProjection(route: Route) {
+function makeProjection(route: Route, view?: Props["view"]) {
   const lats = route.points.map((q) => q.lat), lngs = route.points.map((q) => q.lng);
   const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
   const cy = (minLat + maxLat) / 2, cx = (minLng + maxLng) / 2;
@@ -26,7 +36,12 @@ function makeProjection(route: Route) {
   // 가까운 노선(서울 안 등)은 더 확대해서 구·동네 이름이 보이게 해요
   const minSpan = route.km < 120 ? Math.max(24, route.km * 2.2) : 170;
   const vx = Math.max((maxLng - minLng) * kx * 1.6, minSpan), vy = Math.max((maxLat - minLat) * ky * 1.5, minSpan);
-  const scale = Math.min(W / vx, H / vy); // 1km가 화면에서 몇 칸인지
+  let scale = Math.min(W / vx, H / vy); // 1km가 화면에서 몇 칸인지
+  let cx2 = cx, cy2 = cy;
+  if (view) { scale *= view.zoom; cx2 = view.lng; cy2 = view.lat; }
+  return projectionAt(cx2, cy2, scale, kx, ky);
+}
+function projectionAt(cx: number, cy: number, scale: number, kx: number, ky: number) {
   const proj = (lng: number, lat: number): [number, number] => [W / 2 + (lng - cx) * kx * scale, H / 2 - (lat - cy) * ky * scale];
   return { proj, scale, kx, ky, cx, cy };
 }
@@ -34,9 +49,10 @@ function makeProjection(route: Route) {
 const f1 = (n: number) => Math.round(n * 10) / 10;
 
 /** 해안선 자료로 지도 바탕을 그려요(경로가 바뀔 때만 다시 계산) */
-function useLandPaths(route: Route) {
+function useLandPaths(route: Route, view?: Props["view"], h = 300) {
   return useMemo(() => {
-    const { proj, scale, kx, ky, cx, cy } = makeProjection(route);
+    H = h;
+    const { proj, scale, kx, ky, cx, cy } = makeProjection(route, view);
     const toPath = (rings: number[][]) => {
       let d = "";
       for (const r of rings) {
@@ -54,15 +70,17 @@ function useLandPaths(route: Route) {
     for (let lng = Math.floor(cx - lngSpan); lng <= Math.ceil(cx + lngSpan); lng++) { const [x] = proj(lng, cy); if (x > 0 && x < W) grid.push(`M${f1(x)} 0V${H}`); }
     for (let lat = Math.floor(cy - latSpan); lat <= Math.ceil(cy + latSpan); lat++) { const [, y] = proj(cx, lat); if (y > 0 && y < H) grid.push(`M0 ${f1(y)}H${W}`); }
     return { kor: toPath(LAND.KOR), prk: toPath(LAND.PRK), jpn: toPath(LAND.JPN), chn: toPath(LAND.CHN), grid: grid.join(""), proj, scale };
-  }, [route]);
+  }, [route, view?.zoom, view?.lng, view?.lat, h]);
 }
 
 type Box = { x0: number; y0: number; x1: number; y1: number };
 const hit = (a: Box, b: Box) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
 
 /** 실제 해안선 위에 랜드마크·도시 이름·날아가는 새를 그리는 한국 지도 */
-export default function JourneyMap({ route, p, birdId, compact }: Props) {
-  const { kor, prk, jpn, chn, grid, proj, scale } = useLandPaths(route);
+export default function JourneyMap({ route, p, birdId, compact, view, h = 300, fx, night, fill }: Props) {
+  const { kor, prk, jpn, chn, grid, proj, scale } = useLandPaths(route, view, h);
+  H = h;
+  const isNight = night ?? (() => { const hr = new Date().getHours(); return hr >= 19 || hr < 6; })();
   const pos = routePosition(route, p);
 
   const pts = route.points.map((q) => proj(q.lng, q.lat));
@@ -124,7 +142,7 @@ export default function JourneyMap({ route, p, birdId, compact }: Props) {
   const cityDots = compact ? [] : PLACES.filter((pl) => labels.some((l) => l.key === `c${pl.id}`)).map((pl) => ({ id: pl.id, xy: proj(pl.lng, pl.lat) }));
 
   return (
-    <svg className="map" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${route.title} 여정 지도. ${route.points.map((q) => q.name).join(", ")}을 지나요.`}>
+    <svg className="map" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio={fill ? "xMidYMid slice" : undefined} role="img" aria-label={`${route.title} 여정 지도. ${route.points.map((q) => q.name).join(", ")}을 지나요.`}>
       <rect width={W} height={H} className="sea" />
       <path d={grid} className="grid" />
       <path d={chn} className="land dim" />
@@ -132,6 +150,14 @@ export default function JourneyMap({ route, p, birdId, compact }: Props) {
       <path d={prk} className="land dim" />
       <path d={kor} className="coast" />
       <path d={kor} className="land" />
+      {fx && isNight && (
+        <g aria-hidden>
+          <rect width={W} height={H} className="fx-night" />
+          {[[0.1, 0.08], [0.3, 0.15], [0.55, 0.06], [0.82, 0.12], [0.92, 0.3], [0.15, 0.4], [0.7, 0.62], [0.05, 0.75]].map(([sx, sy], i) => (
+            <circle key={i} cx={W * sx} cy={H * sy} r={i % 3 ? 0.9 : 1.4} className="fx-star" style={{ animationDelay: `${i * 0.4}s` }} />
+          ))}
+        </g>
+      )}
 
       {regionShown.map((r) => (
         <text key={r.name} x={r.xy[0]} y={r.xy[1]} className="region" textAnchor="middle">{r.name}</text>
@@ -153,12 +179,31 @@ export default function JourneyMap({ route, p, birdId, compact }: Props) {
       })}
       {labels.map((l) => <text key={l.key} x={l.x} y={l.y} textAnchor={l.anchor} className={l.cls}>{l.text}</text>)}
 
+      {fx && (
+        <g aria-hidden>
+          {/* 도착지 물결 */}
+          <circle cx={pts[pts.length - 1][0]} cy={pts[pts.length - 1][1]} r="10" className="fx-pulse" />
+          {/* 새 뒤에 남는 반짝이 자취 */}
+          {[0.012, 0.024, 0.036, 0.05].map((d, i) => {
+            const q = routePosition(route, Math.max(0, p - d));
+            const [tx, ty] = proj(q.lng, q.lat);
+            return <circle key={i} cx={tx} cy={ty} r={2.6 - i * 0.5} className="fx-trail" style={{ animationDelay: `${i * 0.25}s` }} />;
+          })}
+        </g>
+      )}
       <g className="mapbird" aria-hidden>
         <g transform={facingLeft ? `translate(${f1(bx * 2)} 0) scale(-1 1)` : undefined}>
           <BirdIcon id={birdId} size={50} x={bx - 25} y={by - 38} letter />
         </g>
       </g>
 
+      {fx && (
+        <g aria-hidden className="fx-clouds">
+          <ellipse cx={W * 0.2} cy={H * 0.18} rx="34" ry="11" className="fx-cloud c1" />
+          <ellipse cx={W * 0.72} cy={H * 0.42} rx="44" ry="13" className="fx-cloud c2" />
+          <ellipse cx={W * 0.4} cy={H * 0.8} rx="30" ry="9" className="fx-cloud c3" />
+        </g>
+      )}
       <g aria-hidden>
         <path d={`M10 ${H - 12}h${f1(barLen)}`} className="scalebar" />
         <path d={`M10 ${H - 15}v6M${f1(10 + barLen)} ${H - 15}v6`} className="scalebar" />
