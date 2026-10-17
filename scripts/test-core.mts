@@ -537,5 +537,21 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   near("예전 편지는 그대로", tm(id, "pigeon", 325, old), ((325 / (65 * f0)) * 60) * (1 + (m0 ? m0.delayFrac : 0)), 0.001);
 }
 
+// 새가 보내는 엽서: 편지 ID로 정해지고, 명소에서만, 먼 곳은 2장
+{
+  const { postcardsFor, collectPostcards } = await import("../core/postcards.ts");
+  const a = postcardsFor("pc1", "seoul-busan");
+  eq("엽서는 같은 편지면 늘 같음", JSON.stringify(a), JSON.stringify(postcardsFor("pc1", "seoul-busan")));
+  eq("먼 곳(325km)은 엽서 2장", a.length, 2);
+  const r = getRoute("seoul-busan");
+  eq("엽서는 출발·도착이 아닌 명소에서", a.every((c) => c.place !== r.points[0].name && c.place !== r.points[r.points.length - 1].name && c.f > 0 && c.f < 1), true);
+  eq("엽서 문구에 명소 이름", a.every((c) => c.text.includes(c.place) && !c.text.includes("{")), true);
+  eq("진행률 순서", a[0].f <= a[1].f, true);
+  eq("지나기 전에는 도감에 없음", collectPostcards([{ id: "pc1", routeId: "seoul-busan", p: 0 }]).size, 0);
+  eq("도착하면 엽서 2장 모임", collectPostcards([{ id: "pc1", routeId: "seoul-busan", p: 1, birdId: "crane" }]).size, 2);
+  let diff = 0; for (let i = 0; i < 20; i++) if (postcardsFor(`x${i}`, "seoul-busan")[0].text !== postcardsFor(`x${i + 1}`, "seoul-busan")[0].text) diff++;
+  eq("편지마다 엽서가 달라짐", diff > 3, true);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

@@ -7,6 +7,7 @@ import { clockText, isScheduled } from "../../core/schedule";
 import { withEulReul, withIGa } from "./korean";
 import type { ThreadEntry } from "../../core/threads";
 import { storiesFor } from "../../core/stories";
+import { postcardsFor, type Postcard } from "../../core/postcards";
 
 export type Entry = ThreadEntry<Letter, Meta>;
 
@@ -18,7 +19,7 @@ export type ChatItem =
   | { kind: "letter"; key: string; t: number; entry: Entry };
 
 /** 편지를 눌렀을 때 펼쳐 보이는 비행 기록 한 줄 */
-export type FlightEvent = { key: string; t: number; icon: string; text: string; sub?: string; future?: boolean };
+export type FlightEvent = { key: string; t: number; icon: string; text: string; sub?: string; future?: boolean; card?: Postcard };
 
 const dayKey = (t: number) => new Date(t).toDateString();
 export const dayLabel = (t: number, now: number) => {
@@ -45,7 +46,7 @@ export function buildChat(entries: Entry[], now: number): ChatItem[] {
 }
 
 /** 편지 한 통의 비행 기록: 출발 → 지난 곳(🏮 스탬프) → 이야기 → 사고 → 도착(또는 도착 예정) */
-export function letterEvents(e: Entry, now: number): FlightEvent[] {
+export function letterEvents(e: Entry, now: number, cheers: { at: number; icon: string; text: string }[] = []): FlightEvent[] {
   if (isScheduled(e.at, now)) return [{ key: "plan", t: e.at, icon: "⏰", text: "출발 예정", sub: clockText(e.at), future: true }];
   const l = asLike(e);
   const bird = getBird(l.birdId), route = getRoute(l.routeId);
@@ -63,13 +64,31 @@ export function letterEvents(e: Entry, now: number): FlightEvent[] {
     const at = l.sentAt + elapsedAtFraction(pr.plan, f);
     out.push({ key: `s${story.id}`, t: at, icon: story.icon, text: story.text, sub: story.item ? `${clockText(at)} · ${story.item.emoji} ${withEulReul(story.item.name)} 도감에 담았어요` : clockText(at) });
   }
+  // 새가 보내는 엽서: 명소를 지날 때 한 장(편지 ID로 정해지고 도착 시각에는 영향이 없어요)
+  for (const c of postcardsFor(l.id, l.routeId)) {
+    if (pr.p < c.f) continue;
+    const at = l.sentAt + elapsedAtFraction(pr.plan, c.f);
+    out.push({ key: `c${c.place}`, t: at + 1, icon: "💌", text: `${bird.name}의 엽서`, sub: `${clockText(at)} · 도감에 모았어요`, card: c });
+  }
   if (pr.mishap && pr.p >= pr.mishap.at - 0.0001) {
     const msg = mishapMessage(pr.mishap.kind, bird.name);
     out.push({ key: "mishap", t: l.sentAt + elapsedAtFraction(pr.plan, pr.mishap.at), icon: pr.mishap.kind === "tree" ? "🌳" : "🧭", text: msg.title, sub: msg.body });
   }
+  // 응원(모이 주기·노래): 도착 시각에는 영향이 없어요
+  cheers.forEach((c, i) => out.push({ key: `ch${i}-${c.at}`, t: c.at, icon: c.icon, text: c.text, sub: clockText(c.at) }));
   out.sort((a, b) => a.t - b.t);
   out.push(pr.done
     ? { key: "end", t: arriveAt, icon: "🎉", text: `${route.to.name}에 도착했어요`, sub: clockText(arriveAt) }
     : { key: "eta", t: arriveAt, icon: "⏳", text: `${route.to.name} 도착 예정`, sub: clockText(arriveAt), future: true });
   return out;
+}
+
+/** 지금까지 온 엽서 중 가장 최근 한 장(날아가는 편지 말풍선 아래에 보여 줘요) */
+export function latestPostcard(e: Entry, now: number): { card: Postcard; at: number } | null {
+  if (isScheduled(e.at, now)) return null;
+  const l = asLike(e);
+  const pr = letterProgress(l, now);
+  let best: { card: Postcard; at: number } | null = null;
+  for (const c of postcardsFor(l.id, l.routeId)) if (pr.p >= c.f) best = { card: c, at: l.sentAt + elapsedAtFraction(pr.plan, c.f) };
+  return best;
 }

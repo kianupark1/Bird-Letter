@@ -2,12 +2,15 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { getRoute } from "@/lib/routes";
+import { getBird } from "@/lib/birds";
 import { letterProgress, useLetters, useNow } from "@/lib/letters";
 import { useSession } from "@/lib/session";
 import LoginStart from "@/components/LoginStart";
 import BirdIcon from "@/components/BirdIcon";
 import { allStamps, badgesFor, kindLabel, stampsFromPasses } from "../../../core/stamps";
 import { STORY_ITEMS, collectItems } from "../../../core/stories";
+import { collectPostcards } from "../../../core/postcards";
+import PostcardView from "@/components/Postcard";
 
 /** 스탬프 도감: 편지가 지나간 명소와 날아가며 주운 물건을 모아요(시안 v4-4) */
 export default function StampsPage() {
@@ -21,16 +24,16 @@ function Stamps() {
   const { letters, received, ready } = useLetters();
   const now = useNow(30000);
 
-  const { got, items, total, groups, badges } = useMemo(() => {
+  const { got, items, total, groups, badges, cards } = useMemo(() => {
     // 내가 보낸 편지와 받은 편지 모두, 지금까지 날아온 만큼 스탬프가 찍혀요
-    const sent = letters.filter((l) => l.sentAt <= now).map((l) => ({ id: l.id, routeId: l.routeId, p: letterProgress(l, now).p }));
-    const recv = received.filter((m) => m.sentAt <= now).map((m) => ({ id: m.id, routeId: m.routeId, p: letterProgress({ id: m.id, birdId: m.birdId, routeId: m.routeId, sentAt: m.sentAt, arriveAt: m.arriveAt }, now).p }));
+    const sent = letters.filter((l) => l.sentAt <= now).map((l) => ({ id: l.id, routeId: l.routeId, birdId: l.birdId, p: letterProgress(l, now).p }));
+    const recv = received.filter((m) => m.sentAt <= now).map((m) => ({ id: m.id, routeId: m.routeId, birdId: m.birdId, p: letterProgress({ id: m.id, birdId: m.birdId, routeId: m.routeId, sentAt: m.sentAt, arriveAt: m.arriveAt }, now).p }));
     const passes = [...sent, ...recv];
     const got = stampsFromPasses(passes);
     const items = collectItems(passes.map((x) => ({ id: x.id, km: getRoute(x.routeId).km, p: x.p })));
     const all = allStamps();
     const groups = [...new Set(all.map((s) => s.group))].map((g) => ({ name: g, list: all.filter((s) => s.group === g) }));
-    return { got, items, total: all.length, groups, badges: badgesFor(got) };
+    return { got, items, total: all.length, groups, badges: badgesFor(got), cards: [...collectPostcards(passes).values()] };
   }, [letters, received, now]);
 
   const pct = Math.min(100, Math.round((got.size / total) * 100));
@@ -56,6 +59,11 @@ function Stamps() {
           return <span key={it.id} className={`item ${n ? "" : "none"}`}>{n ? it.emoji : "❔"} {n ? `${it.name} ×${n}` : "???"}</span>;
         })}
       </div>
+
+      <h2>새가 보낸 엽서 <small style={{ fontWeight: 400, opacity: .6 }}>{cards.length}장</small></h2>
+      {cards.length ? (
+        <div className="pcgrid">{cards.map((c) => <PostcardView key={c.place} card={c} birdId={c.birdId ?? "magpie"} birdName={getBird(c.birdId ?? "magpie").name} small />)}</div>
+      ) : <p className="small">편지를 나르던 새가 명소를 지나면 그림엽서를 보내요. 여기에 모여요</p>}
 
       {groups.map((g) => (
         <section key={g.name}>
