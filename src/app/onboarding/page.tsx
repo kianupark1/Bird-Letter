@@ -64,7 +64,7 @@ export default function Onboarding() {
       {i < LAST ? (
         <button className="cta" onClick={() => setI(i + 1)}>다음</button>
       ) : (
-        <button className="cta" onClick={() => finish("/send")}>첫 편지 쓰기</button>
+        <button className="cta" onClick={() => finish("/write")}>첫 편지 쓰기</button>
       )}
       {i > 0 && <button className="ghost" onClick={() => setI(i - 1)}>이전</button>}
     </main>

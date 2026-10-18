@@ -40,6 +40,31 @@ async function writeLetter({ to, bird, text, files = [], later = false }) {
   if (later) await p.click("text=정한 때에 출발");
 }
 
+console.log("[0] 처음 쓰는 사람: 편지 쓰기 → 누구에게? → 대화방에서 바로 쓰기");
+await p.goto(BASE + "/");
+await p.click("text=✉ 편지 쓰기");
+await p.waitForURL(/\/write/);
+ok("편지 쓰기를 누르면 '누구에게 보낼까요?' 한 화면", (await p.$eval("main", (e) => e.innerText)).includes("누구에게 보낼까요?"));
+await p.fill("input[name=name]", "할머니");
+await p.click("text=‘할머니’에게 쓰기");
+await p.waitForURL(/\/room\?n=/);
+await p.waitForSelector(".ch-in");
+ok("처음 쓰는 이름도 빈 대화방이 바로 열림", (await p.$eval(".roomhead", (e) => e.innerText)).includes("할머니"));
+await p.fill(".ch-in", "할머니 보고 싶어요");
+await p.click(".ch-go", { force: true });
+await p.waitForSelector("#to-place");
+await p.click("#to-place");
+await p.click(".pf-opt[data-place=busan] >> nth=0");
+await p.click("text=이 길로 할게요");
+await p.click(".ch-go", { force: true });
+await p.waitForSelector(".ch-letter.me", { timeout: 15000 });
+ok("대화방 안에서 쓰고 ➤ 누르면 바로 날아감", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("할머니 보고 싶어요"));
+await p.goto(BASE + "/write");
+await p.fill("input[name=name]", "ㅎㅁ");
+await p.waitForTimeout(200);
+ok("다음에는 초성만 쳐도 아는 사람으로 나옴", (await p.$eval("main", (e) => e.innerText)).includes("할머니"));
+await p.evaluate(() => { localStorage.removeItem("saepyeonji.letters.v1"); });
+
 console.log("[1] 사진 두 장과 함께 보내기 → 메신저처럼 바로 보임");
 await writeLetter({ to: "민지", bird: "매", text: "봄 사진을 폴라로이드로 보내요.", files: photos });
 ok("사진 두 장이 폴라로이드 모양으로 담김", (await p.$$(".thumb")).length === 2);

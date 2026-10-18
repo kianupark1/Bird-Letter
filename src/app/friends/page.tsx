@@ -47,6 +47,8 @@ function Friends() {
   const legacy = params.get("add");
   useEffect(() => { if (legacy) router.replace(`/invite?c=${encodeURIComponent(legacy)}`); }, [legacy, router]);
   useEffect(() => setCanPick(contactPickerSupported()), []);
+  // 편지 쓰기 화면의 [친구 초대하기]로 오면 초대 창을 바로 열어요
+  useEffect(() => { if (params.get("invite")) setAdd(true); }, [params]);
 
   const reload = useCallback(async () => setFriends(await listFriends()), []);
   useEffect(() => {
@@ -97,10 +99,11 @@ function Friends() {
       {/* 카카오톡처럼: 화면에는 나와 친구 목록만. 친구 초대·모르는 사람에게 보내기는 오른쪽 위 [친구 추가]에 */}
       <header className="tabhead">
         <h1 className="pagetitle">친구</h1>
-        <button type="button" className="gearlink addbtn" aria-label="친구 추가" onClick={() => setAdd(true)}>
-          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+        <button type="button" className="addbtn invitepill" onClick={() => setAdd(true)}>
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="9" cy="8" r="4" /><path d="M2 21c0-3.9 3.1-7 7-7s7 3.1 7 7" /><path d="M19 8v6M16 11h6" />
           </svg>
+          친구 초대
         </button>
         <GearLink />
       </header>

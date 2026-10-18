@@ -175,11 +175,11 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
             <div className="eta2" role="status"><div className="small" style={{ margin: 0 }}>{name}님이 알려 준 곳이에요</div><div style={{ fontSize: 22, fontWeight: 700 }}>{getPlace(friendPlace!)?.name}</div></div>
           ) : (
             <>
-              <PlaceField id="to-place" label={`${name}님이 있는 곳`} value={toId || "busan"} onChange={pickTo} />
-              <div className="small" style={{ margin: 0 }}>{name}님이 내 동네를 알려 주면 자동으로 정해져요. 지금은 직접 골라 주세요.</div>
+              <PlaceField id="to-place" label={`${name}님이 있는 곳`} value={toId} onChange={pickTo} />
+              {toUid && <div className="small" style={{ margin: 0 }}>{name}님이 내 동네를 알려 주면 자동으로 정해져요. 지금은 직접 골라 주세요.</div>}
             </>
           )}
-          <button type="button" className="chunky" disabled={!ok} onClick={() => setSheet("")}>{ok ? "이 길로 할게요" : "받는 곳을 다르게 골라 주세요"}</button>
+          <button type="button" className="chunky" disabled={!ok} onClick={() => setSheet("")}>{ok ? "이 길로 할게요" : toPick && toPick === fromId ? "받는 곳을 다르게 골라 주세요" : "받는 곳을 골라 주세요"}</button>
         </div>
       )}
       {sheet === "later" && (

@@ -10,7 +10,7 @@ import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends"
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
-import { buildThreads, isPenpalThread, isUnnamed, keyFromParams, type Thread } from "../../../core/threads";
+import { buildThreads, isPenpalThread, isUnnamed, keyFromParams, nameKey, type Thread } from "../../../core/threads";
 import { cityLabel, cityOf, penpalName, penpalRoute } from "../../../core/penpal";
 import { useProfile } from "@/lib/settings";
 import { blockSender, reportLetter } from "@/lib/firebase/remote";
@@ -27,6 +27,10 @@ import { readStats } from "@/lib/firebase/stats";
 import { usePeople } from "@/lib/people";
 import { useBeforePaint } from "@/lib/fastStart";
 import { firebaseEnabled } from "@/lib/firebase/client";
+import { IS_TOSS, letterHref } from "@/lib/target";
+import { smsHref } from "@/lib/contactInvite";
+import { telFor } from "@/lib/pendingTel";
+import { withIGa } from "@/lib/korean";
 
 export default function RoomPage() {
   return (
@@ -72,12 +76,17 @@ function Room() {
   const uParam = params.get("u");
   const allThreads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
   // 같은 사람으로 합친 계정 주소(?u=다른 계정)로 들어와도 그 사람의 방을 찾아요
-  const thread: Thread<Letter, Meta> | undefined = useMemo(() => allThreads.find((t) => t.key === key || (!!uParam && !!t.uids?.includes(uParam))), [allThreads, key, uParam]);
+  const nParam = params.get("n")?.trim() || null;
+  // 처음 쓰는 이름(?n=이름)이면 빈 대화방을 열어 바로 쓰게 해요(같은 이름의 방이 있으면 그 방으로)
+  const thread: Thread<Letter, Meta> | undefined = useMemo(() => {
+    const hit = allThreads.find((t) => t.key === key || (!!uParam && !!t.uids?.includes(uParam)));
+    if (hit || !nParam) return hit;
+    return allThreads.find((t) => nameKey(t.name) === nameKey(nParam)) ?? { key: `n:${nParam}`, name: nParam, entries: [], lastAt: 0 };
+  }, [allThreads, key, uParam, nParam]);
   // 이름만 적은 사람을 친구와 합쳤으면, 옛 주소(?n=이름)로 들어와도 친구 방으로 옮겨 줘요
-  const nParam = params.get("n");
   useEffect(() => {
-    if (!thread && nParam && book.alias[nParam]) router.replace(`/room?u=${encodeURIComponent(book.alias[nParam])}`);
-  }, [thread, nParam, book, router]);
+    if (nParam && !uParam && book.alias[nParam]) router.replace(`/room?u=${encodeURIComponent(book.alias[nParam])}`);
+  }, [uParam, nParam, book, router]);
   const name = thread?.name ?? "";
   const theirUid = thread?.uid;
   // 친구가 직접 알려 준 동네(구)가 있으면 받는 곳으로 자동 사용해요. 못 읽거나 없으면 직접 골라요
@@ -155,6 +164,13 @@ function Room() {
     try { await blockSender(thread.uid); } catch {}
     skip();
   };
+  // 앱이 없는 사람(이름만 있는 방): 가장 최근에 보낸 편지 링크를 문자로 알려 줘요(번호는 저장하지 않아요)
+  const lastSent = thread.uid ? undefined : thread.entries.find((e) => e.dir === "sent");
+  let smsBody = "";
+  if (lastSent && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
+    const l = asLike(lastSent), r = getRoute(l.routeId);
+    smsBody = `${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 새 편지를 보냈어요 🕊\n${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중이에요. 도착하면 여기서 열어 볼 수 있어요:\n${location.origin}${letterHref(lastSent.item.id)}`;
+  }
   const newestId = thread.entries.find((e) => e.dir === "received" && letterProgress(asLike(e), now).done && !opened.has(e.item.id))?.item.id;
 
   return (
@@ -189,10 +205,13 @@ function Room() {
       {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
         <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
       )}
-      {!pen && !thread.uid && friends.length > 0 && (
+      {!pen && !thread.uid && lastSent && (
         <div className="mergecard">
-          <div><b>{name}님이 친구 목록에 있나요?</b><span>친구와 합치면 한 사람으로 모이고, 편지가 앱으로 바로 가요.</span></div>
-          <button type="button" className="chip" onClick={() => setPickFriend(true)}>친구와 합치기</button>
+          <div><b>{name}님은 아직 앱이 없나요?</b><span>문자로 알려 주면 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>
+          <div className="mc-btns">
+            {smsBody && <a className="chip hot" href={smsHref(telFor(name), smsBody)}>💬 문자로 알리기</a>}
+            {friends.length > 0 && <button type="button" className="chip" onClick={() => setPickFriend(true)}>친구와 합치기</button>}
+          </div>
         </div>
       )}
       {pickFriend && (
@@ -221,7 +240,7 @@ function Room() {
       )}
       <div className="ch-feed">
         {items.length === 0 && (
-          <div className="roomempty"><BirdIcon id="magpie" size={120} /><p>아직 주고받은 편지가 없어요.<br />아래에 첫 편지를 써 보세요</p></div>
+          <div className="roomempty"><BirdIcon id="magpie" size={120} /><p>{name}님에게 첫 편지를 써 보세요<br /><b>아래 칸에 쓰고 ➤</b></p></div>
         )}
         {items.map((it) =>
           it.kind === "day" ? <div key={it.key} className="ch-day">{it.label}</div>
