@@ -1,9 +1,9 @@
 "use client";
-import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc, writeBatch } from "firebase/firestore";
+import { arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { auth, db, ensureUser } from "./client";
 import { FRIENDS_CACHE_KEY, readJson, writeJson } from "../fastStart";
 
-export type Friend = { uid: string; name: string; /** 친구가 고른 "내 새"(없으면 이름으로 정해요) */ bird?: string; /** 친구가 올린 프로필 사진(작은 JPEG 글자). 없으면 새 얼굴 */ photo?: string };
+export type Friend = { uid: string; name: string; /** 친구가 고른 "내 새"(없으면 이름으로 정해요) */ bird?: string; /** 친구가 올린 프로필 사진(작은 JPEG 글자). 없으면 새 얼굴 */ photo?: string; /** 이 친구가 예전에 쓰던 계정(링크로 편지를 받았을 때의 임시 계정 등). 같은 사람으로 묶어요 */ prev?: string[] };
 const BIRDS_OK = ["magpie", "pigeon", "swallow", "crane", "bungbungi", "hawk"];
 const okBird = (b: unknown): string | undefined => (typeof b === "string" && BIRDS_OK.includes(b) ? b : undefined);
 /** 서버 규칙과 같은 조건: 30,000글자 이하의 JPEG 글자만 */
@@ -84,10 +84,34 @@ export async function addFriend(code: string, myName: string, myBird?: string, m
   return other;
 }
 
+/**
+ * 편지 링크로 받은 사람 ↔ 보낸 사람을 친구로 이어요(2026-10-18, 대표님: "아이디 기반으로, 사람이 겹치면 안 돼").
+ * 서로의 친구 목록에 남기고, 예전에 링크를 열었던 임시 계정(prev)도 함께 적어 두면 보낸 사람 화면에서 한 사람으로 모여요.
+ */
+export async function befriendSender(sender: { uid: string; name: string }, myName: string, myBird?: string, myPhoto?: string, prev?: string[]) {
+  const user = await ensureUser();
+  if (user.isAnonymous || sender.uid === user.uid) return;
+  const d = db();
+  const old = (prev ?? []).filter((u) => u && u !== user.uid && u !== sender.uid);
+  const write = async (extra: boolean) => {
+    const batch = writeBatch(d);
+    batch.set(doc(d, "users", user.uid, "friends", sender.uid), { uid: sender.uid, name: nick(sender.name), at: serverTimestamp() }, { merge: true });
+    const b = okBird(myBird), ph = okPhoto(myPhoto);
+    batch.set(doc(d, "users", sender.uid, "friends", user.uid), {
+      uid: user.uid, name: nick(myName), at: serverTimestamp(),
+      ...(extra && b ? { bird: b } : {}), ...(extra && ph ? { photo: ph } : {}), ...(extra && old.length ? { prev: arrayUnion(...old) } : {}),
+    }, { merge: true });
+    await batch.commit();
+  };
+  // 서버 규칙이 아직 새 칸(prev 등)을 모르면 이름만이라도 이어요
+  try { await write(true); } catch { await write(false); }
+}
+
 export async function listFriends(): Promise<Friend[]> {
   const user = await ensureUser();
   const s = await getDocs(collection(db(), "users", user.uid, "friends"));
-  const list = s.docs.map((x) => ({ uid: x.id, name: x.data().name as string, bird: okBird(x.data().bird), photo: okPhoto(x.data().photo) })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  const okPrev = (p: unknown) => (Array.isArray(p) ? p.filter((u): u is string => typeof u === "string").slice(0, 10) : undefined);
+  const list = s.docs.map((x) => ({ uid: x.id, name: x.data().name as string, bird: okBird(x.data().bird), photo: okPhoto(x.data().photo), prev: okPrev(x.data().prev) })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
   // 다음에 열 때 바로 보이게 적어 둬요(사진이 너무 많으면 사진은 빼고)
   const heavy = list.reduce((n, f) => n + (f.photo?.length ?? 0), 0) > 1_500_000;
   writeJson(FRIENDS_CACHE_KEY, { uid: user.uid, list: heavy ? list.map(({ photo: _p, ...f }) => f) : list });

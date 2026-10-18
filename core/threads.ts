@@ -5,7 +5,7 @@
  */
 export type SentLike = { id: string; to: string; toUid?: string; sentAt: number };
 export type ReceivedLike = { id: string; fromUid: string; fromName: string; sentAt: number };
-export type FriendLike = { uid: string; name: string };
+export type FriendLike = { uid: string; name: string; /** 같은 사람이 예전에 쓰던 계정들 */ prev?: string[] };
 
 export type ThreadEntry<S, R> = { dir: "sent"; item: S; at: number } | { dir: "received"; item: R; at: number };
 export type Thread<S, R> = {
@@ -79,6 +79,8 @@ export const isUnnamed = (name: string) => PLACEHOLDER_NAMES.has(name.trim()) ||
 export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S[], received: R[], friends: FriendLike[], book: PeopleBook = {}): Thread<S, R>[] {
   const alias = book.alias ?? {}, nick = book.nick ?? {};
   const same: Record<string, string> = { ...(book.same ?? {}) };
+  // 친구가 예전에 쓰던 계정(링크로 편지를 받았던 임시 계정 등)은 그 친구와 같은 사람이에요
+  for (const f of friends) for (const p of f.prev ?? []) if (p && p !== f.uid && !same[p]) same[p] = f.uid;
   const friendName = new Map(friends.map((f) => [f.uid, f.name]));
   // 이름 없는 친구에게 내가 이름을 직접 적어 보낸 적이 있으면(예: 받는 사람 "석영이") 그 이름이 단서예요
   const sentName = new Map<string, { name: string; at: number }>();
@@ -117,8 +119,11 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   const sendTo = new Map<string, { uid: string; at: number }>(); // 방마다 최근에 쓰인 계정(보낼 대상)
   const note = (t: T, uid: string, at: number) => { const cur = sendTo.get(t.key); if (!cur || at > cur.at) sendTo.set(t.key, { uid, at }); acct.set(uid, Math.max(acct.get(uid) ?? 0, at)); };
   const acct = new Map<string, number>(); // 계정마다 마지막으로 편지가 오간 시각
+  // 같은 이름으로 계정에 직접 보낸 적이 있으면(예: "엄마" → 링크를 연 엄마 계정), 이름만 적은 편지도 그 계정의 사람이에요
+  const sentAlias = new Map<string, string>();
+  for (const s of [...sent].sort((a, b) => a.sentAt - b.sentAt)) if (s.toUid && !isUnnamed(s.to)) sentAlias.set(nameKey(s.to), s.toUid);
   for (const s of sent) {
-    const uid = s.toUid ?? alias[s.to] ?? friendByName.get(nameKey(s.to));
+    const uid = s.toUid ?? alias[s.to] ?? friendByName.get(nameKey(s.to)) ?? sentAlias.get(nameKey(s.to));
     const t = uid ? forUid(uid) : get(keyForName(s.to), s.to);
     if (uid && s.toUid) note(t, s.toUid, s.sentAt);
     t.entries.push({ dir: "sent", item: s, at: s.sentAt });

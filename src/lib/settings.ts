@@ -57,6 +57,12 @@ export const DEFAULT_PROFILE: Profile = {
   avatarBird: "",
 };
 
+/** 화면 밖(훅을 못 쓰는 곳)에서 지금 저장된 프로필 읽기 */
+export function readProfile(): Profile {
+  try { const raw = localStorage.getItem(PROFILE_KEY); if (raw) { const v = JSON.parse(raw); return { ...DEFAULT_PROFILE, ...v, nickname: v.nickname === "새 친구" ? "" : v.nickname ?? "" }; } } catch {}
+  return DEFAULT_PROFILE;
+}
+
 export function useProfile() {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [ready, setReady] = useState(false);
