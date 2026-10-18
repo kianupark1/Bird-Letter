@@ -175,7 +175,7 @@ function InboxList() {
         <GearLink />
       </header>
 
-      {ready && firebaseEnabled && !me.homeSet && (
+      {ready && firebaseEnabled && !me.homeSet && threads.length > 0 && (
         <Link href="/settings" className="homeask slim">
           <span aria-hidden>📍</span><span><b>내 동네를 정해 주세요</b> · 친구가 보낼 때 받는 곳이 자동으로 정해져요</span><span aria-hidden>›</span>
         </Link>
@@ -186,9 +186,9 @@ function InboxList() {
       {ready && threads.length === 0 && (
         <div className="inbox-empty">
           {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
-          <h2>{friends.length ? <>친구에게<br />첫 편지를 보내 보세요</> : <>친구를 초대하면<br />편지를 보낼 수 있어요</>}</h2>
+          <h2>첫 편지를<br />보내 보세요</h2>
           <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
-          <Link href="/friends" className="cta big">{friends.length ? "친구 목록에서 고르기" : "친구 초대하기"}</Link>
+          <Link href="/write" prefetch className="cta big">✉ 편지 쓰기</Link>
         </div>
       )}
 
@@ -267,7 +267,7 @@ function InboxList() {
       {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
 
       {threads.length > 0 && (
-        <Link href="/send" prefetch className="kfab" aria-label="편지 쓰기">✉ 편지 쓰기</Link>
+        <Link href="/write" prefetch className="kfab" aria-label="편지 쓰기">✉ 편지 쓰기</Link>
       )}
     </main>
   );

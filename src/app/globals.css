@@ -953,3 +953,18 @@ html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .contacthint { margin: -4px 0 10px; padding: 10px 12px; border-radius: 12px; background: var(--tint-hot); color: var(--text); font-size: 15px; line-height: 1.45; }
 .namerow { margin-bottom: 12px; }
 .namerow .field { margin-bottom: 0; }
+
+/* 편지 쓰기 = "누구에게?" 한 화면, 친구 초대 알약(2026-10-18 초간단) */
+.write .field.big { font-size: 22px; min-height: 60px; }
+.write .telmini { font-size: 16px; min-height: 48px; margin: -4px 0 12px; opacity: .9; }
+.write button.krow { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.newwho { background: var(--tint-hot) !important; border-radius: 18px; margin-bottom: 8px; }
+.newwho .newface { flex: none; width: 58px; height: 58px; border-radius: 22px; background: var(--dahong); color: var(--on-dahong); display: grid; place-items: center; font-size: 28px; }
+.newwho .go { font-size: 28px; opacity: .6; }
+.writehelp { text-align: center; font-size: 18px; margin: 28px 0 10px; opacity: .8; }
+.writeinvite { display: block; text-align: center; margin: 18px auto 0; font-size: 18px; }
+.invitepill { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 16px; border-radius: 24px; background: var(--dahong); color: var(--on-dahong); font-size: 17px; font-weight: 800; }
+.invitepill:active { transform: scale(.95); }
+.mergecard .mc-btns { display: flex; gap: 8px; flex-wrap: wrap; flex: none; }
+.mergecard a.chip { text-decoration: none; }
+.mergecard { flex-wrap: wrap; }
