@@ -6,7 +6,7 @@ import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
 import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
-import { listFriends, type Friend } from "@/lib/firebase/friends";
+import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
@@ -25,6 +25,8 @@ import { asLike, buildChat } from "@/lib/chat";
 import { WAITING_LINES, pickLine } from "../../../core/waiting";
 import { readStats } from "@/lib/firebase/stats";
 import { usePeople } from "@/lib/people";
+import { useBeforePaint } from "@/lib/fastStart";
+import { firebaseEnabled } from "@/lib/firebase/client";
 
 export default function RoomPage() {
   return (
@@ -54,9 +56,13 @@ function Room() {
   const { profile } = useProfile();
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
-  useEffect(() => {
+  // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
+  useBeforePaint(() => {
     setOpened(readOpened());
-    listFriends().then(setFriends).catch(() => {});
+    if (firebaseEnabled) { const c = cachedFriends(); if (c.length) setFriends(c); }
+  }, []);
+  useEffect(() => {
+    listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
 
   const key = keyFromParams(params.get("u"), params.get("n"));

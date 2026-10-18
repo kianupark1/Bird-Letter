@@ -8,6 +8,7 @@ import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
 import { isScheduled } from "../../core/schedule";
 import { maskContacts } from "../../core/penpal";
+import { LETTERS_CACHE_KEY, onClearFastCache, readJson, useBeforePaint, writeJson } from "./fastStart";
 
 export type Letter = {
   id: string;
@@ -32,7 +33,10 @@ const BUS = "saepyeonji:letters";
 type BusEvent = { type: "sent"; letter: Letter } | { type: "received"; meta: remote.Meta };
 const announce = (detail: BusEvent) => { try { window.dispatchEvent(new CustomEvent(BUS, { detail })); } catch {} };
 /** 링크로 편지를 처음 열어 받는 사람이 됐을 때 알려요 */
-export const announceReceived = (meta: remote.Meta) => announce({ type: "received", meta });
+export const announceReceived = (meta: remote.Meta) => {
+  patchSnap((s) => (s.received.some((x) => x.id === meta.id) ? s : { ...s, received: [meta, ...s.received] }));
+  announce({ type: "received", meta });
+};
 
 export const LETTERS_KEY = "saepyeonji.letters.v1";
 const KEY = LETTERS_KEY;
@@ -83,6 +87,60 @@ export function useNow(intervalMs = 15000) {
 /** checking: 확인 중 / firebase: 서버 저장 / local: 서버 없이 내 폰에만 저장 */
 export type Backend = "checking" | "firebase" | "local";
 
+/**
+ * 서버 편지 목록을 앱 전체가 함께 써요(빨리 뜨게).
+ *  - 화면(홈·대화방·알림 담당)마다 따로 서버에 묻지 않고 한 번만 물어요.
+ *  - 지난번 목록을 내 폰에 적어 두었다가 열자마자 먼저 보여 줘요(사진은 빼고 적어요).
+ *  - 내가 쓴 편지 글은 바뀌지 않으니 한 번 받은 글은 다시 받지 않아요.
+ */
+type Snap = { uid: string; letters: Letter[]; received: remote.Meta[]; at: number };
+let mem: Snap | null = null;
+let memFromServer = false; // 이번에 앱을 연 뒤 서버에서 받은 목록인지
+let inflight: Promise<Snap> | null = null;
+onClearFastCache(() => { mem = null; memFromServer = false; });
+
+function readSnap(): Snap | null {
+  if (!mem) mem = readJson<Snap>(LETTERS_CACHE_KEY);
+  return mem;
+}
+function writeSnap(s: Snap) {
+  mem = s;
+  writeJson(LETTERS_CACHE_KEY, { ...s, letters: s.letters.map(({ photos: _p, ...x }) => x) });
+}
+function patchSnap(f: (s: Snap) => Snap) {
+  if (mem && memFromServer) writeSnap(f(mem));
+}
+
+function loadServer(): Promise<Snap> {
+  if (inflight) return inflight;
+  inflight = (async () => {
+    const user = await ensureUser();
+    const [sent, recv, blocked] = await Promise.all([remote.listSent(user.uid), remote.listReceived(user.uid), remote.listBlocked(user.uid)]);
+    const prev = readSnap();
+    const known = new Map((prev?.uid === user.uid ? prev.letters : []).map((l) => [l.id, l]));
+    // 보낸 사람은 도착 전에도 자기 편지 내용을 읽을 수 있음(이미 받아 둔 글은 다시 받지 않아요)
+    const mine: Letter[] = await Promise.all(
+      sent.map(async (m) => ({
+        id: m.id,
+        to: m.toName,
+        routeId: m.routeId,
+        birdId: m.birdId,
+        message: known.get(m.id)?.message || ((await remote.getBody(m.id)) ?? ""),
+        sentAt: m.sentAt,
+        arriveAt: m.arriveAt,
+        toUid: m.recipientUid ?? undefined,
+        ...(known.get(m.id)?.photos ? { photos: known.get(m.id)!.photos } : {}),
+        ...(m.penpal ? { penpal: true } : {}),
+      })),
+    );
+    const snap: Snap = { uid: user.uid, letters: mine, received: recv.filter((r) => !blocked.has(r.fromUid)), at: Date.now() };
+    writeSnap(snap);
+    memFromServer = true;
+    return snap;
+  })().finally(() => { inflight = null; });
+  return inflight;
+}
+
 export function useLetters() {
   const [letters, setLetters] = useState<Letter[]>([]);
   const [receivedAll, setReceived] = useState<remote.Meta[]>([]);
@@ -104,6 +162,16 @@ export function useLetters() {
     if (b !== "checking") settled.current?.done();
   }, []);
 
+  // 화면에 보이기 전에: 지난번 목록(또는 다른 화면이 받아 둔 목록)을 먼저 보여 줘요
+  useBeforePaint(() => {
+    if (!firebaseEnabled) return;
+    const s = readSnap();
+    if (!s) return;
+    setLetters(s.letters);
+    setReceived(s.received);
+    setReady(true);
+  }, []);
+
   useEffect(() => {
     const h = (e: Event) => {
       const d = (e as CustomEvent<BusEvent>).detail;
@@ -119,33 +187,17 @@ export function useLetters() {
     (async () => {
       if (firebaseEnabled) {
         try {
-          const user = await ensureUser();
-          const [sent, recv, blocked] = await Promise.all([
-            remote.listSent(user.uid),
-            remote.listReceived(user.uid),
-            remote.listBlocked(user.uid),
-          ]);
-          // 보낸 사람은 도착 전에도 자기 편지 내용을 읽을 수 있음
-          const mine: Letter[] = await Promise.all(
-            sent.map(async (m) => ({
-              id: m.id,
-              to: m.toName,
-              routeId: m.routeId,
-              birdId: m.birdId,
-              message: (await remote.getBody(m.id)) ?? "",
-              sentAt: m.sentAt,
-              arriveAt: m.arriveAt,
-              toUid: m.recipientUid ?? undefined,
-              ...(m.penpal ? { penpal: true } : {}),
-            })),
-          );
+          // 방금(30초 안) 다른 화면에서 받은 목록이면 서버에 다시 묻지 않아요
+          const fresh = memFromServer && mem && Date.now() - mem.at < 30000 ? mem : await loadServer();
           if (cancelled) return;
-          setLetters(mine);
-          setReceived(recv.filter((r) => !blocked.has(r.fromUid)));
+          setLetters(fresh.letters);
+          setReceived(fresh.received);
           setBackend("firebase");
           setReady(true);
           return;
         } catch (e) {
+          // 인터넷이 끊겼어도 지난번 목록이 있으면 그대로 보여 줘요(보내기는 서버로만 해서, 실패하면 알려 줘요)
+          if (!cancelled && readSnap()) { setBackend("firebase"); setReady(true); return; }
           console.warn("서버에 연결하지 못해 내 폰 저장으로 전환해요.", e);
         }
       }
@@ -171,7 +223,9 @@ export function useLetters() {
       try {
         const user = await ensureUser();
         const [recv, blocked] = await Promise.all([remote.listReceived(user.uid), remote.listBlocked(user.uid)]);
-        setReceived(recv.filter((r) => !blocked.has(r.fromUid)));
+        const fresh = recv.filter((r) => !blocked.has(r.fromUid));
+        setReceived(fresh);
+        patchSnap((s) => ({ ...s, received: fresh }));
       } catch {}
     }, 60000);
     return () => clearInterval(t);
@@ -202,6 +256,7 @@ export function useLetters() {
           ...(l.penpal ? { penpal: true } : {}),
         };
         setLetters((prev) => [letter, ...prev]);
+        patchSnap((s) => ({ ...s, letters: [letter, ...s.letters.filter((x) => x.id !== letter.id)] }));
         announce({ type: "sent", letter });
         if (l.toUid && letter.arriveAt) { // 친구가 앱을 닫고 있어도 도착하면 알림이 가도록 친구 폰에 예약
           const toUid = l.toUid, arriveAt = letter.arriveAt;
@@ -227,7 +282,7 @@ export function useLetters() {
   /** 보낸 편지를 지워요(출발 전 예약 취소). 서버 편지는 글·사진까지 함께 지워요 */
   const cancel = useCallback(
     async (id: string) => {
-      if (backendRef.current === "firebase") await remote.cancelLetter(id);
+      if (backendRef.current === "firebase") { await remote.cancelLetter(id); patchSnap((s) => ({ ...s, letters: s.letters.filter((x) => x.id !== id) })); }
       setLetters((prev) => {
         const next = prev.filter((x) => x.id !== id);
         if (backendRef.current !== "firebase") try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}

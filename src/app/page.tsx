@@ -10,7 +10,7 @@ import { buildThreads, isPenpalThread, isUnnamed, visibleThreads, type Thread } 
 import SwipeRow from "@/components/SwipeRow";
 import HomeCountdown from "@/components/HomeCountdown";
 import Face from "@/components/Face";
-import { listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
+import { cachedFriends, listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
 import { publishPublicRank } from "@/lib/firebase/ranking";
@@ -28,6 +28,7 @@ import { useSession } from "@/lib/session";
 import NameStep, { shouldAskName } from "@/components/NameStep";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
+import { useBeforePaint } from "@/lib/fastStart";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
 import { usePeople } from "@/lib/people";
 
@@ -99,8 +100,12 @@ function InboxList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [opened, setOpened] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
+  // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
+  useBeforePaint(() => {
     setOpened(readOpened());
+    if (firebaseEnabled) { const c = cachedFriends(); if (c.length) setFriends(c); }
+  }, []);
+  useEffect(() => {
     listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
 

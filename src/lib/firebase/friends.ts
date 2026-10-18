@@ -1,6 +1,7 @@
 "use client";
 import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc, writeBatch } from "firebase/firestore";
-import { db, ensureUser } from "./client";
+import { auth, db, ensureUser } from "./client";
+import { FRIENDS_CACHE_KEY, readJson, writeJson } from "../fastStart";
 
 export type Friend = { uid: string; name: string; /** 친구가 고른 "내 새"(없으면 이름으로 정해요) */ bird?: string; /** 친구가 올린 프로필 사진(작은 JPEG 글자). 없으면 새 얼굴 */ photo?: string };
 const BIRDS_OK = ["magpie", "pigeon", "swallow", "crane", "bungbungi", "hawk"];
@@ -86,7 +87,19 @@ export async function addFriend(code: string, myName: string, myBird?: string, m
 export async function listFriends(): Promise<Friend[]> {
   const user = await ensureUser();
   const s = await getDocs(collection(db(), "users", user.uid, "friends"));
-  return s.docs.map((x) => ({ uid: x.id, name: x.data().name as string, bird: okBird(x.data().bird), photo: okPhoto(x.data().photo) })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  const list = s.docs.map((x) => ({ uid: x.id, name: x.data().name as string, bird: okBird(x.data().bird), photo: okPhoto(x.data().photo) })).sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  // 다음에 열 때 바로 보이게 적어 둬요(사진이 너무 많으면 사진은 빼고)
+  const heavy = list.reduce((n, f) => n + (f.photo?.length ?? 0), 0) > 1_500_000;
+  writeJson(FRIENDS_CACHE_KEY, { uid: user.uid, list: heavy ? list.map(({ photo: _p, ...f }) => f) : list });
+  return list;
+}
+
+/** 지난번에 받아 둔 친구 목록(열자마자 먼저 보여 주는 용도). 다른 계정 것이면 비워요 */
+export function cachedFriends(): Friend[] {
+  const c = readJson<{ uid: string; list: Friend[] }>(FRIENDS_CACHE_KEY);
+  if (!c) return [];
+  try { const u = auth().currentUser; if (u && u.uid !== c.uid) return []; } catch {}
+  return c.list;
 }
 
 /** 친구 끊기: 양쪽 목록에서 지워요(끊으면 서로에게 바로 보내기는 멈춰요) */
