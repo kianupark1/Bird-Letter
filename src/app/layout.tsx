@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-// 글씨 파일은 화면에 쓰인 글자 묶음만 조금씩 받아요(통째로 2MB를 받지 않게)
-import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+import localFont from "next/font/local";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import Notifier from "@/components/Notifier";
@@ -18,12 +17,25 @@ export const metadata: Metadata = {
   description: "실제 거리만큼 날아가는 슬로우 메시징",
 };
 
+/**
+ * 글씨(Pretendard): 자주 쓰는 한글 2,350자·영문·숫자·기호만 담은 파일 하나(약 450KB, scripts/font-chars.txt로 만듦)를
+ * 먼저 받아 두고, 그 밖의 드문 글자가 나오면 그때만 전체 글씨 파일을 받아요(globals.css "Pretendard Full").
+ * 2026-10-18: 92조각으로 나눈 글씨는 화면을 그릴 때마다 조각을 찾느라 대화방이 열리는 데 2배 넘게 걸려서 바꿈.
+ */
+const pretendard = localFont({
+  src: "./fonts/PretendardSub.woff2",
+  weight: "45 920",
+  display: "swap",
+  variable: "--font-main",
+  fallback: ["Pretendard Full", "-apple-system", "Apple SD Gothic Neo", "Malgun Gothic", "sans-serif"],
+});
+
 const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontScale)||"normal";if(s==="xlarge")s="large";if(s==="small"||s==="normal"||s==="large")document.documentElement.dataset.scale=s}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // 글씨 크기는 그리기 전에 정해요(열 때 화면이 커졌다 작아지며 들썩이지 않게). 기본은 "보통"
-    <html lang="ko" data-scale="normal" suppressHydrationWarning>
+    <html lang="ko" data-scale="normal" className={pretendard.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCALE_SCRIPT }} />
       </head>

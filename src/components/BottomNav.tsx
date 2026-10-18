@@ -26,7 +26,7 @@ export default function BottomNav() {
   return (
     <nav className="bottomnav" aria-label="메뉴">
       {TABS.map((t) => (
-        <Link key={t.href} href={t.href} aria-current={path === t.href ? "page" : undefined}>
+        <Link key={t.href} href={t.href} prefetch aria-current={path === t.href ? "page" : undefined}>
           <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden>{ICONS[t.icon]}</svg>
           {t.label}
         </Link>

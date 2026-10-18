@@ -200,7 +200,7 @@ function InboxList() {
             <li key={t.key}>
               <SwipeRow label={`${t.name} 채팅방`} onLongPress={() => setMenu({ t, step: "menu" })}
                 actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), { label: "나가기", tone: "danger" as const, onClick: () => leave(t) }]}>
-              <Link href={roomHref(t)} className={`krow ${isPenpalThread(t) ? "pen" : ""}`}>
+              <Link href={roomHref(t)} prefetch className={`krow ${isPenpalThread(t) ? "pen" : ""}`}>
                 <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} size={58} />
                 <span className="kmid">
                   <span className="kline"><b className="kname">{t.name}</b><span className="ktime">{info.time}</span></span>
@@ -267,7 +267,7 @@ function InboxList() {
       {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
 
       {threads.length > 0 && (
-        <Link href="/send" className="kfab" aria-label="편지 쓰기">✉ 편지 쓰기</Link>
+        <Link href="/send" prefetch className="kfab" aria-label="편지 쓰기">✉ 편지 쓰기</Link>
       )}
     </main>
   );
