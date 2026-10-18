@@ -24,6 +24,8 @@ type Props = {
   night?: boolean;
   /** 화면을 꽉 채우기(가장자리는 조금 잘릴 수 있어요) */
   fill?: boolean;
+  /** 출발·도착만(지나온 곳 없이 깔끔한 선 하나로) */
+  ends?: boolean;
 };
 
 let W = 320, H = 300;
@@ -134,7 +136,10 @@ type Box = { x0: number; y0: number; x1: number; y1: number };
 const hit = (a: Box, b: Box) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
 
 /** 실제 해안선 위에 랜드마크·도시 이름·날아가는 새를 그리는 한국 지도 */
-export default function JourneyMap({ route, p, birdId, compact, view, h = 300, fx, night, fill }: Props) {
+export default function JourneyMap({ route: full, p, birdId, compact, view, h = 300, fx, night, fill, ends }: Props) {
+  const route: Route = ends && full.points.length > 2
+    ? { ...full, points: [full.points[0], full.points[full.points.length - 1]], fractions: [0, 1] }
+    : full;
   const { kor, prk, jpn, chn, grid, proj, scale, rivers, roads, parks, peaks: allPeaks } = useLandPaths(route, view, h);
   // 경로 지점과 이름이 같은 산은 따로 그리지 않아요(이름표가 두 번 나오지 않게)
   const peaks = allPeaks.filter((pk) => !route.points.some((q) => q.name === pk.name));
