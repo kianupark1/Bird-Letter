@@ -104,7 +104,7 @@ function Friends() {
         </button>
         <GearLink />
       </header>
-      <Link href="/settings" className="krow merow">
+      <Link href="/settings" prefetch className="krow merow">
         <Face name={profile.nickname} bird={profile.avatarBird || undefined} photo={profile.photo} size={58} />
         <span className="kmid"><b className="kname">{profile.nickname || "나"}</b><span className="kprev">나</span></span>
       </Link>
@@ -120,7 +120,7 @@ function Friends() {
           return (
             <li key={t.key}>
               <SwipeRow label={`${t.name} 친구`} onLongPress={() => void removeAll(t)} actions={[{ label: "끊기", tone: "danger", onClick: () => void removeAll(t) }]}>
-                <Link href={roomHref({ uid: t.uid, name: t.name })} className="krow">
+                <Link href={roomHref({ uid: t.uid, name: t.name })} prefetch className="krow">
                   <Face name={t.name} bird={f?.bird} photo={f?.photo} size={58} />
                   <span className="kmid"><b className="kname">{t.name}</b>{own && <span className="kprev">{own}</span>}</span>
                 </Link>

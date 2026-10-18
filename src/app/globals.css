@@ -1,3 +1,5 @@
+/* 자주 쓰는 글자 파일에 없는 드문 한글이 나올 때만 받는 전체 글씨(layout.tsx 설명 참고) */
+@font-face { font-family: "Pretendard Full"; font-weight: 45 920; font-style: normal; font-display: swap; src: url("../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2") format("woff2-variations"); unicode-range: U+1100-11FF, U+3130-318F, U+A960-A97F, U+AC00-D7A3, U+D7B0-D7FF; }
 :root {
   --dahong: #C1481F;
   --namsaek: #1E3A5C;
@@ -44,7 +46,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-family: var(--font-main), "Pretendard Full", -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 }
 a { color: inherit; text-decoration: none; }
 .app { max-width: 640px; margin: 0 auto; padding: 24px 16px 96px; }
@@ -823,6 +825,11 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 .klist .swbody { background: var(--bg); }
 .krow { display: flex; align-items: center; gap: 14px; padding: 10px 6px; min-height: 78px; color: inherit; text-decoration: none; }
 .krow:active { background: var(--line); }
+/* 누르는 순간 바로 눌린 느낌이 나게(화면이 바뀌기 전에도 손끝에 반응) */
+html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.bottomnav a:active { transform: scale(.92); }
+.kfab:active { transform: scale(.95); }
+.bottomnav a, .kfab, .gearlink { transition: transform .08s ease-out; }
 .krow .face { box-shadow: none; border-radius: 22px; }
 .krow .face.photo img { border-radius: 22px; }
 .kmid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }

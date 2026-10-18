@@ -49,6 +49,9 @@ function Room() {
   const endRef = useRef<HTMLDivElement>(null);
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
   const [bigMap, setBigMap] = useState(false);
+  // 대화 내용을 먼저 띄우고, 움직이는 지도는 바로 다음 순간에 그려요(대화방이 "팍" 열리게)
+  const [mapOn, setMapOn] = useState(false);
+  useEffect(() => { const id = requestAnimationFrame(() => setTimeout(() => setMapOn(true), 0)); return () => cancelAnimationFrame(id); }, []);
   const [resend, setResend] = useState<Resend | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [pickFriend, setPickFriend] = useState(false);
@@ -115,7 +118,7 @@ function Room() {
     map = (
       <>
         <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
-          <JourneyMap route={route} p={pr.p} birdId={bird.id} fx />
+          {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx /> : <div className="map" style={{ height: 150 }} aria-hidden />}
           <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
           <span className="zoom" aria-hidden>⤢</span>
         </button>
