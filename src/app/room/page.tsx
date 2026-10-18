@@ -128,7 +128,7 @@ function Room() {
     map = (
       <>
         <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
-          {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx /> : <div className="map" style={{ height: 150 }} aria-hidden />}
+          {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx ends /> : <div className="map" style={{ height: 150 }} aria-hidden />}
           <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
           <span className="zoom" aria-hidden>⤢</span>
         </button>

@@ -981,3 +981,13 @@ button.kfab { font-size: 18px; }
 .who button.krow { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
 .sheetbtn .sheetsub { display: block; font-size: 14px; font-weight: 500; opacity: .7; margin-top: 2px; }
 a.sheetbtn.off { opacity: .5; pointer-events: none; }
+
+/* 비행 기록: 지도 위 선 하나 + 출발 → 도착 (2026-10-18) */
+.ch-mapmini { border-radius: 14px; overflow: hidden; margin: 4px 0 8px; }
+.ch-mapmini .map { height: auto; }
+.ch-trip { display: flex; align-items: center; gap: 8px; }
+.ch-trip > span:not(.arr) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ch-trip > span:last-child { text-align: right; }
+.ch-trip small { font-size: 13px; opacity: .7; }
+.ch-trip b { font-size: 17px; }
+.ch-trip .arr { font-size: 20px; opacity: .6; }

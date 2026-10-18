@@ -80,8 +80,9 @@ ok("내 편지에는 두루마리가 없음", (await p.$(".scroll-open")) === nu
 await p.waitForFunction(() => document.querySelector(".ch-letter.me")?.textContent?.includes("도착 ✓"), null, { timeout: 120000 });
 ok("도착하면 말풍선이 '도착 ✓'로 바뀜", true);
 await p.click(".ch-letter.me .ch-tap");
-await p.waitForSelector(".ch-log", { timeout: 20000 });
-ok("누르면 비행 기록(출발·도착)이 보임", (await p.$eval(".ch-log", (e) => e.innerText)).includes("출발했어요") && (await p.$eval(".ch-log", (e) => e.innerText)).includes("도착했어요"));
+await p.waitForSelector(".ch-trip", { timeout: 20000 });
+ok("누르면 지도 선과 출발 → 도착이 보임", (await p.$(".ch-mapmini svg")) !== null && (await p.$eval(".ch-trip", (e) => e.innerText)).includes("출발") && (await p.$eval(".ch-trip", (e) => e.innerText)).includes("도착"));
+ok("지나온 곳 목록은 없음", !(await p.$eval(".ch-detail", (e) => e.innerText)).includes("지났어요"));
 
 console.log("[1-2] 스탬프 도감과 내 동네");
 await p.goto(BASE + "/stamps");

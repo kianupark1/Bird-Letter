@@ -9,7 +9,8 @@ import { letterProgress, markOpened } from "@/lib/letters";
 import * as remote from "@/lib/firebase/remote";
 import { savePolaroid } from "@/lib/photo";
 import { letterHref } from "@/lib/target";
-import { asLike, latestPostcard, letterEvents, type Entry } from "@/lib/chat";
+import { asLike, latestPostcard, type Entry } from "@/lib/chat";
+import JourneyMap from "@/components/JourneyMap";
 import PostcardView from "@/components/Postcard";
 import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
@@ -97,14 +98,14 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
       {pc && !lost && <PostcardView card={pc.card} birdId={bird.id} birdName={bird.name} sub={`${bird.name}의 엽서 · ${clockText(pc.at)} · 도감에 모았어요`} small />}
       {open && (
         <div className="ch-detail">
-          <ol className="ch-log" aria-label="비행 기록">
-            {letterEvents(entry, now).map((ev) => (
-              ev.card
-                ? <li key={ev.key} className="card"><PostcardView card={ev.card} birdId={bird.id} birdName={bird.name} sub={`${bird.name}의 엽서 · ${ev.sub}`} small /></li>
-                : <li key={ev.key} className={ev.future ? "future" : ""}><span className="ic" aria-hidden>{ev.icon}</span><span><b>{ev.text}</b>{ev.sub && <small>{ev.sub}</small>}</span></li>
-            ))}
-          </ol>
-          <div className="ch-route">{route.title} · {route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
+          {/* 비행 기록: 어디서 어디까지 지도 위 선 하나로 깔끔하게(지나온 곳 목록은 빼요, 2026-10-18 대표님) */}
+          <div className="ch-mapmini" aria-hidden><JourneyMap route={route} p={sched ? 0 : pr.p} birdId={bird.id} compact ends h={170} /></div>
+          <div className="ch-trip" aria-label="비행 기록">
+            <span><small>{sched ? "출발 예정" : "출발"} · {clockText(sched ? entry.at : l.sentAt)}</small><b>{route.from.name}</b></span>
+            <span className="arr" aria-hidden>→</span>
+            <span><small>{done ? "도착" : "도착 예정"} · {clockText(arriveAt)}</small><b>{route.to.name}</b></span>
+          </div>
+          <div className="ch-route">{route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
           {mine && !ownPhotos.length && photos.length > 0 && <span className="ch-thumbs">{photos.map((src, i) => <img key={i} src={src} alt={`보낸 사진 ${i + 1}`} />)}</span>}
           {done && !mine ? (
             <LetterReveal
