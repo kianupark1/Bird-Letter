@@ -938,3 +938,11 @@ html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .sentcard .cta { width: 100%; text-decoration: none; text-align: center; }
 .sentcard .cta.ghost { background: transparent; color: var(--text); border: 2px solid var(--line); box-shadow: none; }
 .linkbtn { background: none; border: 0; color: var(--text); opacity: .7; font: inherit; font-size: 17px; padding: 12px; cursor: pointer; }
+
+/* 받는 사람 이름: 치는 동안 비슷한 이름 목록 */
+.toform { margin: 0; }
+.namebox { position: relative; }
+.namesug { list-style: none; margin: -6px 0 10px; padding: 6px; background: var(--card); border: 2px solid var(--line); border-radius: 16px; box-shadow: var(--raise); }
+.namesug button { display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 48px; padding: 8px 12px; border: 0; background: none; color: var(--text); font: inherit; font-size: 18px; text-align: left; border-radius: 10px; cursor: pointer; }
+.namesug button:active { background: var(--line); }
+.namesug small { font-size: 13px; opacity: .7; }
