@@ -143,9 +143,13 @@ function Friends() {
             <button type="button" className="sbtn kakao" disabled={!code} onClick={inviteKakao} style={{ width: "100%", height: 64 }}>
               <span aria-hidden>💬</span> 카카오톡으로 초대하기
             </button>
-            {canPick && <button type="button" className="sheetbtn" disabled={!code} onClick={inviteFromContacts}>📇 연락처에서 초대하기</button>}
+            {/* 문자 앱의 "받는 사람"에 이름을 쓰면 폰 연락처에서 가까운 이름을 찾아 줘요(아이폰도 됨). 번호는 저장하지 않아요 */}
+            <a className={`sheetbtn ${code ? "" : "off"}`} href={code ? smsHref("", `${text}\n${link()}`) : undefined} style={{ textAlign: "center", textDecoration: "none" }}>
+              💬 문자로 초대하기<small className="sheetsub">받는 사람 칸에 이름을 쓰면 연락처에서 찾아 줘요</small>
+            </a>
+            {canPick && <button type="button" className="sheetbtn" disabled={!code} onClick={inviteFromContacts}>📇 연락처에서 골라 초대하기</button>}
             <button type="button" className="sheetbtn" disabled={!code} onClick={copy}>🔗 초대 링크 복사하기</button>
-            <Link href="/penpal" className="sheetbtn" style={{ textAlign: "center", textDecoration: "none" }}>🌏 모르는 누군가에게 보내기</Link>
+            <Link href="/penpal" className="sheetbtn" style={{ textAlign: "center", textDecoration: "none" }}>🌏 펜팔 친구 찾기<small className="sheetsub">어느 누군가에게 새 편지 보내기</small></Link>
             {msg && <div className="small" role="status" style={{ textAlign: "center" }}>{msg}</div>}
             <button type="button" className="sheetbtn plain" onClick={() => setAdd(false)}>닫기</button>
           </div>

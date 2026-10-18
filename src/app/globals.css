@@ -979,3 +979,5 @@ button.kfab { font-size: 18px; }
 .whoin::placeholder { color: var(--text); opacity: .5; }
 .whobtn { flex: none; width: 48px; height: 48px; border: 0; border-radius: 14px; background: var(--bg); color: var(--text); font-size: 22px; cursor: pointer; }
 .who button.krow { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.sheetbtn .sheetsub { display: block; font-size: 14px; font-weight: 500; opacity: .7; margin-top: 2px; }
+a.sheetbtn.off { opacity: .5; pointer-events: none; }

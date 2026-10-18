@@ -60,8 +60,8 @@ function Penpal() {
   if (!profile.penpalAgreed) {
     return (
       <main className="app penpal">
-        <header className="sendhead"><Link href="/friends" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 시작하기</h1></header>
-        <div className="ppcard"><BirdIcon id="crane" size={64} letter /><div><b>어딘가로 새 날려 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
+        <header className="sendhead"><Link href="/friends" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 찾기</h1></header>
+        <div className="ppcard"><BirdIcon id="crane" size={64} letter /><div><b>어느 누군가에게 새 편지 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
         <h2 className="friendh">펜팔 약속 (처음 한 번)</h2>
         <ul className="pprules">
           <li><span aria-hidden>🎂</span>만 14세 이상만 쓸 수 있어요</li>

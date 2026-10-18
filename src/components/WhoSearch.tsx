@@ -53,7 +53,8 @@ export default function WhoSearch<S, R>({ people, friends, onClose }: { people: 
             </li>
           );
         })}
-        {query && !exact && (
+        {/* 비슷한 사람이 있으면 그 사람만(헷갈리지 않게). 아무도 없을 때만 새로운 사람으로 쓰기 */}
+        {query && shown.length === 0 && (
           <li>
             <button type="button" className="krow newwho" onClick={() => go({ name: query })}>
               <span className="newface" aria-hidden>✉</span>

@@ -127,7 +127,7 @@ function Rank() {
 
       {global && (
         <Link href="/penpal" className="homeask slim" style={{ marginTop: 8 }}>
-          <span aria-hidden>🌏</span><span><b>랭킹 속 누군가에게 랜덤 편지 보내기</b> · 사람을 누르면 그 사람에게도 보낼 수 있어요</span><span aria-hidden>›</span>
+          <span aria-hidden>🌏</span><span><b>펜팔 친구 찾기</b> · 어느 누군가에게 새 편지 보내기 (사람을 누르면 그 사람에게도)</span><span aria-hidden>›</span>
         </Link>
       )}
       {global && pub === null && <div className="empty" style={{ marginTop: 14 }}>랭킹을 불러오는 중…</div>}
