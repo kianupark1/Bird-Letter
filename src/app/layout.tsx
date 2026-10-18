@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
@@ -6,6 +6,9 @@ import Notifier from "@/components/Notifier";
 import InstallGuide from "@/components/InstallGuide";
 import FontScale from "@/components/FontScale";
 import SwBoot from "@/components/SwBoot";
+
+// 아이폰은 입력칸을 누르면 화면을 저절로 확대해서 오른쪽이 잘려 보여요 → 자동 확대만 막아요(두 손가락 확대는 그대로 돼요)
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1 };
 
 export const metadata: Metadata = {
   // 링크 미리보기 이미지 주소의 기준. 직접 정한 주소 > Vercel 배포 주소 > 내 컴퓨터 순서로 써요

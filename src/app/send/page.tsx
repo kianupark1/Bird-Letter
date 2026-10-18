@@ -19,6 +19,8 @@ import { IS_TOSS, letterHref } from "@/lib/target";
 import { roomHref } from "@/lib/room";
 import { isUnnamed, unnamedLabel } from "../../../core/threads";
 import { birdFx } from "@/lib/chirp";
+import { withIGa } from "@/lib/korean";
+import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvite";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
@@ -57,6 +59,11 @@ function SendForm() {
   // 친구에게 앱 안에서 바로 보내기(친구 목록에서 고르면 받는 사람이 정해져요)
   const [friends, setFriends] = useState<Friend[]>([]);
   const [toUid, setToUid] = useState<string | undefined>();
+  // 앱을 안 쓰는 사람에게: 전화번호(선택)는 보낸 뒤 문자 앱을 여는 데만 쓰고 저장하지 않아요
+  const [tel, setTel] = useState("");
+  const [canPick, setCanPick] = useState(false);
+  useEffect(() => setCanPick(contactPickerSupported()), []);
+  const [sent, setSent] = useState<{ id: string; uid?: string; to: string } | null>(null);
   // 대화방에서 "OO에게 편지 쓰기"를 누르고 오면 받는 사람이 정해져 있어요(?to=<친구 uid> 또는 ?name=<이름>)
   const presetFriend = params.get("friend") ?? params.get("to");
   const presetName = params.get("name");
@@ -161,12 +168,33 @@ function SendForm() {
         photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined, replyTo,
       });
       birdFx("depart", profile.chirp);
+      // 앱을 쓰는 친구가 아니면(이름만 적었으면) 문자로 "편지가 날아가요" 알릴 수 있게 한 번 물어봐요
+      if (!uid && !IS_TOSS && !replyTo && firebaseEnabled) { setSent({ id, to: to.trim() }); setBusy(false); return; }
       router.push(IS_TOSS ? letterHref(id) : roomHref({ uid, name: to.trim() })); // 보낸 뒤에는 그 사람과의 대화방으로
     } catch {
       setError(photos.length || mode === "later" ? "편지를 보내지 못했어요. 인터넷 연결을 확인해 주세요. 사진·예약은 서버 설정이 끝나야 보낼 수 있어요." : "편지를 보내지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.");
       setBusy(false);
     }
   };
+
+  if (sent) {
+    const url = `${typeof location !== "undefined" ? location.origin : ""}${letterHref(sent.id)}`;
+    const b = getBird(birdId);
+    const body = `${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${sent.to}에게 새 편지를 보냈어요 🕊\n${withIGa(b.name)} ${route.title} ${route.km}km를 날아가는 중이에요. 도착하면 여기서 열어 볼 수 있어요:\n${url}`;
+    return (
+      <main className="app">
+        <div className="sentcard">
+          <BirdIcon id={birdId} size={96} letter />
+          <h1>{withIGa(b.name)} 날아올랐어요!</h1>
+          <p className="sub">{withIGa(sent.to)} 아직 새 편지 앱이 없다면, 문자로 알려 주세요.<br />링크를 누르면 날아오는 모습을 보고, 도착하면 바로 열어 볼 수 있어요.</p>
+          <a className="cta big" href={smsHref(tel, body)}>💬 문자로 알려 주기</a>
+          <button type="button" className="cta ghost" onClick={async () => { try { await navigator.clipboard.writeText(body); setError("알림 글을 복사했어요. 카카오톡 등에 붙여 넣어 보내세요."); } catch { setError("복사하지 못했어요."); } }}>📋 알림 글 복사하기(카카오톡용)</button>
+          {error && <div className="small" role="status">{error}</div>}
+          <button type="button" className="linkbtn" onClick={() => router.push(roomHref({ uid: sent.uid, name: sent.to }))}>건너뛰고 대화방으로 ›</button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="app">
@@ -194,7 +222,16 @@ function SendForm() {
               {friends.length === 0 && <div className="small" style={{ marginTop: 6 }}>친구를 연결하면 링크 없이 친구의 새편지함으로 바로 날아가요.</div>}
             </div>
           )}
-          {!locked && <input className="field" placeholder="받는 사람 이름" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />}
+          {!locked && <input className="field" placeholder="받는 사람 이름" autoComplete="name" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />}
+          {!locked && !toUid && !replyTo && !IS_TOSS && (
+            <div className="telrow">
+              <input className="field" type="tel" inputMode="tel" autoComplete="tel" placeholder="전화번호(선택) · 문자로 알려 줘요" value={tel} onChange={(e) => setTel(e.target.value)} aria-label="받는 사람 전화번호(선택)" />
+              {canPick && (
+                <button type="button" className="chip" onClick={async () => { const c = await pickContact(); if (c) { setTel(c.tel); if (c.name && !to.trim()) setTo(c.name); } }}>📱 연락처</button>
+              )}
+            </div>
+          )}
+          {!locked && !toUid && !replyTo && !IS_TOSS && <div className="small" style={{ marginTop: -4, marginBottom: 10 }}>앱이 없는 사람에게도 보낼 수 있어요. 보낸 뒤 문자로 편지가 날아간다고 알려 주면, 링크로 받아 볼 수 있어요. 전화번호는 문자 앱을 여는 데만 쓰고 저장하지 않아요.</div>}
 
           <div className="placerow">
             <PlaceField id="from-place" label="내가 있는 곳" value={fromId} onChange={pickFrom} />

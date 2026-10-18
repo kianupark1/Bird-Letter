@@ -31,5 +31,8 @@ export async function pickContact(): Promise<PickedContact | null> {
   }
 }
 
-/** 문자 앱을 여는 주소(sms:). 안드로이드는 ?body=, 아이폰은 &body= 를 쓰지만 이 기능은 안드로이드 중심 */
-export const smsHref = (tel: string, body: string) => `sms:${tel}?body=${encodeURIComponent(body)}`;
+/** 문자 앱을 여는 주소(sms:). 아이폰은 &body=, 그 밖(안드로이드)은 ?body= 를 써요. 번호가 없으면 문자 앱에서 받는 사람을 고르게 해요 */
+export const smsHref = (tel: string, body: string) => {
+  const ios = typeof navigator !== "undefined" && /iphone|ipad|ipod/i.test(navigator.userAgent);
+  return `sms:${tel.replace(/[^\d+]/g, "")}${ios ? "&" : "?"}body=${encodeURIComponent(body)}`;
+};
