@@ -581,5 +581,25 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("빈칸이면 없음", suggestNames(list, "").length, 0);
 }
 
+// 아이디 기반 한 사람: 링크로 받은 임시 계정(anonX)은 나중에 로그인한 계정의 prev로 같은 사람
+{
+  const { buildThreads: bt } = await import("../core/threads.ts");
+  const sent = [
+    { id: "a1", to: "엄마", sentAt: 100 },                       // 아직 링크를 안 연 편지(이름만)
+    { id: "a2", to: "엄마", toUid: "anonX", sentAt: 200 },        // 링크를 열어 임시 계정이 받은 편지
+    { id: "a3", to: "김순자", toUid: "kakao:9", sentAt: 300 },    // 로그인한 뒤 친구로 보낸 편지
+  ];
+  const fr = [{ uid: "kakao:9", name: "김순자", prev: ["anonX"] }];
+  const th = bt(sent, [], fr, {});
+  const mom = th.find((x) => x.uids?.includes("kakao:9"))!;
+  eq("prev 계정은 같은 사람: 임시 계정 편지가 친구 방에", mom.entries.some((e) => e.item.id === "a2"), true);
+  eq("prev 계정으로 따로 방이 생기지 않음", th.filter((x) => x.uids?.includes("anonX")).length, 1);
+  eq("보낼 계정은 로그인한 친구 계정", mom.uid, "kakao:9");
+  eq("아직 안 연 '엄마' 이름 편지도 같은 사람 방에", mom.entries.some((e) => e.item.id === "a1"), true);
+  eq("엄마는 한 줄만", th.length, 1);
+  const th2 = bt(sent, [], [], {});
+  eq("친구로 잇기 전: '엄마' 이름 방과 임시 계정 방은 한 줄", th2.filter((x) => x.name === "엄마").length, 1);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

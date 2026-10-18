@@ -49,6 +49,7 @@ function Room() {
   const tick = useNow(5000);
   const now = Math.max(tick, Date.now());
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendsKnown, setFriendsKnown] = useState(false);
   const [opened, setOpened] = useState<Set<string>>(new Set());
   const endRef = useRef<HTMLDivElement>(null);
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
@@ -66,10 +67,10 @@ function Room() {
   // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
   useBeforePaint(() => {
     setOpened(readOpened());
-    if (firebaseEnabled) { const c = cachedFriends(); if (c.length) setFriends(c); }
+    if (firebaseEnabled) { const c = cachedFriends(); if (c.length) { setFriends(c); setFriendsKnown(true); } }
   }, []);
   useEffect(() => {
-    listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
+    listFriends().then((f) => { setFriends(f); setFriendsKnown(true); }).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
 
   const key = keyFromParams(params.get("u"), params.get("n"));
@@ -164,8 +165,11 @@ function Room() {
     try { await blockSender(thread.uid); } catch {}
     skip();
   };
+  // 보낼 계정: 친구로 이어진 계정(또는 나에게 편지를 보낸 계정, 답장으로)만. 링크를 열어 보기만 한 임시 계정이면
+  // 바로 보낼 수 없으니 예전처럼 링크 편지로 보내요(로그인하면 자동으로 친구가 돼요)
+  const sendUid = thread.uid && (!friendsKnown || friends.some((f) => f.uid === thread.uid) || thread.entries.some((e) => e.dir === "received" && e.item.fromUid === thread.uid)) ? thread.uid : undefined;
   // 앱이 없는 사람(이름만 있는 방): 가장 최근에 보낸 편지 링크를 문자로 알려 줘요(번호는 저장하지 않아요)
-  const lastSent = thread.uid ? undefined : thread.entries.find((e) => e.dir === "sent");
+  const lastSent = sendUid ? undefined : thread.entries.find((e) => e.dir === "sent");
   let smsBody = "";
   if (lastSent && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
     const l = asLike(lastSent), r = getRoute(l.routeId);
@@ -205,7 +209,7 @@ function Room() {
       {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
         <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
       )}
-      {!pen && !thread.uid && lastSent && (
+      {!pen && !sendUid && lastSent && (
         <div className="mergecard">
           <div><b>{name}님은 아직 앱이 없나요?</b><span>문자로 알려 주면 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>
           <div className="mc-btns">
@@ -252,7 +256,7 @@ function Room() {
         {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
         <div ref={endRef} />
       </div>
-      <RoomComposer threadKey={key} name={name} toUid={thread.uid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} replyTo={thread.entries.find((e) => e.dir === "received" && e.item.fromUid === thread.uid)?.item.id} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
+      <RoomComposer threadKey={key} name={name} toUid={sendUid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} replyTo={thread.entries.find((e) => e.dir === "received" && e.item.fromUid === thread.uid)?.item.id} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
     </main>
   );
 }

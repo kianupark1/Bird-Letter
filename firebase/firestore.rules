@@ -39,8 +39,10 @@ service cloud.firestore {
         allow read: if signedIn() && request.auth.uid == uid;
         allow create, update: if signedIn()
           && (request.auth.uid == uid || request.auth.uid == friendUid)
-          && request.resource.data.keys().hasOnly(['uid', 'name', 'at', 'bird', 'photo'])
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'at', 'bird', 'photo', 'prev'])
           && request.resource.data.uid == friendUid
+          // 같은 사람이 예전에 쓰던 계정 목록(편지 링크를 열었던 임시 계정). 없어도 되고, 10개까지
+          && (!('prev' in request.resource.data) || (request.resource.data.prev is list && request.resource.data.prev.size() <= 10))
           && request.resource.data.name is string && request.resource.data.name.size() <= 12
           // 친구가 고른 "내 새"(얼굴 그림). 없어도 되고, 있으면 12글자 이하 글자예요
           && (!('bird' in request.resource.data) || (request.resource.data.bird is string && request.resource.data.bird.size() <= 12))

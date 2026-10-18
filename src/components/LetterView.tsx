@@ -9,6 +9,9 @@ import { formatMinutes } from "@/lib/geo";
 import { announceReceived, letterProgress, markOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { withEulReul, withIGa } from "@/lib/korean";
 import { ensureUser } from "@/lib/firebase/client";
+import { befriendSender } from "@/lib/firebase/friends";
+import { rememberSender } from "@/lib/linkSenders";
+import { readProfile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
@@ -55,6 +58,10 @@ export default function LetterView({ id }: { id: string }) {
           await remote.claim(id);
           meta.recipientUid = user.uid;
           announceReceived(meta);
+          // 보낸 사람과 한 사람으로 이어요: 로그인했으면 바로 친구로, 아직이면 로그인할 때 잇도록 기억해요
+          const sender = { uid: meta.fromUid, name: meta.fromName };
+          if (user.isAnonymous) rememberSender(user.uid, sender);
+          else { const me = readProfile(); void befriendSender(sender, me.nickname, me.avatarBird || undefined, me.photo).catch(() => {}); }
         } catch {}
       }
       if (!off) setIncoming({ state: "ok", meta });

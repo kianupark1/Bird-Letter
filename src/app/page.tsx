@@ -10,7 +10,8 @@ import { buildThreads, isPenpalThread, isUnnamed, visibleThreads, type Thread } 
 import SwipeRow from "@/components/SwipeRow";
 import HomeCountdown from "@/components/HomeCountdown";
 import Face from "@/components/Face";
-import { cachedFriends, listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
+import { befriendSender, cachedFriends, listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
+import { clearSenders, pendingSenders } from "@/lib/linkSenders";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
 import { publishPublicRank } from "@/lib/firebase/ranking";
@@ -141,6 +142,16 @@ function InboxList() {
   const [menu, setMenuRaw] = useState<{ t: Thread<Letter, Meta>; step: "menu" | "merge" } | null>(null);
   const menuAt = useRef(0);
   const setMenu = (m: typeof menu) => { if (m && !menu) menuAt.current = Date.now(); setMenuRaw(m); };
+  // 로그인 전에 편지 링크로 받은 편지가 있으면, 로그인한 지금 보낸 사람과 친구로 이어요(그때의 임시 계정도 같은 사람으로)
+  useEffect(() => {
+    if (!ready || !firebaseEnabled) return;
+    try { const u = auth().currentUser; if (!u || u.isAnonymous) return; } catch { return; }
+    const p = pendingSenders();
+    if (!p) return;
+    void Promise.all(p.senders.map((s) => befriendSender(s, me.nickname, me.avatarBird, me.photo, p.anon).catch(() => {})))
+      .then(() => { clearSenders(); return listFriends().then(setFriends); }).catch(() => {});
+  }, [ready, me.nickname, me.avatarBird, me.photo]);
+
   // 내 이름·내 새가 바뀌었으면 친구들 목록 속 "나"도 같이 고쳐요(예전에 "새 친구"로 저장된 것 바로잡기)
   useEffect(() => {
     if (!firebaseEnabled || !friends.length || !me.nickname) return;

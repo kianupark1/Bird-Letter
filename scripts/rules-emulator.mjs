@@ -30,6 +30,9 @@ await ok("A가 자기 친구 목록 읽기", getDocs(collection(A, "users", "uid
 await no("C가 A의 친구 목록 읽기", getDocs(collection(C, "users", "uidA", "friends")));
 await no("친구 문서에 이상한 필드", setDoc(doc(A, "users", "uidA", "friends", "uidX"), { uid: "uidX", name: "x", at: serverTimestamp(), evil: 1 }));
 await ok("친구 문서에 내 새(bird) 담기", setDoc(doc(A, "users", "uidA", "friends", "uidY"), { uid: "uidY", name: "y", at: serverTimestamp(), bird: "pigeon" }));
+await ok("링크로 받은 사람이 보낸 사람 목록에 나+예전 임시 계정(prev) 남기기", setDoc(doc(B, "users", "uidA", "friends", "uidB"), { uid: "uidB", name: "비", at: serverTimestamp(), prev: ["anon1"] }));
+await no("prev가 목록이 아님", setDoc(doc(B, "users", "uidA", "friends", "uidB"), { uid: "uidB", name: "비", at: serverTimestamp(), prev: "anon1" }));
+await no("prev가 너무 많음", setDoc(doc(B, "users", "uidA", "friends", "uidB"), { uid: "uidB", name: "비", at: serverTimestamp(), prev: Array.from({ length: 11 }, (_, i) => `a${i}`) }));
 await no("bird가 글자가 아님", setDoc(doc(A, "users", "uidA", "friends", "uidY2"), { uid: "uidY2", name: "y", at: serverTimestamp(), bird: 7 }));
 await no("bird가 너무 김", setDoc(doc(A, "users", "uidA", "friends", "uidY3"), { uid: "uidY3", name: "y", at: serverTimestamp(), bird: "x".repeat(13) }));
 await ok("코드 문서에 내 새(bird) 담기", setDoc(doc(A, "codes", "ABCD2345"), { uid: "uidA", name: "에이", bird: "magpie" }));
