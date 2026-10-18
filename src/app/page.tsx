@@ -244,7 +244,7 @@ function InboxList() {
               <>
                 <div className="pphead">펜팔 🌏</div>
                 <ul className="klist">{pen.map(row)}</ul>
-                <Link href="/penpal" className="ppcard" style={{ padding: "12px 16px" }}><BirdIcon id="crane" size={40} /><div><b style={{ fontSize: 19 }}>또 다른 누군가에게 날려 보내기</b></div></Link>
+                <Link href="/penpal" className="ppcard" style={{ padding: "12px 16px" }}><BirdIcon id="crane" size={40} /><div><b style={{ fontSize: 19 }}>🌏 펜팔 친구 찾기</b><span style={{ display: "block", fontSize: 14, opacity: .75 }}>어느 누군가에게 새 편지 보내기</span></div></Link>
               </>
             )}
           </>
