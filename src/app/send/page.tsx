@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
@@ -66,6 +66,14 @@ function SendForm() {
   useEffect(() => setCanPick(contactPickerSupported()), []);
   // 이름을 치면 아는 사람(친구·예전에 편지를 주고받은 사람) 중 가까운 이름만 아래에 보여 줘요
   const [nameFocus, setNameFocus] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const [contactHint, setContactHint] = useState(false);
+  // [📱 연락처] 한 번에: 안드로이드는 연락처 창이 바로 열리고, 아이폰(웹은 연락처를 직접 열 수 없음)은 이름 칸을 열어 키보드 위 "자동 완성 연락처"를 바로 누를 수 있게 해요
+  const openContacts = async () => {
+    if (canPick) { const c = await pickContact(); if (c) { setTel(c.tel); if (c.name) setTo(c.name); setToUid(undefined); } return; }
+    nameRef.current?.focus();
+    setContactHint(true);
+  };
   const known = [
     ...friends.filter((f) => !isUnnamed(f.name)).map((f) => ({ name: f.name, friend: f as Friend | undefined })),
     ...letters.map((l) => ({ name: l.to, friend: undefined as Friend | undefined })),
@@ -235,9 +243,13 @@ function SendForm() {
           <form className="toform" autoComplete="on" onSubmit={(e) => e.preventDefault()}>
           {!locked && (
             <div className="namebox">
-              <input className="field" name="name" placeholder="받는 사람 이름" autoComplete="name" value={to}
-                onFocus={() => setNameFocus(true)} onBlur={() => setTimeout(() => setNameFocus(false), 150)}
-                onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />
+              <div className="namerow">
+                <input ref={nameRef} className="field" name="name" placeholder="받는 사람 이름" autoComplete="name" value={to}
+                  onFocus={() => setNameFocus(true)} onBlur={() => { setTimeout(() => setNameFocus(false), 150); setContactHint(false); }}
+                  onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); setContactHint(false); }} />
+                {!IS_TOSS && !replyTo && <button type="button" className="chip contactbtn" onMouseDown={(e) => e.preventDefault()} onClick={openContacts}>📱 연락처</button>}
+              </div>
+              {contactHint && <div className="contacthint" role="status">⬇ 키보드 바로 위 <b>‘자동 완성 연락처’</b>를 누르면 연락처가 열려요. 고르면 이름·번호가 같이 들어가요.</div>}
               {sugg.length > 0 && (
                 <ul className="namesug" role="listbox" aria-label="비슷한 이름">
                   {sugg.map((x) => (
@@ -255,9 +267,6 @@ function SendForm() {
           {!locked && !toUid && !replyTo && !IS_TOSS && (
             <div className="telrow">
               <input className="field" name="tel" type="tel" inputMode="tel" autoComplete="tel" placeholder="전화번호(선택) · 문자로 알려 줘요" value={tel} onChange={(e) => setTel(e.target.value)} aria-label="받는 사람 전화번호(선택)" />
-              {canPick && (
-                <button type="button" className="chip" onClick={async () => { const c = await pickContact(); if (c) { setTel(c.tel); if (c.name) setTo(c.name); } }}>📱 연락처</button>
-              )}
             </div>
           )}
           </form>
