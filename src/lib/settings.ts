@@ -1,5 +1,6 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useBeforePaint } from "./fastStart";
 
 export type Profile = {
   nickname: string;
@@ -60,7 +61,8 @@ export function useProfile() {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
+  // 화면에 보이기 전에 저장된 프로필을 넣어요(열 때 기본 얼굴·이름이 잠깐 보였다 바뀌지 않게)
+  useBeforePaint(() => {
     try {
       const raw = localStorage.getItem(PROFILE_KEY);
       if (raw) {
