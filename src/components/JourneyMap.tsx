@@ -28,8 +28,8 @@ type Props = {
 
 let W = 320, H = 300;
 
-/** 경로가 한 화면에 잘 들어오도록 확대·이동을 정하고, 경도·위도를 화면 좌표로 바꾸는 함수를 만들어요 */
-function makeProjection(route: Route, view?: Props["view"]) {
+/** 노선 전체가 한 화면에 들어오는 기본 틀: 1km가 몇 칸인지(scale)·가운데 좌표. 지도 크게 보기의 손가락 확대 계산에도 써요 */
+export function mapBase(route: Route, h = H) {
   const lats = route.points.map((q) => q.lat), lngs = route.points.map((q) => q.lng);
   const minLat = Math.min(...lats), maxLat = Math.max(...lats), minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
   const cy = (minLat + maxLat) / 2, cx = (minLng + maxLng) / 2;
@@ -37,10 +37,15 @@ function makeProjection(route: Route, view?: Props["view"]) {
   // 가까운 노선(서울 안 등)은 더 확대해서 구·동네 이름이 보이게 해요
   const minSpan = route.km < 120 ? Math.max(24, route.km * 2.2) : 170;
   const vx = Math.max((maxLng - minLng) * kx * 1.6, minSpan), vy = Math.max((maxLat - minLat) * ky * 1.5, minSpan);
-  let scale = Math.min(W / vx, H / vy); // 1km가 화면에서 몇 칸인지
-  let cx2 = cx, cy2 = cy;
+  return { scale: Math.min(W / vx, h / vy), cx, cy, kx, ky, w: W, h };
+}
+
+/** 경로가 한 화면에 잘 들어오도록 확대·이동을 정하고, 경도·위도를 화면 좌표로 바꾸는 함수를 만들어요 */
+function makeProjection(route: Route, view?: Props["view"]) {
+  const b = mapBase(route);
+  let scale = b.scale, cx2 = b.cx, cy2 = b.cy;
   if (view) { scale *= view.zoom; cx2 = view.lng; cy2 = view.lat; }
-  return projectionAt(cx2, cy2, scale, kx, ky);
+  return projectionAt(cx2, cy2, scale, b.kx, b.ky);
 }
 function projectionAt(cx: number, cy: number, scale: number, kx: number, ky: number) {
   const proj = (lng: number, lat: number): [number, number] => [W / 2 + (lng - cx) * kx * scale, H / 2 - (lat - cy) * ky * scale];
