@@ -19,6 +19,7 @@ import { IS_TOSS, letterHref } from "@/lib/target";
 import { roomHref } from "@/lib/room";
 import { isUnnamed, unnamedLabel } from "../../../core/threads";
 import { birdFx } from "@/lib/chirp";
+import { suggestNames } from "../../../core/nameSearch";
 import { withIGa } from "@/lib/korean";
 import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvite";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
@@ -35,7 +36,7 @@ export default function Send() {
 
 function SendForm() {
   const router = useRouter();
-  const { add } = useLetters();
+  const { add, letters, received } = useLetters();
   const { profile, ready: profileReady, update } = useProfile();
   // ?bird=bungbungi 처럼 새를 미리 골라서 들어올 수 있음
   const params = useSearchParams();
@@ -63,6 +64,14 @@ function SendForm() {
   const [tel, setTel] = useState("");
   const [canPick, setCanPick] = useState(false);
   useEffect(() => setCanPick(contactPickerSupported()), []);
+  // 이름을 치면 아는 사람(친구·예전에 편지를 주고받은 사람) 중 가까운 이름만 아래에 보여 줘요
+  const [nameFocus, setNameFocus] = useState(false);
+  const known = [
+    ...friends.filter((f) => !isUnnamed(f.name)).map((f) => ({ name: f.name, friend: f as Friend | undefined })),
+    ...letters.map((l) => ({ name: l.to, friend: undefined as Friend | undefined })),
+    ...received.map((m) => ({ name: m.fromName, friend: undefined as Friend | undefined })),
+  ];
+  const sugg = nameFocus && to.trim() && !toUid ? suggestNames(known, to).filter((x) => x.name !== to.trim()) : [];
   const [sent, setSent] = useState<{ id: string; uid?: string; to: string } | null>(null);
   // 대화방에서 "OO에게 편지 쓰기"를 누르고 오면 받는 사람이 정해져 있어요(?to=<친구 uid> 또는 ?name=<이름>)
   const presetFriend = params.get("friend") ?? params.get("to");
@@ -222,15 +231,36 @@ function SendForm() {
               {friends.length === 0 && <div className="small" style={{ marginTop: 6 }}>친구를 연결하면 링크 없이 친구의 새편지함으로 바로 날아가요.</div>}
             </div>
           )}
-          {!locked && <input className="field" placeholder="받는 사람 이름" autoComplete="name" value={to} onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />}
-          {!locked && !toUid && !replyTo && !IS_TOSS && (
-            <div className="telrow">
-              <input className="field" type="tel" inputMode="tel" autoComplete="tel" placeholder="전화번호(선택) · 문자로 알려 줘요" value={tel} onChange={(e) => setTel(e.target.value)} aria-label="받는 사람 전화번호(선택)" />
-              {canPick && (
-                <button type="button" className="chip" onClick={async () => { const c = await pickContact(); if (c) { setTel(c.tel); if (c.name && !to.trim()) setTo(c.name); } }}>📱 연락처</button>
+          {/* 이름·전화번호를 한 묶음(form)으로 둬야 아이폰 "자동 완성 연락처"로 고른 사람의 이름과 번호가 함께 들어가요 */}
+          <form className="toform" autoComplete="on" onSubmit={(e) => e.preventDefault()}>
+          {!locked && (
+            <div className="namebox">
+              <input className="field" name="name" placeholder="받는 사람 이름" autoComplete="name" value={to}
+                onFocus={() => setNameFocus(true)} onBlur={() => setTimeout(() => setNameFocus(false), 150)}
+                onChange={(e) => { setTo(e.target.value); setToUid(undefined); setReplyTo(undefined); }} />
+              {sugg.length > 0 && (
+                <ul className="namesug" role="listbox" aria-label="비슷한 이름">
+                  {sugg.map((x) => (
+                    <li key={x.name}>
+                      <button type="button" role="option" aria-selected={false} onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => { if (x.friend) pickFriend(x.friend); else { setTo(x.name); setToUid(undefined); } setNameFocus(false); }}>
+                        <b>{x.name}</b>{x.friend && <small>친구 · 앱으로 바로</small>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           )}
+          {!locked && !toUid && !replyTo && !IS_TOSS && (
+            <div className="telrow">
+              <input className="field" name="tel" type="tel" inputMode="tel" autoComplete="tel" placeholder="전화번호(선택) · 문자로 알려 줘요" value={tel} onChange={(e) => setTel(e.target.value)} aria-label="받는 사람 전화번호(선택)" />
+              {canPick && (
+                <button type="button" className="chip" onClick={async () => { const c = await pickContact(); if (c) { setTel(c.tel); if (c.name) setTo(c.name); } }}>📱 연락처</button>
+              )}
+            </div>
+          )}
+          </form>
           {!locked && !toUid && !replyTo && !IS_TOSS && <div className="small" style={{ marginTop: -4, marginBottom: 10 }}>앱이 없는 사람에게도 보낼 수 있어요. 보낸 뒤 문자로 편지가 날아간다고 알려 주면, 링크로 받아 볼 수 있어요. 전화번호는 문자 앱을 여는 데만 쓰고 저장하지 않아요.</div>}
 
           <div className="placerow">

@@ -567,5 +567,19 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("편지마다 엽서가 달라짐", diff > 3, true);
 }
 
+// 받는 사람 이름 찾기: 한 글자·치는 중간·초성
+{
+  const { matchName, suggestNames, choseong } = await import("../core/nameSearch.ts");
+  eq("초성 뽑기", choseong("어머니"), "ㅇㅁㄴ");
+  eq("'어'만 쳐도 어머니", matchName("어머니", "어") > 0, true);
+  eq("치는 중 '엄'도 어머니", matchName("어머니", "엄") > 0, true);
+  eq("'엄'은 엄마도", matchName("엄마", "엄"), 1);
+  eq("초성 ㅇㅁㄴ", matchName("어머니", "ㅇㅁㄴ"), 3);
+  eq("안 맞으면 -1", matchName("석영이", "어"), -1);
+  const list = [{ name: "아버지" }, { name: "어머니" }, { name: "어진" }, { name: "석영이" }, { name: "어머니" }];
+  eq("가까운 것만·짧은 순서·같은 이름 한 번", suggestNames(list, "어").map((x) => x.name).join(","), "어진,어머니");
+  eq("빈칸이면 없음", suggestNames(list, "").length, 0);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
