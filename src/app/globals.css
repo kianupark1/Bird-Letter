@@ -857,6 +857,8 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 @media (prefers-reduced-motion: reduce) { .map .fx-pulse, .map .fx-trail, .map .fx-cloud, .map .fx-star, .map .route-line { animation: none; } }
 .mapfull.live .mf-body { position: relative; overflow: hidden; border-radius: 18px; cursor: grab; }
 .mapfull.live .mf-body .map { width: 100%; height: 100%; }
+.lm-layer { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+.lm-layer .map { width: 100%; height: 100%; display: block; }
 .lm-ctrl { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 8px; }
 .lm-ctrl button { width: 48px; height: 48px; border-radius: 14px; border: 0; background: var(--card); color: var(--text); font-size: 22px; font-weight: 800; box-shadow: var(--raise); cursor: pointer; }
 .lm-follow { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); border: 0; border-radius: 24px; padding: 12px 18px; font: inherit; font-size: 17px; font-weight: 800; background: var(--dahong); color: var(--on-dahong); box-shadow: var(--raise); cursor: pointer; }
