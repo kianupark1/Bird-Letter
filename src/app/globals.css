@@ -928,3 +928,13 @@ html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .map .fx-cloud { fill: #fff; opacity: .5; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map .fx-cloud { opacity: .1; } :root:not([data-theme="light"]) .map .park { opacity: .2; } :root:not([data-theme="light"]) .map .fb-shadow { opacity: .35; } }
 :root[data-theme="dark"] .map .fx-cloud { opacity: .1; }
+
+/* 편지 쓰기: 전화번호 칸 + 연락처 버튼, 보낸 뒤 문자 알림 화면 */
+.telrow { display: flex; gap: 8px; align-items: center; }
+.telrow .field { flex: 1; min-width: 0; }
+.telrow .chip { flex: none; }
+.sentcard { min-height: 70dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; padding-top: 40px; }
+.sentcard h1 { font-size: 28px; margin: 4px 0 0; }
+.sentcard .cta { width: 100%; text-decoration: none; text-align: center; }
+.sentcard .cta.ghost { background: transparent; color: var(--text); border: 2px solid var(--line); box-shadow: none; }
+.linkbtn { background: none; border: 0; color: var(--text); opacity: .7; font: inherit; font-size: 17px; padding: 12px; cursor: pointer; }
