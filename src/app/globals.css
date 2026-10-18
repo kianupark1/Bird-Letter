@@ -968,3 +968,14 @@ html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .mergecard .mc-btns { display: flex; gap: 8px; flex-wrap: wrap; flex: none; }
 .mergecard a.chip { text-decoration: none; }
 .mergecard { flex-wrap: wrap; }
+
+/* 편지 목록 안에서 바로 "누구에게?"(2026-10-18) */
+button.kfab, .inbox-empty button.cta { border: 0; font: inherit; font-weight: 800; cursor: pointer; }
+button.kfab { font-size: 18px; }
+.who { padding-top: env(safe-area-inset-top); }
+.whobar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px; background: var(--card); border: 2px solid var(--dahong); border-radius: 20px; padding: 6px 6px 6px 14px; margin: 6px 0 12px; box-shadow: var(--raise); }
+.whoicon { font-size: 24px; color: var(--dahong); }
+.whoin { flex: 1; min-width: 0; border: 0; outline: 0; background: none; color: var(--text); font: inherit; font-size: 21px; min-height: 52px; }
+.whoin::placeholder { color: var(--text); opacity: .5; }
+.whobtn { flex: none; width: 48px; height: 48px; border: 0; border-radius: 14px; background: var(--bg); color: var(--text); font-size: 22px; cursor: pointer; }
+.who button.krow { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }

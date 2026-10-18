@@ -32,6 +32,7 @@ import { roomHref } from "@/lib/room";
 import { useBeforePaint } from "@/lib/fastStart";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
 import { usePeople } from "@/lib/people";
+import WhoSearch from "@/components/WhoSearch";
 
 export default function Home() {
   const { state, recheck } = useSession();
@@ -174,6 +175,17 @@ function InboxList() {
     setMenu(null);
   };
   const flyingAny = letters.find((l) => !isScheduled(l.sentAt, now) && !letterProgress(l, now).done);
+  // 편지 쓰기: 다른 화면으로 가지 않고 이 목록 맨 위에서 바로 이름을 쳐요(?write=1로 와도 열려요)
+  const [writing, setWriting] = useState(false);
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("write")) setWriting(true); }, []);
+
+  if (writing) {
+    return (
+      <main className="app inbox">
+        <WhoSearch people={allThreads} friends={friends} onClose={() => { setWriting(false); if (window.location.search) window.history.replaceState(null, "", "/"); }} />
+      </main>
+    );
+  }
 
   return (
     <main className="app inbox">
@@ -199,7 +211,7 @@ function InboxList() {
           {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
           <h2>첫 편지를<br />보내 보세요</h2>
           <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
-          <Link href="/write" prefetch className="cta big">✉ 편지 쓰기</Link>
+          <button type="button" className="cta big" onClick={() => setWriting(true)}>✉ 편지 쓰기</button>
         </div>
       )}
 
@@ -278,7 +290,7 @@ function InboxList() {
       {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
 
       {threads.length > 0 && (
-        <Link href="/write" prefetch className="kfab" aria-label="편지 쓰기">✉ 편지 쓰기</Link>
+        <button type="button" className="kfab" aria-label="편지 쓰기" onClick={() => setWriting(true)}>✉ 편지 쓰기</button>
       )}
     </main>
   );
