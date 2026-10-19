@@ -991,3 +991,7 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .ch-trip small { font-size: 13px; opacity: .7; }
 .ch-trip b { font-size: 17px; }
 .ch-trip .arr { font-size: 20px; opacity: .6; }
+
+/* 펜팔: 어디로 날려 보낼지(도시까지만) */
+.ppwhere { display: flex; align-items: center; gap: 10px; margin: 6px 0 4px; font-size: 18px; font-weight: 700; }
+.ppwhere select { margin-left: auto; font: inherit; font-size: 18px; font-weight: 600; min-height: 48px; padding: 0 12px; border-radius: 14px; border: 2px solid var(--line, rgba(0,0,0,.12)); background: var(--card); color: var(--text); }

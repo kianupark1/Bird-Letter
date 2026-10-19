@@ -26,6 +26,12 @@ export function cityOf(placeId: string | undefined): string {
 }
 export const cityLabel = (cityId: string) => (cityId === "seoul" ? "서울" : getPlace(cityId)?.name ?? "어딘가");
 
+/** 펜팔을 날려 보낼 수 있는 도시(보내는 사람이 "어디로"를 고를 때). 동네·구는 없고 도시까지만 */
+export const PENPAL_CITIES: string[] = [...new Set(PLACES.map((p) => cityOf(p.id)))];
+
+/** "어디로"를 골랐으면 그 도시에서 받기를 켠 사람만 남겨요(없으면 빈 목록) */
+export const poolIn = <T extends { region: string }>(pool: T[], city: string | null): T[] => (city ? pool.filter((p) => p.region === city) : pool);
+
 /** 자동 펜팔 이름(12글자 이하): "부산 사는 두루미" */
 export function penpalName(region: string, bird: string): string {
   return `${region} 사는 ${BIRD_NAME[bird] ?? "새"}`.slice(0, 12);
