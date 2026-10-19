@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1085063770507",
+    "project_id": "bird-letter",
+    "storage_bucket": "bird-letter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1085063770507:android:545007495f19d7e51b3f8e",
+        "android_client_info": {
+          "package_name": "com.saepyeonji.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClAByzgh3amOT_lqSvNGP32zVIfZ3XiTA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
