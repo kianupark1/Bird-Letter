@@ -269,7 +269,7 @@
 
 ## 운영자 숫자판 (2026-10-19 밤, 대표님: "사용자 수 체크, 너가 다 자동화로")
 
-- `/admin`(화면 `src/app/admin/page.tsx`) → 서버 `POST /api/admin/stats`(Firebase 로그인 토큰 확인 → **운영자 계정만**). 보여 주는 것: 가입자(익명 제외, 카카오·구글·애플별), 오늘·7일 새 가입, 최근 24시간·7일 들어온 사람, 편지 수(오늘·7일·전체), 임시(익명) 계정 수. **이름·편지 내용은 안 읽음**(계정 목록은 Identity Toolkit `accounts:batchGet`, 편지는 Firestore 개수 세기만). 계산 `core/adminStats.ts`(시험 13개, test:core 345).
+- `/admin`(화면 `src/app/admin/page.tsx`, **지난번 숫자를 폰에 적어 뒀다가 누르자마자 보여 주고 새 숫자는 뒤에서 받음**·서버는 네 가지를 동시에 묻고 30초 결과·50분 토큰 재사용) → 서버 `POST /api/admin/stats`(Firebase 로그인 토큰 확인 → **운영자 계정만**). 보여 주는 것: 가입자(익명 제외, 카카오·구글·애플별), 오늘·7일 새 가입, 최근 24시간·7일 들어온 사람, 편지 수(오늘·7일·전체), 임시(익명) 계정 수. **이름·편지 내용은 안 읽음**(계정 목록은 Identity Toolkit `accounts:batchGet`, 편지는 Firestore 개수 세기만). 계산 `core/adminStats.ts`(시험 13개, test:core 345).
 - 운영자 등록: `core/adminStats.ts ADMIN_UIDS`(또는 Vercel 환경 변수 `ADMIN_UIDS`). **처음엔 비어 있음** → 대표님이 https://bird-letter.vercel.app/admin 을 열면 "계정 번호"가 나오고, 그 번호를 받아 `ADMIN_UIDS`에 넣으면 됨. 등록되면 설정 맨 아래 "📊 오늘의 숫자(운영자)" 줄이 보임.
 - 서비스 계정(Vercel `FIREBASE_SERVICE_ACCOUNT_JSON`)에 계정 목록 읽기 권한이 있는지 「미확인」 → 오류(`accounts-403`)가 나면 Google Cloud IAM에서 "Firebase Authentication 뷰어" 역할 추가.
 
