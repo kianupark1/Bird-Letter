@@ -1,7 +1,7 @@
 /**
  * 홍보 이미지 생성기: npx tsx promo/build-cards.mts
  * 앱의 새 그림(BirdIcon)·새 속도(core/birds)·소요 시간 계산식을 그대로 써서, 앱과 숫자가 항상 같아요.
- * 필요한 것: Playwright(+Chromium). 결과: promo/cards/*.png, public/og.png (원본 HTML은 promo/cards-src)
+ * 필요한 것: Playwright(+Chromium). 결과: promo/cards/*.png, public/og.png, promo/store/feature-1024x500.png (원본 HTML은 promo/cards-src)
  * 문구 규칙: "실제 새 속도와 같다"고 쓰지 않고 "실제 새의 비행 속도를 바탕으로"라고 써요. 앱스토어 출시 전이라 "다운로드" 문구는 쓰지 않아요.
  */
 import { createRequire } from "node:module";
@@ -42,10 +42,11 @@ h1 { font-size: 90px; line-height: 1.14; letter-spacing: -2px; font-weight: 800;
 .proverb { color: #C1481F; font-weight: 700; font-size: 38px; margin-top: 26px; }
 .tile { background: #fff; border-radius: 32px; padding: 26px 30px; display: flex; align-items: center; gap: 22px; box-shadow: 0 6px 0 rgba(42,33,24,.06); }
 `;
-const FOOT = `<div class="brand"><span>새 편지</span><small>웹 체험판 공개 · 앱스토어 준비 중</small></div>`;
+// 출시 전·후 어느 때 올려도 맞도록 "체험판·준비 중" 같은 시점 문구는 넣지 않아요(출시 알림은 06-launch 카드)
+const FOOT = `<div class="brand"><span>새 편지</span><small>기다림이 즐거운 편지</small></div>`;
 const BAND = `<div class="band"><i></i><i></i><i></i><i></i><i></i></div>`;
 
-const cards: { file: string; w: number; h: number; html: string; copyTo?: string }[] = [
+const cards: { file: string; w: number; h: number; html: string; copyTo?: string; out?: string }[] = [
   { file: "01-concept", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
     <div style="margin:10px auto 0">${bird("magpie", 520, true)}</div>
     <h1 style="text-align:center;margin-top:28px">소식은<br>날아서 와요</h1>
@@ -85,6 +86,26 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
       <div><div style="font-size:40px;font-weight:800">${b.name}</div><div style="font-size:26px;font-weight:700;color:#C1481F">약 ${b.mishapOneIn}통에 1번</div></div></div>`).join("")}
     </div>${FOOT}</div>` },
 
+  { file: "06-launch", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
+    <div style="margin:0 auto">${bird("magpie", 420, true)}</div>
+    <h1 style="text-align:center;margin-top:30px;font-size:96px">새 편지가<br><span class="hl">날아올랐어요</span></h1>
+    <p class="sub" style="text-align:center">구글 플레이에서 ‘새 편지’를 찾아 주세요<br>아이폰 앱은 곧 따라 날아가요</p>
+    <div style="display:flex;justify-content:center;gap:14px;margin-top:34px">${BIRDS_SLOW_TO_FAST.slice().reverse().map((b) => bird(b.id, 120)).join("")}</div>${FOOT}</div>` },
+
+  { file: "07-wait", w: 1080, h: 1350, html: `<style>body{background:#16243A;color:#FBF3E4}.brand small{color:#F0BC5C;border-color:#F0BC5C}</style>${BAND}<div class="wrap">
+    <h1 style="font-size:88px;margin-top:20px">기다리는 시간도<br><span style="color:#F0BC5C">편지의 일부</span>예요</h1>
+    <p class="sub" style="opacity:.9">바로 도착하지 않아서 더 설레는 편지.<br>새가 지금 어디쯤 날고 있는지 같이 지켜봐요.</p>
+    <div style="margin:auto auto 40px;width:640px;background:#FBF3E4;color:#2A2118;border-radius:36px;padding:36px 40px">
+      <div style="display:flex;align-items:center;gap:20px">${bird("crane", 150, true)}<div><div style="font-size:40px;font-weight:800">두루미가 날아가는 중</div><div style="font-size:30px;opacity:.75;margin-top:4px">서울 → 부산 · ${mins("crane", BUSAN)}</div></div></div>
+      <div style="height:16px;border-radius:99px;background:rgba(42,33,24,.12);margin-top:26px;overflow:hidden"><div style="width:62%;height:100%;background:#E0A83C"></div></div>
+      <div style="font-size:28px;font-weight:700;color:#C1481F;margin-top:14px">대전을 지났어요 · 내일 오후 도착</div>
+    </div>${FOOT}</div>` },
+
+  // 구글 플레이 "그래픽 이미지"(필수, 1024×500). 글자는 적게, 가장자리에 중요한 것 두지 않기
+  { file: "feature-1024x500", w: 1024, h: 500, out: resolve(root, "promo/store/feature-1024x500.png"), html: `<style>.wrap{padding:0 80px;flex-direction:row;align-items:center;gap:24px;inset:22px 0 0 0} h1{font-size:78px} .sub{font-size:30px;margin-top:16px}</style>${BAND}<div class="wrap">
+    <div style="flex:1"><h1>소식은<br><span class="hl">날아서</span> 와요</h1><p class="sub">기다림이 즐거운 편지, 새 편지</p></div>
+    <div style="width:400px">${bird("magpie", 400, true)}</div></div>` },
+
   { file: "og", w: 1200, h: 630, copyTo: resolve(root, "public/og.png"), html: `<style>.wrap{padding:56px 76px 44px;flex-direction:row;align-items:center;gap:30px} h1{font-size:76px} .proverb{font-size:28px;margin-top:18px} .sub{font-size:27px;margin-top:14px}
     .brand{position:absolute;left:76px;bottom:38px;font-size:26px}</style>${BAND}<div class="wrap">
     <div style="flex:1"><h1>소식은<br>날아서 와요</h1><p class="proverb">“아침 까치가 울면 반가운 손님이 온다”</p><p class="sub">실제 거리만큼 걸려 도착하는 느린 편지</p></div>
@@ -101,7 +122,7 @@ for (const c of cards) {
   const p = await ctx.newPage();
   await p.goto("file://" + htmlPath);
   await p.evaluate(() => document.fonts.ready);
-  const png = resolve(root, `promo/cards/${c.file}.png`);
+  const png = c.out ?? resolve(root, `promo/cards/${c.file}.png`);
   await p.screenshot({ path: png });
   await ctx.close();
   if (c.copyTo) copyFileSync(png, c.copyTo);
