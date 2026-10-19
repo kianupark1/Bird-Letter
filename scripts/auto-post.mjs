@@ -15,8 +15,18 @@ const today = dateArg ?? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seou
 const IMAGE_BASE = (process.env.IMAGE_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo/cards").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
 
-const { posts } = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8"));
-const todays = posts.filter((p) => p.date === today);
+// 글마다 날짜(date) 대신 출시일 기준 며칠째(day: -3 = 출시 3일 전, 0 = 출시일)를 쓸 수 있어요.
+// 출시일(launch)이 정해지기 전(null)에는 day 글은 하나도 올라가지 않아요.
+const { launch, posts } = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8"));
+const dateOf = (p) => {
+  if (p.date) return p.date;
+  if (typeof p.day !== "number" || !/^\d{4}-\d{2}-\d{2}$/.test(launch ?? "")) return null;
+  const d = new Date(launch + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + p.day);
+  return d.toISOString().slice(0, 10);
+};
+if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
+const todays = posts.filter((p) => dateOf(p) === today);
 console.log(`${today} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
 
 async function api(url, params) {
