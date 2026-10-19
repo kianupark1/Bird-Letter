@@ -246,7 +246,7 @@
 ## 앱 알림(스토어 앱)·화면 사진 (2026-10-19, 대표님: "화면사진이랑 앱 알림 작업 진행해줘")
 
 - **앱 알림(안드로이드, FCM)**: 스토어 앱(웹을 감싼 Capacitor) 안에서는 웹 푸시가 안 돼서 FCM 기기 토큰을 씀. 폰 `src/lib/push.ts`(`isAppPush`·`nativeEnable`·`initAppPush`: 허락 → 토큰 → `users/{uid}/push/sub`에 `{fcm, at}` → 알림 누르면 그 편지로), 요청 검사 `core/pushPayload.ts`(`{fcm}` 받음·`subKey`), 서버 `api/push/deliver`가 FCM HTTP v1로 보냄(열쇠는 Vercel `FIREBASE_SERVICE_ACCOUNT_JSON` 그대로, 권한 「미확인」), 규칙 push/sub에 `fcm` 칸(에뮬레이터 122). 알림 줄 흰 아이콘 `assets/notify-icon.png` → `ic_stat_notify`. 앱 안에서는 "앱처럼 설치" 카드 안 보임(`install.ts`).
-- **켜지는 조건**: 앱 파일을 만들 때 `native/google-services.json`이 있어야 함(Firebase 콘솔에서 안드로이드 앱 `com.saepyeonji.app` 등록 → 받은 파일, 비밀 값 아님). 있으면 앱이 이름표 끝에 `SaePyeonjiApp/fcm`(`capacitor.config.ts appendUserAgent`, `FCM_READY`)을 붙이고 그때만 알림을 켬(없이 만든 시험 앱이 멈추지 않게). **대표님 몫: Firebase 콘솔에서 안드로이드 앱 등록 후 파일 전달(대기)**. 아이폰 앱 알림은 애플 가입 뒤(APNs).
+- **켜지는 조건**: 앱 파일을 만들 때 `native/google-services.json`이 있어야 함(Firebase 콘솔에서 안드로이드 앱 `com.saepyeonji.app` 등록 → 받은 파일, 비밀 값 아님). 있으면 앱이 이름표 끝에 `SaePyeonjiApp/fcm`(`capacitor.config.ts appendUserAgent`, `FCM_READY`)을 붙이고 그때만 알림을 켬(없이 만든 시험 앱이 멈추지 않게). **2026-10-19 대표님이 Firebase에 안드로이드 앱(새 편지 안드로이드) 등록, 파일 `native/google-services.json` 넣음(완료)** → 이제 만드는 앱 파일은 알림이 켜짐. 공개 저장소라 이 파일의 안드로이드 API 키가 보이는데, Firebase 안내상 공개돼도 되는 값 「미확인」 → 출시 전 Google Cloud에서 이 키를 "안드로이드 앱 com.saepyeonji.app + 서명 지문"으로 제한하면 더 안전. 아이폰 앱 알림은 애플 가입 뒤(APNs).
 - **화면 사진**: `promo/store/phone-*.png` 5장(1080×1920), `node promo/build-store-shots.mjs`.
 - 고침: 하루 넘게 걸리는 편지의 도착 시각이 날짜 없이 "오후 8시"로만 보이던 것 → `core/schedule.ts whenText`(내일·어제·날짜), 첫 소개 문구 "실제 새의 속도만큼" → "실제 새의 비행 속도를 바탕으로"(홍보 문구 규칙). test:core 332, e2e-local 27.
 
