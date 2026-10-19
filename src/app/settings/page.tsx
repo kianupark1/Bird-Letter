@@ -21,6 +21,7 @@ import { getBird } from "@/lib/birds";
 import { IS_TOSS } from "@/lib/target";
 import { signOut } from "firebase/auth";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
+import { isAdmin } from "../../../core/adminStats";
 
 type NotifyKey = keyof Profile["notify"];
 
@@ -324,6 +325,11 @@ export default function Settings() {
         <Link href="/policy" className="listrow action">
           <span>운영정책 · 신고 처리</span><span aria-hidden>›</span>
         </Link>
+        {firebaseEnabled && isAdmin(auth().currentUser?.uid ?? "") && (
+          <Link href="/admin" className="listrow action">
+            <span>📊 오늘의 숫자(운영자)</span><span aria-hidden>›</span>
+          </Link>
+        )}
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
       </div>
     </main>
