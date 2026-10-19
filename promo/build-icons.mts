@@ -60,11 +60,11 @@ ${clouds ? "" : "<!--"}<g fill="${CREAM}">
 </g>`;
 
 const GRAD = "linear-gradient(160deg,#D2552A 0%,#C1481F 55%,#A83B17 100%)";
-const html = (size: number, k: number, rounded: boolean, bg = GRAD, art = true) => `<!doctype html><meta charset="utf-8"><style>
+const html = (size: number, k: number, rounded: boolean, bg = GRAD, art = true, clouds = true) => `<!doctype html><meta charset="utf-8"><style>
 *{margin:0;box-sizing:border-box}html,body{width:${size}px;height:${size}px;background:transparent}
 .bg{position:relative;width:${size}px;height:${size}px;background:${bg};overflow:hidden;${rounded ? `border-radius:${Math.round(size * 0.22)}px;` : ""}}
 .bg svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-</style><div class="bg">${art ? `<svg viewBox="0 0 200 200">${scene(k)}</svg>` : ""}</div>`;
+</style><div class="bg">${art ? `<svg viewBox="0 0 200 200">${scene(k, clouds)}</svg>` : ""}</div>`;
 // 시작 화면: 한지(또는 먹빛) 바탕 가운데에 둥근 아이콘 하나
 const splash = (size: number, page: string) => `<!doctype html><meta charset="utf-8"><style>
 *{margin:0}html,body{width:${size}px;height:${size}px;background:${page};display:grid;place-items:center}
@@ -95,6 +95,11 @@ await shot("assets/splash.png", 2732, splash(2732, "#FBF3E4"));
 await shot("assets/splash-dark.png", 2732, splash(2732, "#1A1613"));
 // 안드로이드 알림 줄의 작은 아이콘: 흰색 실루엣만(투명 바탕). 구름은 빼요.
 await shot("assets/notify-icon.png", 96, `<!doctype html><style>*{margin:0}html,body{width:96px;height:96px;background:transparent}svg{width:96px;height:96px;display:block;filter:brightness(0) invert(1)}</style><svg viewBox="0 0 200 200">${scene(1, false)}</svg>`);
+// SNS 프로필 사진(인스타·틱톡·유튜브는 동그랗게 잘라 보여 줘서 그림을 가운데로 작게, 잘리는 구름은 뺌): promo/sns/
+mkdirSync(resolve(root, "promo/sns"), { recursive: true });
+await shot("promo/sns/profile-dahong.png", 1080, html(1080, 0.7, false, GRAD, true, false));
+await shot("promo/sns/profile-hanji.png", 1080, html(1080, 0.7, false, "radial-gradient(circle at 50% 40%,#FFF9EE 0%,#FBF3E4 60%,#F1E2C6 100%)", true, false));
+await shot("promo/sns/profile-night.png", 1080, html(1080, 0.7, false, "linear-gradient(160deg,#2A4B73 0%,#1E3A5C 55%,#142A45 100%)", true, false));
 await browser.close();
 copyFileSync(resolve(root, "public/apple-icon.png"), resolve(root, "src/app/apple-icon.png"));
 copyFileSync(resolve(root, "public/icon-192.png"), resolve(root, "src/app/icon.png"));
