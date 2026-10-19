@@ -10,10 +10,14 @@ import { addFriend, isCode, lookupCode, normalizeCode, type Friend } from "@/lib
 import { useProfile } from "@/lib/settings";
 import { useSession } from "@/lib/session";
 import Face from "@/components/Face";
+import { STORE } from "@/lib/release";
+import { storeFor, type StoreBtn } from "../../../core/storeLinks";
 
 /**
  * 친구가 보낸 초대 링크(/invite?c=코드)를 눌렀을 때(시안 ⑬⑭).
  * 누가 초대했는지 보여 주고, 로그인(카카오·구글·애플)하면 코드를 입력하지 않아도 자동으로 친구가 돼요.
+ * 스토어에 앱이 올라간 뒤(release.ts STORE)에는 친구가 된 다음 "앱 받기"가 가장 큰 버튼이에요.
+ * 친구는 계정에 붙어 있어서, 앱을 깔고 같은 계정으로 로그인하면 친구가 그대로 있어요(앱 열기 링크 없이도 이어져요).
  */
 export default function InvitePage() {
   return (
@@ -31,6 +35,8 @@ function Invite() {
   const [naming, setNaming] = useState(false);
   const [result, setResult] = useState<"adding" | "done" | "self" | "error">("adding");
   const started = useRef(false);
+  const [store, setStore] = useState<StoreBtn | null>(null);
+  useEffect(() => { if (!(window as any).Capacitor?.isNativePlatform?.()) setStore(storeFor(navigator.userAgent, STORE)); }, []);
 
   // 초대한 사람 이름 확인(코드를 읽으려면 서버 로그인이 필요해서 임시 계정으로 확인해요. 로그인하면 이어져요)
   useEffect(() => {
@@ -70,15 +76,16 @@ function Invite() {
               <Face name={inviter.name} bird={inviter.bird} size={84} />
             </div>
             <h1 style={{ fontSize: 28 }}>{inviter.name}님과<br />편지 친구가 되었어요!</h1>
-            <p>첫 편지를 써서<br />새에게 맡겨 보세요</p>
+            {store ? <p>앱을 받아 <b>같은 계정</b>으로 시작하면<br />{inviter.name}님이 친구 목록에 그대로 있어요</p> : <p>첫 편지를 써서<br />새에게 맡겨 보세요</p>}
           </>
         )}
         {result === "self" && <><BirdIcon id="magpie" size={120} /><p>내가 보낸 초대 링크예요.<br />친구에게 보내 주세요.</p></>}
         {result === "error" && <><BirdIcon id="magpie" size={120} /><p>친구로 연결하지 못했어요.<br />잠시 뒤에 링크를 다시 눌러 주세요.</p></>}
       </div>
       <div className="start-btns">
-        {result === "done" && <Link href={`/room?u=${encodeURIComponent(inviter.uid)}`} className="cta big">{inviter.name}에게 첫 편지 쓰기</Link>}
-        <Link href="/" className="ghost" style={{ minHeight: 56 }}>{result === "done" ? "나중에 쓸게요" : "처음으로"}</Link>
+        {result === "done" && store && <a href={store.url} className="cta big">📲 {store.label}</a>}
+        {result === "done" && <Link href={`/room?u=${encodeURIComponent(inviter.uid)}`} className={store ? "ghost" : "cta big"} style={store ? { minHeight: 56 } : undefined}>{store ? "앱 없이 여기서 바로 쓰기" : `${inviter.name}에게 첫 편지 쓰기`}</Link>}
+        {!store && <Link href="/" className="ghost" style={{ minHeight: 56 }}>{result === "done" ? "나중에 쓸게요" : "처음으로"}</Link>}
       </div>
     </main>
   );
