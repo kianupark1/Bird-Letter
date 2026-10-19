@@ -31,8 +31,8 @@ export function Sec({ h, children }: { h: string; children: ReactNode }) {
 
 /** 운영자 문의처. 아직 비어 있으면 그렇다고 솔직하게 알려요. */
 export function Contact() {
-  if (!OPERATOR.name || !OPERATOR.email) return <>운영자 이름과 문의 이메일은 정식 출시 전에 이곳에 채워 넣어요.</>;
-  return <>운영자: {OPERATOR.name}{"\n"}문의: {OPERATOR.email}</>;
+  if (!OPERATOR.name) return <>운영자 이름과 문의 이메일은 정식 출시 전에 이곳에 채워 넣어요.</>;
+  return <>운영자: {OPERATOR.name}{"\n"}문의: {OPERATOR.email || "문의 이메일은 정식 출시 전에 채워 넣어요."}</>;
 }
 
 /** 출시 전에 사람이 확인해야 할 항목(IS_BETA일 때만 보임) */

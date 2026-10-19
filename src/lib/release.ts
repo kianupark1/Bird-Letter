@@ -7,10 +7,10 @@ export const IS_BETA = true;
 
 export const OPERATOR = {
   /** 서비스 운영자(개인 또는 사업자) 이름 */
-  name: "",
+  name: "부르노소노",
   /** 문의·신고 대응 이메일 */
   email: "",
 };
 
 /** 법적 문서 초안 작성일 */
-export const LEGAL_DRAFT_DATE = "2026-10-06";
+export const LEGAL_DRAFT_DATE = "2026-10-19";
