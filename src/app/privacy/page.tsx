@@ -70,7 +70,6 @@ export default function Privacy() {
 
       <BetaChecklist
         items={[
-          "문의 이메일 채우기",
           "신고 기록의 보관 기간 정하기",
           "해외 이전 고지 항목(받는 곳, 국가, 항목, 목적, 기간)을 법에 맞게 정리하기",
           "만 14세 미만 확인 방법 정하기",
