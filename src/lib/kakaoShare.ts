@@ -1,5 +1,6 @@
 "use client";
 import { letterHref } from "./target";
+import { STORE } from "./release";
 
 /**
  * 카카오링크로 "카카오톡으로 보내기". 링크를 그냥 붙여넣으면 카카오톡 안 브라우저가 앱 열기를 막는 경우가 있어서,
@@ -74,7 +75,7 @@ export async function shareInviteToKakao(code: string, inviterName: string): Pro
         imageUrl: `${location.origin}/og.png`,
         link,
       },
-      buttons: [{ title: "친구 되기", link }],
+      buttons: [{ title: STORE.android || STORE.iosUrl ? "친구 되고 앱 받기" : "친구 되기", link }],
     });
     return true;
   } catch {

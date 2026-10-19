@@ -647,5 +647,16 @@ import { countUsers, providerOf, kstMidnight, readCount, lettersCountQuery, isAd
   eq("숫자판: 환경 변수 운영자", isAdmin("u9", adminFromEnv(" u8 , u9 ")), true);
 }
 
+import { storeFor, playUrl } from "../core/storeLinks.ts";
+{
+  const and = "Mozilla/5.0 (Linux; Android 14) Chrome/120", ios = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)";
+  eq("스토어: 출시 전엔 버튼 없음", storeFor(and, { android: false, iosUrl: "" }), null);
+  eq("스토어: 안드로이드 → 플레이", storeFor(and, { android: true, iosUrl: "" })?.url, playUrl());
+  eq("스토어: 플레이 주소에 앱 ID·초대 표시", playUrl().includes("id=com.saepyeonji.app") && playUrl().includes("utm_source%3Dinvite"), true);
+  eq("스토어: 아이폰은 주소가 있을 때만", [storeFor(ios, { android: true, iosUrl: "" }), storeFor(ios, { android: false, iosUrl: "https://apps.apple.com/x" })?.url].join("|"), "|https://apps.apple.com/x");
+  eq("스토어: 앱 안에서는 없음", storeFor(and + " SaePyeonjiApp/fcm", { android: true, iosUrl: "" }), null);
+  eq("스토어: 컴퓨터는 없음", storeFor("Mozilla/5.0 (Windows NT 10.0)", { android: true, iosUrl: "x" }), null);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

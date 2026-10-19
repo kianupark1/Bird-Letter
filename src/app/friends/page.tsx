@@ -16,6 +16,7 @@ import SwipeRow from "@/components/SwipeRow";
 import GearLink from "@/components/GearLink";
 import { roomHref } from "@/lib/room";
 import { buildThreads } from "../../../core/threads";
+import { STORE } from "@/lib/release";
 
 export default function FriendsPage() {
   return (
@@ -63,7 +64,8 @@ function Friends() {
   }, [state, ready, profile, reload, legacy]);
 
   const link = () => `${location.origin}/invite?c=${code}`;
-  const text = `${profile.nickname || "친구"}님이 새편지 친구로 초대했어요!`;
+  // 스토어에 앱이 올라간 뒤에는 "앱 받기"도 같이 알려요(링크를 누르면 친구가 되고, 그 화면에 앱 받기 버튼이 있어요)
+  const text = `${profile.nickname || "친구"}님이 새편지 친구로 초대했어요!${STORE.android || STORE.iosUrl ? " 링크를 누르면 친구가 되고 앱도 받을 수 있어요." : ""}`;
   const inviteKakao = async () => {
     if (!code) return;
     if (KAKAO_SHARE_READY && (await shareInviteToKakao(code, profile.nickname))) return;

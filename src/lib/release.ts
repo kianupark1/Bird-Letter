@@ -14,3 +14,10 @@ export const OPERATOR = {
 
 /** 법적 문서 초안 작성일 */
 export const LEGAL_DRAFT_DATE = "2026-10-19";
+
+/**
+ * 스토어에 앱이 올라간 뒤 켜요. 켜면 초대 링크를 누른 친구에게 "앱 받기" 버튼이 보여요(core/storeLinks.ts).
+ * - android: 구글 플레이에 공개(또는 공개 테스트)되면 true
+ * - iosUrl: 앱스토어 주소(예: https://apps.apple.com/kr/app/id0000000000), 없으면 ""
+ */
+export const STORE = { android: false, iosUrl: "" };
