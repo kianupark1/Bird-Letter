@@ -35,12 +35,17 @@ const pretendard = localFont({
 
 const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontScale)||"normal";if(s==="xlarge")s="large";if(s==="small"||s==="normal"||s==="large")document.documentElement.dataset.scale=s}catch(e){}`;
 
+// 서비스 워커가 폰에 담아 둔 화면을 바로 띄운 뒤 새 버전을 받아 오면 알려 줘요(public/sw.js).
+// 열자마자(6초 안, 아직 안 눌렀으면) 바로 새 버전으로 바꾸고, 그 뒤면 쓰던 글이 날아가지 않게 그대로 두고 다음에 열 때 새 버전이에요. 30초에 한 번까지만(되풀이 방지)
+const UPDATE_SCRIPT = `try{var t0=Date.now(),hit=false;addEventListener("pointerdown",function(){hit=true},true);var go=function(){try{var k="saepyeonji.swreload",l=+sessionStorage.getItem(k)||0;if(Date.now()-l<30000)return;sessionStorage.setItem(k,String(Date.now()))}catch(e){}location.reload()};navigator.serviceWorker&&navigator.serviceWorker.addEventListener("message",function(e){if(!e.data||e.data.type!=="new-version")return;if(!hit&&Date.now()-t0<6000)go()})}catch(e){}`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // 글씨 크기는 그리기 전에 정해요(열 때 화면이 커졌다 작아지며 들썩이지 않게). 기본은 "보통"
     <html lang="ko" data-scale="normal" className={pretendard.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCALE_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: UPDATE_SCRIPT }} />
       </head>
       <body>
         {children}
