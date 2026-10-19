@@ -20,10 +20,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - run: npm ci
-      - name: 안드로이드 프로젝트 만들기
-        run: |
-          npx cap add android
-          npx cap sync android
+      - name: 안드로이드 프로젝트·아이콘 준비
+        run: bash scripts/android-prepare.sh
       - name: 시험용 앱 파일(APK) 만들기
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon

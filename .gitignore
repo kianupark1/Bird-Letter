@@ -16,3 +16,9 @@ toss/next-env.d.ts
 
 # 타입 검사 임시 파일
 *.tsbuildinfo
+
+# 스토어 앱 프로젝트는 빌드 때마다 새로 만들어요(scripts/android-prepare.sh)
+/android/
+/ios/
+*.jks
+*.keystore

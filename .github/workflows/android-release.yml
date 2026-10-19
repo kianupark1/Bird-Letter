@@ -1,0 +1,54 @@
+# 구글 플레이에 올릴 안드로이드 출시 파일(AAB)을 만들어요.
+# 직접 실행: GitHub → Actions → "안드로이드 출시 파일 만들기" → Run workflow
+# 업로드 키(서명)는 저장소 Actions 비밀 값 4개로 넣어요: ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+# 비밀 값이 없으면 서명 없는 파일만 만들어요(빌드가 되는지 시험용, 구글 플레이에는 못 올림).
+name: 안드로이드 출시 파일 만들기
+
+on:
+  workflow_dispatch:
+
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - name: 안드로이드 프로젝트·아이콘·버전 준비
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+        run: bash scripts/android-prepare.sh
+      - name: 출시 파일(AAB) 만들기
+        working-directory: android
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            ./gradlew bundleRelease --no-daemon \
+              -Pandroid.injected.signing.store.file="$RUNNER_TEMP/upload.jks" \
+              -Pandroid.injected.signing.store.password="$STORE_PASS" \
+              -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEY_PASS"
+            rm -f "$RUNNER_TEMP/upload.jks"
+          else
+            echo "::warning::업로드 키 비밀 값이 없어 서명 없는 파일을 만들어요(구글 플레이에는 못 올림)."
+            ./gradlew bundleRelease --no-daemon
+          fi
+          ls -la app/build/outputs/bundle/release/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: saepyeonji-android-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/*.aab
+          retention-days: 14
