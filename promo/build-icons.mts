@@ -2,6 +2,7 @@
  * 앱 아이콘 생성기: npx tsx promo/build-icons.mts
  * 편지를 문 까치가 날아가는 모습을 날개를 활짝 펼친 모습으로 직접 그려 다홍 바탕에 놓고, 구름을 깔아 "날아가는 느낌"을 줍니다. Playwright(Chromium)로 PNG를 만듭니다.
  * → public/icon-192.png, icon-512.png, icon-512-maskable.png, apple-icon.png, src/app/{icon,apple-icon}.png
+ * → assets/(스토어 앱용 원본, @capacitor/assets가 안드로이드·아이폰 크기로 나눔): icon-only, icon-foreground, icon-background, splash, splash-dark
  */
 import { createRequire } from "node:module";
 import { copyFileSync, mkdirSync } from "node:fs";
@@ -58,25 +59,40 @@ const scene = (k: number) => `
   <path d="M157 92 L182 100 L157 101 Z" fill="${GOLD}"/>
 </g>`;
 
-const html = (size: number, k: number, rounded: boolean) => `<!doctype html><meta charset="utf-8"><style>
+const GRAD = "linear-gradient(160deg,#D2552A 0%,#C1481F 55%,#A83B17 100%)";
+const html = (size: number, k: number, rounded: boolean, bg = GRAD, art = true) => `<!doctype html><meta charset="utf-8"><style>
 *{margin:0;box-sizing:border-box}html,body{width:${size}px;height:${size}px;background:transparent}
-.bg{position:relative;width:${size}px;height:${size}px;background:linear-gradient(160deg,#D2552A 0%,#C1481F 55%,#A83B17 100%);overflow:hidden;${rounded ? `border-radius:${Math.round(size * 0.22)}px;` : ""}}
+.bg{position:relative;width:${size}px;height:${size}px;background:${bg};overflow:hidden;${rounded ? `border-radius:${Math.round(size * 0.22)}px;` : ""}}
 .bg svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-</style><div class="bg"><svg viewBox="0 0 200 200">${scene(k)}</svg></div>`;
+</style><div class="bg">${art ? `<svg viewBox="0 0 200 200">${scene(k)}</svg>` : ""}</div>`;
+// 시작 화면: 한지(또는 먹빛) 바탕 가운데에 둥근 아이콘 하나
+const splash = (size: number, page: string) => `<!doctype html><meta charset="utf-8"><style>
+*{margin:0}html,body{width:${size}px;height:${size}px;background:${page};display:grid;place-items:center}
+.i{width:${Math.round(size * 0.22)}px;height:${Math.round(size * 0.22)}px;border-radius:22%;background:${GRAD};overflow:hidden}
+.i svg{width:100%;height:100%;display:block}
+</style><div class="i"><svg viewBox="0 0 200 200">${scene(0.9)}</svg></div>`;
 
 mkdirSync(resolve(root, "public"), { recursive: true });
 const browser = await chromium.launch();
-const make = async (name: string, size: number, pct: number, rounded: boolean) => {
+const shot = async (path: string, size: number, content: string) => {
   const page = await browser.newPage({ viewport: { width: size, height: size }, deviceScaleFactor: 1 });
-  await page.setContent(html(size, pct, rounded));
-  await page.screenshot({ path: resolve(root, "public", `${name}.png`), omitBackground: true });
+  await page.setContent(content);
+  await page.screenshot({ path: resolve(root, path), omitBackground: true });
   await page.close();
-  console.log(name);
+  console.log(path);
 };
+const make = (name: string, size: number, pct: number, rounded: boolean) => shot(`public/${name}.png`, size, html(size, pct, rounded));
 await make("icon-192", 192, 0.9, true);
 await make("icon-512", 512, 0.9, true);
 await make("icon-512-maskable", 512, 0.7, false); // 모서리가 잘려도 되도록 그림을 작게, 배경은 꽉 채움
 await make("apple-icon", 180, 0.9, false);
+// 스토어 앱용 원본(1024px). 안드로이드 둥근·물방울 아이콘은 가장자리가 잘려서 앞 그림(foreground)을 작게.
+mkdirSync(resolve(root, "assets"), { recursive: true });
+await shot("assets/icon-only.png", 1024, html(1024, 0.9, false));
+await shot("assets/icon-foreground.png", 1024, html(1024, 0.62, false, "transparent"));
+await shot("assets/icon-background.png", 1024, html(1024, 0.9, false, GRAD, false));
+await shot("assets/splash.png", 2732, splash(2732, "#FBF3E4"));
+await shot("assets/splash-dark.png", 2732, splash(2732, "#1A1613"));
 await browser.close();
 copyFileSync(resolve(root, "public/apple-icon.png"), resolve(root, "src/app/apple-icon.png"));
 copyFileSync(resolve(root, "public/icon-192.png"), resolve(root, "src/app/icon.png"));
