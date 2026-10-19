@@ -60,7 +60,7 @@ function Penpal() {
   if (!profile.penpalAgreed) {
     return (
       <main className="app penpal">
-        <header className="sendhead"><Link href="/friends" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 찾기</h1></header>
+        <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 찾기</h1></header>
         <div className="ppcard"><BirdIcon id="crane" size={64} letter /><div><b>어느 누군가에게 새 편지 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
         <h2 className="friendh">펜팔 약속 (처음 한 번)</h2>
         <ul className="pprules">
@@ -105,7 +105,7 @@ function Penpal() {
 
   return (
     <main className="app penpal">
-      <header className="sendhead"><Link href="/friends" className="roomback" aria-label="뒤로">‹</Link><div><h1 style={{ margin: 0 }}>{chosen && chosen !== "no" ? `${chosen.name}에게 쓰는 편지` : "누군가에게 쓰는 편지"}</h1><div className="greet">{getBird(bird).name}가 어딘가로 데려다줘요 · 나는 &quot;{myName}&quot;</div></div></header>
+      <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><div><h1 style={{ margin: 0 }}>{chosen && chosen !== "no" ? `${chosen.name}에게 쓰는 편지` : "누군가에게 쓰는 편지"}</h1><div className="greet">{getBird(bird).name}가 어딘가로 데려다줘요 · 나는 &quot;{myName}&quot;</div></div></header>
       {chosen === "no" && <div className="bubble" style={{ fontSize: 16 }}>이 분은 지금 모르는 사람의 편지를 받지 않아요. 대신 랜덤으로 날려 보낼게요 🕊</div>}
       {!(chosen && chosen !== "no") && <h2 className="friendh" style={{ marginTop: 6 }}>이런 사람에게 닿았으면 <small>(고르지 않아도 돼요)</small></h2>}
       {!(chosen && chosen !== "no") && <div className="pptags" role="group" aria-label="관심사">
