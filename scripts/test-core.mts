@@ -658,5 +658,14 @@ import { storeFor, playUrl } from "../core/storeLinks.ts";
   eq("스토어: 컴퓨터는 없음", storeFor("Mozilla/5.0 (Windows NT 10.0)", { android: true, iosUrl: "x" }), null);
 }
 
+import { PENPAL_CITIES, poolIn } from "../core/penpal.ts";
+{
+  eq("펜팔 도시: 서울은 하나로(구 없음)", PENPAL_CITIES.filter((c) => c === "seoul").length === 1 && !PENPAL_CITIES.some((c) => c.startsWith("seoul-") || c.endsWith("-gu")), true);
+  eq("펜팔 도시: 부산·제주 포함", PENPAL_CITIES.includes("busan") && PENPAL_CITIES.includes("jeju"), true);
+  const pool = [{ uid: "a", region: "busan" }, { uid: "b", region: "jeju" }];
+  eq("펜팔 어디로: 고른 도시만", poolIn(pool, "jeju").map((p) => p.uid).join(), "b");
+  eq("펜팔 어디로: 어디든이면 모두", poolIn(pool, null).length, 2);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

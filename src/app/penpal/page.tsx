@@ -14,7 +14,7 @@ import { birdFx } from "@/lib/chirp";
 import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
 import { listBlocked } from "@/lib/firebase/remote";
 import { listPool, readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
-import { PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpal } from "../../../core/penpal";
+import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpal, poolIn } from "../../../core/penpal";
 
 /** 펜팔: 모르는 누군가에게 새 날려 보내기 (시안 v5-1·v5-2) */
 export default function PenpalPage() {
@@ -43,6 +43,8 @@ function Penpal() {
   const [pickBird, setPickBird] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  // 어디로 날려 보낼지(도시까지만). 비워 두면 어디든
+  const [where, setWhere] = useState<string>("");
 
   const city = cityOf(profile.homePlace);
   const myName = profile.penpalName?.trim() || penpalName(cityLabel(city), profile.avatarBird || "magpie");
@@ -91,8 +93,11 @@ function Penpal() {
       for (const r of received) exclude.add(r.fromUid);
       for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) exclude.add(k.slice(2));
       const picked = chosen && chosen !== "no" && chosen.uid !== me.uid ? chosen : null;
-      const target = picked ?? pickPenpal(pool, me.uid, exclude, tags);
-      if (!target) { setNote("지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊"); setBusy(false); return; }
+      const target = picked ?? pickPenpal(poolIn(pool, where || null), me.uid, exclude, tags);
+      if (!target) {
+        setNote(where ? `지금 ${cityLabel(where)}에는 펜팔 편지를 기다리는 사람이 없어요. "어디든"으로 바꿔 보세요 🕊` : "지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊");
+        setBusy(false); return;
+      }
       const toName = (picked?.name ?? pool.find((p) => p.uid === target.uid)?.name ?? "어딘가의 새").slice(0, 20);
       await add({ to: toName, toUid: target.uid, routeId: penpalRoute(city, target.region), birdId: bird, message: masked.text.trim(), fromName: myName, penpal: true });
       birdFx("depart", profile.chirp !== false);
@@ -107,6 +112,15 @@ function Penpal() {
     <main className="app penpal">
       <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><div><h1 style={{ margin: 0 }}>{chosen && chosen !== "no" ? `${chosen.name}에게 쓰는 편지` : "누군가에게 쓰는 편지"}</h1><div className="greet">{getBird(bird).name}가 어딘가로 데려다줘요 · 나는 &quot;{myName}&quot;</div></div></header>
       {chosen === "no" && <div className="bubble" style={{ fontSize: 16 }}>이 분은 지금 모르는 사람의 편지를 받지 않아요. 대신 랜덤으로 날려 보낼게요 🕊</div>}
+      {!(chosen && chosen !== "no") && (
+        <label className="ppwhere">
+          <span>어디로 날려 보낼까요?</span>
+          <select value={where} onChange={(e) => setWhere(e.target.value)} aria-label="어디로 보낼지">
+            <option value="">🎲 어디든</option>
+            {PENPAL_CITIES.map((c) => <option key={c} value={c}>{cityLabel(c)}</option>)}
+          </select>
+        </label>
+      )}
       {!(chosen && chosen !== "no") && <h2 className="friendh" style={{ marginTop: 6 }}>이런 사람에게 닿았으면 <small>(고르지 않아도 돼요)</small></h2>}
       {!(chosen && chosen !== "no") && <div className="pptags" role="group" aria-label="관심사">
         {PENPAL_TAGS.map((t) => {
@@ -120,7 +134,7 @@ function Penpal() {
       {pickBird && <div style={{ display: "flex", justifyContent: "center" }}><BirdPicker value={bird} onChange={(id) => { setBird(id); setPickBird(false); }} /></div>}
       {note && <div className="small" role="status" style={{ textAlign: "center" }}>{note}</div>}
       <div className="dock">
-        <button type="button" className="cta big" disabled={!msg.trim() || busy || (!!toUid && chosen === null)} onClick={send}><BirdIcon id={bird} size={34} /> {busy ? "날려 보내는 중…" : chosen && chosen !== "no" ? `${chosen.name}에게 날려 보내기` : "어딘가로 날려 보내기"}</button>
+        <button type="button" className="cta big" disabled={!msg.trim() || busy || (!!toUid && chosen === null)} onClick={send}><BirdIcon id={bird} size={34} /> {busy ? "날려 보내는 중…" : chosen && chosen !== "no" ? `${chosen.name}에게 날려 보내기` : where ? `${cityLabel(where)}의 누군가에게 날려 보내기` : "어딘가로 날려 보내기"}</button>
       </div>
     </main>
   );
