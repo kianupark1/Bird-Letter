@@ -14,7 +14,7 @@ import { cityLabel, cityOf, penpalName } from "../../../core/penpal";
 import { KAKAO_LOGIN_READY, isKakaoLinked, startKakaoLogin } from "@/lib/firebase/kakao";
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
-import { PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
+import { isAppPush, PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
 import { openInstallGuide } from "@/lib/install";
 import { playChirp } from "@/lib/chirp";
 import { getBird } from "@/lib/birds";
@@ -270,9 +270,11 @@ export default function Settings() {
                 <div className="note">누른 뒤 <b>홈 화면으로 나가세요</b>. 12초쯤 뒤에 시험 알림이 와요.</div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {!isAppPush() && (
                 <button className="chip" onClick={async () => setTestMsg((await showLocalTest()) ? "이 폰에서 알림을 띄웠어요. 위쪽에 보이나요?" : "이 폰에서 알림을 띄우지 못했어요. 폰 설정에서 이 앱의 알림 허용을 확인해 주세요.")}>
                   이 폰에서 바로 시험
                 </button>
+                )}
                 <button
                   className="chip"
                   onClick={async () => {

@@ -243,6 +243,13 @@
 - ⑤ 구글 가입은 D-U-N-S 번호가 온 뒤 사업자 계정으로(개인 계정으로 먼저 가입하지 말 것).
 - ⑥ 스토어 등록 글·데이터 보안 양식·콘텐츠 등급 답 초안: `docs/스토어-등록.md`. **출시 파일 자동 빌드**: `.github/workflows/android-release.yml`(수동 실행, AAB, versionCode=실행 번호, 업로드 키 비밀 값 4개 `ANDROID_KEYSTORE_BASE64/…PASSWORD/KEY_ALIAS/KEY_PASSWORD`가 없으면 서명 없는 시험 파일), 준비 스크립트 `scripts/android-prepare.sh`(cap add → `@capacitor/assets`로 아이콘·시작 화면 → 버전), 아이콘·시작 화면 원본 `assets/`(`npx tsx promo/build-icons.mts`가 만듦). `android/`·`ios/`·키 파일은 저장소에 안 올림(.gitignore). 남은 것: 업로드 키 만들기·비밀 값 넣기(구글 계정 생긴 뒤, 키는 채팅에 안 붙이고 대표님만 여는 파일로), 화면 사진, 심사용 시험 계정(대표님), 앱 푸시(FCM).
 
+## 앱 알림(스토어 앱)·화면 사진 (2026-10-19, 대표님: "화면사진이랑 앱 알림 작업 진행해줘")
+
+- **앱 알림(안드로이드, FCM)**: 스토어 앱(웹을 감싼 Capacitor) 안에서는 웹 푸시가 안 돼서 FCM 기기 토큰을 씀. 폰 `src/lib/push.ts`(`isAppPush`·`nativeEnable`·`initAppPush`: 허락 → 토큰 → `users/{uid}/push/sub`에 `{fcm, at}` → 알림 누르면 그 편지로), 요청 검사 `core/pushPayload.ts`(`{fcm}` 받음·`subKey`), 서버 `api/push/deliver`가 FCM HTTP v1로 보냄(열쇠는 Vercel `FIREBASE_SERVICE_ACCOUNT_JSON` 그대로, 권한 「미확인」), 규칙 push/sub에 `fcm` 칸(에뮬레이터 122). 알림 줄 흰 아이콘 `assets/notify-icon.png` → `ic_stat_notify`. 앱 안에서는 "앱처럼 설치" 카드 안 보임(`install.ts`).
+- **켜지는 조건**: 앱 파일을 만들 때 `native/google-services.json`이 있어야 함(Firebase 콘솔에서 안드로이드 앱 `com.saepyeonji.app` 등록 → 받은 파일, 비밀 값 아님). 있으면 앱이 이름표 끝에 `SaePyeonjiApp/fcm`(`capacitor.config.ts appendUserAgent`, `FCM_READY`)을 붙이고 그때만 알림을 켬(없이 만든 시험 앱이 멈추지 않게). **대표님 몫: Firebase 콘솔에서 안드로이드 앱 등록 후 파일 전달(대기)**. 아이폰 앱 알림은 애플 가입 뒤(APNs).
+- **화면 사진**: `promo/store/phone-*.png` 5장(1080×1920), `node promo/build-store-shots.mjs`.
+- 고침: 하루 넘게 걸리는 편지의 도착 시각이 날짜 없이 "오후 8시"로만 보이던 것 → `core/schedule.ts whenText`(내일·어제·날짜), 첫 소개 문구 "실제 새의 속도만큼" → "실제 새의 비행 속도를 바탕으로"(홍보 문구 규칙). test:core 332, e2e-local 27.
+
 ## 내일 이어갈 것 (2026-10-17 밤, 대표님: "여기부터 내일 가보자") — 옛 기록
 
 1. **7차 시안 확정 받기**(`docs/시안/images/v7-*.png`): 새티콘 16종 앱에 붙이기(대화방 [😊]·새티콘만 보내기), 친구 탭 "한 줄 소개" 넣을지, 친구 목록 아래 새티콘 줄 넣을지 — 대표님 답 대기.

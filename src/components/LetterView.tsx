@@ -18,11 +18,11 @@ import BirdIcon from "@/components/BirdIcon";
 import PushPrompt from "@/components/PushPrompt";
 import LetterReveal from "@/components/Unroll";
 import { savePolaroid } from "@/lib/photo";
-import { dateTimeText, isScheduled } from "../../core/schedule";
+import { dateTimeText, isScheduled, whenText } from "../../core/schedule";
 import InstallCard from "@/components/InstallCard";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 
-const clock = (ms: number) => new Date(ms).toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" });
+const clock = (ms: number) => whenText(ms); // 오늘이 아니면 "내일"·날짜까지
 
 /** 링크로 들어온 받는 사람의 화면에 필요한 정보 */
 type Incoming = { state: "loading" } | { state: "missing" } | { state: "ok"; meta: remote.Meta };

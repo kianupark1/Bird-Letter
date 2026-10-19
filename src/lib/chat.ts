@@ -3,7 +3,7 @@ import { getRoute } from "./routes";
 import { elapsedAtFraction, mishapMessage } from "./flight";
 import { letterProgress, type Letter } from "./letters";
 import type { Meta } from "./firebase/remote";
-import { clockText, isScheduled } from "../../core/schedule";
+import { clockText, isScheduled, whenText } from "../../core/schedule";
 import { withEulReul, withIGa } from "./korean";
 import type { ThreadEntry } from "../../core/threads";
 import { storiesFor } from "../../core/stories";
@@ -47,7 +47,7 @@ export function buildChat(entries: Entry[], now: number): ChatItem[] {
 
 /** 편지 한 통의 비행 기록: 출발 → 지난 곳(🏮 스탬프) → 이야기 → 사고 → 도착(또는 도착 예정) */
 export function letterEvents(e: Entry, now: number): FlightEvent[] {
-  if (isScheduled(e.at, now)) return [{ key: "plan", t: e.at, icon: "⏰", text: "출발 예정", sub: clockText(e.at), future: true }];
+  if (isScheduled(e.at, now)) return [{ key: "plan", t: e.at, icon: "⏰", text: "출발 예정", sub: whenText(e.at, now), future: true }];
   const l = asLike(e);
   const bird = getBird(l.birdId), route = getRoute(l.routeId);
   const pr = letterProgress(l, now);
@@ -77,7 +77,7 @@ export function letterEvents(e: Entry, now: number): FlightEvent[] {
   out.sort((a, b) => a.t - b.t);
   out.push(pr.done
     ? { key: "end", t: arriveAt, icon: "🎉", text: `${route.to.name}에 도착했어요`, sub: clockText(arriveAt) }
-    : { key: "eta", t: arriveAt, icon: "⏳", text: `${route.to.name} 도착 예정`, sub: clockText(arriveAt), future: true });
+    : { key: "eta", t: arriveAt, icon: "⏳", text: `${route.to.name} 도착 예정`, sub: whenText(arriveAt, now), future: true });
   return out;
 }
 

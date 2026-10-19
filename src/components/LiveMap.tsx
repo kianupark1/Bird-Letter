@@ -4,7 +4,7 @@ import JourneyMap, { mapBase } from "@/components/JourneyMap";
 import { routePosition, type Route } from "@/lib/routes";
 import { getBird } from "@/lib/birds";
 import { formatMinutes } from "@/lib/geo";
-import { clockText } from "../../core/schedule";
+import { whenText } from "../../core/schedule";
 
 /**
  * 지도 크게 보기(2026-10-17, 대표님: "더 자세히, 멋지게, 계속 보고 싶게"):
@@ -213,7 +213,7 @@ export default function LiveMap({ route, birdId, progress, title, onClose }: {
         {pr.p < 1 ? (
           <>
             <div className="lm-row">📍 {pos.passed?.name ? `${pos.passed.name}을(를) 지나` : "출발해서"} {next ? <><b>{next.name}</b>(으)로 가는 중</> : "날아가는 중"}</div>
-            {next && <div className="lm-row">⏱ {next.name}까지 약 {formatMinutes(nextMin)} · 도착 예정 <b>{clockText(pr.arriveAt)}</b></div>}
+            {next && <div className="lm-row">⏱ {next.name}까지 약 {formatMinutes(nextMin)} · 도착 예정 <b>{whenText(pr.arriveAt)}</b></div>}
             {pr.stalled && <div className="lm-row">🌳 잠깐 쉬어 가는 중이에요(곧 다시 날아요)</div>}
           </>
         ) : <div className="lm-row">💌 편지가 도착했어요!</div>}

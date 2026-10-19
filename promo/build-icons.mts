@@ -14,12 +14,12 @@ const { chromium } = req("playwright");
 const root = resolve(import.meta.dirname, "..");
 // 날개를 활짝 펼친 까치가 편지를 물고 구름 사이를 날아가는 그림(200x200). 색은 앱의 오방색 그대로.
 const NAVY = "#1E3A5C", DARK = "#142A44", GREEN = "#1B6E5C", CREAM = "#FBF3E4", GOLD = "#E0A83C", RED = "#C1481F";
-const scene = (k: number) => `
-<g fill="${CREAM}">
+const scene = (k: number, clouds = true) => `
+${clouds ? "" : "<!--"}<g fill="${CREAM}">
   <g opacity=".30"><circle cx="34" cy="150" r="14"/><circle cx="52" cy="144" r="18"/><circle cx="72" cy="152" r="13"/><rect x="26" y="150" width="56" height="14" rx="7"/></g>
   <g opacity=".22"><circle cx="150" cy="40" r="10"/><circle cx="164" cy="34" r="13"/><circle cx="180" cy="42" r="9"/><rect x="142" y="40" width="46" height="11" rx="5.5"/></g>
   <g opacity=".18"><circle cx="150" cy="176" r="9"/><circle cx="164" cy="171" r="12"/><rect x="142" y="176" width="40" height="10" rx="5"/></g>
-</g>
+</g>${clouds ? "" : "-->"}
 <g transform="translate(94 104) scale(${k}) translate(-104 -100)">
   <!-- 먼 쪽 날개(위로 솟음) -->
   <path d="M98 102 C102 62 112 30 132 4 C140 34 134 72 116 106 Z" fill="${DARK}"/>
@@ -93,6 +93,8 @@ await shot("assets/icon-foreground.png", 1024, html(1024, 0.62, false, "transpar
 await shot("assets/icon-background.png", 1024, html(1024, 0.9, false, GRAD, false));
 await shot("assets/splash.png", 2732, splash(2732, "#FBF3E4"));
 await shot("assets/splash-dark.png", 2732, splash(2732, "#1A1613"));
+// 안드로이드 알림 줄의 작은 아이콘: 흰색 실루엣만(투명 바탕). 구름은 빼요.
+await shot("assets/notify-icon.png", 96, `<!doctype html><style>*{margin:0}html,body{width:96px;height:96px;background:transparent}svg{width:96px;height:96px;display:block;filter:brightness(0) invert(1)}</style><svg viewBox="0 0 200 200">${scene(1, false)}</svg>`);
 await browser.close();
 copyFileSync(resolve(root, "public/apple-icon.png"), resolve(root, "src/app/apple-icon.png"));
 copyFileSync(resolve(root, "public/icon-192.png"), resolve(root, "src/app/icon.png"));

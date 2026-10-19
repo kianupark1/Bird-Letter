@@ -3,15 +3,22 @@
  * 앱을 닫아도 오는 알림(웹 푸시)의 브라우저 쪽.
  * 켜기 → 서비스 워커 등록 + 알림 허용 + 구독 → 편지가 날아가는 동안 도착·경유지 시각마다 알림을 서버에 예약해요.
  * 서버 쪽은 src/app/api/push/*, 설정 방법은 docs/푸시-설정.md 에 있어요.
+ * 스토어 앱(안드로이드)은 웹 푸시를 못 써서 FCM 기기 토큰으로 같은 예약 길을 써요(nativeEnable 등).
  */
 import { useCallback, useEffect, useState } from "react";
 import { IS_TOSS } from "./target";
-import type { PushPayload, PushSub } from "../../core/pushPayload";
+import { isNativeSub, type PushPayload, type PushSub } from "../../core/pushPayload";
 
 // 값 앞뒤의 보이지 않는 글자(BOM)·공백은 걸러 써요
 const PUBLIC_KEY = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? "").replace(/^﻿/, "").trim();
+/**
+ * 스토어 앱(안드로이드) 안에서 열렸는지. 앱 파일을 만들 때 FCM 설정(google-services.json)이 들어 있으면
+ * 앱이 브라우저 이름표 끝에 "SaePyeonjiApp/fcm"을 붙여요(capacitor.config.ts). 설정 없이 만든 시험 앱은 알림을 켜지 않아요.
+ */
+export const isAppPush = () =>
+  typeof window !== "undefined" && (window as any).Capacitor?.getPlatform?.() === "android" && / SaePyeonjiApp\/fcm/.test(navigator.userAgent);
 /** 서버에 푸시 키가 설정돼 있는지(없으면 "준비 중"으로 보여요) */
-export const PUSH_CONFIGURED = !IS_TOSS && PUBLIC_KEY.length > 0;
+export const PUSH_CONFIGURED = !IS_TOSS && (PUBLIC_KEY.length > 0 || isAppPush());
 
 export type PushState = "unsupported" | "needs-install" | "default" | "denied" | "enabled";
 
@@ -25,6 +32,7 @@ const isStandalone = () => (navigator as any).standalone === true || window.matc
 export function getStoredSub(): PushSub | null {
   try {
     const s = JSON.parse(localStorage.getItem(SUB_KEY) || "null");
+    if (s && typeof s.fcm === "string") return isAppPush() ? { fcm: s.fcm } : null;
     return s && typeof s.endpoint === "string" && s.keys?.p256dh && s.keys?.auth ? s : null;
   } catch { return null; }
 }
@@ -38,6 +46,7 @@ function urlBase64ToUint8Array(b64: string) {
 
 export async function detectState(): Promise<PushState> {
   if (!PUSH_CONFIGURED) return "unsupported";
+  if (isAppPush()) return nativeState();
   const capable = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
   if (!capable) return isIos() && !isStandalone() ? "needs-install" : "unsupported";
   if (Notification.permission === "denied") return "denied";
@@ -64,7 +73,62 @@ async function isStaleSub(): Promise<boolean> {
 
 const notify = () => { try { window.dispatchEvent(new Event(EVENT)); } catch {} };
 
+/* ---------- 스토어 앱(안드로이드): FCM 기기 토큰 ---------- */
+const plugin = () => import("@capacitor/push-notifications").then((m) => m.PushNotifications);
+
+async function nativeState(): Promise<PushState> {
+  try {
+    const p = await (await plugin()).checkPermissions();
+    if (p.receive === "denied") return "denied";
+    return p.receive === "granted" && getStoredSub() ? "enabled" : "default";
+  } catch { return "unsupported"; }
+}
+
+async function nativeEnable(): Promise<PushState> {
+  try {
+    const P = await plugin();
+    let perm = await P.checkPermissions();
+    if (perm.receive !== "granted") perm = await P.requestPermissions();
+    if (perm.receive !== "granted") return perm.receive === "denied" ? "denied" : "default";
+    const hs: { remove: () => Promise<void> }[] = [];
+    const token = await new Promise<string>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("timeout")), 20_000);
+      P.addListener("registration", (r) => { clearTimeout(t); resolve(r.value); }).then((h) => hs.push(h));
+      P.addListener("registrationError", () => { clearTimeout(t); reject(new Error("registration")); }).then((h) => hs.push(h));
+      P.register().catch(reject);
+    }).finally(() => hs.forEach((h) => h.remove().catch(() => {})));
+    localStorage.setItem(SUB_KEY, JSON.stringify({ fcm: token }));
+    localStorage.removeItem(SCHED_KEY);
+    syncSubToServer();
+    notify();
+    return "enabled";
+  } catch { return "default"; }
+}
+
+let tapReady = false;
+/** 알림을 누르면 그 편지로 가요(스토어 앱). 토큰이 바뀌면 서버에 다시 맡겨요. 앱이 열릴 때 한 번 불러요. */
+export function initAppPush() {
+  if (tapReady || !isAppPush()) return;
+  tapReady = true;
+  plugin().then((P) => {
+    P.addListener("pushNotificationActionPerformed", (a) => {
+      const url = a.notification?.data?.url;
+      if (typeof url === "string" && url.startsWith("/")) window.location.href = url;
+    });
+    P.addListener("registration", (r) => {
+      const cur = getStoredSub();
+      if (cur && isNativeSub(cur) && cur.fcm !== r.value) {
+        try { localStorage.setItem(SUB_KEY, JSON.stringify({ fcm: r.value })); } catch {}
+        syncSubToServer();
+      }
+    });
+    // 이미 켜 둔 폰은 열 때마다 토큰을 새로 확인해요(바뀌었으면 위에서 다시 맡김)
+    if (getStoredSub()) P.checkPermissions().then((p) => { if (p.receive === "granted") P.register().catch(() => {}); }).catch(() => {});
+  }).catch(() => {});
+}
+
 export async function enablePush(): Promise<PushState> {
+  if (isAppPush()) return nativeEnable();
   try {
     const reg = await navigator.serviceWorker.register("/sw.js");
     await navigator.serviceWorker.ready;
@@ -85,7 +149,8 @@ export async function enablePush(): Promise<PushState> {
 }
 
 export async function disablePush() {
-  try {
+  if (isAppPush()) await plugin().then((P) => P.unregister()).catch(() => {});
+  else try {
     const reg = await navigator.serviceWorker.getRegistration("/sw.js");
     await (await reg?.pushManager.getSubscription())?.unsubscribe();
   } catch {}

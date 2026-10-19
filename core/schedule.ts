@@ -46,3 +46,10 @@ export function clockText(ms: number): string {
   const h = d.getHours(), m = d.getMinutes();
   return `${h < 12 ? "오전" : "오후"} ${h % 12 === 0 ? 12 : h % 12}시${m ? ` ${m}분` : ""}`;
 }
+
+/** 시각을 날짜와 함께 짧게: 오늘 "오후 3시 12분", 내일 "내일 오전 4시", 어제 "어제 …", 그 밖은 날짜까지 */
+export function whenText(ms: number, now = Date.now()): string {
+  const day = (t: number) => { const d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+  const diff = Math.round((day(ms) - day(now)) / 86400000);
+  return diff === 0 ? clockText(ms) : diff === 1 ? `내일 ${clockText(ms)}` : diff === -1 ? `어제 ${clockText(ms)}` : dateTimeText(ms);
+}

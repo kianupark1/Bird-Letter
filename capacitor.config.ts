@@ -13,6 +13,8 @@ const config: CapacitorConfig = {
     url: "https://bird-letter.vercel.app",
     cleartext: false,
   },
+  // 웹이 "스토어 앱 안"인지 알 수 있게 브라우저 이름표 끝에 붙여요. FCM 설정이 들어간 빌드만 "/fcm"(src/lib/push.ts isAppPush)
+  appendUserAgent: process.env.FCM_READY === "1" ? "SaePyeonjiApp/fcm" : "SaePyeonjiApp",
   ios: { contentInset: "always", backgroundColor: "#FBF3E4" },
   android: { backgroundColor: "#FBF3E4" },
 };

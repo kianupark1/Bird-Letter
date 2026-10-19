@@ -14,7 +14,7 @@ import { letterProgress, useLetters, useNow } from "@/lib/letters";
 import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { useProfile } from "@/lib/settings";
 import { arrivalText, passingText } from "@/lib/notifyText";
-import { hasPushSub, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
+import { hasPushSub, initAppPush, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
 import { birdFx } from "@/lib/chirp";
@@ -105,6 +105,7 @@ export default function Notifier() {
 
   // 푸시가 켜져 있으면 내 알림 주소를 서버에 맡겨 둔다(친구가 나에게 보낸 편지의 도착 알림용)
   useEffect(() => { if (pushState === "enabled") syncSubToServer(); }, [pushState]);
+  useEffect(() => { initAppPush(); }, []);
 
   // 푸시가 켜져 있으면, 아직 도착하지 않은 편지의 도착·경유지 알림을 서버에 예약해요(이미 예약한 건 건너뜀)
   useEffect(() => {

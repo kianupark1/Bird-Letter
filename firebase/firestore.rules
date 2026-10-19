@@ -24,12 +24,15 @@ service cloud.firestore {
       match /push/{docId} {
         allow read: if signedIn() && docId == 'sub'
           && (request.auth.uid == uid || exists(/databases/$(database)/documents/users/$(uid)/friends/$(request.auth.uid)));
+        // 웹 푸시 구독(endpoint·p256dh·auth) 또는 스토어 앱의 기기 토큰(fcm) 둘 중 하나
         allow create, update: if signedIn() && request.auth.uid == uid && docId == 'sub'
-          && request.resource.data.keys().hasOnly(['endpoint', 'p256dh', 'auth', 'at'])
-          && request.resource.data.endpoint is string && request.resource.data.endpoint.size() <= 600
-          && request.resource.data.endpoint.matches('https://.*')
-          && request.resource.data.p256dh is string && request.resource.data.p256dh.size() <= 200
-          && request.resource.data.auth is string && request.resource.data.auth.size() <= 60;
+          && ((request.resource.data.keys().hasOnly(['endpoint', 'p256dh', 'auth', 'at'])
+              && request.resource.data.endpoint is string && request.resource.data.endpoint.size() <= 600
+              && request.resource.data.endpoint.matches('https://.*')
+              && request.resource.data.p256dh is string && request.resource.data.p256dh.size() <= 200
+              && request.resource.data.auth is string && request.resource.data.auth.size() <= 60)
+            || (request.resource.data.keys().hasOnly(['fcm', 'at'])
+              && request.resource.data.fcm is string && request.resource.data.fcm.size() >= 20 && request.resource.data.fcm.size() <= 4096));
         allow delete: if signedIn() && request.auth.uid == uid;
       }
 
