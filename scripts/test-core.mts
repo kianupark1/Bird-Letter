@@ -619,5 +619,33 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("도착 시각: 모레부터는 날짜", whenText(at(2, 20, 1), base), "10월 21일 오후 8:01");
 }
 
+
+import { countUsers, providerOf, kstMidnight, readCount, lettersCountQuery, isAdmin, adminFromEnv } from "../core/adminStats.ts";
+{
+  // 운영자 숫자판: 익명은 가입자에서 빼고, 카카오(kakao:)·구글·애플을 나눠 세요
+  const now = Date.UTC(2026, 9, 19, 12, 0); // 한국 21시
+  const d = 86_400_000;
+  const users = [
+    { localId: "kakao:1", createdAt: String(now - 3600_000), lastRefreshAt: new Date(now - 600_000).toISOString() },
+    { localId: "g1", createdAt: String(now - 3 * d), lastLoginAt: String(now - 3 * d), providerUserInfo: [{ providerId: "google.com" }] },
+    { localId: "a1", createdAt: String(now - 10 * d), lastLoginAt: String(now - 2 * d), providerUserInfo: [{ providerId: "apple.com" }] },
+    { localId: "anon1", createdAt: String(now) },
+  ];
+  const c = countUsers(users, now);
+  eq("숫자판: 가입자(익명 제외)", c.members, 3);
+  eq("숫자판: 익명", c.anonymous, 1);
+  eq("숫자판: 카카오·구글·애플", [c.byProvider.kakao, c.byProvider.google, c.byProvider.apple].join(), "1,1,1");
+  eq("숫자판: 오늘 가입(한국 날짜)", c.newToday, 1);
+  eq("숫자판: 7일 가입", c.new7d, 2);
+  eq("숫자판: 24시간·7일 들어온 사람", [c.active1d, c.active7d].join(), "1,3");
+  eq("숫자판: 제공업체", providerOf({ localId: "x", email: "a@b.c" }), "other");
+  eq("숫자판: 한국 자정", new Date(kstMidnight(now)).toISOString(), "2026-10-18T15:00:00.000Z");
+  eq("숫자판: 개수 읽기", readCount([{ result: { aggregateFields: { n: { integerValue: "42" } } } }]), 42);
+  eq("숫자판: 빈 응답은 0", readCount({}), 0);
+  eq("숫자판: 기간 조건", (lettersCountQuery(0).structuredAggregationQuery.structuredQuery as { where?: unknown }).where !== undefined, true);
+  eq("숫자판: 운영자 아님", isAdmin("someone"), false);
+  eq("숫자판: 환경 변수 운영자", isAdmin("u9", adminFromEnv(" u8 , u9 ")), true);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
