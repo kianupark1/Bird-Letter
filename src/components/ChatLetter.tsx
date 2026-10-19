@@ -12,7 +12,7 @@ import { letterHref } from "@/lib/target";
 import { asLike, latestPostcard, type Entry } from "@/lib/chat";
 import JourneyMap from "@/components/JourneyMap";
 import PostcardView from "@/components/Postcard";
-import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
+import { clockText, dateTimeText, isScheduled, whenText } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
 import { mishapMessage } from "@/lib/flight";
 
@@ -55,9 +55,9 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
     : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
-    : done ? `${bird.name} · 도착 ✓ ${clockText(arriveAt)}`
-    : pr.stalled && pr.mishap ? `${pr.mishap.kind === "tree" ? "🌳 나무에 걸림" : "🧭 길 잃음"} · 다시 찾으면 ${clockText(arriveAt)} 도착`
-    : `${bird.name} 비행 중 · ${clockText(arriveAt)} 도착 예정`;
+    : done ? `${bird.name} · 도착 ✓ ${whenText(arriveAt)}`
+    : pr.stalled && pr.mishap ? `${pr.mishap.kind === "tree" ? "🌳 나무에 걸림" : "🧭 길 잃음"} · 다시 찾으면 ${whenText(arriveAt)} 도착`
+    : `${bird.name} 비행 중 · ${whenText(arriveAt)} 도착 예정`;
   const time = <span className="ch-time">{clockText(sched ? entry.at : l.sentAt)}</span>;
   const row = (bubble: React.ReactNode) => <div className={`ch-row ${mine ? "me" : "you"}`}>{mine && time}{bubble}{!mine && time}</div>;
   const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""} ${open ? "open" : ""}`;
@@ -78,7 +78,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const lost = lostMsg && (
     <div className="ch-lost" role="status">
       <b>{pr.mishap!.kind === "tree" ? "🌳" : "🧭"} {lostMsg.title}</b>
-      <span>{mine ? `기다리면 ${clockText(arriveAt)}쯤 꼭 도착해요. 다른 새로 다시 보낼 수도 있어요.` : `길을 다시 찾는 중이에요. ${clockText(arriveAt)}쯤 도착해요.`}</span>
+      <span>{mine ? `기다리면 ${whenText(arriveAt)}쯤 꼭 도착해요. 다른 새로 다시 보낼 수도 있어요.` : `길을 다시 찾는 중이에요. ${whenText(arriveAt)}쯤 도착해요.`}</span>
       {mine && onResend && !waitOk && (
         <span className="ch-lost-btns">
           <button type="button" className="chip" onClick={() => setWaitOk(true)}>기다릴게요</button>
@@ -101,9 +101,9 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
           {/* 비행 기록: 어디서 어디까지 지도 위 선 하나로 깔끔하게(지나온 곳 목록은 빼요, 2026-10-18 대표님) */}
           <div className="ch-mapmini" aria-hidden><JourneyMap route={route} p={sched ? 0 : pr.p} birdId={bird.id} compact ends h={170} /></div>
           <div className="ch-trip" aria-label="비행 기록">
-            <span><small>{sched ? "출발 예정" : "출발"} · {clockText(sched ? entry.at : l.sentAt)}</small><b>{route.from.name}</b></span>
+            <span><small>{sched ? "출발 예정" : "출발"} · {whenText(sched ? entry.at : l.sentAt)}</small><b>{route.from.name}</b></span>
             <span className="arr" aria-hidden>→</span>
-            <span><small>{done ? "도착" : "도착 예정"} · {clockText(arriveAt)}</small><b>{route.to.name}</b></span>
+            <span><small>{done ? "도착" : "도착 예정"} · {whenText(arriveAt)}</small><b>{route.to.name}</b></span>
           </div>
           <div className="ch-route">{route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
           {mine && !ownPhotos.length && photos.length > 0 && <span className="ch-thumbs">{photos.map((src, i) => <img key={i} src={src} alt={`보낸 사진 ${i + 1}`} />)}</span>}

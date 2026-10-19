@@ -7,7 +7,7 @@ import type { Meta } from "@/lib/firebase/remote";
 import { asLike } from "@/lib/chat";
 import { roomHref } from "@/lib/room";
 import { withEulReul, withIGa } from "@/lib/korean";
-import { clockText, dateTimeText, isScheduled } from "../../core/schedule";
+import { isScheduled, whenText } from "../../core/schedule";
 import type { Thread } from "../../core/threads";
 import BirdIcon from "./BirdIcon";
 
@@ -17,13 +17,6 @@ export function countdownText(ms: number): string {
   const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
   const hms = `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
   return d ? `${d}일 ${hms}` : hms;
-}
-
-/** 도착 시각을 짧게: 오늘이면 "오후 3시 12분", 내일이면 "내일 오전 4시", 그 뒤는 날짜까지 */
-function whenText(ms: number, now: number) {
-  const day = (t: number) => { const d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
-  const diff = Math.round((day(ms) - day(now)) / 86400000);
-  return diff <= 0 ? clockText(ms) : diff === 1 ? `내일 ${clockText(ms)}` : dateTimeText(ms);
 }
 
 /**

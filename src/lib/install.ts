@@ -55,6 +55,7 @@ const isStandalone = () => (navigator as any).standalone === true || window.matc
 
 export function detectEnv(): InstallEnv {
   if (IS_TOSS) return "installed";
+  if ((window as any).Capacitor?.isNativePlatform?.()) return "installed"; // 스토어 앱 안
   if (isStandalone()) return "installed";
   if (isInApp()) return "inapp";
   if (isIos()) return "ios";

@@ -6,10 +6,10 @@ import { BIRDS } from "../core/birds.ts";
 import { ROUTES, getRoute, routePosition, makeRoute } from "../core/routes.ts";
 import { PLACES, nearestPlace, getPlace } from "../core/places.ts";
 import { searchPlaces, choseong } from "../core/placeSearch.ts";
-import { validateDepart, isScheduled, toInputValue, fromInputValue, dateTimeText, MAX_SCHEDULE_DAYS } from "../core/schedule.ts";
+import { validateDepart, isScheduled, toInputValue, fromInputValue, dateTimeText, whenText, MAX_SCHEDULE_DAYS } from "../core/schedule.ts";
 import { MAX_PHOTOS, MAX_PHOTO_CHARS } from "../core/limits.ts";
 import { MAX_LETTER_CHARS } from "../core/limits.ts";
-import { validateSchedule, dedupKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
+import { validateSchedule, dedupKey, subKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
 import { generateKeyPairSync, createVerify, createSign } from "node:crypto";
 import { createCustomToken, createAccessAssertion, verifyFirebaseIdToken, parseServiceAccount, verifyGithubOidc } from "../core/serverAuth.ts";
 import { loginWithKakao, type KakaoDeps } from "../core/kakaoLogin.ts";
@@ -158,6 +158,15 @@ eq("먼 노선 경유지에 서울 구 랜드마크 없음", getRoute("busan-sok
   eq("푸시 예약: 빈 요청 거절", validateSchedule(null, now).ok, false);
   eq("중복 방지 값: 같은 입력은 같은 값", dedupKey("https://fcm.googleapis.com/x", "t1"), dedupKey("https://fcm.googleapis.com/x", "t1"));
   eq("중복 방지 값: 다른 구독은 다른 값", dedupKey("https://fcm.googleapis.com/x", "t1") !== dedupKey("https://fcm.googleapis.com/y", "t1"), true);
+  // 스토어 앱(안드로이드) 기기 토큰
+  const tok = "dQw4w9WgXcQ:APA91bH-abc_DEF0123456789xyz";
+  const app = (v: unknown) => validateSchedule({ ...good(), subscription: { fcm: v } }, now);
+  eq("앱 알림: 기기 토큰 통과", app(tok).ok, true);
+  eq("앱 알림: 통과한 값에는 토큰만 남음", JSON.stringify((app(tok) as any).value.subscription), JSON.stringify({ fcm: tok }));
+  eq("앱 알림: 너무 짧은 토큰 거절", app("abc").ok, false);
+  eq("앱 알림: 이상한 글자(공백·슬래시) 거절", app("abc def/ghi:jklmnopqrstuvwxyz").ok, false);
+  eq("앱 알림: 숫자 토큰 거절(웹 구독으로 보고 주소 없음)", app(123).ok, false);
+  eq("중복 방지 값: 앱 토큰과 웹 구독이 섞이지 않음", subKey({ fcm: tok }) !== subKey(good().subscription), true);
 }
 
 // 표시
@@ -599,6 +608,15 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("엄마는 한 줄만", th.length, 1);
   const th2 = bt(sent, [], [], {});
   eq("친구로 잇기 전: '엄마' 이름 방과 임시 계정 방은 한 줄", th2.filter((x) => x.name === "엄마").length, 1);
+}
+
+{
+  // 도착 시각 글자: 오늘이 아니면 내일·어제·날짜를 붙여요(하루 넘게 걸리는 까치가 "오후 8시"로만 보이던 문제)
+  const base = new Date(2026, 9, 19, 10, 0).getTime(), at = (d: number, h: number, m = 0) => new Date(2026, 9, 19 + d, h, m).getTime();
+  eq("도착 시각: 오늘은 시각만", whenText(at(0, 20, 1), base), "오후 8시 1분");
+  eq("도착 시각: 내일", whenText(at(1, 4), base), "내일 오전 4시");
+  eq("도착 시각: 어제", whenText(at(-1, 15, 30), base), "어제 오후 3시 30분");
+  eq("도착 시각: 모레부터는 날짜", whenText(at(2, 20, 1), base), "10월 21일 오후 8:01");
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);

@@ -149,6 +149,10 @@ await no("친구가 남의 구독을 쓸 수 없음", setDoc(doc(A, "users", "ui
 await no("https가 아닌 주소는 저장 불가", setDoc(doc(B, "users", "uidB", "push", "sub"), { ...sub, endpoint: "http://x" }));
 await no("다른 필드는 저장 불가", setDoc(doc(B, "users", "uidB", "push", "sub"), { ...sub, extra: 1 }));
 await no("sub 아닌 이름은 불가", setDoc(doc(B, "users", "uidB", "push", "other"), sub));
+await ok("앱 기기 토큰(fcm) 저장", setDoc(doc(B, "users", "uidB", "push", "sub"), { fcm: "dTokenAbc123:APA91b-xyz_0123456789", at: Date.now() }));
+await no("fcm과 웹 구독 칸을 섞어 저장 불가", setDoc(doc(B, "users", "uidB", "push", "sub"), { ...sub, fcm: "dTokenAbc123:APA91b-xyz_0123456789" }));
+await no("너무 짧은 fcm 토큰은 저장 불가", setDoc(doc(B, "users", "uidB", "push", "sub"), { fcm: "short", at: Date.now() }));
+await ok("친구(A)가 B의 앱 토큰을 읽음", getDoc(doc(A, "users", "uidB", "push", "sub")));
 await ok("내 구독 삭제", deleteDoc(doc(B, "users", "uidB", "push", "sub")));
 
 console.log("[답장]");

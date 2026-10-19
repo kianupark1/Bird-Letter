@@ -1,6 +1,6 @@
 import { Client } from "@upstash/qstash";
 import { NextResponse } from "next/server";
-import { dedupKey, validateSchedule } from "../../../../../core/pushPayload";
+import { dedupKey, isNativeSub, subKey, validateSchedule } from "../../../../../core/pushPayload";
 
 // 폰이 "이 시각에 이 알림을 보내 줘"를 맡기는 곳. 예약은 QStash(무료 한도 있음)가 시각까지 들고 있다가 deliver를 불러요.
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ function limited(ip: string) {
 
 export async function POST(req: Request) {
   const token = process.env.QSTASH_TOKEN, base = siteUrl();
-  if (!token || !base || !process.env.VAPID_PRIVATE_KEY) return NextResponse.json({ error: "not-configured" }, { status: 503 });
+  if (!token || !base) return NextResponse.json({ error: "not-configured" }, { status: 503 });
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
   if (limited(ip)) return NextResponse.json({ error: "too-many" }, { status: 429 });
@@ -33,13 +33,15 @@ export async function POST(req: Request) {
   const v = validateSchedule(json, Date.now());
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 });
   const { subscription, payload, at } = v.value;
+  // 웹 푸시는 VAPID 열쇠, 앱 알림(FCM)은 서비스 계정이 있어야 보낼 수 있어요
+  if (isNativeSub(subscription) ? !process.env.FIREBASE_SERVICE_ACCOUNT_JSON : !process.env.VAPID_PRIVATE_KEY) return NextResponse.json({ error: "not-configured" }, { status: 503 });
 
   try {
     await new Client({ token }).publishJSON({
       url: `${base}/api/push/deliver`,
       body: { subscription, payload },
       notBefore: Math.max(Math.ceil(at / 1000), Math.ceil(Date.now() / 1000)),
-      deduplicationId: dedupKey(subscription.endpoint, payload.tag),
+      deduplicationId: dedupKey(subKey(subscription), payload.tag),
       retries: 3,
     });
   } catch {

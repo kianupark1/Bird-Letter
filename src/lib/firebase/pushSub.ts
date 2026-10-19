@@ -1,7 +1,7 @@
 "use client";
 import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 import { db, ensureUser, firebaseEnabled } from "./client";
-import type { PushSub } from "../../../core/pushPayload";
+import { isNativeSub, type PushSub } from "../../../core/pushPayload";
 import { schedulePushTo } from "../push";
 import { getBird } from "../birds";
 import { getRoute } from "../routes";
@@ -17,7 +17,9 @@ const ref = (uid: string) => doc(db(), "users", uid, "push", "sub");
 export async function saveMyPushSub(sub: PushSub) {
   if (!firebaseEnabled) return;
   const u = await ensureUser();
-  await setDoc(ref(u.uid), { endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth, at: Date.now() });
+  await setDoc(ref(u.uid), isNativeSub(sub)
+    ? { fcm: sub.fcm, at: Date.now() } // 스토어 앱(안드로이드)의 기기 토큰
+    : { endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth, at: Date.now() });
 }
 
 export async function deleteMyPushSub() {
@@ -30,7 +32,9 @@ async function friendSub(uid: string): Promise<PushSub | null> {
   try {
     const s = await getDoc(ref(uid));
     const d = s.data();
-    return d ? { endpoint: d.endpoint, keys: { p256dh: d.p256dh, auth: d.auth } } : null;
+    if (!d) return null;
+    if (typeof d.fcm === "string") return { fcm: d.fcm };
+    return { endpoint: d.endpoint, keys: { p256dh: d.p256dh, auth: d.auth } };
   } catch {
     return null; // 규칙이 아직 게시되지 않았거나 친구가 알림을 안 켰으면 조용히 건너뜀
   }
