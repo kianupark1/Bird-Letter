@@ -14,6 +14,7 @@ import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
 import SwipeRow from "@/components/SwipeRow";
 import GearLink from "@/components/GearLink";
+import ProfileZoom from "@/components/ProfileZoom";
 import { roomHref } from "@/lib/room";
 import { buildThreads } from "../../../core/threads";
 import { STORE } from "@/lib/release";
@@ -63,6 +64,7 @@ function Friends() {
     })();
   }, [state, ready, profile, reload, legacy]);
 
+  const [zoom, setZoom] = useState<{ name: string; bird?: string | null; photo?: string } | null>(null);
   const link = () => `${location.origin}/invite?c=${code}`;
   // 스토어에 앱이 올라간 뒤에는 "앱 받기"도 같이 알려요(링크를 누르면 친구가 되고, 그 화면에 앱 받기 버튼이 있어요)
   const text = `${profile.nickname || "친구"}님이 새편지 친구로 초대했어요!${STORE.android || STORE.iosUrl ? " 링크를 누르면 친구가 되고 앱도 받을 수 있어요." : ""}`;
@@ -98,6 +100,7 @@ function Friends() {
   };
   return (
     <main className="app friendsp">
+      {zoom && <ProfileZoom name={zoom.name} bird={zoom.bird} photo={zoom.photo} onClose={() => setZoom(null)} />}
       {/* 카카오톡처럼: 화면에는 나와 친구 목록만. 친구 초대·모르는 사람에게 보내기는 오른쪽 위 [친구 추가]에 */}
       <header className="tabhead">
         <h1 className="pagetitle">친구</h1>
@@ -126,7 +129,11 @@ function Friends() {
             <li key={t.key}>
               <SwipeRow label={`${t.name} 친구`} onLongPress={() => void removeAll(t)} actions={[{ label: "끊기", tone: "danger", onClick: () => void removeAll(t) }]}>
                 <Link href={roomHref({ uid: t.uid, name: t.name })} prefetch className="krow">
-                  <Face name={t.name} bird={f?.bird} photo={f?.photo} size={58} />
+                  {/* 얼굴만 누르면 크게 보기, 줄의 나머지를 누르면 대화방 */}
+                  <span role="button" tabIndex={0} className="facebtn" aria-label={`${t.name} 프로필 크게 보기`}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setZoom({ name: t.name, bird: f?.bird, photo: f?.photo }); }}>
+                    <Face name={t.name} bird={f?.bird} photo={f?.photo} size={58} />
+                  </span>
                   <span className="kmid"><b className="kname">{t.name}</b>{own && <span className="kprev">{own}</span>}</span>
                 </Link>
               </SwipeRow>
