@@ -6,6 +6,9 @@
  */
 export const MAX_LETTER_CHARS = 100000;
 
+/** 펜팔(모르는 누군가와 주고받는) 편지는 한 통에 5,000자까지(2026-10-20 대표님: "펜팔은 5000자로"). 첫 편지·답장 모두 */
+export const MAX_PENPAL_CHARS = 5000;
+
 /**
  * 사진: 한 편지에 최대 3장. 사진은 줄인 JPEG를 글자(data URL)로 바꿔서 한 장씩 따로 저장해요(문서 1MB 한도를 넘지 않게).
  * ⚠️ MAX_PHOTO_CHARS를 바꾸면 firebase/firestore.rules의 photo 한도(450000)도 같이 바꾸고 콘솔에 게시해야 해요.

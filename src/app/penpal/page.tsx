@@ -11,6 +11,7 @@ import { useLetters } from "@/lib/letters";
 import { usePeople } from "@/lib/people";
 import { getBird } from "@/lib/birds";
 import { birdFx } from "@/lib/chirp";
+import { MAX_PENPAL_CHARS } from "@/lib/limits";
 import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
 import { listBlocked } from "@/lib/firebase/remote";
 import { listPool, readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
@@ -128,7 +129,7 @@ function Penpal() {
           return <button key={t.id} type="button" aria-pressed={on} className={on ? "on" : ""} onClick={() => update({ penpalTags: on ? tags.filter((x) => x !== t.id) : [...tags, t.id].slice(0, 5) })}>{t.label}</button>;
         })}
       </div>}
-      <textarea className="pppaper" rows={8} value={msg} maxLength={5000} placeholder="안녕하세요, 처음 보는 누군가에게 편지를 써 보는 건 처음이에요…" aria-label="펜팔 편지 내용" onChange={(e) => setMsg(e.target.value)} />
+      <textarea className="pppaper" rows={8} value={msg} maxLength={MAX_PENPAL_CHARS} placeholder="안녕하세요, 처음 보는 누군가에게 편지를 써 보는 건 처음이에요…" aria-label="펜팔 편지 내용" onChange={(e) => setMsg(e.target.value)} />
       <div className="ppwarn">{masked.masked ? `🙊 연락처처럼 보이는 글 ${masked.masked}곳을 가리고 보내요` : "🙊 전화번호·주소·아이디처럼 보이는 글은 보내기 전에 가려져요"} · 📷 펜팔 편지는 사진 없이</div>
       <button type="button" className="linkbtn" onClick={() => setPickBird((v) => !v)}>새 바꾸기 · 지금은 {getBird(bird).name} ›</button>
       {pickBird && <div style={{ display: "flex", justifyContent: "center" }}><BirdPicker value={bird} onChange={(id) => { setBird(id); setPickBird(false); }} /></div>}
