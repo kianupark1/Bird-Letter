@@ -26,8 +26,8 @@ export function cityOf(placeId: string | undefined): string {
 }
 export const cityLabel = (cityId: string) => (cityId === "seoul" ? "서울" : getPlace(cityId)?.name ?? "어딘가");
 
-/** 펜팔 한 줄 소개: 한 줄·40자까지, 연락처처럼 보이는 글은 가려요 */
-export const INTRO_MAX = 40;
+/** 펜팔 한 줄 소개: 한 줄·100자까지, 연락처처럼 보이는 글은 가려요 */
+export const INTRO_MAX = 100;
 export function cleanIntro(raw: string): string {
   return maskContacts(raw.replace(/\s+/g, " ").trim()).text.slice(0, INTRO_MAX);
 }

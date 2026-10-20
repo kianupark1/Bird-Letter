@@ -34,7 +34,7 @@ export type Profile = {
   penpalName?: string;
   /** 펜팔 관심사(core/penpal.ts PENPAL_TAGS의 id) */
   penpalTags?: string[];
-  /** 펜팔 카드에 보이는 한 줄 소개(40자까지) */
+  /** 펜팔 카드에 보이는 한 줄 소개(100자까지) */
   penpalIntro?: string;
   /** 모르는 누군가의 펜팔 편지 받기. 약속하면 켜져요 */
   penpalOpen?: boolean;
