@@ -26,6 +26,8 @@ export type Meta = {
   departAt: number | null;
   /** 펜팔(모르는 누군가와 주고받는) 편지 */
   penpal?: boolean;
+  /** 받는 사람이 편지를 열어 본 시각(카카오톡 "읽음"처럼 보낸 사람에게 보여요) */
+  readAt?: number;
 };
 
 function toMeta(id: string, d: DocumentData): Meta {
@@ -42,6 +44,7 @@ function toMeta(id: string, d: DocumentData): Meta {
     recipientUid: d.recipientUid ?? null,
     departAt,
     ...(d.penpal === true ? { penpal: true } : {}),
+    ...(d.readAt?.toMillis ? { readAt: d.readAt.toMillis() } : {}),
   };
 }
 
@@ -125,6 +128,12 @@ export async function cancelLetter(id: string) {
 export async function claim(id: string) {
   const user = await ensureUser();
   await updateDoc(doc(db(), "letters", id), { recipientUid: user.uid });
+}
+
+/** 받는 사람이 도착한 편지를 열어 봤다고 서버에 한 번 남겨요(보낸 사람 화면에 "읽음") */
+export async function markRead(id: string) {
+  await ensureUser();
+  await updateDoc(doc(db(), "letters", id), { readAt: serverTimestamp() });
 }
 
 export async function listSent(uid: string): Promise<Meta[]> {

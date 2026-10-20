@@ -667,6 +667,11 @@ main.app.room.chat { padding: 16px 16px 0; display: flex; flex-direction: column
 .ch-row { display: flex; align-items: flex-end; gap: 6px; max-width: 100%; }
 .ch-row.me { align-self: flex-end; } .ch-row.you { align-self: flex-start; }
 .ch-time { flex: none; font-size: 12px; opacity: .55; white-space: nowrap; padding-bottom: 2px; }
+/* 카카오톡처럼 내 편지 옆 읽음 표시(안 읽음 = 노란 1, 읽음 = 청록 "읽음") */
+.ch-meta { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+.ch-meta .ch-time { padding-bottom: 2px; }
+.ch-unread { color: var(--hwangto-text); font-weight: 800; font-size: 14px; line-height: 1; }
+.ch-read { font-size: 12px; font-weight: 700; color: var(--cheongrok); line-height: 1; }
 .ch-letter { min-width: 0; flex: 0 1 auto; max-width: 80%; border-radius: 20px; color: var(--text); }
 .ch-letter.me { background: var(--tint-hot); border-top-right-radius: 6px; }
 .ch-letter.you { background: var(--card); border-top-left-radius: 6px; }

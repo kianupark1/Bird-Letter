@@ -165,6 +165,15 @@ service cloud.firestore {
         && request.resource.data.recipientUid == request.auth.uid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['recipientUid']);
 
+      // 받는 사람이 도착한 편지를 열어 보면 "읽음" 시각을 한 번만 남긴다(보낸 사람 화면의 카카오톡식 읽음 표시)
+      allow update: if signedIn()
+        && resource.data.recipientUid == request.auth.uid
+        && resource.data.fromUid != request.auth.uid
+        && !('readAt' in resource.data)
+        && resource.data.arriveAt <= request.time
+        && request.resource.data.readAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
+
       // 보낸 사람은 자기 편지를 지울 수 있다(탈퇴 시 삭제에도 사용)
       allow delete: if signedIn() && resource.data.fromUid == request.auth.uid;
 
