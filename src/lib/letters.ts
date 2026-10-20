@@ -53,6 +53,7 @@ export function markOpened(id: string) {
     if (s.has(id)) return;
     s.add(id);
     localStorage.setItem(OPENED_KEY, JSON.stringify([...s].slice(-500)));
+    void import("./appShell").then((m) => m.afterLetterOpened(s.size)).catch(() => {}); // 스토어 앱이면 별점 물어볼 차례 표시
   } catch {}
 }
 

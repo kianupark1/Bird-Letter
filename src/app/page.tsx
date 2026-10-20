@@ -63,6 +63,8 @@ function InboxList() {
   useEffect(() => {
     listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
+  // 스토어 앱이면 받은 편지를 두 통 읽은 뒤 한 번만 별점을 물어요(src/lib/appShell.ts)
+  useEffect(() => { void import("@/lib/appShell").then((m) => m.maybeAskReview()).catch(() => {}); }, []);
 
   const friendBird = useMemo(() => new Map(friends.map((f) => [f.uid, f])), [friends]);
   // 내 거리 기록을 서버에 올려 둬요(친구가 랭킹에서 볼 수 있게). 로그인한 사람만, 값이 바뀔 때만 올려요

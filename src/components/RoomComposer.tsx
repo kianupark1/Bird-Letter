@@ -6,7 +6,7 @@ import { BIRDS_SLOW_TO_FAST, getBird, mishapShort } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useProfile } from "@/lib/settings";
-import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
+import { MAX_LETTER_CHARS, MAX_PENPAL_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
 import { getPlace } from "../../core/places";
 import { locate as findDistrict } from "../../core/districts";
@@ -85,7 +85,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const mins = route ? Math.max(1, Math.round(travelMinutes(bird, route.km) / speed.current)) : 0;
   const departMs = later ? fromInputValue(later) : null;
   const departError = later ? validateDepart(departMs, Date.now()) : null;
-  const canSend = ready && !!message.trim() && ok && !busy && !photoBusy && message.length <= MAX_LETTER_CHARS && !departError;
+  const canSend = ready && !!message.trim() && ok && !busy && !photoBusy && message.length <= (penpal ? MAX_PENPAL_CHARS : MAX_LETTER_CHARS) && !departError;
 
   const pickBird = (id: string) => { setBirdId(id); write(LAST_BIRD, id); setSheet(""); };
   const pickTo = (id: string) => { setToId(id); write(placeKey(threadKey), id); };
@@ -122,7 +122,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (!message.trim()) { setInfo("편지 내용을 먼저 써 주세요."); return; }
     if (!ok || !route) { setInfo("받는 곳을 골라 주세요."); setSheet("place"); return; }
     if (photoBusy) { setInfo("사진을 줄이는 중이에요. 잠시만 기다려 주세요."); return; }
-    if (message.length > MAX_LETTER_CHARS) { setInfo(`한 통에는 ${MAX_LETTER_CHARS.toLocaleString("ko-KR")}자까지 담을 수 있어요.`); return; }
+    const maxChars = penpal ? MAX_PENPAL_CHARS : MAX_LETTER_CHARS;
+    if (message.length > maxChars) { setInfo(`${penpal ? "펜팔 편지는 " : ""}한 통에 ${maxChars.toLocaleString("ko-KR")}자까지 담을 수 있어요.`); return; }
     if (departError) { setInfo(departError); setSheet("later"); return; }
     setBusy(true); setInfo("");
     try {
@@ -242,7 +243,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       </button>
       <div className="ch-inrow">
         <button type="button" className="ch-plus" aria-label="새·사진·나중에 보내기" onClick={() => setSheet("more")}>＋</button>
-        <textarea className="ch-in" rows={1} placeholder="편지를 써 보세요" value={message} aria-label="편지 내용"
+        <textarea className="ch-in" rows={1} maxLength={penpal ? MAX_PENPAL_CHARS : undefined} placeholder="편지를 써 보세요" value={message} aria-label="편지 내용"
           onChange={(e) => { setMessage(e.target.value); if (info) setInfo(""); }} />
         <button type="button" className="ch-go" aria-label={later ? "예약하고 보내기" : "보내기"} aria-disabled={!canSend} data-off={!message.trim() || undefined} onClick={send}>{busy ? "…" : "➤"}</button>
       </div>
