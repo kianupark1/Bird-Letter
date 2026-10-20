@@ -6,7 +6,7 @@ import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends"
 import { firebaseEnabled } from "@/lib/firebase/client";
 import { saveMyPenpal } from "@/lib/firebase/penpal";
 import { buildThreads, isPenpalThread, visibleThreads } from "../../../core/threads";
-import { cityLabel, cityOf, penpalName } from "../../../core/penpal";
+import { INTRO_MAX, cityLabel, cityOf, cleanIntro, penpalName } from "../../../core/penpal";
 import { useProfile } from "@/lib/settings";
 import { useSession } from "@/lib/session";
 import { usePeople } from "@/lib/people";
@@ -53,6 +53,14 @@ function PenList() {
     void saveMyPenpal({ name: penName, bird: profile.avatarBird || "magpie", region: cityOf(profile.homePlace), tags: profile.penpalTags ?? [], open }).catch(() => {});
   };
 
+  const editIntro = () => {
+    const v = window.prompt(`펜팔 카드에 보일 한 줄 소개 (${INTRO_MAX}자까지 · 연락처는 자동으로 가려져요)`, profile.penpalIntro ?? "");
+    if (v === null) return;
+    const intro = cleanIntro(v);
+    update({ penpalIntro: intro });
+    void saveMyPenpal({ name: penName, bird: profile.avatarBird || "magpie", region: cityOf(profile.homePlace), tags: profile.penpalTags ?? [], open: profile.penpalRecv === true, intro }).catch(() => {});
+  };
+
   return (
     <main className="app pentab">
       <header className="tabhead">
@@ -65,8 +73,7 @@ function PenList() {
         <div><b>펜팔 친구 찾기</b><span>어느 누군가에게 새 편지를 날려 보내요</span></div>
       </Link>
 
-      {firebaseEnabled && (
-        profile.penpalAgreed ? (
+      {firebaseEnabled && profile.penpalAgreed && (
           <div className="listrow">
             <div className="grow">
               <div className="name">나도 랜덤 편지 받기</div>
@@ -74,14 +81,22 @@ function PenList() {
             </div>
             <button role="switch" aria-checked={profile.penpalRecv === true} aria-label="랜덤 편지 받기" className="switch" onClick={toggleRecv} />
           </div>
-        ) : (
+      )}
+      {firebaseEnabled && profile.penpalAgreed && (
+        <button type="button" className="listrow" onClick={editIntro} style={{ width: "100%", textAlign: "left", font: "inherit", color: "inherit", border: 0, background: "none", cursor: "pointer" }}>
+          <div className="grow">
+            <div className="name">내 한 줄 소개 ✎</div>
+            <div className="note">{profile.penpalIntro ? `"${profile.penpalIntro}"` : "펜팔이 내 얼굴을 누르면 보여요. 예: 고양이 두 마리랑 사는 부산 사람이에요"}</div>
+          </div>
+        </button>
+      )}
+      {firebaseEnabled && !profile.penpalAgreed && (
           <Link href="/penpal" className="listrow" style={{ textDecoration: "none", color: "inherit" }}>
             <div className="grow">
               <div className="name">나도 랜덤 편지 받기</div>
               <div className="note">처음 한 번 펜팔 약속을 확인하면 켤 수 있어요 ›</div>
             </div>
           </Link>
-        )
       )}
 
       <div className="pphead">내 펜팔</div>

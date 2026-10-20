@@ -26,6 +26,12 @@ export function cityOf(placeId: string | undefined): string {
 }
 export const cityLabel = (cityId: string) => (cityId === "seoul" ? "서울" : getPlace(cityId)?.name ?? "어딘가");
 
+/** 펜팔 한 줄 소개: 한 줄·40자까지, 연락처처럼 보이는 글은 가려요 */
+export const INTRO_MAX = 40;
+export function cleanIntro(raw: string): string {
+  return maskContacts(raw.replace(/\s+/g, " ").trim()).text.slice(0, INTRO_MAX);
+}
+
 /** 펜팔을 날려 보낼 수 있는 도시(보내는 사람이 "어디로"를 고를 때). 동네·구는 없고 도시까지만 */
 export const PENPAL_CITIES: string[] = [...new Set(PLACES.map((p) => cityOf(p.id)))];
 

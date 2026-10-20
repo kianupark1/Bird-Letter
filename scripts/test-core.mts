@@ -667,5 +667,12 @@ import { PENPAL_CITIES, poolIn } from "../core/penpal.ts";
   eq("펜팔 어디로: 어디든이면 모두", poolIn(pool, null).length, 2);
 }
 
+import { cleanIntro } from "../core/penpal.ts";
+{
+  eq("한 줄 소개: 줄바꿈·공백 정리", cleanIntro("  고양이랑\n  살아요 "), "고양이랑 살아요");
+  eq("한 줄 소개: 40자까지", cleanIntro("가".repeat(60)).length, 40);
+  eq("한 줄 소개: 전화번호 가림", cleanIntro("연락 010-1234-5678 주세요").includes("1234"), false);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
