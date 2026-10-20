@@ -46,8 +46,10 @@ export function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string
   const last = t.entries[0];
   if (!last) return { preview: "편지를 보내 보세요", time: "" };
   if (last.dir === "sent") {
-    const line = last.item.message.split("\n").find((x) => x.trim())?.trim();
-    return { preview: line ? `나: ${line}` : "✓ 내 편지가 도착했어요", time };
+    // 카카오톡처럼 상대가 읽었는지 보여 줘요(앱으로 바로 보낸 편지만 알 수 있어요)
+    if (last.item.readAt) return { preview: "✓ 보낸 편지를 상대방이 읽었어요", time };
+    if (last.item.toUid) return { preview: "보낸 편지가 도착했어요 · 아직 안 읽었어요", time };
+    return { preview: "✓ 보낸 편지가 도착했어요", time };
   }
   return { preview: "받은 편지를 읽었어요", time };
 }

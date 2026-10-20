@@ -170,5 +170,21 @@ await no("B가 답장으로 엉뚱한 사람(C)에게 보내기", setDoc(doc(B, 
 await no("받는 사람이 아닌 A가 자기 편지에 답장", setDoc(doc(A, "letters", "R4"), rep("uidB", "L7", { fromUid: "uidA" })));
 await no("replyTo가 없는 편지를 가리킴", setDoc(doc(B, "letters", "R5"), rep("uidA", "NOPE")));
 
+console.log("[읽음 표시]");
+const { updateDoc: upd } = await import("firebase/firestore");
+await ok("도착한 편지 RD1·도착 전 편지 RD2 준비", env.withSecurityRulesDisabled(async (ctx) => {
+  const base = { fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "swallow", sentAt: ts(-2 * HOUR), recipientUid: "uidB" };
+  await setDoc(doc(ctx.firestore(), "letters", "RD1"), { ...base, arriveAt: ts(-HOUR) });
+  await setDoc(doc(ctx.firestore(), "letters", "RD2"), { ...base, arriveAt: ts(HOUR) });
+}));
+await no("받는 사람이 도착 전 편지에 읽음 남기기", upd(doc(B, "letters", "RD2"), { readAt: serverTimestamp() }));
+await no("보낸 사람이 스스로 읽음 남기기", upd(doc(A, "letters", "RD1"), { readAt: serverTimestamp() }));
+await no("제3자가 읽음 남기기", upd(doc(C, "letters", "RD1"), { readAt: serverTimestamp() }));
+await no("읽음 시각을 지어내기(서버 시각이 아님)", upd(doc(B, "letters", "RD1"), { readAt: ts(-DAY) }));
+await no("읽음과 함께 다른 칸 바꾸기", upd(doc(B, "letters", "RD1"), { readAt: serverTimestamp(), birdId: "hawk" }));
+await ok("받는 사람이 도착한 편지를 열면 읽음 남기기", upd(doc(B, "letters", "RD1"), { readAt: serverTimestamp() }));
+await no("읽음은 한 번만(다시 바꾸기 불가)", upd(doc(B, "letters", "RD1"), { readAt: serverTimestamp() }));
+await ok("보낸 사람은 읽음 시각을 볼 수 있음", getDoc(doc(A, "letters", "RD1")).then((x) => { if (!x.data().readAt) throw new Error("no readAt"); }));
+
 console.log(`\n통과 ${pass} / 실패 ${fail}`);
 await env.cleanup(); process.exit(fail ? 1 : 0);

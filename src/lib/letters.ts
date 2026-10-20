@@ -26,6 +26,8 @@ export type Letter = {
   photos?: string[];
   /** 펜팔(모르는 누군가에게 보낸) 편지 */
   penpal?: boolean;
+  /** 받는 사람이 열어 본 시각(서버 편지만, 카카오톡 "읽음"처럼) */
+  readAt?: number;
 };
 
 /** 같은 화면의 다른 부분(알림 담당 등)이 새로 보낸·받은 편지를 바로 알도록 전하는 신호 */
@@ -47,7 +49,20 @@ const OPENED_KEY = "saepyeonji.opened.v1";
 export function readOpened(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(OPENED_KEY) ?? "[]") as string[]); } catch { return new Set(); }
 }
+const readSent = new Set<string>();
+/** 서버에 "읽음"을 남겨요(보낸 사람 화면에 보여요). 실패해도 다음에 다시 해요 */
+function sendRead(id: string) {
+  if (!firebaseEnabled || readSent.has(id)) return;
+  readSent.add(id);
+  remote.markRead(id).catch(() => readSent.delete(id));
+}
+/** 예전에 열어 봤지만 아직 서버에 "읽음"이 없는 받은 편지는 지금 남겨요 */
+export function syncReadMarks(received: remote.Meta[], now: number) {
+  const opened = readOpened();
+  for (const m of received) if (!m.readAt && m.arriveAt <= now && opened.has(m.id)) sendRead(m.id);
+}
 export function markOpened(id: string) {
+  sendRead(id);
   try {
     const s = readOpened();
     if (s.has(id)) return;
@@ -130,6 +145,7 @@ function loadServer(): Promise<Snap> {
         sentAt: m.sentAt,
         arriveAt: m.arriveAt,
         toUid: m.recipientUid ?? undefined,
+        ...(m.readAt ? { readAt: m.readAt } : {}),
         ...(known.get(m.id)?.photos ? { photos: known.get(m.id)!.photos } : {}),
         ...(m.penpal ? { penpal: true } : {}),
       })),

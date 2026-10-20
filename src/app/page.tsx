@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getRoute } from "@/lib/routes";
-import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
+import { letterProgress, readOpened, syncReadMarks, useLetters, useNow, type Letter } from "@/lib/letters";
 import { isScheduled } from "../../core/schedule";
 import { buildThreads, isPenpalThread, isUnnamed, visibleThreads, type Thread } from "../../core/threads";
 import SwipeRow from "@/components/SwipeRow";
@@ -50,6 +50,8 @@ function Inbox() {
 
 function InboxList() {
   const { letters, received, ready } = useLetters();
+  // 예전에 열어 본 편지도 보낸 사람 화면에 "읽음"이 보이게 서버에 남겨요
+  useEffect(() => { if (ready) syncReadMarks(received, Date.now()); }, [ready, received]);
   const heroBird = useRandomBird();
   const now = useNow();
   const [friends, setFriends] = useState<Friend[]>([]);

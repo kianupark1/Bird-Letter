@@ -53,12 +53,19 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const line = mine
     ? (myText.trim() || "(사진 편지)")
     : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
+  // 내 편지의 읽음 정보(앱으로 바로 보낸 편지만 알 수 있어요)
+  const sent = mine ? (entry.item as { readAt?: number; toUid?: string }) : null;
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
-    : done ? `${bird.name} · 도착 ✓ ${whenText(arriveAt)}`
+    : done ? `${bird.name} · 도착 ✓ ${whenText(arriveAt)}${sent?.readAt ? " · 읽음" : sent?.toUid ? " · 안 읽음" : ""}`
     : pr.stalled && pr.mishap ? `${pr.mishap.kind === "tree" ? "🌳 나무에 걸림" : "🧭 길 잃음"} · 다시 찾으면 ${whenText(arriveAt)} 도착`
     : `${bird.name} 비행 중 · ${whenText(arriveAt)} 도착 예정`;
-  const time = <span className="ch-time">{clockText(sched ? entry.at : l.sentAt)}</span>;
+  // 카카오톡처럼 내 편지 옆에 읽음 표시: 도착했는데 안 읽었으면 노란 "1", 읽었으면 "읽음"(앱으로 바로 보낸 편지만)
+  const receipt = !sent || !done ? null
+    : sent.readAt ? <span className="ch-read" title={`${clockText(sent.readAt)}에 읽음`}>읽음</span>
+    : sent.toUid ? <span className="ch-unread" aria-label="아직 안 읽었어요">1</span> : null;
+  const clock = <span className="ch-time">{clockText(sched ? entry.at : l.sentAt)}</span>;
+  const time = receipt ? <span className="ch-meta">{receipt}{clock}</span> : clock;
   const row = (bubble: React.ReactNode) => <div className={`ch-row ${mine ? "me" : "you"}`}>{mine && time}{bubble}{!mine && time}</div>;
   const cls = `ch-letter ${mine ? "me" : "you"} ${isNew ? "arrived" : ""} ${open ? "open" : ""}`;
   const head = (
