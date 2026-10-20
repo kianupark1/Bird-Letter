@@ -1,11 +1,12 @@
 // 새 편지 서비스 워커: 앱을 닫아도 오는 알림(푸시)을 받아서 보여 주고,
 // 앱 파일과 화면을 폰에 담아 두어 열 때 인터넷을 기다리지 않고 "팍" 뜨게 해요(끊겨도 지난 화면이 떠요).
 const CACHE = "saepyeonji-v1";
+const RSC_CACHE = "saepyeonji-rsc-v1"; // 앱 안 화면 바꾸기용 화면 정보(페이지 칸과 따로 둬요)
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) =>
   e.waitUntil(
     (async () => {
-      for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
+      for (const k of await caches.keys()) if (k !== CACHE && k !== RSC_CACHE) await caches.delete(k);
       await self.clients.claim();
     })(),
   ),
@@ -30,6 +31,25 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
+  // 앱 안에서 화면을 바꿀 때 받는 화면 정보(RSC)도 폰에 담아 둔 것을 바로 쓰고, 새것은 뒤에서 받아 둬요
+  // (앱을 오래 켜 두거나 다시 열어도 누르는 순간 인터넷을 기다리지 않게). 편지 링크 화면(/letter)은 그때그때 받아요.
+  if (req.headers.get("RSC") === "1" && !url.pathname.startsWith("/letter/")) {
+    const key = new Request(url.origin + url.pathname + (req.headers.get("Next-Router-Prefetch") ? "?pf" : "?nav"));
+    event.respondWith(
+      (async () => {
+        const c = await caches.open(RSC_CACHE);
+        const cached = await c.match(key, { ignoreVary: true });
+        const net = fetch(req).then((res) => {
+          if (res.ok && res.type === "basic" && !res.redirected) c.put(key, res.clone()).catch(() => {});
+          return res;
+        });
+        if (!cached) return net;
+        event.waitUntil(net.catch(() => {}));
+        return cached;
+      })(),
+    );
+    return;
+  }
   // 화면(페이지)은 폰에 담아 둔 것을 바로 보여 주고(기다리지 않고 "팍"), 새것은 뒤에서 받아 둬요.
   // 받아 온 화면이 새 버전이면 열린 창에 알려서 바로(열자마자면) 또는 다음에 열 때 새 버전으로 바꿔요(src/app/layout.tsx UPDATE_SCRIPT).
   if (req.mode === "navigate") {
@@ -46,6 +66,8 @@ self.addEventListener("fetch", (event) => {
             await c.put(req, fresh);
             if (was && now && was !== now) {
               await prune(c);
+              // 옛 버전의 화면 정보는 지워요(새 버전 화면과 섞이지 않게)
+              await caches.delete(RSC_CACHE);
               for (const w of await self.clients.matchAll({ type: "window" })) w.postMessage({ type: "new-version" });
             }
           }
