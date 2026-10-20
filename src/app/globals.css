@@ -1011,3 +1011,4 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .pz-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .pz-tags span { background: rgba(255,255,255,.14); border-radius: 999px; padding: 6px 12px; font-size: 16px; }
 .pz-x { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px; width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.16); color: #fff; font-size: 22px; cursor: pointer; }
+.pz-intro { font-size: 20px; font-weight: 600; max-width: 340px; line-height: 1.45; }

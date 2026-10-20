@@ -105,7 +105,9 @@ service cloud.firestore {
       allow get: if signedIn();
       allow list: if signedIn() && request.query.limit <= 50;
       allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['name', 'bird', 'region', 'tags', 'open', 'at'])
+        && request.resource.data.keys().hasOnly(['name', 'bird', 'region', 'tags', 'open', 'at', 'intro'])
+        // 한 줄 소개(선택, 40자까지). 연락처처럼 보이는 글은 앱이 올리기 전에 가려요
+        && (!('intro' in request.resource.data) || (request.resource.data.intro is string && request.resource.data.intro.size() <= 40))
         && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 12
         && request.resource.data.bird is string && request.resource.data.bird.size() <= 12
         && request.resource.data.region is string && request.resource.data.region.size() <= 20
