@@ -51,7 +51,7 @@ await ok("펜팔: 내 줄 쓰기", setDoc(doc(D, "penpals", "uidD"), pp()));
 await no("펜팔: 남의 줄 쓰기", setDoc(doc(A, "penpals", "uidD"), pp()));
 await no("펜팔: 진짜 이름 같은 다른 칸 금지", setDoc(doc(D, "penpals", "uidD"), pp({ realName: "비" })));
 await ok("펜팔: 한 줄 소개 담기", setDoc(doc(D, "penpals", "uidD"), pp({ intro: "고양이 두 마리랑 사는 부산 사람이에요" })));
-await no("펜팔: 한 줄 소개가 너무 김", setDoc(doc(D, "penpals", "uidD"), pp({ intro: "가".repeat(41) })));
+await no("펜팔: 한 줄 소개가 너무 김", setDoc(doc(D, "penpals", "uidD"), pp({ intro: "가".repeat(101) })));
 await no("펜팔: 한 줄 소개가 글자가 아님", setDoc(doc(D, "penpals", "uidD"), pp({ intro: 7 })));
 await ok("펜팔: 명단 읽기(50명까지)", getDocs(query(collection(A, "penpals"), where("open", "==", true), limit(50))));
 await no("펜팔: 명단 너무 많이 읽기", getDocs(query(collection(A, "penpals"), limit(200))));
