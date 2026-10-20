@@ -31,6 +31,7 @@ import { IS_TOSS, letterHref } from "@/lib/target";
 import { smsHref } from "@/lib/contactInvite";
 import { telFor } from "@/lib/pendingTel";
 import { withIGa } from "@/lib/korean";
+import ProfileZoom from "@/components/ProfileZoom";
 
 export default function RoomPage() {
   return (
@@ -54,6 +55,7 @@ function Room() {
   const endRef = useRef<HTMLDivElement>(null);
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
   const [bigMap, setBigMap] = useState(false);
+  const [zoomFace, setZoomFace] = useState(false); // 얼굴을 누르면 크게 보기
   // 대화 내용을 먼저 띄우고, 움직이는 지도는 바로 다음 순간에 그려요(대화방이 "팍" 열리게)
   const [mapOn, setMapOn] = useState(false);
   useEffect(() => { const id = requestAnimationFrame(() => setTimeout(() => setMapOn(true), 0)); return () => cancelAnimationFrame(id); }, []);
@@ -181,7 +183,9 @@ function Room() {
     <main className="app room chat">
       <header className="roomhead">
         <Link href="/" className="roomback" aria-label="뒤로">‹</Link>
-        <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined} size={52} />
+        <button type="button" className="facebtn" aria-label={`${name} 프로필 크게 보기`} onClick={() => setZoomFace(true)}>
+          <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined} size={52} />
+        </button>
         <div style={{ minWidth: 0 }}>
           {thread.uid ? (
             <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
@@ -190,6 +194,11 @@ function Room() {
           {(subtitle || pen) && <div className="rsub">{pen ? `펜팔 🌏${subtitle ? ` · ${subtitle}` : ""}` : subtitle}</div>}
         </div>
       </header>
+      {zoomFace && (
+        <ProfileZoom name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined}
+          photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined}
+          penpalUid={pen ? thread.uid : undefined} onClose={() => setZoomFace(false)} />
+      )}
       {pen && (
         <div className="ppbar" role="note">
           <span>모르는 누군가와의 펜팔이에요. 사진·연락처는 보내지 않아요</span>
