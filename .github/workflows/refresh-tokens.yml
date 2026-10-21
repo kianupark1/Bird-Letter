@@ -1,0 +1,36 @@
+# 홍보 자동 게시 열쇠(스레드·인스타 토큰)가 약 60일 만에 만료되지 않게, 매주 월요일에 새 열쇠로 바꿔서 비밀 값에 다시 넣어요.
+# 비밀 값을 고쳐 쓰려면 한 번만 GH_SECRETS_TOKEN(이 레포의 Secrets 쓰기 권한만 준 GitHub 토큰)이 필요해요. 없으면 경고만 남겨요.
+# 자동 게시와 같이 AUTO_POST_ENABLED 변수가 true일 때만 돌아요. 설정은 docs/자동게시-설정.md
+name: 홍보 열쇠 자동 연장
+
+on:
+  schedule:
+    - cron: "17 1 * * 1" # 매주 월요일 UTC 01:17 = 한국 시간 10:17
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    if: ${{ vars.AUTO_POST_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 새 열쇠 받기
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_LOGIN: ${{ vars.IG_LOGIN }}
+        run: node scripts/refresh-tokens.mjs "$RUNNER_TEMP"
+      - name: 비밀 값에 다시 넣기
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::warning::GH_SECRETS_TOKEN이 없어서 새 열쇠를 저장하지 못했어요(docs/자동게시-설정.md)"; exit 0; fi
+          for name in THREADS_ACCESS_TOKEN IG_ACCESS_TOKEN; do
+            f="$RUNNER_TEMP/$name"
+            if [ -s "$f" ]; then gh secret set "$name" --repo "$GITHUB_REPOSITORY" < "$f" && echo "✓ $name 저장"; rm -f "$f"; fi
+          done

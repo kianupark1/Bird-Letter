@@ -1,12 +1,13 @@
 {
-  "_설명": "출시 홍보 일정. launch(출시일, 한국 날짜 YYYY-MM-DD)를 넣으면 day(출시일 기준 며칠째: 0 = 출시일)에 맞춰 매일 낮 12시에 올라가요. launch가 null이면 아무것도 안 올라가요. date를 직접 적은 글은 그 날짜에 올라가요. image는 promo/cards 안의 파일, to는 threads·instagram(인스타는 사진 필수). 숫자(이용자 수 등)는 실제 값이 생기기 전에는 쓰지 마세요. 문구 규칙은 promo/출시-홍보.md. 2026-10-19 대표님 결정: 출시 전에는 올리지 않음(받을 곳이 없으면 효과가 적어서), 출시일부터 시작.",
+  "_설명": "출시 홍보 일정. launch(출시일, 한국 날짜 YYYY-MM-DD)를 넣으면 day(출시일 기준 며칠째: 0 = 출시일)에 맞춰 매일 낮 12시에 올라가요. launch가 null이면 아무것도 안 올라가요. date를 직접 적은 글은 그 날짜에 올라가요. image는 promo/cards 안의 파일, to는 threads·instagram·x(인스타는 사진이나 영상 필수), video는 promo 아래 영상 경로(인스타 릴스·스레드 영상, X는 표지 사진), X는 링크 줄을 빼고 280칸(한글 2칸)에 맞춰 자동으로 줄여요(xText로 따로 쓸 수 있음). 숫자(이용자 수 등)는 실제 값이 생기기 전에는 쓰지 마세요. 문구 규칙은 promo/출시-홍보.md. 2026-10-19 대표님 결정: 출시 전에는 올리지 않음(받을 곳이 없으면 효과가 적어서), 출시일부터 시작.",
   "launch": null,
   "posts": [
     {
       "day": 0,
       "to": [
         "threads",
-        "instagram"
+        "instagram",
+        "x"
       ],
       "image": "06-launch.png",
       "text": "새 편지가 날아올랐어요! 🕊\n\n바로 도착하지 않아서 더 설레는 편지.\n새를 고르고, 편지를 쓰고, 같이 기다려요.\n\n안드로이드: 구글 플레이에서 ‘새 편지’\nhttps://play.google.com/store/apps/details?id=com.saepyeonji.app\n아이폰: 앱은 곧 나와요. 그동안 웹에서 먼저 써 보세요\nhttps://bird-letter.vercel.app\n\n#새편지 #출시 #편지앱"
@@ -15,7 +16,8 @@
       "day": 1,
       "to": [
         "threads",
-        "instagram"
+        "instagram",
+        "x"
       ],
       "image": "04-jeju.png",
       "text": "제주에 사는 친구에게 편지를 보내면 얼마나 걸릴까요?\n\n서울 → 제주 452km.\n매는 7시간 32분, 까치는 3일 5시간.\n어떤 새로 보낼까요?\n\nhttps://play.google.com/store/apps/details?id=com.saepyeonji.app\n#새편지 #제주 #제주도"
@@ -23,15 +25,27 @@
     {
       "day": 2,
       "to": [
-        "threads"
+        "threads",
+        "x"
       ],
       "text": "친구가 새 편지를 안 깔았어도 괜찮아요.\n\n편지를 보내고 링크만 문자나 카카오톡으로 알려 주세요.\n받는 사람은 앱 없이도 새가 날아오는 모습을 보고, 도착하면 열어 볼 수 있어요.\n\n#새편지"
+    },
+    {
+      "day": 3,
+      "to": [
+        "instagram",
+        "threads",
+        "x"
+      ],
+      "video": "video/saepyeonji-15s.mp4",
+      "text": "답장, 너무 빨라서 설레지 않죠? 🕊\n\n새가 실제 거리만큼 날아서 전해 주는 느린 편지.\n도착하면 두루마리처럼 펼쳐져요.\n\n구글 플레이에서 ‘새 편지’\n#새편지 #편지 #기다림"
     },
     {
       "day": 4,
       "to": [
         "threads",
-        "instagram"
+        "instagram",
+        "x"
       ],
       "image": "03-magpie.png",
       "text": "아침 까치가 울면 반가운 손님이 온다죠.\n\n까치로 보낸 편지는 도착할 때 금빛 테두리와 반짝이가 내려와요. ✨\n느긋해서 아무리 가까워도 하루는 걸리지만, 그만큼 반가워요.\n\n#새편지 #까치"
@@ -40,7 +54,8 @@
       "day": 6,
       "to": [
         "threads",
-        "instagram"
+        "instagram",
+        "x"
       ],
       "image": "05-mishap.png",
       "text": "새도 가끔 길을 잃어요.\n\n나무에 걸리거나 길을 잃으면 조금 늦어져요.\n그래도 편지는 사라지지 않고 꼭 도착해요.\n새마다 얼마나 자주 그러는지는 새 고르기 화면에 적혀 있어요.\n\n#새편지"
@@ -48,14 +63,16 @@
     {
       "day": 8,
       "to": [
-        "threads"
+        "threads",
+        "x"
       ],
       "text": "어딘가에 있는 누군가에게 편지를 날려 보내고 싶을 때.\n\n새 편지의 ‘펜팔 친구 찾기’는 펜팔 편지를 받겠다고 한 사람에게 새를 날려 보내요.\n진짜 이름·사진·동네 대신 펜팔 이름과 도시만 보여요. (만 14세 이상)\n\n#새편지 #펜팔"
     },
     {
       "day": 11,
       "to": [
-        "threads"
+        "threads",
+        "x"
       ],
       "text": "누가누가 멀리 보냈나 🏆\n\n새 편지에는 편지가 날아간 거리로 겨루는 랭킹이 있어요.\n친구끼리, 그리고 새 편지를 쓰는 모두와.\n\n#새편지"
     },
@@ -63,7 +80,8 @@
       "day": 14,
       "to": [
         "threads",
-        "instagram"
+        "instagram",
+        "x"
       ],
       "image": "07-wait.png",
       "text": "답장이 오길 기다려 본 게 언제였나요?\n\n오늘 한 통, 천천히 보내 보세요. 🕊\nhttps://play.google.com/store/apps/details?id=com.saepyeonji.app\n\n#새편지 #편지 #기다림"
