@@ -18,6 +18,7 @@ import Face from "@/components/Face";
 import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
 import LiveMap from "@/components/LiveMap";
+import ShareMap from "@/components/ShareMap";
 import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
 import RoomComposer, { type Resend } from "@/components/RoomComposer";
@@ -55,6 +56,7 @@ function Room() {
   const endRef = useRef<HTMLDivElement>(null);
   const [friendPlace, setFriendPlace] = useState<string | undefined>();
   const [bigMap, setBigMap] = useState(false);
+  const [shareOn, setShareOn] = useState(false); // 지도 사진 공유 시트
   const [zoomFace, setZoomFace] = useState(false); // 얼굴을 누르면 크게 보기
   // 대화 내용을 먼저 띄우고, 움직이는 지도는 바로 다음 순간에 그려요(대화방이 "팍" 열리게)
   const [mapOn, setMapOn] = useState(false);
@@ -130,11 +132,18 @@ function Room() {
     subtitle = `${route.title} · ${bird.name}`;
     map = (
       <>
-        <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
-          {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx ends /> : <div className="map" style={{ height: 150 }} aria-hidden />}
-          <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
-          <span className="zoom" aria-hidden>⤢</span>
-        </button>
+        <div className="ch-mapwrap">
+          <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
+            {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx ends /> : <div className="map" style={{ height: 150 }} aria-hidden />}
+            <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
+            <span className="zoom" aria-hidden>⤢</span>
+          </button>
+          {!IS_TOSS && <button type="button" className="ch-share" onClick={() => setShareOn(true)}>📸 공유</button>}
+        </div>
+        {shareOn && (
+          <ShareMap birdId={bird.id} name={isUnnamed(name) ? undefined : name} onClose={() => setShareOn(false)}
+            input={{ route, birdName: bird.name, mine: active.dir === "sent", p: pr.p, done: false, stalled: pr.stalled && pr.mishap ? pr.mishap.kind : null, leftMin: left, totalMin: pr.total }} />
+        )}
         {bigMap && (
           <LiveMap route={route} birdId={bird.id} title={route.title} onClose={() => setBigMap(false)}
             progress={(t) => { const r = letterProgress(l, t); return { p: r.p, leftMin: Math.ceil(r.total - r.elapsed), arriveAt: l.sentAt + r.total * 60000, stalled: r.stalled }; }} />

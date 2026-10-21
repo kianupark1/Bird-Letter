@@ -8,13 +8,15 @@ import { getRoute } from "@/lib/routes";
 import { letterProgress, markOpened } from "@/lib/letters";
 import * as remote from "@/lib/firebase/remote";
 import { savePolaroid } from "@/lib/photo";
-import { letterHref } from "@/lib/target";
+import { IS_TOSS, letterHref } from "@/lib/target";
 import { asLike, latestPostcard, type Entry } from "@/lib/chat";
 import JourneyMap from "@/components/JourneyMap";
 import PostcardView from "@/components/Postcard";
+import ShareMap from "@/components/ShareMap";
 import { clockText, dateTimeText, isScheduled, whenText } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
 import { mishapMessage } from "@/lib/flight";
+import { isUnnamed } from "../../core/threads";
 
 /**
  * 대화방의 편지 말풍선(카카오톡처럼 깔끔하게): 한 줄 내용 + 작은 상태 한 줄 + 옆에 보낸 시각.
@@ -26,6 +28,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const [photos, setPhotos] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
   const [waitOk, setWaitOk] = useState(false);
+  const [shareOn, setShareOn] = useState(false); // 지도 사진 공유 시트
   const mine = entry.dir === "sent";
   const l = asLike(entry);
   const bird = getBird(l.birdId), route = getRoute(l.routeId);
@@ -113,6 +116,11 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
             <span><small>{done ? "도착" : "도착 예정"} · {whenText(arriveAt)}</small><b>{route.to.name}</b></span>
           </div>
           <div className="ch-route">{route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
+          {!IS_TOSS && <button type="button" className="ch-sharelink" onClick={() => setShareOn(true)}>📸 지도 사진으로 공유하기</button>}
+          {shareOn && (
+            <ShareMap birdId={bird.id} name={isUnnamed(name) ? undefined : name} onClose={() => setShareOn(false)}
+              input={{ route, birdName: bird.name, mine, p: pr.p, done, stalled: pr.stalled && pr.mishap ? pr.mishap.kind : null, leftMin: Math.max(1, pr.total - pr.elapsed), totalMin: pr.total }} />
+          )}
           {mine && !ownPhotos.length && photos.length > 0 && <span className="ch-thumbs">{photos.map((src, i) => <img key={i} src={src} alt={`보낸 사진 ${i + 1}`} />)}</span>}
           {done && !mine ? (
             <LetterReveal

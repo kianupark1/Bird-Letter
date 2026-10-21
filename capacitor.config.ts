@@ -24,7 +24,7 @@ const config: CapacitorConfig = {
     // 앱 안 로그인: 폰 기본 창으로 애플·구글 확인만 받고, 실제 로그인은 웹(Firebase)이 해요(src/lib/firebase/link.ts)
     FirebaseAuthentication: { skipNativeAuth: true, providers: ["apple.com", "google.com"] },
   },
-  ...(NATIVE_AUTH ? {} : { includePlugins: ["@capacitor/app", "@capacitor/push-notifications", "@capacitor-community/in-app-review"] }),
+  ...(NATIVE_AUTH ? {} : { includePlugins: ["@capacitor/app", "@capacitor/push-notifications", "@capacitor-community/in-app-review", "@capacitor/share", "@capacitor/filesystem"] }),
   experimental: {
     ios: { spm: { packageOptions: { "@capacitor-firebase/authentication": { symlink: true } }, swiftToolsVersion: "6.1", packageTraits: { "@capacitor-firebase/authentication": ["Google"] } } },
   },

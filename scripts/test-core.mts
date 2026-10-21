@@ -674,5 +674,30 @@ import { cleanIntro } from "../core/penpal.ts";
   eq("한 줄 소개: 전화번호 가림", cleanIntro("연락 010-1234-5678 주세요").includes("1234"), false);
 }
 
+import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
+{
+  const r = getRoute("seoul-busan");
+  const base = { route: r, birdName: "두루미", p: 0.45, done: false, leftMin: 975, totalMin: 1740 };
+  const fly = shareText({ ...base, mine: true, name: "엄마" });
+  eq("공유 사진: 보낸 편지 알약", fly.pill, "엄마에게 가는 편지 💌");
+  eq("공유 사진: 지나는 곳 강조", fly.title[0] === "지금 " && fly.title[2].endsWith("지나는 중 🕊️"), true);
+  eq("공유 사진: 남은 시간", fly.foot, "도착까지 16시간 15분");
+  eq("공유 사진: 노선·거리·새", fly.sub, "서울 중구 → 부산 325km · 두루미");
+  eq("공유 사진: 받은 편지", shareText({ ...base, mine: false, name: "엄마" }).pill, "엄마에게서 오는 편지 💌");
+  eq("공유 사진: 이름 끄면 이름 없음", shareText({ ...base, mine: true }).pill.includes("엄마"), false);
+  const done = shareText({ ...base, mine: true, name: "엄마", done: true, p: 1 });
+  eq("공유 사진: 도착", done.pill + "|" + done.title.join(""), "엄마에게 편지가 도착했어요 💌|325km를 날아왔어요");
+  eq("공유 사진: 도착은 걸린 시간", done.sub, "두루미 · 1일 5시간 걸렸어요");
+  eq("공유 사진: 길 잃음", shareText({ ...base, mine: true, stalled: "lost" }).title[2].includes("길을 찾는 중"), true);
+  eq("공유 사진: 막 출발", shareHere(r, 0.02).at, "start");
+  eq("공유 사진: 도착 직전", shareHere(r, 0.97).at, "end");
+  const P = shareProjector(r.from, r.to);
+  const [ax, ay] = P(r.from.lng, r.from.lat), [bx, by] = P(r.to.lng, r.to.lat);
+  eq("공유 사진: 출발·도착이 카드 위 지도 칸 안", [ax, bx].every((x) => x >= 100 && x <= 980) && [ay, by].every((y) => y >= 300 && y <= 1260), true);
+  const near = getRoute("seoul-gangnam");
+  const Q = shareProjector(near.from, near.to);
+  eq("공유 사진: 가까운 노선도 너무 크게 확대하지 않음", Math.abs(Q(near.from.lng, near.from.lat)[1] - Q(near.to.lng, near.to.lat)[1]) < 300, true);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
