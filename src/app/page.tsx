@@ -49,7 +49,9 @@ function Inbox() {
 }
 
 function InboxList() {
-  const { letters, received, ready } = useLetters();
+  const { letters, received, ready, backend } = useLetters();
+  // "첫 편지를 보내 보세요"는 서버에서 정말 편지가 없다고 확인된 뒤에만(폰에 적어 둔 목록만 보고 띄우면 있던 편지가 잠깐 사라진 것처럼 보여요)
+  const settled = ready && backend !== "checking";
   // 예전에 열어 본 편지도 보낸 사람 화면에 "읽음"이 보이게 서버에 남겨요
   useEffect(() => { if (ready) syncReadMarks(received, Date.now()); }, [ready, received]);
   const heroBird = useRandomBird();
@@ -107,7 +109,7 @@ function InboxList() {
     const p = pendingSenders();
     if (!p) return;
     void Promise.all(p.senders.map((s) => befriendSender(s, me.nickname, me.avatarBird, me.photo, p.anon).catch(() => {})))
-      .then(() => { clearSenders(); return listFriends().then(setFriends); }).catch(() => {});
+      .then(() => { clearSenders(); return listFriends({ fresh: true }).then(setFriends); }).catch(() => {});
   }, [ready, me.nickname, me.avatarBird, me.photo]);
 
   // 내 이름·내 새가 바뀌었으면 친구들 목록 속 "나"도 같이 고쳐요(예전에 "새 친구"로 저장된 것 바로잡기)
@@ -163,7 +165,7 @@ function InboxList() {
 
       {ready && threads.length > 0 && <HomeCountdown threads={threads} />}
 
-      {ready && threads.length === 0 && (
+      {settled && threads.length === 0 && (
         <div className="inbox-empty">
           {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
           <h2>첫 편지를<br />보내 보세요</h2>

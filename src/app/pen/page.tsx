@@ -30,7 +30,7 @@ export default function PenTab() {
 }
 
 function PenList() {
-  const { letters, received, ready } = useLetters();
+  const { letters, received, ready, backend } = useLetters();
   const now = useNow();
   const { profile, update } = useProfile();
   const { book } = usePeople();
@@ -100,7 +100,7 @@ function PenList() {
       )}
 
       <div className="pphead">내 펜팔</div>
-      {ready && pens.length === 0 && <p className="sub" style={{ margin: "4px 4px 12px" }}>아직 펜팔이 없어요. 위에서 첫 편지를 날려 보세요 🕊</p>}
+      {ready && backend !== "checking" && pens.length === 0 && <p className="sub" style={{ margin: "4px 4px 12px" }}>아직 펜팔이 없어요. 위에서 첫 편지를 날려 보세요 🕊</p>}
       <ul className="klist">
         {pens.map((t) => {
           const info = rowInfo(t, now, opened);

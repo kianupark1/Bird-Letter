@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import BirdIcon from "@/components/BirdIcon";
 import LoginStart from "@/components/LoginStart";
 import NameStep, { shouldAskName } from "@/components/NameStep";
-import { ensureUser } from "@/lib/firebase/client";
+import { ensureUser, firebaseEnabled } from "@/lib/firebase/client";
 import { addFriend, isCode, lookupCode, normalizeCode, type Friend } from "@/lib/firebase/friends";
 import { useProfile } from "@/lib/settings";
 import { useSession } from "@/lib/session";
@@ -40,8 +40,8 @@ function Invite() {
 
   // 초대한 사람 이름 확인(코드를 읽으려면 서버 로그인이 필요해서 임시 계정으로 확인해요. 로그인하면 이어져요)
   useEffect(() => {
-    if (!isCode(code)) { setInviter(null); return; }
-    ensureUser().then(() => lookupCode(code)).then(setInviter).catch(() => setInviter(null));
+    if (!isCode(code) || !firebaseEnabled) { setInviter(null); return; }
+    Promise.resolve().then(ensureUser).then(() => lookupCode(code)).then(setInviter).catch(() => setInviter(null));
   }, [code]);
 
   // 로그인이 끝난 상태면 이름을 확인하고 친구로 연결

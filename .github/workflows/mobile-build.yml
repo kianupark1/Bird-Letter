@@ -40,10 +40,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: 아이폰 프로젝트 만들기
-        run: |
-          npx cap add ios
-          npx cap sync ios
+      - name: 아이폰 프로젝트·아이콘·로그인 설정 준비
+        run: bash scripts/ios-prepare.sh
       - name: 시뮬레이터용으로 빌드(서명 없음)
         run: |
           xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build | tail -40

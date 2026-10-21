@@ -4,7 +4,8 @@ import { usePeople } from "@/lib/people";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { firebaseEnabled } from "@/lib/firebase/client";
-import { ensureMyCode, listFriends, removeFriend, type Friend } from "@/lib/firebase/friends";
+import { cachedFriends, ensureMyCode, listFriends, removeFriend, type Friend } from "@/lib/firebase/friends";
+import { useBeforePaint } from "@/lib/fastStart";
 import { useProfile } from "@/lib/settings";
 import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvite";
 import { KAKAO_SHARE_READY, shareInviteToKakao } from "@/lib/kakaoShare";
@@ -52,39 +53,51 @@ function Friends() {
   // 편지 쓰기 화면의 [친구 초대하기]로 오면 초대 창을 바로 열어요
   useEffect(() => { if (params.get("invite")) setAdd(true); }, [params]);
 
-  const reload = useCallback(async () => setFriends(await listFriends()), []);
+  // 지난번 친구 목록을 그리기 전에 먼저 보여 주고(빨리 뜨게), 서버 목록은 뒤에서 받아요
+  useBeforePaint(() => {
+    if (!firebaseEnabled) return;
+    const c = cachedFriends();
+    if (c.length) { setFriends(c); setLoading(false); }
+  }, []);
+  const reload = useCallback(async (fresh = false) => setFriends(await listFriends({ fresh })), []);
+  const askName = ready && shouldAskName(profile);
   useEffect(() => {
     if (state !== "ready" || !ready || !firebaseEnabled || legacy) { if (state === "ready") setLoading(false); return; }
-    if (shouldAskName(profile)) { setNaming(true); return; }
+    if (askName) { setNaming(true); return; }
     setNaming(false);
-    (async () => {
-      try { setCode(await ensureMyCode(profile.nickname, profile.avatarBird, profile.photo)); await reload(); }
-      catch { setMsg("서버에 연결하지 못했어요. 잠시 후 다시 열어 주세요."); }
-      setLoading(false);
-    })();
-  }, [state, ready, profile, reload, legacy]);
+    // 친구 목록은 바로 받고, 초대 코드(초대할 때만 필요)는 따로 뒤에서 만들어요(예전엔 코드를 다 만든 뒤에야 친구를 받아서 늦게 떴어요)
+    reload().catch(() => setMsg("서버에 연결하지 못했어요. 잠시 후 다시 열어 주세요.")).finally(() => setLoading(false));
+  }, [state, ready, askName, reload, legacy]);
+  useEffect(() => {
+    if (state !== "ready" || !ready || !firebaseEnabled || legacy || askName) return;
+    ensureMyCode(profile.nickname, profile.avatarBird, profile.photo).then(setCode).catch(() => {});
+  }, [state, ready, askName, legacy, profile.nickname, profile.avatarBird, profile.photo]);
 
   const [zoom, setZoom] = useState<{ name: string; bird?: string | null; photo?: string } | null>(null);
-  const link = () => `${location.origin}/invite?c=${code}`;
+  // 초대 코드는 뒤에서 만들어 두지만, 아직 안 됐으면 누르는 순간 만들어요
+  const getCode = async () => code || (await ensureMyCode(profile.nickname, profile.avatarBird, profile.photo).then((c) => { setCode(c); return c; }));
+  const link = (c: string) => `${location.origin}/invite?c=${c}`;
   // 스토어에 앱이 올라간 뒤에는 "앱 받기"도 같이 알려요(링크를 누르면 친구가 되고, 그 화면에 앱 받기 버튼이 있어요)
   const text = `${profile.nickname || "친구"}님이 새편지 친구로 초대했어요!${STORE.android || STORE.iosUrl ? " 링크를 누르면 친구가 되고 앱도 받을 수 있어요." : ""}`;
   const inviteKakao = async () => {
-    if (!code) return;
-    if (KAKAO_SHARE_READY && (await shareInviteToKakao(code, profile.nickname))) return;
+    const c = await getCode().catch(() => "");
+    if (!c) { setMsg("서버에 연결하지 못했어요. 잠시 후 다시 해 주세요."); return; }
+    if (KAKAO_SHARE_READY && (await shareInviteToKakao(c, profile.nickname))) return;
     await shareAny(); // 카카오 설정 전이면 휴대폰 공유창(카카오톡도 거기에 있어요)
   };
   const shareAny = async () => {
     try {
-      if (navigator.share) await navigator.share({ title: "새편지 친구 초대", text, url: link() });
-      else { await navigator.clipboard.writeText(`${text}\n${link()}`); setMsg("초대 링크를 복사했어요. 친구에게 붙여넣어 보내 주세요."); }
+      const url = link(await getCode());
+      if (navigator.share) await navigator.share({ title: "새편지 친구 초대", text, url });
+      else { await navigator.clipboard.writeText(`${text}\n${url}`); setMsg("초대 링크를 복사했어요. 친구에게 붙여넣어 보내 주세요."); }
     } catch {}
   };
-  const copy = async () => { try { await navigator.clipboard.writeText(link()); setMsg("초대 링크를 복사했어요."); } catch {} };
+  const copy = async () => { try { await navigator.clipboard.writeText(link(await getCode())); setMsg("초대 링크를 복사했어요."); } catch {} };
   const inviteFromContacts = async () => {
     const c = await pickContact();
     if (!c) { setMsg("전화번호가 있는 연락처를 골라 주세요."); return; }
     setMsg(`${c.name || "친구"}님께 보낼 문자를 열어요.`);
-    location.href = smsHref(c.tel, `${text}\n${link()}`);
+    location.href = smsHref(c.tel, `${text}\n${link(await getCode())}`);
   };
 
   if (!firebaseEnabled) return <main className="app"><h1>친구</h1><div className="empty">서버에 연결된 뒤에 쓸 수 있어요.</div></main>;
@@ -96,7 +109,7 @@ function Friends() {
   const people = buildThreads([], [], friends, book).filter((t) => t.uid);
   const removeAll = async (t: (typeof people)[number]) => {
     if (!window.confirm(`${t.name}님과 친구를 끊을까요? 서로에게 바로 보내기가 멈춰요.`)) return;
-    try { for (const u of t.uids ?? [t.uid!]) await removeFriend(u); await reload(); } catch { setMsg("끊지 못했어요. 다시 시도해 주세요."); }
+    try { for (const u of t.uids ?? [t.uid!]) await removeFriend(u); await reload(true); } catch { setMsg("끊지 못했어요. 다시 시도해 주세요."); }
   };
   return (
     <main className="app friendsp">
@@ -153,7 +166,7 @@ function Friends() {
               <span aria-hidden>💬</span> 카카오톡으로 초대하기
             </button>
             {/* 문자 앱의 "받는 사람"에 이름을 쓰면 폰 연락처에서 가까운 이름을 찾아 줘요(아이폰도 됨). 번호는 저장하지 않아요 */}
-            <a className={`sheetbtn ${code ? "" : "off"}`} href={code ? smsHref("", `${text}\n${link()}`) : undefined} style={{ textAlign: "center", textDecoration: "none" }}>
+            <a className={`sheetbtn ${code ? "" : "off"}`} href={code ? smsHref("", `${text}\n${link(code)}`) : undefined} style={{ textAlign: "center", textDecoration: "none" }}>
               💬 문자로 초대하기<small className="sheetsub">받는 사람 칸에 이름을 쓰면 연락처에서 찾아 줘요</small>
             </a>
             {canPick && <button type="button" className="sheetbtn" disabled={!code} onClick={inviteFromContacts}>📇 연락처에서 골라 초대하기</button>}
