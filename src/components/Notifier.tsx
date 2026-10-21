@@ -44,8 +44,10 @@ export default function Notifier() {
 
   useEffect(() => {
     if (!ready || !profileReady || quiet) return;
+    // 이 폰에서 처음 여는 거면(새 폰·앱 다시 설치) 이미 있던 편지는 조용히 기억만 해요(예전 편지 알림이 갑자기 뜨지 않게)
     if (!store.current) store.current = load();
     const rec = store.current;
+    const firstRun = Object.keys(rec).length === 0;
     const out: Popup[] = [];
 
     const items = [
@@ -60,7 +62,10 @@ export default function Notifier() {
       const arrivedAt = (it.arriveAt ?? it.sentAt + pr.total * 60000);
       let r = rec[it.id];
       if (!r) {
-        r = rec[it.id] = { a: 0, p: pos.passedIdx };
+        // 처음 보는 편지가 이미 도착해 있으면: 내가 보낸 편지는 조용히(다른 폰에서 보냈거나 이미 아는 소식),
+        // 받은 편지는 그동안 새로 온 소식이라 알려 줘요(이 폰에서 처음 여는 날은 빼고)
+        const silent = pr.done && (firstRun || it.kind === "sent");
+        r = rec[it.id] = { a: silent ? 1 : 0, p: pos.passedIdx, ...(silent && pr.mishap ? { m: 1 } : {}) };
         changed = true;
       }
       // 도착

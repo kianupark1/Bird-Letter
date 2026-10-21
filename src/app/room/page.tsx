@@ -45,7 +45,7 @@ function Room() {
   const router = useRouter();
   const params = useSearchParams();
   const { state } = useSession();
-  const { letters, received, ready, add, cancel } = useLetters();
+  const { letters, received, ready, backend, add, cancel } = useLetters();
   // 방금 보낸 편지가 '출발 예정'으로 잘못 보이지 않게, 시계가 갱신되기 전이라도 지금 시각보다 뒤처지지 않게 해요
   const tick = useNow(5000);
   const now = Math.max(tick, Date.now());
@@ -106,6 +106,7 @@ function Room() {
   useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [last, ready]);
 
   if (state !== "ready" || !ready) return <main className="app" aria-busy="true" />;
+  if (!thread && key && backend === "checking") return <main className="app" aria-busy="true" />; // 서버 목록을 받기 전에는 "찾을 수 없어요"를 띄우지 않아요
   if (!thread || !key) {
     return (
       <main className="app">

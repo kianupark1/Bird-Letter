@@ -1,7 +1,7 @@
 "use client";
 import { arrayUnion, collection, deleteDoc, deleteField, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc, writeBatch } from "firebase/firestore";
 import { auth, db, ensureUser } from "./client";
-import { FRIENDS_CACHE_KEY, readJson, writeJson } from "../fastStart";
+import { FRIENDS_CACHE_KEY, onClearFastCache, readJson, writeJson } from "../fastStart";
 
 export type Friend = { uid: string; name: string; /** 친구가 고른 "내 새"(없으면 이름으로 정해요) */ bird?: string; /** 친구가 올린 프로필 사진(작은 JPEG 글자). 없으면 새 얼굴 */ photo?: string; /** 이 친구가 예전에 쓰던 계정(링크로 편지를 받았을 때의 임시 계정 등). 같은 사람으로 묶어요 */ prev?: string[] };
 const BIRDS_OK = ["magpie", "pigeon", "swallow", "crane", "bungbungi", "hawk"];
@@ -62,6 +62,7 @@ export async function lookupCode(code: string): Promise<Friend | null> {
 
 /** 코드로 친구 맺기: 내 목록과 상대 목록에 서로 남겨요(서로 친구여야 앱 안에서 바로 보낼 수 있어요) */
 export async function addFriend(code: string, myName: string, myBird?: string, myPhoto?: string): Promise<Friend> {
+  forgetFriends();
   const user = await ensureUser();
   const other = await lookupCode(code);
   if (!other) throw new Error("not-found");
@@ -89,6 +90,7 @@ export async function addFriend(code: string, myName: string, myBird?: string, m
  * 서로의 친구 목록에 남기고, 예전에 링크를 열었던 임시 계정(prev)도 함께 적어 두면 보낸 사람 화면에서 한 사람으로 모여요.
  */
 export async function befriendSender(sender: { uid: string; name: string }, myName: string, myBird?: string, myPhoto?: string, prev?: string[]) {
+  forgetFriends();
   const user = await ensureUser();
   if (user.isAnonymous || sender.uid === user.uid) return;
   const d = db();
@@ -107,7 +109,21 @@ export async function befriendSender(sender: { uid: string; name: string }, myNa
   try { await write(true); } catch { await write(false); }
 }
 
-export async function listFriends(): Promise<Friend[]> {
+// 앱 전체가 친구 목록을 한 번만 받아요(30초 안에 다른 화면이 또 물으면 받아 둔 것을 줘요, 동시에 물으면 한 번만 받아요)
+let memFriends: { at: number; list: Friend[] } | null = null;
+let friendsInflight: Promise<Friend[]> | null = null;
+onClearFastCache(() => { memFriends = null; });
+/** 친구를 맺거나 끊은 뒤에는 다음에 새로 받게 해요 */
+const forgetFriends = () => { memFriends = null; };
+
+export async function listFriends(opts: { fresh?: boolean } = {}): Promise<Friend[]> {
+  if (!opts.fresh && memFriends && Date.now() - memFriends.at < 30000) return memFriends.list;
+  if (friendsInflight) return friendsInflight;
+  friendsInflight = fetchFriends().then((list) => { memFriends = { at: Date.now(), list }; return list; }).finally(() => { friendsInflight = null; });
+  return friendsInflight;
+}
+
+async function fetchFriends(): Promise<Friend[]> {
   const user = await ensureUser();
   const s = await getDocs(collection(db(), "users", user.uid, "friends"));
   const okPrev = (p: unknown) => (Array.isArray(p) ? p.filter((u): u is string => typeof u === "string").slice(0, 10) : undefined);
@@ -128,6 +144,7 @@ export function cachedFriends(): Friend[] {
 
 /** 친구 끊기: 양쪽 목록에서 지워요(끊으면 서로에게 바로 보내기는 멈춰요) */
 export async function removeFriend(friendUid: string) {
+  forgetFriends();
   const user = await ensureUser();
   const d = db();
   await deleteDoc(doc(d, "users", user.uid, "friends", friendUid));
