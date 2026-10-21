@@ -1017,3 +1017,13 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .pz-tags span { background: rgba(255,255,255,.14); border-radius: 999px; padding: 6px 12px; font-size: 16px; }
 .pz-x { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px; width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.16); color: #fff; font-size: 22px; cursor: pointer; }
 .pz-intro { font-size: 20px; font-weight: 600; max-width: 340px; line-height: 1.45; }
+
+/* 지도 공유(8차 시안): 대화방 지도 오른쪽 위 [📸 공유] + 미리 보기 시트 */
+.ch-mapwrap { position: relative; flex: none; }
+.ch-share { position: absolute; right: 48px; top: 8px; z-index: 2; height: 32px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--dahong); color: var(--on-dahong); font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.2); }
+.ch-share:active { transform: translateY(1px); }
+.ch-sharelink { align-self: center; border: 0; background: none; color: var(--dahong); font: inherit; font-size: 15px; font-weight: 700; padding: 8px 12px; cursor: pointer; }
+.sharemap .sm-preview { display: grid; place-items: center; min-height: 200px; }
+.sharemap .sm-preview img { width: min(56vw, 260px); aspect-ratio: 9 / 16; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
+.sharemap .sm-name { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; min-height: 44px; }
+.sharemap .sm-name input { width: 22px; height: 22px; accent-color: var(--dahong); }
