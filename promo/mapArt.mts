@@ -7,6 +7,17 @@
 import { LAND, decodeRing } from "../core/koreaGeo.ts";
 import { getPlace, REGION_LABELS } from "../core/places.ts";
 import { PEAKS, RIVERS } from "../core/mapDetail.ts";
+import { createRequire } from "node:module";
+
+// 앱과 같은 명소 그림(LandmarkIcon). 쓰는 쪽(build-*)이 React를 먼저 준비해 둬요
+const req = createRequire(import.meta.url);
+const React = req("react");
+const { renderToStaticMarkup } = req("react-dom/server");
+(globalThis as any).React ??= React;
+const { default: LandmarkIcon } = await import("../src/components/LandmarkIcon.tsx");
+const LM_COLORS: Record<string, string> = { "--namsaek": "#1E3A5C", "--dahong": "#C1481F", "--b-cream": "#FBF3E4" };
+const landmarkSvg = (kind: string, x: number, y: number, s: number) =>
+  renderToStaticMarkup(React.createElement(LandmarkIcon as any, { kind, x, y, scale: s })).replace(/var\((--[a-z0-9-]+)\)/g, (_m: string, v: string) => LM_COLORS[v] ?? "#1E3A5C");
 
 type Opt = { w: number; h: number; from: string; to: string; p?: number; light?: boolean; faded?: boolean; bird?: string; zoom?: number; plain?: boolean };
 
@@ -55,8 +66,11 @@ function landTest(rings: [number, number][][]) {
   };
 }
 
-// 큰 도시만 이름표(명소 그림과 함께)
-const CITY_IDS = ["seoul", "incheon", "chuncheon", "gangneung", "daejeon", "jeonju", "gwangju", "daegu", "busan", "ulsan", "gyeongju", "yeosu", "jeju", "sokcho"];
+// 도시 이름표 + 명소 그림(2026-10-22 대표님: "산만 있어, 도시도 있고 랜드마크들이 적절히"). 겹치면 앞쪽(큰 도시)이 이겨요
+const CITY_IDS = ["seoul", "busan", "daegu", "gwangju", "daejeon", "incheon", "ulsan", "jeju", "gyeongju", "jeonju", "gangneung", "chuncheon",
+  "suwon", "cheongju", "andong", "pohang", "yeosu", "mokpo", "sokcho", "wonju", "cheonan", "jinju", "gunsan", "changwon", "tongyeong", "seogwipo"];
+// 산은 이름난 곳 몇 개만(나머지는 명소 그림이 대신해요)
+const PEAK_NAMES = ["설악산", "지리산", "속리산", "태백산", "한라산"];
 const shortName = (n: string) => n.replace(/^서울 .*/, "서울");
 
 function mountain(x: number, y: number, s: number) {
@@ -90,25 +104,43 @@ export function koreaMapSvg(o: Opt) {
   const R = rnd(w * 7 + h);
   // 바다 물결(땅 밖에만), 땅 위 나무(땅 안에만, 길 근처는 비워 둬요)
   const waves: string[] = [], trees: string[] = [];
-  const nearRoute = (x: number, y: number) => { for (let t = 0; t <= 1; t += 0.05) { const q = c.at(t); if (Math.hypot(q.x - x, q.y - y) < 70 * unit) return true; } return false; };
+  const nearRoute = (x: number, y: number, d = 70) => { for (let t = 0; t <= 1; t += 0.02) { const q = c.at(t); if (Math.hypot(q.x - x, q.y - y) < d * unit) return true; } return false; };
   const step = 92 * unit;
   for (let y = step / 2; y < h; y += step) for (let x = step / 2; x < w; x += step) {
     const jx = x + (R() - 0.5) * step * 0.8, jy = y + (R() - 0.5) * step * 0.8;
-    if (isLand(jx, jy)) { if (R() < 0.55 && !nearRoute(jx, jy)) trees.push(tree(jx, jy, (1.3 + R() * 0.7) * unit, R() < 0.5 ? 1 : 0)); }
+    if (isLand(jx, jy)) { if (R() < 0.28 && !nearRoute(jx, jy)) trees.push(tree(jx, jy, (1.3 + R() * 0.7) * unit, R() < 0.5 ? 1 : 0)); }
     else if (R() < 0.45) waves.push(`<path d="M${f(jx - 14 * unit)} ${f(jy)} q${f(7 * unit)} ${f(-7 * unit)} ${f(14 * unit)} 0 t${f(14 * unit)} 0" fill="none" stroke="#fff" stroke-width="${f(3 * unit)}" stroke-linecap="round" opacity=".7"/>`);
   }
   const rivers = RIVERS.filter((r) => r.widthKm >= 0.3).map((r) =>
     `<path d="M${r.pts.map(([lng, lat]) => P(lng, lat).map(f).join(" ")).join("L")}" fill="none" stroke="#8FC6E3" stroke-width="${f(6 * unit)}" stroke-linecap="round" stroke-linejoin="round"/>`).join("");
-  const regions = REGION_LABELS.map((r) => { const [x, y] = P(r.lng, r.lat); return `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" font-size="${f(30 * unit)}" font-weight="800" fill="#B99B6B" opacity=".45" letter-spacing="${f(6 * unit)}">${r.name}</text>`; }).join("");
-  const peaks = PEAKS.filter((pk) => !["남산", "관악산", "북한산"].includes(pk.name)).map((pk) => { const [x, y] = P(pk.lng, pk.lat); return nearRoute(x, y - 20 * unit) ? "" : mountain(x, y, 1.5 * unit); }).join("");
+  const regionAt = REGION_LABELS.map((r) => { const [x, y] = P(r.lng, r.lat); return { r, x, y }; });
+  const regionSvg = () => regionAt.filter(({ x, y }) => !hit([x - 50 * unit, y - 30 * unit, x + 50 * unit, y + 6 * unit])).map(({ r, x, y }) => `<text x="${f(x)}" y="${f(y)}" text-anchor="middle" font-size="${f(30 * unit)}" font-weight="800" fill="#B99B6B" opacity=".45" letter-spacing="${f(6 * unit)}">${r.name}</text>`).join("");
+  const peaks = PEAKS.filter((pk) => PEAK_NAMES.includes(pk.name)).map((pk) => { const [x, y] = P(pk.lng, pk.lat); return nearRoute(x, y - 20 * unit) ? "" : mountain(x, y, 1.15 * unit); }).join("");
   const label = (x: number, y: number, name: string, dy: number) => {
     const tw = name.length * 26 * unit + 28 * unit;
     return `<rect x="${f(x - tw / 2)}" y="${f(y + dy)}" width="${f(tw)}" height="${f(40 * unit)}" rx="${f(20 * unit)}" fill="#fff" opacity=".94"/>
       <text x="${f(x)}" y="${f(y + dy + 28 * unit)}" text-anchor="middle" font-size="${f(26 * unit)}" font-weight="800" fill="#2A2118">${name}</text>`;
   };
+  // 명소 그림(동그란 흰 받침 위) + 그 아래 도시 이름. 화면 밖·다른 이름표와 겹치는 곳은 빼요
+  const boxes: [number, number, number, number][] = [];
+  const hit = (b: [number, number, number, number]) => boxes.some((q) => b[0] < q[2] && b[2] > q[0] && b[1] < q[3] && b[3] > q[1]);
+  for (const pt of [c.a, c.b]) boxes.push([pt.x - 70 * unit, pt.y - 30 * unit, pt.x + 70 * unit, pt.y + 70 * unit]);
   const cities = CITY_IDS.filter((id) => id !== o.from && id !== o.to).map((id) => getPlace(id)).filter(Boolean).map((pl) => {
-    const [x, y] = P(pl!.lng, pl!.lat);
-    return `<g><circle cx="${f(x)}" cy="${f(y)}" r="${f(8 * unit)}" fill="#fff" stroke="#1E3A5C" stroke-width="${f(3 * unit)}"/>${label(x, y, shortName(pl!.name), 12 * unit)}</g>`;
+    const [px, py] = P(pl!.lng, pl!.lat);
+    const name = shortName(pl!.name), tw = name.length * 24 * unit + 26 * unit, half = Math.max(tw / 2, 30 * unit);
+    // 길 위에 있는 도시는 표를 옆으로 비켜 놓고, 진짜 자리에는 작은 점을 찍어요
+    for (const dx of [0, -95, 95]) {
+      const x = px + dx * unit, y = py;
+      const box: [number, number, number, number] = [x - half, y - 62 * unit, x + half, y + 34 * unit];
+      if (x < 30 * unit || x > w - 30 * unit || y < 70 * unit || y > h - 40 * unit || hit(box) || nearRoute(x, y - 14 * unit, 58)) continue;
+      boxes.push(box);
+      return `<g>${dx ? `<path d="M${f(px)} ${f(py)}L${f(x)} ${f(y + 8 * unit)}" stroke="#1E3A5C" stroke-width="${f(2 * unit)}" stroke-dasharray="${f(3 * unit)} ${f(4 * unit)}" opacity=".5"/><circle cx="${f(px)}" cy="${f(py)}" r="${f(7 * unit)}" fill="#fff" stroke="#1E3A5C" stroke-width="${f(3 * unit)}"/>` : ""}
+      <circle cx="${f(x)}" cy="${f(y - 30 * unit)}" r="${f(25 * unit)}" fill="#fff" opacity=".92" stroke="#E8D6B2" stroke-width="${f(2 * unit)}"/>
+      ${landmarkSvg(pl!.landmark.kind, x, y - 30 * unit, 1.9 * unit)}
+      <rect x="${f(x - tw / 2)}" y="${f(y - 2 * unit)}" width="${f(tw)}" height="${f(34 * unit)}" rx="${f(17 * unit)}" fill="#1E3A5C"/>
+      <text x="${f(x)}" y="${f(y + 23 * unit)}" text-anchor="middle" font-size="${f(22 * unit)}" font-weight="800" fill="#fff">${name}</text></g>`;
+    }
+    return "";
   }).join("");
   const clouds = [[0.18, 0.12, 1.4, 0.85], [0.82, 0.2, 1.1, 0.8], [0.12, 0.55, 1.0, 0.7], [0.88, 0.62, 1.3, 0.75], [0.6, 0.9, 1.2, 0.7]]
     .map(([px, py, s, op]) => cloud(px * w, py * h, s * unit, op)).join("");
@@ -118,7 +150,7 @@ export function koreaMapSvg(o: Opt) {
     ${waves.join("")}
     <path d="${land}" fill="#FFF8EA" stroke="#FFF8EA" stroke-width="${f(22 * unit)}" stroke-linejoin="round"/>
     <path d="${land}" fill="#F4E6C8" stroke="#C9AE7E" stroke-width="${f(3.5 * unit)}" stroke-linejoin="round"/>
-    ${regions}${rivers}${trees.join("")}${peaks}${clouds}${cities}
+    ${regionSvg()}${rivers}${trees.join("")}${peaks}${clouds}${cities}
     <path d="${c.d}" fill="none" stroke="#fff" stroke-width="${f(16 * unit)}" stroke-linecap="round" opacity=".9"/>
     <path d="${c.d}" fill="none" stroke="#C1481F" stroke-width="${f(7 * unit)}" stroke-linecap="round" stroke-dasharray="${f(2 * unit)} ${f(16 * unit)}"/>
     <circle cx="${f(c.a.x)}" cy="${f(c.a.y)}" r="${f(18 * unit)}" fill="#fff"/><circle cx="${f(c.a.x)}" cy="${f(c.a.y)}" r="${f(12 * unit)}" fill="#C1481F"/>

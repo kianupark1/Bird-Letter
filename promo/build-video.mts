@@ -93,7 +93,8 @@ ${MAP_CSS}
 <div class="L" id="mapL"><div class="L" style="overflow:hidden">${koreaMapSvg({ w: W, h: MH, from: v.from, to: v.dest, zoom: 0.95 })}
   <svg class="L" width="${W}" height="${MH}"><path id="trail" d="${curve.d}" fill="none" stroke="#C1481F" stroke-width="12" stroke-linecap="round"/>
   <circle id="ripple" cx="${curve.b.x}" cy="${curve.b.y}" r="20" fill="none" stroke="#1B6E5C" stroke-width="8"/></svg>
-  <svg class="L" width="${W}" height="${MH}"><g id="mbird">${flyG(v.bird, 4.2, curve.b.x < curve.a.x)}</g></svg></div>
+  <svg class="L" width="${W}" height="${MH}"><g id="mbird"><g id="mwind" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".85">
+    <path d="M-150 -18 h70"/><path d="M-175 8 h90"/><path d="M-140 32 h55"/></g>${flyG(v.bird, 2.6, curve.b.x < curve.a.x)}</g></svg></div>
   <div style="position:absolute;left:0;right:0;top:110px;text-align:center"><span style="display:inline-block;background:#fff;border-radius:999px;padding:20px 48px;font-size:62px;font-weight:850;box-shadow:0 10px 0 rgba(42,33,24,.08)">${v.to}</span></div>
   <div class="card" style="top:1420px" id="cardC">
     <div style="display:flex;align-items:center;gap:22px"><div style="width:130px">${bird(v.bird, 130, true)}</div>
@@ -159,7 +160,11 @@ window.render = (t) => {
   const p = ease(k(t, 4.6, 8.6));
   const q = PTS[Math.round(p * 100)];
   const tl = q[2] > 90 || q[2] < -90 ? -(q[2] > 0 ? 180 - q[2] : -180 - q[2]) : q[2]; // 왼쪽을 볼 땐 뒤집힌 만큼 반대로 기울여요
-  $("mbird").setAttribute("transform", "translate(" + q[0] + " " + (q[1] - 40 + Math.sin(t * 6) * 8) + ") rotate(" + Math.max(-20, Math.min(20, tl * 0.35)) + ")");
+  // 날고 있는 느낌: 위아래로 둥실 + 가는 반대쪽에 바람 줄이 흘러가요(왼쪽으로 가면 줄도 뒤집어요)
+  $("mbird").setAttribute("transform", "translate(" + q[0] + " " + (q[1] - 30 + Math.sin(t * 7) * 12) + ") rotate(" + Math.max(-20, Math.min(20, tl * 0.35)) + ")");
+  const wf = (t * 2.2) % 1, LEFT = ${curve.b.x < curve.a.x};
+  $("mwind").setAttribute("transform", (LEFT ? "scale(-1 1) " : "") + "translate(" + (-wf * 60) + " 0)");
+  $("mwind").style.opacity = (0.85 * Math.sin(Math.PI * wf) * (p > 0 && p < 1 ? 1 : 0)).toFixed(2);
   trail.style.strokeDashoffset = LEN * (1 - p);
   $("barC").style.width = (p * 100).toFixed(1) + "%";
   $("whereC").textContent = p >= 1 ? "도착했어요! 💌" : p > 0.82 ? "곧 도착해요" : p > 0.42 ? ${JSON.stringify(v.mid)} : "출발했어요";
