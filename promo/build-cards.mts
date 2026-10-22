@@ -16,6 +16,7 @@ const { default: BirdIcon } = await import("../src/components/BirdIcon.tsx");
 const { BIRDS_SLOW_TO_FAST, getBird } = await import("../core/birds.ts");
 const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
+const { STORE_LINES } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
 const root = resolve(import.meta.dirname, "..");
@@ -89,7 +90,7 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
   { file: "06-launch", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
     <div style="margin:0 auto">${bird("magpie", 420, true)}</div>
     <h1 style="text-align:center;margin-top:30px;font-size:96px">새 편지가<br><span class="hl">날아올랐어요</span></h1>
-    <p class="sub" style="text-align:center">구글 플레이에서 ‘새 편지’를 찾아 주세요<br>아이폰 앱은 곧 따라 날아가요</p>
+    <p class="sub" style="text-align:center">${STORE_LINES.join("<br>")}</p>
     <div style="display:flex;justify-content:center;gap:14px;margin-top:34px">${BIRDS_SLOW_TO_FAST.slice().reverse().map((b) => bird(b.id, 120)).join("")}</div>${FOOT}</div>` },
 
   { file: "07-wait", w: 1080, h: 1350, html: `<style>body{background:#16243A;color:#FBF3E4}.brand small{color:#F0BC5C;border-color:#F0BC5C}</style>${BAND}<div class="wrap">

@@ -1,6 +1,8 @@
 /**
- * 홍보 영상(세로 15초, 릴스·틱톡·쇼츠 공용) 생성기: npx tsx promo/build-video.mts
- * 결과: promo/video/saepyeonji-15s.mp4 (1080×1920, 30fps, 소리 포함), 표지 promo/video/saepyeonji-15s-cover.png
+ * 홍보 영상(세로 15초, 릴스·틱톡·쇼츠 공용) 생성기: npx tsx promo/build-video.mts [mom|love|grandma]
+ * 결과(이야기 3편, 틱톡은 자주 올려야 해서 여러 편): promo/video/saepyeonji-15s.mp4(엄마·부산·두루미),
+ *   saepyeonji-15s-love.mp4(멀리 있는 너·경주·매), saepyeonji-15s-grandma.mp4(할머니·강릉·까치). 1080×1920, 30fps, 소리 포함, 표지는 -cover.png
+ * 받는 곳 문구는 promo/store.mts 한곳.
  * 한 장면씩 그림을 정확한 시각으로 찍어서(프레임 450장) 이어 붙여요. AI 생성 크레딧이 필요 없어요.
  * 흐름: ① 고객의 문제(너무 빠른 답장) → ② 천천히 오는 소식 → ③ 지도 위를 날아가는 새 → ④ 두루마리 펼침 → ⑤ 앱 이름·받는 곳
  * 소리: 직접 만든 효과음(톡·푸드덕·짹짹·종이·종)과 잔잔한 화음. 올릴 때 앱에서 유행 음원을 덧입혀도 돼요.
@@ -20,7 +22,9 @@ const { default: BirdIcon } = await import("../src/components/BirdIcon.tsx");
 const { getBird } = await import("../core/birds.ts");
 const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
+const { withIGa } = await import("../core/korean.ts");
 const { koreaMapSvg, routeCurve } = await import("./mapArt.mts");
+const { STORE_PILL, STORE_SUB } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
 const root = resolve(import.meta.dirname, "..");
@@ -28,13 +32,27 @@ const W = 1080, H = 1920, FPS = 30, DUR = 15;
 const css = readFileSync(resolve(root, "src/app/globals.css"), "utf8").split("* { box-sizing")[0].replace(/@media \(prefers-color-scheme: dark\)[\s\S]*$/, "}");
 const FONT = resolve(root, "node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2");
 const bird = (id: string, size: number, letter = false) => renderToStaticMarkup(React.createElement(BirdIcon as any, { id, size, letter }));
-const BUSAN = getRoute("seoul-busan").km;
-const CRANE_MIN = Math.max(1, travelMinutes(getBird("crane"), BUSAN));
+// 이야기마다 첫 1초 문제(hook)·받는 사람·노선·새·두루마리 글이 달라요. 시간·거리는 앱 계산식 그대로
+const VARIANTS = {
+  mom: { file: "saepyeonji-15s", hook: ["답장, 너무 빨라서", "설레지 않죠?"], to: "엄마에게 보내는 편지 💌", from: "seoul", dest: "busan", bird: "crane", mid: "대전을 지났어요",
+    chat: ["ㅇㅇ", "ㅋㅋㅋ", "읽음", "?", "왜 답 안 해", "ㅇㅋ"], lines: ["엄마, 이번 주말에", "내려갈게요.", "된장찌개 해 주세요 🙂"] },
+  love: { file: "saepyeonji-15s-love", hook: ["읽씹될까 봐", "조마조마할 때"], to: "멀리 있는 너에게 💌", from: "seoul", dest: "gyeongju", bird: "hawk", mid: "월악산을 지났어요",
+    chat: ["자?", "…", "읽음", "왜 답 없어", "ㅠㅠ", "잘 자"], lines: ["경주는 어때?", "보고 싶어서", "편지 먼저 보낸다 💌"] },
+  grandma: { file: "saepyeonji-15s-grandma", hook: ["전화는 쑥스럽고", "문자는 너무 짧을 때"], to: "할머니께 보내는 편지 💌", from: "seoul", dest: "gangneung", bird: "magpie", mid: "오대산을 지났어요",
+    chat: ["ㅇㅇ", "넵", "읽음", "ㅎㅎ", "ㅇㅋ", "👍"], lines: ["할머니, 날 추워요.", "감기 조심하시고", "주말에 갈게요 🙂"] },
+} as const;
+type VKey = keyof typeof VARIANTS;
+const pick = process.argv[2] as VKey | undefined;
+if (pick && !VARIANTS[pick]) throw new Error(`모르는 이야기: ${pick} (mom|love|grandma)`);
 const MH = H + 340; // 지도를 아래로 내려 위쪽 제목과 안 겹치게(그림은 화면보다 길게 그려서 빈 곳이 없게)
-const curve = routeCurve(W, MH, "seoul", "busan", 0.95);
-const pts = Array.from({ length: 101 }, (_, i) => curve.at(i / 100));
 
-const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${css}
+function htmlFor(v: (typeof VARIANTS)[VKey]) {
+const ROUTE = getRoute(`${v.from}-${v.dest}`), B = getBird(v.bird);
+const FLY_MIN = Math.max(1, travelMinutes(B, ROUTE.km));
+const curve = routeCurve(W, MH, v.from, v.dest, 0.95);
+const pts = Array.from({ length: 101 }, (_, i) => curve.at(i / 100));
+return `<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><style>${css}
 @font-face { font-family: P; src: url("file://${FONT}") format("woff2"); font-weight: 100 900; }
 * { box-sizing: border-box; margin: 0; }
 html, body { width: ${W}px; height: ${H}px; overflow: hidden; }
@@ -53,21 +71,21 @@ svg { overflow: visible; display: block; }
 .pill { display: inline-flex; align-items: center; gap: 16px; background: #C1481F; color: #fff; border-radius: 999px; padding: 30px 54px; font-size: 52px; font-weight: 850; box-shadow: 0 12px 0 #8E3214; }
 </style></head><body>
 <div class="L" id="navy" style="background:#16243A"></div>
-<div class="L" id="mapL"><div class="L" style="overflow:hidden">${koreaMapSvg({ w: W, h: MH, from: "seoul", to: "busan", zoom: 0.95 })}
+<div class="L" id="mapL"><div class="L" style="overflow:hidden">${koreaMapSvg({ w: W, h: MH, from: v.from, to: v.dest, zoom: 0.95 })}
   <svg class="L" width="${W}" height="${MH}"><path id="trail" d="${curve.d}" fill="none" stroke="#C1481F" stroke-width="12" stroke-linecap="round"/>
   <circle id="ripple" cx="${curve.b.x}" cy="${curve.b.y}" r="20" fill="none" stroke="#1B6E5C" stroke-width="8"/></svg>
-  <div id="mbird" style="position:absolute;left:0;top:0;width:260px;height:210px">${bird("crane", 260, true)}</div></div>
-  <div style="position:absolute;left:0;right:0;top:110px;text-align:center"><span style="display:inline-block;background:#fff;border-radius:999px;padding:20px 48px;font-size:62px;font-weight:850;box-shadow:0 10px 0 rgba(42,33,24,.08)">엄마에게 보내는 편지 💌</span></div>
+  <div id="mbird" style="position:absolute;left:0;top:0;width:260px;height:210px">${bird(v.bird, 260, true)}</div></div>
+  <div style="position:absolute;left:0;right:0;top:110px;text-align:center"><span style="display:inline-block;background:#fff;border-radius:999px;padding:20px 48px;font-size:62px;font-weight:850;box-shadow:0 10px 0 rgba(42,33,24,.08)">${v.to}</span></div>
   <div class="card" style="top:1420px" id="cardC">
-    <div style="display:flex;align-items:center;gap:22px"><div style="width:130px">${bird("crane", 130, true)}</div>
-      <div><div style="font-size:50px;font-weight:850">두루미가 날아가는 중</div><div style="font-size:38px;opacity:.7;margin-top:4px">서울 → 부산 ${BUSAN}km · ${formatMinutes(CRANE_MIN)}</div></div></div>
+    <div style="display:flex;align-items:center;gap:22px"><div style="width:130px">${bird(v.bird, 130, true)}</div>
+      <div><div style="font-size:50px;font-weight:850">${withIGa(B.name)} 날아가는 중</div><div style="font-size:38px;opacity:.7;margin-top:4px">${ROUTE.from.name} → ${ROUTE.to.name} ${ROUTE.km}km · ${formatMinutes(FLY_MIN)}</div></div></div>
     <div class="bar"><i id="barC"></i></div>
     <div style="display:flex;justify-content:space-between;margin-top:18px;font-size:40px;font-weight:800"><span id="whereC" style="color:#C1481F"></span><span id="leftC"></span></div>
   </div>
 </div>
 <div class="L" id="sceneA">
-  <div class="cap" style="top:330px;font-size:104px;color:#FBF3E4">답장, 너무 빨라서<br><span style="color:#F0BC5C">설레지 않죠?</span></div>
-  ${[["ㅇㅇ", 0], ["ㅋㅋㅋ", 1], ["읽음", 0], ["?", 1], ["왜 답 안 해", 0], ["ㅇㅋ", 1]].map(([t, me], i) => `<div class="bub ${me ? "me" : ""}" id="b${i}" style="${me ? "right:120px" : "left:120px"};top:${780 + i * 140}px">${t}</div>`).join("")}
+  <div class="cap" style="top:330px;font-size:104px;color:#FBF3E4">${v.hook[0]}<br><span style="color:#F0BC5C">${v.hook[1]}</span></div>
+  ${v.chat.map((t, i) => [t, i % 2] as const).map(([t, me], i) => `<div class="bub ${me ? "me" : ""}" id="b${i}" style="${me ? "right:120px" : "left:120px"};top:${780 + i * 140}px">${t}</div>`).join("")}
 </div>
 <div class="L" id="sceneB">
   <div class="cap" style="top:440px;font-size:96px">가끔은<br>천천히 오는 소식이<br><span style="color:#C1481F">더 설레요</span></div>
@@ -78,26 +96,24 @@ svg { overflow: visible; display: block; }
   <div class="rod" style="top:600px"></div>
   <div class="paper" id="paper" style="top:626px;height:0">
     <div style="height:60px"></div>
-    <div class="ln" id="l0">엄마, 이번 주말에</div>
-    <div class="ln" id="l1">내려갈게요.</div>
-    <div class="ln" id="l2">된장찌개 해 주세요 🙂</div>
+    ${v.lines.map((t, i) => `<div class="ln" id="l${i}">${t}</div>`).join("\n    ")}
   </div>
   <div class="rod" id="rod2" style="top:600px"></div>
   <div id="pola" style="position:absolute;right:110px;top:1260px;width:330px;background:#fff;padding:20px 20px 80px;box-shadow:0 16px 34px rgba(42,33,24,.25);transform:rotate(6deg)">
     <div id="polaImg" style="height:290px;background:linear-gradient(#9CC7E0,#E9D7B5 70%,#C9A27A)"></div></div>
-  <div id="dbird" style="position:absolute;left:120px;top:1300px;transform:rotate(-6deg)">${bird("crane", 300, true)}</div>
+  <div id="dbird" style="position:absolute;left:120px;top:1300px;transform:rotate(-6deg)">${bird(v.bird, 300, true)}</div>
 </div>
 <div class="L" id="sceneE" style="background:#FBF3E4">
   <div style="position:absolute;left:0;right:0;top:0;height:26px;display:flex"><i style="flex:1;background:#C1481F"></i><i style="flex:1;background:#E0A83C"></i><i style="flex:1;background:#1B6E5C"></i><i style="flex:1;background:#1E3A5C"></i></div>
   <div id="ebird" style="position:absolute;left:250px;top:330px">${bird("magpie", 580, true)}</div>
   <div class="cap" style="top:860px;font-size:150px;letter-spacing:-4px">새 편지</div>
   <div class="cap" style="top:1060px;font-size:60px;font-weight:700;color:#C1481F">기다림이 즐거운 편지</div>
-  <div style="position:absolute;left:0;right:0;top:1250px;text-align:center"><span class="pill" id="pill">구글 플레이에서 ‘새 편지’ · 무료</span>
-    <div style="font-size:40px;font-weight:600;opacity:.65;margin-top:34px">아이폰 앱은 곧 날아가요</div></div>
+  <div style="position:absolute;left:0;right:0;top:1250px;text-align:center"><span class="pill" id="pill">${STORE_PILL}</span>
+    ${STORE_SUB ? `<div style="font-size:40px;font-weight:600;opacity:.65;margin-top:34px">${STORE_SUB}</div>` : ""}</div>
 </div>
 <script>
 const PTS = ${JSON.stringify(pts.map((p) => [Math.round(p.x), Math.round(p.y), Math.round(p.angle)]))};
-const TOTAL = ${CRANE_MIN};
+const TOTAL = ${FLY_MIN};
 const $ = (id) => document.getElementById(id);
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const k = (t, a, b) => clamp((t - a) / (b - a));           // a~b 사이 진행(0~1)
@@ -115,7 +131,7 @@ window.render = (t) => {
   const bIn = k(t, 2.6, 3.0), bOut = k(t, 4.1, 4.5);
   show($("sceneB"), bIn * (1 - bOut));
   $("bbird").style.transform = "translate(" + (1 - ease(k(t, 2.7, 3.6))) * 700 + "px," + Math.sin(t * 6) * 14 + "px)";
-  // ③ 4.4~9.2초: 지도 위를 날아가는 두루미(시간을 빨리 감아서)
+  // ③ 4.4~9.2초: 지도 위를 날아가는 새(시간을 빨리 감아서)
   const mIn = k(t, 4.2, 4.6), mOut = k(t, 9.0, 9.4);
   show($("mapL"), mIn * (1 - mOut));
   const p = ease(k(t, 4.6, 8.6));
@@ -123,7 +139,7 @@ window.render = (t) => {
   $("mbird").style.transform = "translate(" + (q[0] - 130) + "px," + (q[1] - 150 + Math.sin(t * 9) * 10) + "px) rotate(" + (q[2] > 90 || q[2] < -90 ? 0 : q[2] * 0.25) + "deg)";
   trail.style.strokeDashoffset = LEN * (1 - p);
   $("barC").style.width = (p * 100).toFixed(1) + "%";
-  $("whereC").textContent = p >= 1 ? "도착했어요! 💌" : p > 0.82 ? "곧 도착해요" : p > 0.42 ? "대전을 지났어요" : "출발했어요";
+  $("whereC").textContent = p >= 1 ? "도착했어요! 💌" : p > 0.82 ? "곧 도착해요" : p > 0.42 ? ${JSON.stringify(v.mid)} : "출발했어요";
   $("leftC").textContent = p >= 1 ? "" : "남은 시간 " + fmt(TOTAL * (1 - p));
   const r = k(t, 8.6, 9.2); const rp = $("ripple"); rp.setAttribute("r", 20 + r * 90); rp.style.opacity = r > 0 ? 1 - r : 0;
   // ④ 9.2~12.4초: 두루마리 펼침 + 폴라로이드가 선명해짐
@@ -141,6 +157,7 @@ window.render = (t) => {
 };
 window.render(0);
 </script></body></html>`;
+}
 
 // 소리: 직접 만든 효과음(44.1kHz 모노 WAV)
 function makeAudio(path: string) {
@@ -170,23 +187,27 @@ function makeAudio(path: string) {
 }
 
 const out = resolve(root, "promo/video"), tmp = resolve(root, "promo/video/.frames");
-rmSync(tmp, { recursive: true, force: true }); mkdirSync(tmp, { recursive: true });
-writeFileSync(resolve(tmp, "index.html"), html, "utf8");
 const browser = await chromium.launch({ args: ["--no-sandbox", "--allow-file-access-from-files"] });
-const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
-await page.goto("file://" + resolve(tmp, "index.html"));
-await page.evaluate(() => document.fonts.ready);
-for (let f = 0; f < FPS * DUR; f++) {
-  await page.evaluate((t) => (window as any).render(t), f / FPS);
-  await page.screenshot({ path: resolve(tmp, `f${String(f).padStart(4, "0")}.jpg`), type: "jpeg", quality: 92 });
-  if (f % 60 === 0) console.log(`${(f / FPS).toFixed(0)}초`);
+for (const key of (pick ? [pick] : Object.keys(VARIANTS)) as VKey[]) {
+  const v = VARIANTS[key];
+  rmSync(tmp, { recursive: true, force: true }); mkdirSync(tmp, { recursive: true });
+  writeFileSync(resolve(tmp, "index.html"), htmlFor(v), "utf8");
+  const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
+  await page.goto("file://" + resolve(tmp, "index.html"));
+  await page.evaluate(() => document.fonts.ready);
+  for (let f = 0; f < FPS * DUR; f++) {
+    await page.evaluate((t) => (window as any).render(t), f / FPS);
+    await page.screenshot({ path: resolve(tmp, `f${String(f).padStart(4, "0")}.jpg`), type: "jpeg", quality: 92 });
+    if (f % 90 === 0) console.log(`${key} ${(f / FPS).toFixed(0)}초`);
+  }
+  await page.evaluate((t) => (window as any).render(t), 14.2);
+  await page.screenshot({ path: resolve(out, `${v.file}-cover.png`) });
+  await page.close();
+  makeAudio(resolve(tmp, "audio.wav"));
+  execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(FPS), "-i", resolve(tmp, "f%04d.jpg"), "-i", resolve(tmp, "audio.wav"),
+    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-preset", "medium", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", "-shortest",
+    resolve(out, `${v.file}.mp4`)]);
+  console.log(`promo/video/${v.file}.mp4`);
 }
-await page.evaluate((t) => (window as any).render(t), 14.2);
-await page.screenshot({ path: resolve(out, "saepyeonji-15s-cover.png") });
 await browser.close();
-makeAudio(resolve(tmp, "audio.wav"));
-execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(FPS), "-i", resolve(tmp, "f%04d.jpg"), "-i", resolve(tmp, "audio.wav"),
-  "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "20", "-preset", "medium", "-c:a", "aac", "-b:a", "160k", "-movflags", "+faststart", "-shortest",
-  resolve(out, "saepyeonji-15s.mp4")]);
 rmSync(tmp, { recursive: true, force: true });
-console.log("promo/video/saepyeonji-15s.mp4");
