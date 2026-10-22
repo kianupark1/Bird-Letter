@@ -6,7 +6,7 @@
  * 받는 곳 문구는 promo/store.mts 한곳.
  * 한 장면씩 그림을 정확한 시각으로 찍어서(프레임 450장) 이어 붙여요. AI 생성 크레딧이 필요 없어요.
  * 흐름: ① 고객의 문제(너무 빠른 답장) → ② 천천히 오는 소식 → ③ 지도 위를 날아가는 새 → ④ 두루마리 펼침 → ⑤ 앱 이름·받는 곳
- * 소리: 직접 만든 효과음(톡·푸드덕·짹짹·종이·종)과 잔잔한 화음. 올릴 때 앱에서 유행 음원을 덧입혀도 돼요.
+ * 소리: 통통 튀는 마림바 새 노래 + 짹짹·푸드덕·종이·종(모두 코드로 만듦). 올릴 때 앱에서 유행 음원을 덧입혀도 돼요.
  * 문구 규칙(promo/출시-홍보.md 1번): "실제 새 속도와 같다" 금지, 숫자는 앱 계산식 그대로.
  * 필요한 것: Playwright(+Chromium), ffmpeg
  */
@@ -20,11 +20,12 @@ const React = req("react");
 const { renderToStaticMarkup } = req("react-dom/server");
 (globalThis as any).React = React;
 const { default: BirdIcon } = await import("../src/components/BirdIcon.tsx");
+const { default: FlyBird } = await import("../src/components/FlyBird.tsx");
 const { getBird } = await import("../core/birds.ts");
 const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
 const { withIGa } = await import("../core/korean.ts");
-const { koreaMapSvg, routeCurve } = await import("./mapArt.mts");
+const { koreaMapSvg, routeCurve, MAP_CSS } = await import("./mapArt.mts");
 const { STORE_PILL, STORE_SUB } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
@@ -33,6 +34,10 @@ const W = 1080, H = 1920, FPS = 30, DUR = 15;
 const css = readFileSync(resolve(root, "src/app/globals.css"), "utf8").split("* { box-sizing")[0].replace(/@media \(prefers-color-scheme: dark\)[\s\S]*$/, "}");
 const FONT = resolve(root, "node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2");
 const bird = (id: string, size: number, letter = false) => renderToStaticMarkup(React.createElement(BirdIcon as any, { id, size, letter }));
+// 날개를 퍼덕이는 새(앱 지도와 같은 FlyBird). 가운데가 (0,0)이라 상자 가운데에 놓아요. left면 왼쪽을 봐요
+const flyG = (id: string, size: number, left = false) => renderToStaticMarkup(React.createElement(FlyBird as any, { birdId: id, x: 0, y: 0, size, angle: left ? 180 : 0 }));
+const fly = (id: string, size: number, box: number, left = false) =>
+  `<svg width="${box}" height="${box}" viewBox="${-box / 2} ${-box / 2} ${box} ${box}">${flyG(id, size, left)}</svg>`;
 // 이야기마다 첫 1초 문제(hook)·받는 사람·노선·새·두루마리 글이 달라요. 시간·거리는 앱 계산식 그대로
 const VARIANTS = {
   mom: { file: "saepyeonji-15s", hook: ["답장, 너무 빨라서", "설레지 않죠?"], to: "엄마에게 보내는 편지 💌", from: "seoul", dest: "busan", bird: "crane", mid: "대전을 지났어요",
@@ -71,6 +76,7 @@ return `<!doctype html>
 html, body { width: ${W}px; height: ${H}px; overflow: hidden; }
 body { font-family: P, sans-serif; color: #2A2118; background: #FBF3E4; position: relative; }
 svg { overflow: visible; display: block; }
+${MAP_CSS}
 .L { position: absolute; inset: 0; }
 .cap { position: absolute; left: 70px; right: 70px; text-align: center; font-weight: 850; letter-spacing: -2px; line-height: 1.15; }
 .bub { position: absolute; padding: 22px 36px; border-radius: 40px; font-size: 50px; font-weight: 800; background: #2C3B55; color: #FBF3E4; }
@@ -87,7 +93,7 @@ svg { overflow: visible; display: block; }
 <div class="L" id="mapL"><div class="L" style="overflow:hidden">${koreaMapSvg({ w: W, h: MH, from: v.from, to: v.dest, zoom: 0.95 })}
   <svg class="L" width="${W}" height="${MH}"><path id="trail" d="${curve.d}" fill="none" stroke="#C1481F" stroke-width="12" stroke-linecap="round"/>
   <circle id="ripple" cx="${curve.b.x}" cy="${curve.b.y}" r="20" fill="none" stroke="#1B6E5C" stroke-width="8"/></svg>
-  <div id="mbird" style="position:absolute;left:0;top:0;width:260px;height:210px">${bird(v.bird, 260, true)}</div></div>
+  <svg class="L" width="${W}" height="${MH}"><g id="mbird">${flyG(v.bird, 4.2, curve.b.x < curve.a.x)}</g></svg></div>
   <div style="position:absolute;left:0;right:0;top:110px;text-align:center"><span style="display:inline-block;background:#fff;border-radius:999px;padding:20px 48px;font-size:62px;font-weight:850;box-shadow:0 10px 0 rgba(42,33,24,.08)">${v.to}</span></div>
   <div class="card" style="top:1420px" id="cardC">
     <div style="display:flex;align-items:center;gap:22px"><div style="width:130px">${bird(v.bird, 130, true)}</div>
@@ -102,7 +108,7 @@ svg { overflow: visible; display: block; }
 </div>
 <div class="L" id="sceneB">
   <div class="cap" style="top:440px;font-size:96px">${slow[0]}<br><span style="color:#C1481F">${slow[1]}</span></div>
-  <div id="bbird" style="position:absolute;left:300px;top:1000px">${bird("magpie", 480, true)}</div>
+  <div id="bbird" style="position:absolute;left:240px;top:960px">${fly("magpie", 7, 600)}</div>
 </div>
 <div class="L" id="sceneD">
   <div class="cap" style="top:220px;font-size:88px">도착하면<br><span style="color:#C1481F">두루마리처럼 펼쳐져요</span></div>
@@ -118,7 +124,7 @@ svg { overflow: visible; display: block; }
 </div>
 <div class="L" id="sceneE" style="background:#FBF3E4">
   <div style="position:absolute;left:0;right:0;top:0;height:26px;display:flex"><i style="flex:1;background:#C1481F"></i><i style="flex:1;background:#E0A83C"></i><i style="flex:1;background:#1B6E5C"></i><i style="flex:1;background:#1E3A5C"></i></div>
-  <div id="ebird" style="position:absolute;left:250px;top:330px">${bird("magpie", 580, true)}</div>
+  <div id="ebird" style="position:absolute;left:240px;top:250px">${fly("magpie", 8, 600)}</div>
   <div class="cap" style="top:860px;font-size:150px;letter-spacing:-4px">새 편지</div>
   <div class="cap" style="top:1060px;font-size:60px;font-weight:700;color:#C1481F">기다림이 즐거운 편지</div>
   <div style="position:absolute;left:0;right:0;top:1250px;text-align:center"><span class="pill" id="pill">${STORE_PILL}</span>
@@ -135,7 +141,10 @@ const back = (x) => { const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c
 const show = (el, o) => { el.style.opacity = o; el.style.visibility = o <= 0.001 ? "hidden" : "visible"; };
 const trail = $("trail"), LEN = trail.getTotalLength(); trail.style.strokeDasharray = LEN;
 const fmt = (m) => { m = Math.max(0, Math.round(m)); const d = Math.floor(m / 1440), h = Math.floor(m % 1440 / 60), mm = m % 60; return (d ? d + "일 " : "") + (h || d ? h + "시간 " : "") + mm + "분"; };
+const SVGS = [...document.querySelectorAll("svg")].filter((s) => !s.parentElement.closest("svg"));
+SVGS.forEach((s) => s.pauseAnimations && s.pauseAnimations());
 window.render = (t) => {
+  SVGS.forEach((s) => s.setCurrentTime && s.setCurrentTime(t)); // 날갯짓도 프레임 시각에 맞춰요
   // ① 0~2.6초: 너무 빠른 답장
   show($("navy"), 1 - k(t, 2.4, 2.9));
   show($("sceneA"), 1 - k(t, 2.4, 2.8));
@@ -149,7 +158,8 @@ window.render = (t) => {
   show($("mapL"), mIn * (1 - mOut));
   const p = ease(k(t, 4.6, 8.6));
   const q = PTS[Math.round(p * 100)];
-  $("mbird").style.transform = "translate(" + (q[0] - 130) + "px," + (q[1] - 150 + Math.sin(t * 9) * 10) + "px) rotate(" + (q[2] > 90 || q[2] < -90 ? 0 : q[2] * 0.25) + "deg)";
+  const tl = q[2] > 90 || q[2] < -90 ? -(q[2] > 0 ? 180 - q[2] : -180 - q[2]) : q[2]; // 왼쪽을 볼 땐 뒤집힌 만큼 반대로 기울여요
+  $("mbird").setAttribute("transform", "translate(" + q[0] + " " + (q[1] - 40 + Math.sin(t * 6) * 8) + ") rotate(" + Math.max(-20, Math.min(20, tl * 0.35)) + ")");
   trail.style.strokeDashoffset = LEN * (1 - p);
   $("barC").style.width = (p * 100).toFixed(1) + "%";
   $("whereC").textContent = p >= 1 ? "도착했어요! 💌" : p > 0.82 ? "곧 도착해요" : p > 0.42 ? ${JSON.stringify(v.mid)} : "출발했어요";
@@ -172,26 +182,66 @@ window.render(0);
 </script></body></html>`;
 }
 
-// 소리: 직접 만든 효과음(44.1kHz 모노 WAV)
+// 소리(2026-10-22 대표님: "음악을 좀 더 흥미롭게 새 느낌으로"): 통통 튀는 마림바·실로폰 멜로디 + 피치카토 베이스 + 쉐이커,
+// 사이사이 짹짹·날갯짓, 끝은 종소리. 모두 코드로 만든 소리(44.1kHz 모노 WAV)라 저작권 걱정이 없어요
 function makeAudio(path: string) {
   const SR = 44100, N = SR * DUR, a = new Float32Array(N);
-  const add = (t0: number, len: number, f: (x: number, i: number) => number) => { const s = Math.floor(t0 * SR); for (let i = 0; i < len * SR && s + i < N; i++) a[s + i] += f(i / SR, i); };
+  const add = (t0: number, len: number, f: (x: number, i: number) => number) => { const s = Math.floor(t0 * SR); for (let i = 0; i < len * SR && s + i < N; i++) if (s + i >= 0) a[s + i] += f(i / SR, i); };
   let seed = 7; const noise = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 2 - 1;
-  // 잔잔한 화음(②부터 크게)
-  for (let i = 0; i < N; i++) { const t = i / SR; const v = (t < 2.6 ? 0.25 : 1) * Math.min(1, t / 0.6) * Math.min(1, (DUR - t) / 1.2);
-    a[i] += 0.045 * v * (Math.sin(2 * Math.PI * 220 * t) + 0.8 * Math.sin(2 * Math.PI * 277.2 * t) + 0.6 * Math.sin(2 * Math.PI * 329.6 * t)) * (0.85 + 0.15 * Math.sin(2 * Math.PI * 0.5 * t)); }
-  // ① 말풍선 톡
-  for (let i = 0; i < 6; i++) add(0.15 + i * 0.25, 0.08, (x) => 0.35 * Math.sin(2 * Math.PI * (700 + i * 60) * x) * Math.exp(-x * 50));
-  // ②로 넘어갈 때 휙
-  add(2.5, 0.5, (x) => 0.18 * noise() * Math.sin(Math.PI * x / 0.5));
-  // ③ 푸드덕(날갯짓 4번) + 짹짹짹
-  for (let i = 0; i < 4; i++) add(4.5 + i * 0.13, 0.08, (x) => 0.35 * noise() * Math.exp(-x * 40));
-  for (let i = 0; i < 3; i++) add(5.1 + i * 0.16, 0.09, (x) => 0.22 * Math.sin(2 * Math.PI * (2600 + 16000 * x) * x) * Math.sin(Math.PI * x / 0.09));
-  add(8.6, 0.09, (x) => 0.22 * Math.sin(2 * Math.PI * (2800 + 14000 * x) * x) * Math.sin(Math.PI * x / 0.09));
-  // ④ 종이 펼치는 소리
-  add(9.5, 1.1, (x) => 0.12 * noise() * (0.5 + 0.5 * Math.sin(x * 60)) * Math.sin(Math.PI * x / 1.1));
-  // ⑤ 종소리
-  add(12.45, 2.4, (x) => 0.28 * (Math.sin(2 * Math.PI * 880 * x) + 0.5 * Math.sin(2 * Math.PI * 1320 * x)) * Math.exp(-x * 2.2));
+  const hz = (m: number) => 440 * Math.pow(2, (m - 69) / 12); // 미디 번호 → 주파수
+  // 마림바(나무 소리): 기음 + 4배음이 빨리 사라짐
+  const marimba = (t0: number, m: number, vol: number, len = 0.5) => { const f = hz(m);
+    add(t0, len, (x) => vol * (Math.sin(2 * Math.PI * f * x) * Math.exp(-x * 7) + 0.35 * Math.sin(2 * Math.PI * f * 4 * x) * Math.exp(-x * 30)) * Math.min(1, x * 400)); };
+  // 실로폰(유리 같은 반짝임)
+  const glock = (t0: number, m: number, vol: number) => { const f = hz(m);
+    add(t0, 0.7, (x) => vol * (Math.sin(2 * Math.PI * f * x) + 0.4 * Math.sin(2 * Math.PI * f * 2.76 * x) * Math.exp(-x * 8)) * Math.exp(-x * 5) * Math.min(1, x * 600)); };
+  // 피치카토 베이스(통통)
+  const pluck = (t0: number, m: number, vol: number) => { const f = hz(m);
+    add(t0, 0.35, (x) => vol * (Math.sin(2 * Math.PI * f * x) + 0.3 * Math.sin(2 * Math.PI * f * 2 * x)) * Math.exp(-x * 11) * Math.min(1, x * 300)); };
+  // 쉐이커(사각사각): 높은 소리만 남긴 잡음
+  const shaker = (t0: number, vol: number) => { let prev = 0; add(t0, 0.06, (x) => { const n = noise(), h = n - prev; prev = n; return vol * h * Math.exp(-x * 70); }); };
+  // 짹짹: 위로 휙 올라가는 짧은 휘파람
+  const chirp = (t0: number, base: number, vol: number) => { let ph = 0;
+    add(t0, 0.07, (x) => { ph += 2 * Math.PI * (base + 30000 * x + 600 * Math.sin(x * 400)) / SR; return vol * Math.sin(ph) * Math.sin(Math.PI * x / 0.07); }); };
+  const tweet = (t0: number, n: number, vol = 0.16) => { for (let i = 0; i < n; i++) chirp(t0 + i * 0.1, 2700 + (i % 2) * 500, vol); };
+  const flap = (t0: number, n: number, vol = 0.3) => { for (let i = 0; i < n; i++) add(t0 + i * 0.12, 0.07, (x) => vol * noise() * Math.exp(-x * 45) * (0.6 + 0.4 * Math.sin(x * 900))); };
+
+  // ① 0~2.6초 너무 빠른 답장: 메신저 톡톡(조금 딱딱하게) + 낮은 콩콩
+  for (let i = 0; i < 6; i++) add(0.15 + i * 0.25, 0.06, (x) => 0.3 * Math.sin(2 * Math.PI * (900 + i * 40) * x) * Math.exp(-x * 60));
+  for (let i = 0; i < 5; i++) pluck(0.2 + i * 0.5, 45, 0.18);
+  add(2.45, 0.5, (x) => 0.16 * noise() * Math.sin(Math.PI * x / 0.5)); // 휙
+
+  // ②~④ 2.6~12.4초: 새 노래. 박자 0.25초(120 BPM 8분음표), 다장조 C–Am–F–G 한 마디 1초
+  const T0 = 2.6, STEP = 0.25, BARS = 10;
+  const chords = [[48, 60, 64, 67], [45, 57, 60, 64], [41, 57, 60, 65], [43, 55, 59, 62]];
+  // 멜로디(8분음표 4개 = 한 마디): 새가 통통 뛰는 것처럼 오르내려요. 0은 쉼
+  const mel = [
+    [72, 76, 79, 76], [81, 79, 76, 0], [77, 81, 84, 81], [79, 0, 74, 76],
+    [72, 76, 79, 84], [81, 79, 76, 79], [77, 76, 74, 72], [74, 79, 0, 79],
+    [84, 83, 81, 79], [77, 79, 84, 0],
+  ];
+  for (let b = 0; b < BARS; b++) {
+    const t = T0 + b * 1.0, ch = chords[b % 4];
+    pluck(t, ch[0], 0.32); pluck(t + 0.5, ch[0] + 7, 0.22);                 // 베이스 통·통
+    for (let s2 = 0; s2 < 4; s2++) shaker(t + s2 * STEP, s2 % 2 ? 0.05 : 0.08); // 사각사각
+    marimba(t + 0.25, ch[1], 0.07, 0.35); marimba(t + 0.25, ch[2], 0.07, 0.35); // 뒷박 화음(쿵짝의 짝)
+    marimba(t + 0.75, ch[2], 0.06, 0.35); marimba(t + 0.75, ch[3], 0.06, 0.35);
+    mel[b].forEach((m, k2) => { if (m) { marimba(t + k2 * STEP, m, 0.2); if (b >= 2) glock(t + k2 * STEP, m + 12, 0.035); } });
+  }
+  // 새 소리 장식: ② 까치가 들어올 때, ③ 출발 푸드덕·날아가는 동안 짹짹, 도착 짹짹짹
+  tweet(2.75, 2, 0.14); tweet(3.6, 3, 0.12);
+  flap(4.5, 4); tweet(5.0, 3);
+  tweet(6.3, 2, 0.1); flap(7.0, 2, 0.18); tweet(7.6, 2, 0.1);
+  tweet(8.6, 4, 0.18);
+  // ④ 종이 펼치는 사르르 + 반짝(폴라로이드)
+  add(9.5, 1.1, (x) => 0.1 * noise() * (0.5 + 0.5 * Math.sin(x * 60)) * Math.sin(Math.PI * x / 1.1));
+  [84, 88, 91, 96].forEach((m, i) => glock(11.1 + i * 0.12, m, 0.06));
+  // ⑤ 12.4~15초: 마지막 화음 + 종소리 + 짹
+  [48, 60, 64, 67, 72].forEach((m) => marimba(12.6, m, 0.12, 2.2));
+  add(12.45, 2.4, (x) => 0.24 * (Math.sin(2 * Math.PI * 880 * x) + 0.5 * Math.sin(2 * Math.PI * 1320 * x)) * Math.exp(-x * 2.2));
+  tweet(13.3, 2, 0.14);
+  // 끝에서 부드럽게 줄이고, 너무 크면 눌러 줘요
+  for (let i = 0; i < N; i++) { const t = i / SR; a[i] = Math.tanh(a[i] * 1.2 * Math.min(1, (DUR - t) / 0.8)); }
   const buf = Buffer.alloc(44 + N * 2);
   buf.write("RIFF", 0); buf.writeUInt32LE(36 + N * 2, 4); buf.write("WAVEfmt ", 8); buf.writeUInt32LE(16, 16); buf.writeUInt16LE(1, 20); buf.writeUInt16LE(1, 22);
   buf.writeUInt32LE(SR, 24); buf.writeUInt32LE(SR * 2, 28); buf.writeUInt16LE(2, 32); buf.writeUInt16LE(16, 34); buf.write("data", 36); buf.writeUInt32LE(N * 2, 40);
