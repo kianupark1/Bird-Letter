@@ -1,5 +1,6 @@
 // 핵심 계산 단위 시험: npm run test:core
 // 한국어 조사, 하버사인 거리, 새별 도착 시간 계산이 의도대로인지 확인합니다.
+import { readFileSync, existsSync } from "node:fs";
 import { withIGa, withEulReul } from "../core/korean.ts";
 import { haversineKm, travelMinutes, cruiseMinutes, formatMinutes } from "../core/geo.ts";
 import { BIRDS } from "../core/birds.ts";
@@ -699,7 +700,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("공유 사진: 가까운 노선도 너무 크게 확대하지 않음", Math.abs(Q(near.from.lng, near.from.lat)[1] - Q(near.to.lng, near.to.lat)[1]) < 300, true);
 }
 
-import { fillText, storeLines, xText as xPost } from "./auto-post.mjs";
+import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
   const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
@@ -712,6 +713,17 @@ import { fillText, storeLines, xText as xPost } from "./auto-post.mjs";
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
   eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
+}
+
+{
+  const m = ytMeta({ text: "보낸 지 12시간째, 아직 날아가는 중 🕊\n\n기다리는 시간도 편지의 일부예요.\n#새편지 #아빠 #편지" });
+  eq("유튜브: 첫 줄이 제목 + #Shorts", m.snippet.title, "보낸 지 12시간째, 아직 날아가는 중 🕊 #Shorts");
+  eq("유튜브: 해시태그가 태그로", m.snippet.tags.join(","), "새편지,아빠,편지");
+  eq("유튜브: 심사 전엔 비공개가 기본", m.status.privacyStatus, "private");
+  eq("유튜브: 제목 100자 넘지 않음", [...ytMeta({ text: "가".repeat(200) }).snippet.title].length <= 100, true);
+  const sched = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8"));
+  eq("일정표: 영상 글의 파일이 모두 있음", sched.posts.filter((p: any) => p.video).every((p: any) => existsSync(new URL(`../promo/${p.video}`, import.meta.url))), true);
+  eq("일정표: 유튜브는 영상 글에만", sched.posts.every((p: any) => !p.to.includes("youtube") || p.video), true);
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);

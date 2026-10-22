@@ -1,0 +1,28 @@
+# 유튜브 쇼츠 자동 게시를 처음 켤 때 한 번만 실행해요(폰으로 가능). 순서는 docs/자동게시-설정.md 의 "유튜브".
+# 실행 → 기록(로그)에 나온 코드를 https://www.google.com/device 에 입력 → 허락하면 열쇠가 비밀 값 YT_REFRESH_TOKEN 으로 저장돼요.
+name: 유튜브 로그인(한 번만)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 코드 받고 허락 기다리기(기록을 열어 코드를 보세요)
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+        run: node scripts/youtube-login.mjs "$RUNNER_TEMP"
+      - name: 비밀 값에 넣기
+        env:
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "::error::GH_SECRETS_TOKEN이 없어서 열쇠를 저장하지 못했어요(docs/자동게시-설정.md)"; exit 1; fi
+          gh secret set YT_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" < "$RUNNER_TEMP/YT_REFRESH_TOKEN" && echo "✓ YT_REFRESH_TOKEN 저장"
+          rm -f "$RUNNER_TEMP/YT_REFRESH_TOKEN"
