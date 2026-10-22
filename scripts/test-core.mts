@@ -699,5 +699,20 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("공유 사진: 가까운 노선도 너무 크게 확대하지 않음", Math.abs(Q(near.from.lng, near.from.lat)[1] - Q(near.to.lng, near.to.lat)[1]) < 300, true);
 }
 
+import { fillText, storeLines, xText as xPost } from "./auto-post.mjs";
+{
+  const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
+  const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
+  const th = fillText(p, "threads", ios).text;
+  eq("홍보 글: 아이폰 먼저면 앱스토어 주소", th.includes("앱스토어에서 ‘새 편지’\nhttps://apps.apple.com/kr/app/id1"), true);
+  eq("홍보 글: 안드로이드는 곧", th.includes("안드로이드 앱은 곧 나와요") && !th.includes("play.google"), true);
+  eq("홍보 글: 인스타는 프로필 링크 안내(주소 없음)", fillText(p, "instagram", ios).text.includes("링크는 프로필에") && !fillText(p, "instagram", ios).text.includes("https://"), true);
+  eq("홍보 글: X는 주소 줄을 뺌", xPost(fillText(p, "x", ios)).includes("https://"), false);
+  let threw = false; try { storeLines({}, "threads"); } catch { threw = true; }
+  eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
+  const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
+  eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

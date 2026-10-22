@@ -3,7 +3,7 @@
  * 세로 4:5(1080×1350) 3장 → promo/ads/ad-1-problem.png, ad-2-map.png, ad-3-scroll.png (원본 HTML은 promo/ads-src)
  * 앱의 새 그림(BirdIcon)·실제 해안선(core/koreaGeo)·소요 시간 계산식을 그대로 써서 숫자가 앱과 같아요.
  * 문구 규칙(promo/출시-홍보.md 1번): "실제 새 속도와 같다" 금지, 없는 혜택 금지, 뽑기 상품이 없으니 확률 표시 불필요.
- * 광고는 스토어 출시 뒤에 돌리므로 "구글 플레이에서 ‘새 편지’"를 넣어요(아이폰 앱은 곧).
+ * 광고는 스토어 출시 뒤에 돌리므로 받는 곳 문구(promo/store.mts)를 넣어요.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -18,6 +18,7 @@ const { getBird } = await import("../core/birds.ts");
 const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
 const { koreaMapSvg } = await import("./mapArt.mts");
+const { STORE_SHORT } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
 const root = resolve(import.meta.dirname, "..");
@@ -46,7 +47,7 @@ h1 { font-size: 92px; line-height: 1.13; letter-spacing: -2.5px; font-weight: 85
 .logo { display: flex; align-items: center; gap: 12px; font-size: 34px; font-weight: 850; }
 `;
 const BAND = `<div class="band"><i></i><i></i><i></i><i></i><i></i></div>`;
-const CTA = (birdId = "magpie") => `<div class="cta"><div style="width:96px;flex:none">${bird(birdId, 96, true)}</div><div><b>새 편지 · 무료</b><span>구글 플레이에서 ‘새 편지’ · 아이폰은 곧</span></div><div class="free">받기</div></div>`;
+const CTA = (birdId = "magpie") => `<div class="cta"><div style="width:96px;flex:none">${bird(birdId, 96, true)}</div><div><b>새 편지 · 무료</b><span>${STORE_SHORT}</span></div><div class="free">받기</div></div>`;
 
 const ads: { file: string; html: string }[] = [
   // ① 고객의 문제로 시작: 너무 빠른 답장 → 기다림이 설레는 편지

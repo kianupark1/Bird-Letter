@@ -23,7 +23,22 @@ const imageRel = (p) => (p.image ? `cards/${p.image}` : p.video ? p.video.replac
 
 // 글마다 날짜(date) 대신 출시일 기준 며칠째(day: -3 = 출시 3일 전, 0 = 출시일)를 쓸 수 있어요.
 // 출시일(launch)이 정해지기 전(null)에는 day 글은 하나도 올라가지 않아요.
-const { launch, posts } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
+const { launch, posts, stores = {} } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
+
+// 글 속 {{받기}} 자리: 나온 스토어 주소만 넣어요(아이폰 먼저 출시). 인스타는 글 속 링크가 눌리지 않아서 프로필 링크로 안내해요.
+export function storeLines(st, to) {
+  if (!st.ios && !st.android) throw new Error("schedule.json의 stores에 스토어 주소가 없어요(출시 날 ios 주소를 넣어 주세요)");
+  if (to === "instagram") {
+    const where = [st.ios && "앱스토어", st.android && "구글 플레이"].filter(Boolean).join("·");
+    return `${where}에서 ‘새 편지’ 검색 · 링크는 프로필에 🕊`;
+  }
+  const out = [];
+  if (st.ios) out.push(`아이폰: 앱스토어에서 ‘새 편지’\n${st.ios}`);
+  if (st.android) out.push(`안드로이드: 구글 플레이에서 ‘새 편지’\n${st.android}`);
+  else out.push("안드로이드 앱은 곧 나와요");
+  return out.join("\n");
+}
+export const fillText = (p, to, st = stores) => (p.text.includes("{{받기}}") ? { ...p, text: p.text.replaceAll("{{받기}}", storeLines(st, to)) } : p);
 const dateOf = (p) => {
   if (p.date) return p.date;
   if (typeof p.day !== "number" || !/^\d{4}-\d{2}-\d{2}$/.test(launch ?? "")) return null;
@@ -125,12 +140,14 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   let failed = 0;
   for (const p of todays) {
     for (const to of p.to) {
+      let q;
+      try { q = fillText(p, to); } catch (e) { failed++; console.log(`  ✗ [${to}] ${e.message}`); continue; }
       const media = p.video ? ` (+영상 ${p.video})` : p.image ? ` (+${p.image})` : "";
-      const label = `[${to}] ${p.text.split("\n")[0].slice(0, 30)}…${media}${to === "x" ? ` · X ${xWeight(xText(p))}/280칸` : ""}`;
-      if (!SEND) { console.log("  미리보기 " + label); if (to === "x") console.log(xText(p).replace(/^/gm, "      │ ")); continue; }
+      const label = `[${to}] ${q.text.split("\n")[0].slice(0, 30)}…${media}${to === "x" ? ` · X ${xWeight(xText(q))}/280칸` : ""}`;
+      if (!SEND) { console.log("  미리보기 " + label); console.log((to === "x" ? xText(q) : q.text).replace(/^/gm, "      │ ")); continue; }
       try {
         if (!POSTERS[to]) throw new Error(`모르는 곳: ${to}`);
-        await POSTERS[to](p);
+        await POSTERS[to](q);
         console.log("  ✓ 올림 " + label);
       } catch (e) {
         failed++;
