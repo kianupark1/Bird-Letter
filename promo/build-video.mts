@@ -1,7 +1,8 @@
 /**
- * 홍보 영상(세로 15초, 릴스·틱톡·쇼츠 공용) 생성기: npx tsx promo/build-video.mts [mom|love|grandma]
+ * 홍보 영상(세로 15초, 릴스·틱톡·쇼츠 공용) 생성기: npx tsx promo/build-video.mts [이야기 이름, 없으면 모두]
  * 결과(이야기 3편, 틱톡은 자주 올려야 해서 여러 편): promo/video/saepyeonji-15s.mp4(엄마·부산·두루미),
- *   saepyeonji-15s-love.mp4(멀리 있는 너·경주·매), saepyeonji-15s-grandma.mp4(할머니·강릉·까치). 1080×1920, 30fps, 소리 포함, 표지는 -cover.png
+ *   saepyeonji-15s-love.mp4(멀리 있는 너·경주·매), saepyeonji-15s-grandma.mp4(할머니·강릉·까치),
+ *   기다림 편 -suneung·-xmas·-dad·-friend·-sister(아래 VARIANTS). 1080×1920, 30fps, 소리 포함, 표지는 -cover.png
  * 받는 곳 문구는 promo/store.mts 한곳.
  * 한 장면씩 그림을 정확한 시각으로 찍어서(프레임 450장) 이어 붙여요. AI 생성 크레딧이 필요 없어요.
  * 흐름: ① 고객의 문제(너무 빠른 답장) → ② 천천히 오는 소식 → ③ 지도 위를 날아가는 새 → ④ 두루마리 펼침 → ⑤ 앱 이름·받는 곳
@@ -40,13 +41,25 @@ const VARIANTS = {
     chat: ["자?", "…", "읽음", "왜 답 없어", "ㅠㅠ", "잘 자"], lines: ["경주는 어때?", "보고 싶어서", "편지 먼저 보낸다 💌"] },
   grandma: { file: "saepyeonji-15s-grandma", hook: ["전화는 쑥스럽고", "문자는 너무 짧을 때"], to: "할머니께 보내는 편지 💌", from: "seoul", dest: "gangneung", bird: "magpie", mid: "오대산을 지났어요",
     chat: ["ㅇㅇ", "넵", "읽음", "ㅎㅎ", "ㅇㅋ", "👍"], lines: ["할머니, 날 추워요.", "감기 조심하시고", "주말에 갈게요 🙂"] },
+  // 기다림의 즐거움을 첫 줄로(2026-10-22 대표님: "기다리는 것에 대한 즐거움이 포인트", 릴스·틱톡 팔로워 없이 퍼지게)
+  suneung: { file: "saepyeonji-15s-suneung", hook: ["시험 끝나는 날", "딱 도착하게 보냈어"], to: "수능 보는 동생에게 💌", from: "seoul", dest: "daejeon", bird: "swallow", mid: "독립기념관을 지났어요",
+    slow: ["기다리는 동안", "더 응원하게 돼요"], chat: ["화이팅", "ㅇㅇ", "읽음", "…", "긴장돼", "ㅠㅠ"], lines: ["시험 끝! 고생했어", "오늘은 푹 쉬어", "맛있는 거 먹자 🙂"] },
+  xmas: { file: "saepyeonji-15s-xmas", hook: ["크리스마스 아침에", "도착하는 편지 🎄"], to: "친구에게 크리스마스 편지 🎄", from: "seoul", dest: "jeonju", bird: "crane", mid: "공산성을 지났어요",
+    slow: ["열어 보기 전까지", "두근두근"], chat: ["메리크리스마스", "ㅁㅋ", "읽음", "ㅎㅎ", "ㅇㅇ", "🎄"], lines: ["메리 크리스마스!", "올해도 고마웠어", "내년에도 잘 부탁해 🎄"] },
+  dad: { file: "saepyeonji-15s-dad", hook: ["보낸 지 12시간째", "아직 날아가는 중"], to: "아빠에게 보내는 편지 💌", from: "seoul", dest: "gwangju", bird: "pigeon", mid: "전주 한옥마을을 지났어요",
+    slow: ["어디쯤 왔을까", "자꾸 보게 돼요"], chat: ["아빠 뭐해", "…", "읽음", "?", "바쁘신가", "ㅠ"], lines: ["아빠, 요즘 바쁘시죠?", "말로는 쑥스러워서", "편지로 보내요 🙂"] },
+  friend: { file: "saepyeonji-15s-friend", hook: ["바로 안 가서", "더 설레는 편지"], to: "부산 사는 친구에게 💌", from: "seoul", dest: "busan", bird: "swallow", mid: "속리산을 지났어요",
+    slow: ["하루를 기다리면", "하루만큼 반가워요"], chat: ["ㅋㅋ", "ㅇㅇ", "읽음", "ㅋ", "ㄱㄱ", "ㅇㅋ"], lines: ["다음 달에 놀러 갈게", "맛집 찾아 놔", "보고 싶다 🙂"] },
+  sister: { file: "saepyeonji-15s-sister", hook: ["도착 알림이", "이렇게 설렐 줄이야"], to: "대구 사는 언니에게 💌", from: "seoul", dest: "daegu", bird: "bungbungi", mid: "속리산을 지났어요",
+    slow: ["기다리는 시간도", "편지의 일부예요"], chat: ["생축", "ㄱㅅ", "읽음", "🎂", "ㅇㅇ", "ㅎㅎ"], lines: ["언니 생일 축하해!", "케이크는 직접 사 갈게", "사랑해 🎂"] },
 } as const;
 type VKey = keyof typeof VARIANTS;
 const pick = process.argv[2] as VKey | undefined;
-if (pick && !VARIANTS[pick]) throw new Error(`모르는 이야기: ${pick} (mom|love|grandma)`);
+if (pick && !VARIANTS[pick]) throw new Error(`모르는 이야기: ${pick} (${Object.keys(VARIANTS).join("|")})`);
 const MH = H + 340; // 지도를 아래로 내려 위쪽 제목과 안 겹치게(그림은 화면보다 길게 그려서 빈 곳이 없게)
 
 function htmlFor(v: (typeof VARIANTS)[VKey]) {
+const slow = "slow" in v ? v.slow : ["가끔은<br>천천히 오는 소식이", "더 설레요"];
 const ROUTE = getRoute(`${v.from}-${v.dest}`), B = getBird(v.bird);
 const FLY_MIN = Math.max(1, travelMinutes(B, ROUTE.km));
 const curve = routeCurve(W, MH, v.from, v.dest, 0.95);
@@ -88,7 +101,7 @@ svg { overflow: visible; display: block; }
   ${v.chat.map((t, i) => [t, i % 2] as const).map(([t, me], i) => `<div class="bub ${me ? "me" : ""}" id="b${i}" style="${me ? "right:120px" : "left:120px"};top:${780 + i * 140}px">${t}</div>`).join("")}
 </div>
 <div class="L" id="sceneB">
-  <div class="cap" style="top:440px;font-size:96px">가끔은<br>천천히 오는 소식이<br><span style="color:#C1481F">더 설레요</span></div>
+  <div class="cap" style="top:440px;font-size:96px">${slow[0]}<br><span style="color:#C1481F">${slow[1]}</span></div>
   <div id="bbird" style="position:absolute;left:300px;top:1000px">${bird("magpie", 480, true)}</div>
 </div>
 <div class="L" id="sceneD">

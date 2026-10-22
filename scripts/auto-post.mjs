@@ -6,6 +6,8 @@
 //   THREADS_USER_ID, THREADS_ACCESS_TOKEN                     스레드(Threads API)
 //   IG_USER_ID, IG_ACCESS_TOKEN                               인스타그램(비즈니스 계정, Graph API)
 //   X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET  X(쓴 만큼 내는 요금, 글 1개 약 0.015달러·링크가 있으면 0.2달러 「미확인」)
+//   YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN          유튜브 쇼츠(영상 글만, scripts/youtube-login.mjs 로 받음)
+// 선택: YT_PRIVACY=public  유튜브 API 심사를 통과한 뒤에만(심사 전 프로젝트는 유튜브가 "비공개"로만 올려 줘요 → 기본 private)
 // 선택: IG_LOGIN=instagram  인스타 열쇠를 "인스타그램 로그인"으로 받았으면(기본은 페이스북 페이지 연결)
 //       MEDIA_BASE_URL       그림·영상이 올라가 있는 공개 주소(기본: 이 레포 main 브랜치의 promo 폴더)
 // 글의 image는 promo/cards 안 파일, video는 promo 아래 경로(예: video/saepyeonji-15s.mp4 → 인스타 릴스·스레드 영상, X는 표지 사진)
@@ -131,7 +133,32 @@ async function postX(p) {
     body: JSON.stringify({ text: xText(p), ...(mediaId ? { media: { media_ids: [mediaId] } } : {}) }) });
 }
 
-export const POSTERS = { threads: postThreads, instagram: postInstagram, x: postX };
+// ── 유튜브 쇼츠 ─────────────────────────────────────────────────────
+// 세로 60초 이하 영상은 쇼츠로 올라가요. 심사(무료) 전에는 유튜브가 비공개로만 올려 줘서, 대표님이 스튜디오 앱에서 "공개"만 눌러요.
+export function ytMeta(p, privacy = "private") {
+  const lines = p.text.split("\n").map((l) => l.trim());
+  const tags = (lines.find((l) => l.startsWith("#")) ?? "").split(/\s+/).filter((t) => t.startsWith("#")).map((t) => t.slice(1));
+  const head = lines.find((l) => l && !l.startsWith("#")) ?? "새 편지";
+  const title = [...`${head} #Shorts`].length <= 100 ? `${head} #Shorts` : [...head].slice(0, 90).join("") + "… #Shorts";
+  return { snippet: { title, description: p.text, tags: [...new Set(["새편지", ...tags])].slice(0, 15), categoryId: "22", defaultLanguage: "ko" },
+    status: { privacyStatus: privacy, selfDeclaredMadeForKids: false } };
+}
+async function postYouTube(p) {
+  if (!p.video) throw new Error("유튜브는 영상 글만 올려요");
+  const id = env("YT_CLIENT_ID"), secret = env("YT_CLIENT_SECRET"), refresh = env("YT_REFRESH_TOKEN");
+  if (!id || !secret || !refresh) throw new Error("YT_CLIENT_ID / YT_CLIENT_SECRET / YT_REFRESH_TOKEN 이 없어요");
+  const tok = await call("https://oauth2.googleapis.com/token", { params: { client_id: id, client_secret: secret, refresh_token: refresh, grant_type: "refresh_token" } });
+  const file = readFileSync(promoFile(p.video));
+  const start = await fetch("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status", {
+    method: "POST", body: JSON.stringify(ytMeta(p, env("YT_PRIVACY") || "private")),
+    headers: { Authorization: `Bearer ${tok.access_token}`, "Content-Type": "application/json; charset=UTF-8", "X-Upload-Content-Type": "video/mp4", "X-Upload-Content-Length": String(file.length) },
+  });
+  const where = start.headers.get("location");
+  if (!start.ok || !where) throw new Error(`유튜브 올리기 시작 실패 → ${start.status} ${await start.text()}`);
+  return call(where, { method: "PUT", headers: { "Content-Type": "video/mp4" }, body: file });
+}
+
+export const POSTERS = { threads: postThreads, instagram: postInstagram, x: postX, youtube: postYouTube };
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
