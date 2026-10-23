@@ -104,8 +104,8 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
 
   // 펜팔(2026-10-23 대표님: "예전 그 느낌, 새로운 친구를 만나다") — 만 14세 이상·펜팔 이름과 도시만(법무 점검표 1번)
   { file: "08-penpal", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
-    <h1 style="font-size:92px;margin-top:20px">어릴 적 그 펜팔,<br><span style="color:#C1481F">새로운 펜팔 친구</span>를<br>만나다</h1>
-    <p class="sub">어딘가의 누군가에게 새를 날려 보내요.<br>누가 받을지, 답장은 언제 올지 두근두근.</p>
+    <h1 style="font-size:96px;margin-top:20px">펜팔, 아세요?<br><span style="color:#C1481F">옛날 그 감성</span>을<br>핸드폰으로</h1>
+    <p class="sub">모르는 누군가에게 편지를 쓰고, 답장을 기다리던 그 설렘.<br>이제 새가 대신 날아가요.</p>
     <div style="margin:auto auto 30px;width:680px;background:#fff;border-radius:36px;padding:34px 40px;box-shadow:0 12px 0 rgba(42,33,24,.08)">
       <div style="display:flex;align-items:center;gap:20px">${bird("swallow", 140, true)}<div><div style="font-size:40px;font-weight:800">‘여수 사는 까치’에게</div><div style="font-size:30px;opacity:.75;margin-top:4px">서울 → 여수 · 제비 · ${mins("swallow", 321)}</div></div></div>
       <div style="font-size:28px;font-weight:700;color:#1B6E5C;margin-top:20px">✉ 펜팔 이름과 도시만 보여요</div>
