@@ -2,7 +2,7 @@
  * 홍보 영상(세로 15초, 릴스·틱톡·쇼츠 공용) 생성기: npx tsx promo/build-video.mts [이야기 이름, 없으면 모두]
  * 결과(이야기 3편, 틱톡은 자주 올려야 해서 여러 편): promo/video/saepyeonji-15s.mp4(엄마·부산·두루미),
  *   saepyeonji-15s-love.mp4(멀리 있는 너·경주·매), saepyeonji-15s-grandma.mp4(할머니·강릉·까치),
- *   기다림 편 -suneung·-xmas·-dad·-friend·-sister(아래 VARIANTS). 1080×1920, 30fps, 소리 포함, 표지는 -cover.png
+ *   기다림 편 -suneung·-xmas·-dad·-friend·-sister, 펜팔 편 -penpal(아래 VARIANTS). 1080×1920, 30fps, 소리 포함, 표지는 -cover.png
  * 받는 곳 문구는 promo/store.mts 한곳.
  * 한 장면씩 그림을 정확한 시각으로 찍어서(프레임 450장) 이어 붙여요. AI 생성 크레딧이 필요 없어요.
  * 흐름: ① 고객의 문제(너무 빠른 답장) → ② 천천히 오는 소식 → ③ 지도 위를 날아가는 새 → ④ 두루마리 펼침 → ⑤ 앱 이름·받는 곳
@@ -57,6 +57,10 @@ const VARIANTS = {
     slow: ["하루를 기다리면", "하루만큼 반가워요"], chat: ["ㅋㅋ", "ㅇㅇ", "읽음", "ㅋ", "ㄱㄱ", "ㅇㅋ"], lines: ["다음 달에 놀러 갈게", "맛집 찾아 놔", "보고 싶다 🙂"] },
   sister: { file: "saepyeonji-15s-sister", hook: ["도착 알림이", "이렇게 설렐 줄이야"], to: "대구 사는 언니에게 💌", from: "seoul", dest: "daegu", bird: "bungbungi", mid: "속리산을 지났어요",
     slow: ["기다리는 시간도", "편지의 일부예요"], chat: ["생축", "ㄱㅅ", "읽음", "🎂", "ㅇㅇ", "ㅎㅎ"], lines: ["언니 생일 축하해!", "케이크는 직접 사 갈게", "사랑해 🎂"] },
+  // 펜팔(2026-10-23 대표님: "홍보 포인트에 펜팔도, 예전 그 느낌, 새로운 친구를 만나다"). 만남·연애를 앞세우지 않고 "펜팔 친구"로, 만 14세 이상 표시
+  penpal: { file: "saepyeonji-15s-penpal", hook: ["어릴 적 그 펜팔,", "기억나요?"], to: "어딘가의 펜팔 친구에게 💌", from: "seoul", dest: "yeosu", bird: "swallow", mid: "전주 한옥마을을 지났어요",
+    slow: ["새로운 펜팔 친구를", "만나다"], chat: ["ㅎㅇ", "ㅇㅇ", "읽음", "ㅋ", "…", "ㅂㅂ"], lines: ["처음 인사드려요!", "여수 바다는 어때요?", "답장 기다릴게요 🙂"],
+    note: "펜팔은 만 14세 이상 · 이름 대신 펜팔 이름과 도시만 보여요" },
 } as const;
 type VKey = keyof typeof VARIANTS;
 const pick = process.argv[2] as VKey | undefined;
@@ -129,7 +133,8 @@ ${MAP_CSS}
   <div class="cap" style="top:860px;font-size:150px;letter-spacing:-4px">새 편지</div>
   <div class="cap" style="top:1060px;font-size:60px;font-weight:700;color:#C1481F">기다림이 즐거운 편지</div>
   <div style="position:absolute;left:0;right:0;top:1250px;text-align:center"><span class="pill" id="pill">${STORE_PILL}</span>
-    ${STORE_SUB ? `<div style="font-size:40px;font-weight:600;opacity:.65;margin-top:34px">${STORE_SUB}</div>` : ""}</div>
+    ${STORE_SUB ? `<div style="font-size:40px;font-weight:600;opacity:.65;margin-top:34px">${STORE_SUB}</div>` : ""}
+    ${"note" in v ? `<div style="font-size:34px;font-weight:600;opacity:.6;margin-top:22px">${v.note}</div>` : ""}</div>
 </div>
 <script>
 const PTS = ${JSON.stringify(pts.map((p) => [Math.round(p.x), Math.round(p.y), Math.round(p.angle)]))};

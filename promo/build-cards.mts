@@ -102,6 +102,16 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
       <div style="font-size:28px;font-weight:700;color:#C1481F;margin-top:14px">대전을 지났어요 · 내일 오후 도착</div>
     </div>${FOOT}</div>` },
 
+  // 펜팔(2026-10-23 대표님: "예전 그 느낌, 새로운 친구를 만나다") — 만 14세 이상·펜팔 이름과 도시만(법무 점검표 1번)
+  { file: "08-penpal", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
+    <h1 style="font-size:92px;margin-top:20px">어릴 적 그 펜팔,<br><span style="color:#C1481F">새로운 펜팔 친구</span>를<br>만나다</h1>
+    <p class="sub">어딘가의 누군가에게 새를 날려 보내요.<br>누가 받을지, 답장은 언제 올지 두근두근.</p>
+    <div style="margin:auto auto 30px;width:680px;background:#fff;border-radius:36px;padding:34px 40px;box-shadow:0 12px 0 rgba(42,33,24,.08)">
+      <div style="display:flex;align-items:center;gap:20px">${bird("swallow", 140, true)}<div><div style="font-size:40px;font-weight:800">‘여수 사는 까치’에게</div><div style="font-size:30px;opacity:.75;margin-top:4px">서울 → 여수 · 제비 · ${mins("swallow", 321)}</div></div></div>
+      <div style="font-size:28px;font-weight:700;color:#1B6E5C;margin-top:20px">✉ 펜팔 이름과 도시만 보여요</div>
+    </div>
+    <div style="text-align:center;font-size:26px;opacity:.6;margin-bottom:8px">펜팔은 만 14세 이상 · 신고·차단 기능이 있어요</div>${FOOT}</div>` },
+
   // 구글 플레이 "그래픽 이미지"(필수, 1024×500). 글자는 적게, 가장자리에 중요한 것 두지 않기
   { file: "feature-1024x500", w: 1024, h: 500, out: resolve(root, "promo/store/feature-1024x500.png"), html: `<style>.wrap{padding:0 80px;flex-direction:row;align-items:center;gap:24px;inset:22px 0 0 0} h1{font-size:78px} .sub{font-size:30px;margin-top:16px}</style>${BAND}<div class="wrap">
     <div style="flex:1"><h1>소식은<br><span class="hl">날아서</span> 와요</h1><p class="sub">기다림이 즐거운 편지, 새 편지</p></div>
