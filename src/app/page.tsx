@@ -24,7 +24,8 @@ import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
-import NameStep, { shouldAskName } from "@/components/NameStep";
+import NameStep, { needsName, shouldAskName } from "@/components/NameStep";
+import { BIRDS, getBird } from "../../core/birds";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
 import { useBeforePaint } from "@/lib/fastStart";
@@ -41,14 +42,34 @@ export default function Home() {
 }
 
 function Inbox() {
-  const { profile, ready: profileReady } = useProfile();
+  const { profile, ready: profileReady, update } = useProfile();
   const [named, setNamed] = useState(false);
-  // 서버에 로그인한 사람이 처음이면, 친구들에게 보일 이름부터 물어봐요(서버 없이 개발할 때는 건너뜀)
-  if (profileReady && !named && firebaseEnabled && shouldAskName(profile)) return <NameStep onDone={() => setNamed(true)} />;
-  return <InboxList />;
+  const [welcome, setWelcome] = useState("");
+  // 처음 로그인한 사람: 카카오·구글·애플이 알려 준 이름이 있으면 묻지 않고 그 이름 + 무작위 "내 새"로 바로 시작해요
+  // (2026-10-24 대표님: "카카오톡처럼 처음에 쓰기 편하게" → 이름 화면 한 장을 없앰, 설정에서 언제든 바꿈)
+  const ask = profileReady && !named && firebaseEnabled && shouldAskName(profile);
+  const known = ask ? knownName(profile.nickname) : "";
+  useEffect(() => {
+    if (!known) return;
+    const bird = profile.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id;
+    update({ nickname: known, avatarBird: bird });
+    setWelcome(`${known}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`);
+    setNamed(true);
+  }, [known]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (ask && !known) return <NameStep onDone={() => setNamed(true)} />;
+  if (ask) return <main className="app" aria-busy="true" />;
+  return <InboxList welcome={welcome} />;
 }
 
-function InboxList() {
+/** 로그인할 때 받은 이름(직접 정한 이름 > 카카오 닉네임 > 구글·애플 이름). 없으면 "" */
+function knownName(nickname: string) {
+  if (!needsName(nickname)) return nickname.trim();
+  try { const k = localStorage.getItem("saepyeonji.kakaoNick.v1")?.trim(); if (k) return k.slice(0, 12); } catch {}
+  try { const n = auth().currentUser?.displayName?.trim(); if (n) return n.slice(0, 12); } catch {}
+  return "";
+}
+
+function InboxList({ welcome }: { welcome?: string }) {
   const { letters, received, ready, backend } = useLetters();
   // "첫 편지를 보내 보세요"는 서버에서 정말 편지가 없다고 확인된 뒤에만(폰에 적어 둔 목록만 보고 띄우면 있던 편지가 잠깐 사라진 것처럼 보여요)
   const settled = ready && backend !== "checking";
@@ -165,12 +186,15 @@ function InboxList() {
 
       {ready && threads.length > 0 && <HomeCountdown threads={threads} />}
 
+      {welcome && <div className="welcomebar" role="status">{welcome} <Link href="/settings">바꾸기 ›</Link></div>}
+
       {settled && threads.length === 0 && (
         <div className="inbox-empty">
           {heroBird ? <BirdIcon id={heroBird} size={190} letter className="bob" /> : <div style={birdSlot(190)} />}
           <h2>첫 편지를<br />보내 보세요</h2>
           <p>새가 실제 거리만큼 날아가서<br />천천히 도착해요</p>
-          <button type="button" className="cta big" onClick={() => setWriting(true)}>✉ 편지 쓰기</button>
+          <button type="button" className="cta big" onClick={() => setWriting(true)}>✉ 첫 편지 쓰기</button>
+          {firebaseEnabled && <Link href="/friends?invite=1" className="cta2" prefetch>💬 카카오톡으로 친구 부르기</Link>}
         </div>
       )}
 

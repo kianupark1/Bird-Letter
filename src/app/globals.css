@@ -1031,3 +1031,17 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .sharemap .sm-preview img { width: min(56vw, 260px); aspect-ratio: 9 / 16; border-radius: 16px; box-shadow: 0 6px 18px rgba(0,0,0,.2); }
 .sharemap .sm-name { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; min-height: 44px; }
 .sharemap .sm-name input { width: 22px; height: 22px; accent-color: var(--dahong); }
+
+/* 처음 쓰기 편하게(2026-10-24): 받는 곳 한 번에 고르기·첫 화면 둘째 버튼·환영 띠 */
+.qsub { margin: -4px 0 10px; text-align: center; }
+.qgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.qchip { min-height: 52px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
+.qchip.sm { font-size: 15px; min-height: 46px; }
+.qchip.on { border-color: var(--dahong); color: var(--dahong); }
+.qchip:disabled { opacity: .35; }
+.qchip:active { transform: scale(.97); }
+.qmore { width: 100%; margin-top: 12px; }
+.qfrom { display: block; width: 100%; margin-top: 8px; padding: 10px; border: 0; background: none; color: var(--text); opacity: .75; font: inherit; font-size: 15px; cursor: pointer; }
+.cta2 { display: block; margin: 12px auto 0; padding: 14px 18px; max-width: 320px; border-radius: 16px; background: #FEE500; color: #191600; font-weight: 800; font-size: 17px; text-decoration: none; text-align: center; }
+.welcomebar { margin: 0 0 12px; padding: 12px 14px; border-radius: 14px; background: var(--tint-hot, rgba(193,72,31,.1)); font-size: 16px; font-weight: 700; }
+.welcomebar a { color: var(--dahong); font-weight: 700; margin-left: 6px; text-decoration: none; }

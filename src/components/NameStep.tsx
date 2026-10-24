@@ -4,8 +4,12 @@ import BirdIcon from "@/components/BirdIcon";
 import BirdPicker from "@/components/BirdPicker";
 import { useProfile, type Profile } from "@/lib/settings";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
+import { BIRDS } from "../../core/birds";
 
-/** 이름 또는 "내 새"가 아직 없으면 처음 한 번 물어봐요(이름이 "새 친구" 그대로이거나 새를 안 골랐을 때) */
+/**
+ * 이름 또는 "내 새"가 아직 없으면 처음 한 번 물어봐요(이름이 "새 친구" 그대로이거나 새를 안 골랐을 때).
+ * 로그인에서 이름을 받았으면 홈(src/app/page.tsx Inbox)이 이 화면 없이 바로 시작해요 → 이 화면은 이름을 모를 때만 나와요.
+ */
 export function needsName(nickname: string) {
   return nickname.trim() === "" || nickname.trim() === "새 친구";
 }
@@ -23,7 +27,8 @@ export default function NameStep({ onDone }: { onDone: () => void }) {
   const [bird, setBird] = useState("");
   useEffect(() => {
     if (!ready) return;
-    setBird(profile.avatarBird);
+    // 새는 미리 하나 골라 둬요(이름만 쓰면 바로 시작, 원하면 바꾸기)
+    setBird(profile.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id);
     if (!needsName(profile.nickname)) { setName(profile.nickname); return; }
     // 카카오·구글·애플이 알려 준 이름이 있으면 미리 채워 둬요
     try { const k = localStorage.getItem("saepyeonji.kakaoNick.v1"); if (k) { setName(k); return; } } catch {}
@@ -37,11 +42,11 @@ export default function NameStep({ onDone }: { onDone: () => void }) {
     <main className="start">
       <div className="start-hero" style={{ justifyContent: "flex-start", paddingTop: 24 }}>
         <div className="bubble">짹짹! 나는 누구일까요?</div>
-        <h1 style={{ fontSize: 26, margin: "14px 0 0" }}>이름을 알려 주고<br />내 새를 골라 주세요</h1>
+        <h1 style={{ fontSize: 26, margin: "14px 0 0" }}>친구들이 부를<br />이름을 알려 주세요</h1>
         <input className="field namefield" value={name} maxLength={12} placeholder="이름 (예: 지민)" aria-label="내 이름"
           onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && save()} />
         <BirdPicker value={bird} onChange={setBird} />
-        <p style={{ fontSize: 15 }}>친구들에게 이 이름과 새가 보여요 · 나중에 바꿀 수 있어요</p>
+        <p style={{ fontSize: 15 }}>내 새는 미리 골라 뒀어요 · 둘 다 나중에 바꿀 수 있어요</p>
       </div>
       <div className="start-btns">
         <button type="button" className="chunky" disabled={!ok} onClick={save}>
