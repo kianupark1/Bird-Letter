@@ -648,11 +648,11 @@ import { countUsers, providerOf, kstMidnight, readCount, lettersCountQuery, isAd
   eq("숫자판: 환경 변수 운영자", isAdmin("u9", adminFromEnv(" u8 , u9 ")), true);
 }
 
-import { storeFor, playUrl } from "../core/storeLinks.ts";
+import { storeFor, playUrl, playIntentUrl } from "../core/storeLinks.ts";
 {
   const and = "Mozilla/5.0 (Linux; Android 14) Chrome/120", ios = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)";
   eq("스토어: 출시 전엔 버튼 없음", storeFor(and, { android: false, iosUrl: "" }), null);
-  eq("스토어: 안드로이드 → 플레이", storeFor(and, { android: true, iosUrl: "" })?.url, playUrl());
+  eq("스토어: 안드로이드 → 플레이", storeFor(and, { android: true, iosUrl: "" })?.url, playIntentUrl());
   eq("스토어: 플레이 주소에 앱 ID·초대 표시", playUrl().includes("id=com.saepyeonji.app") && playUrl().includes("utm_source%3Dinvite"), true);
   eq("스토어: 아이폰은 주소가 있을 때만", [storeFor(ios, { android: true, iosUrl: "" }), storeFor(ios, { android: false, iosUrl: "https://apps.apple.com/x" })?.url].join("|"), "|https://apps.apple.com/x");
   eq("스토어: 앱 안에서는 없음", storeFor(and + " SaePyeonjiApp/fcm", { android: true, iosUrl: "" }), null);
@@ -724,6 +724,23 @@ import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
   const sched = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8"));
   eq("일정표: 영상 글의 파일이 모두 있음", sched.posts.filter((p: any) => p.video).every((p: any) => existsSync(new URL(`../promo/${p.video}`, import.meta.url))), true);
   eq("일정표: 유튜브는 영상 글에만", sched.posts.every((p: any) => !p.to.includes("youtube") || p.video), true);
+}
+
+{
+  const { storeFor, playIntentUrl, APP_ID } = await import("../core/storeLinks.ts");
+  const on = { android: true, iosUrl: "https://apps.apple.com/app/id1" };
+  const and = "Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36";
+  const kakaoAnd = and + " KAKAOTALK 10.9.0";
+  const iph = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148";
+  const a = storeFor(and, on, "start");
+  eq("스토어: 안드로이드는 플레이 스토어 앱을 바로 여는 intent", a?.url.startsWith("intent://details?id=" + APP_ID), true);
+  eq("스토어: 플레이 스토어 앱 지정", a?.url.includes("package=com.android.vending"), true);
+  eq("스토어: 못 열면 웹 플레이 주소로", decodeURIComponent(a!.url.split("S.browser_fallback_url=")[1].split(";")[0]).startsWith("https://play.google.com/store/apps/details?id=" + APP_ID), true);
+  eq("스토어: 어디서 왔는지(utm) 넘김", decodeURIComponent(a!.url).includes("utm_source=start"), true);
+  eq("스토어: 카카오톡 안 브라우저(안드로이드)도 같은 주소", storeFor(kakaoAnd, on, "start")?.url, playIntentUrl("start"));
+  eq("스토어: 아이폰은 앱스토어 주소", storeFor(iph, on)?.url, on.iosUrl);
+  eq("스토어: 출시 전(꺼짐)이면 없음", storeFor(and, { android: false, iosUrl: "" }), null);
+  eq("스토어: 앱 안이면 없음", storeFor(and + " SaePyeonjiApp/fcm", on), null);
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
