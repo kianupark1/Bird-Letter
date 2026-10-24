@@ -20,6 +20,8 @@ npx cap sync android
 # 알림 줄의 작은 흰색 아이콘(서버가 보내는 알림의 icon: "ic_stat_notify")
 cp assets/notify-icon.png android/app/src/main/res/drawable/ic_stat_notify.png
 sed -i 's#</application>#    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_notify" />\n    </application>#' android/app/src/main/AndroidManifest.xml
+# 편지 쓰기 "연락처에서 찾기"(폰 기본 연락처 고르기 창, 고른 한 명만 읽음)
+grep -q READ_CONTACTS android/app/src/main/AndroidManifest.xml || sed -i 's#<application#<uses-permission android:name="android.permission.READ_CONTACTS" />\n    <application#' android/app/src/main/AndroidManifest.xml
 if [ "$FCM_READY" = 1 ]; then cp "$GS" android/app/google-services.json; fi
 
 VERSION_CODE="${VERSION_CODE:-1}"
