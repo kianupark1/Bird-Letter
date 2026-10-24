@@ -350,7 +350,8 @@ export default function LetterView({ id }: { id: string }) {
         </>
       )}
 
-      <InstallCard hideWhenPushPrompt={!pr.done} />
+      {/* 스토어에 앱이 나오면 "앱 받기" 하나만(홈 화면 추가와 둘이면 헷갈려요). 그 전에는 홈 화면 추가가 앱 대신이에요 */}
+      {!store && <InstallCard hideWhenPushPrompt={!pr.done} />}
 
       {backend === "firebase" && !isRecipient && !mine?.toUid && (
         <button className="ghost" onClick={share}>{KAKAO_SHARE_READY ? "카카오톡으로 보내기" : "받는 사람에게 링크 보내기"}</button>
