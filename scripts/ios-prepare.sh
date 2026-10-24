@@ -14,12 +14,16 @@ npx --yes @capacitor/assets@3.0.5 generate --ios \
 INFO=ios/App/App/Info.plist
 if [ "$NATIVE_AUTH" = 1 ]; then
   cp "$PL" ios/App/App/GoogleService-Info.plist
-  # 구글 로그인 창이 앱으로 돌아오는 주소(REVERSED_CLIENT_ID)
-  REV=$(/usr/libexec/PlistBuddy -c "Print :REVERSED_CLIENT_ID" "$PL")
-  /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$INFO" 2>/dev/null || true
-  /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$INFO"
-  /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$INFO"
-  /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string $REV" "$INFO"
+  # 구글 로그인 창이 앱으로 돌아오는 주소(REVERSED_CLIENT_ID). 파일에 없으면(구글 아이폰 로그인 설정 전) 건너뛰어요: 애플·카카오 로그인은 그대로 돼요
+  REV=$(/usr/libexec/PlistBuddy -c "Print :REVERSED_CLIENT_ID" "$PL" 2>/dev/null || true)
+  if [ -n "$REV" ]; then
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$INFO" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$INFO"
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$INFO"
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string $REV" "$INFO"
+  else
+    echo "::warning::$PL 에 REVERSED_CLIENT_ID가 없어요. 아이폰 앱 안 구글 로그인은 꺼진 채로 만들어요(Firebase에서 파일을 다시 받으면 켜져요)"
+  fi
   # 애플로 로그인(Sign in with Apple) 기능
   cat > ios/App/App/App.entitlements <<'PL'
 <?xml version="1.0" encoding="UTF-8"?>
