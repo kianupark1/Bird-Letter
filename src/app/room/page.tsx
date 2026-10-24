@@ -30,6 +30,7 @@ import { useBeforePaint } from "@/lib/fastStart";
 import { firebaseEnabled } from "@/lib/firebase/client";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import { smsHref } from "@/lib/contactInvite";
+import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { telFor } from "@/lib/pendingTel";
 import { withIGa } from "@/lib/korean";
 import ProfileZoom from "@/components/ProfileZoom";
@@ -185,8 +186,18 @@ function Room() {
   let smsBody = "";
   if (lastSent && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
     const l = asLike(lastSent), r = getRoute(l.routeId);
-    smsBody = `${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 새 편지를 보냈어요 🕊\n${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중이에요. 도착하면 여기서 열어 볼 수 있어요:\n${location.origin}${letterHref(lastSent.item.id)}`;
+    smsBody = `${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 새 편지를 보냈어요 🕊\n${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중이에요.\n링크를 누르면 지금 어디쯤 날고 있는지 보이고, 도착하면 열어 볼 수 있어요:\n${location.origin}${letterHref(lastSent.item.id)}`;
   }
+  const tellId = smsBody && lastSent ? lastSent.item.id : "";
+  const tellKakao = async () => {
+    if (!lastSent) return;
+    const l = asLike(lastSent);
+    if (KAKAO_SHARE_READY && (await shareToKakao(lastSent.item.id, getBird(l.birdId).name))) return;
+    try {
+      if (navigator.share) await navigator.share({ text: smsBody }); // 공유 창에서 카카오톡을 고르면 돼요
+      else { await navigator.clipboard.writeText(smsBody); window.alert("알림 글을 복사했어요. 카카오톡에 붙여 넣어 보내 주세요."); }
+    } catch {}
+  };
   const newestId = thread.entries.find((e) => e.dir === "received" && letterProgress(asLike(e), now).done && !opened.has(e.item.id))?.item.id;
 
   return (
@@ -230,13 +241,15 @@ function Room() {
       )}
       {!pen && !sendUid && lastSent && (
         <div className="mergecard">
-          <div><b>{name}님은 아직 앱이 없나요?</b><span>문자로 알려 주면 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>
+          <div><b>{name}님은 아직 앱이 없나요?</b><span>편지가 간다고 알려 주세요. 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>
           <div className="mc-btns">
-            {smsBody && <a className="chip hot" href={smsHref(telFor(name), smsBody)}>💬 문자로 알리기</a>}
+            {smsBody && <button type="button" className="chip hot" onClick={() => void tellKakao()}>💬 카카오톡으로</button>}
+            {smsBody && <a className="chip" href={smsHref(telFor(name), smsBody)}>✉ 문자로</a>}
             {friends.length > 0 && <button type="button" className="chip" onClick={() => setPickFriend(true)}>친구와 합치기</button>}
           </div>
         </div>
       )}
+      {tellId && lastSent && <TellSheet id={tellId} sentAt={asLike(lastSent).sentAt} name={name} body={smsBody} tel={telFor(name)} onKakao={tellKakao} />}
       {pickFriend && (
         <>
           <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setPickFriend(false)} />
@@ -277,5 +290,33 @@ function Room() {
       </div>
       <RoomComposer threadKey={key} name={name} toUid={sendUid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} replyTo={thread.entries.find((e) => e.dir === "received" && e.item.fromUid === thread.uid)?.item.id} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
     </main>
+  );
+}
+
+/** 방금(2분 안) 앱 없는 사람에게 보낸 편지면, 한 번만 "알려 주세요" 창을 띄워요 */
+function TellSheet({ id, sentAt, name, body, tel, onKakao }: { id: string; sentAt: number; name: string; body: string; tel: string; onKakao: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (Date.now() - sentAt > 120000) return;
+    const k = "saepyeonji.told.v1";
+    let told: string[] = [];
+    try { told = JSON.parse(localStorage.getItem(k) || "[]"); } catch {}
+    if (told.includes(id)) return;
+    try { localStorage.setItem(k, JSON.stringify([...told, id].slice(-100))); } catch {}
+    setOpen(true);
+  }, [id, sentAt]);
+  if (!open) return null;
+  return (
+    <>
+      <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setOpen(false)} />
+      <div className="ch-sheet tellsheet" role="dialog" aria-label={`${name}님께 알리기`}>
+        <h2>{name}님께 편지가 간다고 알려 주세요</h2>
+        <p className="small" style={{ margin: 0, textAlign: "center" }}>{name}님은 아직 새편지 앱이 없어요. 링크 하나면 앱 없이도 날아오는 모습을 보고, 도착하면 열어 봐요.</p>
+        <div className="tell-preview">{body}</div>
+        <button type="button" className="sbtn kakao" onClick={() => { void onKakao(); setOpen(false); }}><span aria-hidden>💬</span> 카카오톡으로 알리기</button>
+        <a className="sbtn sms" href={smsHref(tel, body)} onClick={() => setOpen(false)}><span aria-hidden>✉</span> 문자로 알리기</a>
+        <button type="button" className="linkbtn" onClick={() => setOpen(false)}>나중에 할게요</button>
+      </div>
+    </>
   );
 }

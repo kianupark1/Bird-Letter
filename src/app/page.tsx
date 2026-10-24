@@ -16,7 +16,7 @@ import { publishPublicRank } from "@/lib/firebase/ranking";
 import { saveMyPenpal } from "@/lib/firebase/penpal";
 import { cityLabel, cityOf, penpalName } from "../../core/penpal";
 import { myStatsCapped } from "../../core/rank";
-import type { Meta } from "@/lib/firebase/remote";
+import { claim as claimLetter, type Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
 import GearLink from "@/components/GearLink";
 import { todayLine } from "../../core/waiting";
@@ -129,7 +129,9 @@ function InboxList({ welcome }: { welcome?: string }) {
     try { const u = auth().currentUser; if (!u || u.isAnonymous) return; } catch { return; }
     const p = pendingSenders();
     if (!p) return;
-    void Promise.all(p.senders.map((s) => befriendSender(s, me.nickname, me.avatarBird, me.photo, p.anon).catch(() => {})))
+    // 링크로 본 편지는 로그인한 계정의 편지함으로 받아요(이미 누가 받았으면 그대로 둬요)
+    void Promise.all([...p.senders.map((s) => befriendSender(s, me.nickname, me.avatarBird, me.photo, p.anon).catch(() => {})),
+      ...(p.letters ?? []).map((id) => claimLetter(id).catch(() => {}))])
       .then(() => { clearSenders(); return listFriends({ fresh: true }).then(setFriends); }).catch(() => {});
   }, [ready, me.nickname, me.avatarBird, me.photo]);
 
