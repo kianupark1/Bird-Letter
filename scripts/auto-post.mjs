@@ -11,7 +11,7 @@
 // 선택: IG_LOGIN=instagram  인스타 열쇠를 "인스타그램 로그인"으로 받았으면(기본은 페이스북 페이지 연결)
 //       MEDIA_BASE_URL       그림·영상이 올라가 있는 공개 주소(기본: 이 레포 main 브랜치의 promo 폴더)
 // 글의 image는 promo/cards 안 파일, video는 promo 아래 경로(예: video/saepyeonji-15s.mp4 → 인스타 릴스·스레드 영상, X는 표지 사진)
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createHmac, randomBytes } from "node:crypto";
 
 const args = process.argv.slice(2);
@@ -21,7 +21,17 @@ const today = dateArg ?? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seou
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
 const promoFile = (rel) => new URL(`../promo/${rel}`, import.meta.url);
-const imageRel = (p) => (p.image ? `cards/${p.image}` : p.video ? p.video.replace(/\.mp4$/, "-cover.png") : null);
+const imageRel = (p) => (p.image ? `cards/${p.image}` : p.video ? (p.cover ?? p.video.replace(/\.mp4$/, "-cover.png")) : null);
+
+// 업그레이드 영상(힉스필드 등으로 다시 만든 것): promo/video/v2/ 에 같은 이름으로 넣으면, 그날부터 올라가는 글은 새 영상을 써요.
+// 이미 올라간 글은 그대로예요(지우거나 바꾸지 않음). 표지(-cover.png)가 v2에 없으면 예전 표지를 써요.
+export function upgraded(p, exists = (rel) => existsSync(promoFile(rel))) {
+  if (!p.video || p.video.startsWith("video/v2/")) return p;
+  const v2 = p.video.replace(/^video\//, "video/v2/");
+  if (!exists(v2)) return p;
+  const cover = v2.replace(/\.mp4$/, "-cover.png");
+  return { ...p, video: v2, cover: exists(cover) ? cover : p.video.replace(/\.mp4$/, "-cover.png") };
+}
 
 // 글마다 날짜(date) 대신 출시일 기준 며칠째(day: -3 = 출시 3일 전, 0 = 출시일)를 쓸 수 있어요.
 // 출시일(launch)이 정해지기 전(null)에는 day 글은 하나도 올라가지 않아요.
@@ -162,7 +172,7 @@ export const POSTERS = { threads: postThreads, instagram: postInstagram, x: post
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
-  const todays = posts.filter((p) => dateOf(p) === today);
+  const todays = posts.filter((p) => dateOf(p) === today).map((p) => upgraded(p));
   console.log(`${today} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {

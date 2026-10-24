@@ -700,7 +700,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("공유 사진: 가까운 노선도 너무 크게 확대하지 않음", Math.abs(Q(near.from.lng, near.from.lat)[1] - Q(near.to.lng, near.to.lat)[1]) < 300, true);
 }
 
-import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, xText as xPost, ytMeta } from "./auto-post.mjs";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
   const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
@@ -713,6 +713,16 @@ import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
   eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
+}
+
+{
+  const v = { text: "a", to: ["threads"], video: "video/saepyeonji-15s.mp4" };
+  eq("업그레이드 영상: v2가 없으면 그대로", upgraded(v, () => false).video, "video/saepyeonji-15s.mp4");
+  const u = upgraded(v, (r) => r === "video/v2/saepyeonji-15s.mp4");
+  eq("업그레이드 영상: v2가 있으면 새 영상", u.video, "video/v2/saepyeonji-15s.mp4");
+  eq("업그레이드 영상: v2 표지가 없으면 예전 표지", u.cover, "video/saepyeonji-15s-cover.png");
+  eq("업그레이드 영상: v2 표지가 있으면 새 표지", upgraded(v, () => true).cover, "video/v2/saepyeonji-15s-cover.png");
+  eq("업그레이드 영상: 사진 글은 그대로", upgraded({ text: "a", to: ["x"], image: "01.png" }, () => true).image, "01.png");
 }
 
 {
@@ -741,6 +751,23 @@ import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
   eq("스토어: 아이폰은 앱스토어 주소", storeFor(iph, on)?.url, on.iosUrl);
   eq("스토어: 출시 전(꺼짐)이면 없음", storeFor(and, { android: false, iosUrl: "" }), null);
   eq("스토어: 앱 안이면 없음", storeFor(and + " SaePyeonjiApp/fcm", on), null);
+}
+
+{
+  const { freeLeft, needsStamp, refundable, stampBalance, kstDay, REFUND_DAYS } = await import("../core/penpalStamp.ts");
+  const D = 86_400_000;
+  const now = Date.UTC(2026, 10, 2, 3, 0); // 한국 11/2 정오
+  eq("우표: 오늘 첫 편지 전이면 무료 1통", freeLeft([], now), 1);
+  eq("우표: 오늘 이미 1통 보냈으면 우표 필요", needsStamp([now - 3_600_000], now), true);
+  eq("우표: 어제 보낸 건 오늘 무료에 안 셈", needsStamp([now - D], now), false);
+  eq("우표: 한국 자정 기준 날짜", kstDay(Date.UTC(2026, 10, 1, 15, 0)) === kstDay(Date.UTC(2026, 10, 2, 14, 59)), true);
+  const arr = now - (REFUND_DAYS + 1) * D;
+  eq("우표: 답장 없이 기한 지나면 돌려줌", refundable({ arriveAt: arr, usedStamp: true }, now), true);
+  eq("우표: 기한 안에 답장 오면 안 돌려줌", refundable({ arriveAt: arr, repliedAt: arr + D, usedStamp: true }, now), false);
+  eq("우표: 기한 전이면 아직 안 돌려줌", refundable({ arriveAt: now - D, usedStamp: true }, now), false);
+  eq("우표: 무료 편지는 돌려줄 것 없음", refundable({ arriveAt: arr, usedStamp: false }, now), false);
+  eq("우표: 이미 돌려준 건 다시 안 줌", refundable({ arriveAt: arr, usedStamp: true, refunded: true }, now), false);
+  eq("우표: 남은 개수", stampBalance(5, 3, 1), 3);
 }
 
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
