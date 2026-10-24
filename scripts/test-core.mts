@@ -700,7 +700,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("공유 사진: 가까운 노선도 너무 크게 확대하지 않음", Math.abs(Q(near.from.lng, near.from.lat)[1] - Q(near.to.lng, near.to.lat)[1]) < 300, true);
 }
 
-import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, xText as xPost, ytMeta } from "./auto-post.mjs";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
   const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
@@ -713,6 +713,16 @@ import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
   eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
+}
+
+{
+  const v = { text: "a", to: ["threads"], video: "video/saepyeonji-15s.mp4" };
+  eq("업그레이드 영상: v2가 없으면 그대로", upgraded(v, () => false).video, "video/saepyeonji-15s.mp4");
+  const u = upgraded(v, (r) => r === "video/v2/saepyeonji-15s.mp4");
+  eq("업그레이드 영상: v2가 있으면 새 영상", u.video, "video/v2/saepyeonji-15s.mp4");
+  eq("업그레이드 영상: v2 표지가 없으면 예전 표지", u.cover, "video/saepyeonji-15s-cover.png");
+  eq("업그레이드 영상: v2 표지가 있으면 새 표지", upgraded(v, () => true).cover, "video/v2/saepyeonji-15s-cover.png");
+  eq("업그레이드 영상: 사진 글은 그대로", upgraded({ text: "a", to: ["x"], image: "01.png" }, () => true).image, "01.png");
 }
 
 {

@@ -40,6 +40,9 @@ fi
 # 편지 쓰기 "연락처에서 찾기"(고른 한 명의 이름·번호만 씀, 저장·서버 전송 안 함)
 /usr/libexec/PlistBuddy -c "Add :NSContactsUsageDescription string 편지를 받을 사람을 연락처에서 고를 때 써요. 고른 사람의 이름과 번호만 쓰고 저장하거나 서버로 보내지 않아요." "$INFO" 2>/dev/null || true
 
+# 암호화 수출 질문: 일반 HTTPS만 쓰는 앱이라 "해당 없음"(올릴 때마다 묻지 않게)
+/usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$INFO" 2>/dev/null || true
+
 npx cap sync ios
 BUILD="${VERSION_CODE:-1}"
 VERSION_NAME="$(node -p "require('./package.json').version")"
