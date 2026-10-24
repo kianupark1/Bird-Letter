@@ -21,7 +21,16 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const { env, oneTap } = useInstall();
   const [store, setStore] = useState<StoreBtn | null>(null);
   const [isIos, setIsIos] = useState(false);
-  useEffect(() => { setStore(storeFor(navigator.userAgent, STORE, "start")); setIsIos(/iphone|ipad|ipod|macintosh/i.test(navigator.userAgent)); }, []);
+  // 폰이면 스토어 버튼은 항상 보여요. 스토어에 올라가기 전에는 누르면 "곧 나와요" 안내(그동안은 홈 화면에 추가)
+  const [phone, setPhone] = useState<"ios" | "android" | null>(null);
+  const [soon, setSoon] = useState(false);
+  useEffect(() => {
+    const ua = navigator.userAgent;
+    setStore(storeFor(ua, STORE, "start"));
+    setIsIos(/iphone|ipad|ipod|macintosh/i.test(ua));
+    const inApp = /SaePyeonjiApp/.test(ua) || !!(window as unknown as { Capacitor?: unknown }).Capacitor;
+    setPhone(inApp ? null : /android/i.test(ua) ? "android" : /iphone|ipad|ipod/i.test(ua) ? "ios" : null);
+  }, []);
   const canHome = env !== "checking" && env !== "installed" && env !== "desktop" && !(window as unknown as { Capacitor?: unknown }).Capacitor;
 
   useEffect(() => {
@@ -69,17 +78,27 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
           </button>
         )}
         {msg && <p className="start-msg" role="alert">{msg}</p>}
-        {(canHome || store) && (
+        {(canHome || phone) && (
           <div className="start-opts">
             {canHome && (
               <button type="button" className="sopt" onClick={() => { if (oneTap) void oneTapInstall(); else openInstallGuide(); }}>
                 <span aria-hidden>🏠</span> 홈 화면에 추가
               </button>
             )}
-            {store && (
+            {phone && (store ? (
               <a className="sopt" href={store.url}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
-            )}
+            ) : (
+              <button type="button" className="sopt" onClick={() => setSoon(true)}>
+                <span aria-hidden>📲</span> {phone === "ios" ? "앱스토어" : "구글 플레이"}에서 받기
+              </button>
+            ))}
           </div>
+        )}
+        {soon && (
+          <p className="start-msg" role="status" style={{ color: "var(--text)", opacity: 0.85 }}>
+            {phone === "ios" ? "앱스토어" : "구글 플레이"} 출시를 준비하고 있어요. 곧 나와요!<br />
+            {canHome ? "그동안은 ‘홈 화면에 추가’하면 앱처럼 쓸 수 있어요." : "그동안은 여기서 바로 시작해 쓸 수 있어요."}
+          </p>
         )}
         <p className="start-fine">
           네이버는 곧 추가돼요<br />
