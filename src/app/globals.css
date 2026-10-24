@@ -1055,3 +1055,8 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .tellsheet .tell-preview { white-space: pre-wrap; text-align: left; font-size: 14px; line-height: 1.5; padding: 12px 14px; border-radius: 16px; background: var(--bg); }
 .tellsheet .sbtn { width: 100%; }
 .sbtn.sms { background: var(--cheongrok); color: #fff; }
+
+/* 첫 화면 아래 작은 버튼 두 개(홈 화면에 추가 · 스토어에서 받기) */
+.start-opts { display: flex; gap: 10px; }
+.start-opts .sopt { flex: 1; min-height: 52px; border-radius: 18px; border: 1.5px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-decoration: none; }
+.start-opts .sopt:active { transform: translateY(2px); }
