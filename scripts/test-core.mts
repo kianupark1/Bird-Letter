@@ -743,5 +743,22 @@ import { fillText, storeLines, xText as xPost, ytMeta } from "./auto-post.mjs";
   eq("스토어: 앱 안이면 없음", storeFor(and + " SaePyeonjiApp/fcm", on), null);
 }
 
+{
+  const { freeLeft, needsStamp, refundable, stampBalance, kstDay, REFUND_DAYS } = await import("../core/penpalStamp.ts");
+  const D = 86_400_000;
+  const now = Date.UTC(2026, 10, 2, 3, 0); // 한국 11/2 정오
+  eq("우표: 오늘 첫 편지 전이면 무료 1통", freeLeft([], now), 1);
+  eq("우표: 오늘 이미 1통 보냈으면 우표 필요", needsStamp([now - 3_600_000], now), true);
+  eq("우표: 어제 보낸 건 오늘 무료에 안 셈", needsStamp([now - D], now), false);
+  eq("우표: 한국 자정 기준 날짜", kstDay(Date.UTC(2026, 10, 1, 15, 0)) === kstDay(Date.UTC(2026, 10, 2, 14, 59)), true);
+  const arr = now - (REFUND_DAYS + 1) * D;
+  eq("우표: 답장 없이 기한 지나면 돌려줌", refundable({ arriveAt: arr, usedStamp: true }, now), true);
+  eq("우표: 기한 안에 답장 오면 안 돌려줌", refundable({ arriveAt: arr, repliedAt: arr + D, usedStamp: true }, now), false);
+  eq("우표: 기한 전이면 아직 안 돌려줌", refundable({ arriveAt: now - D, usedStamp: true }, now), false);
+  eq("우표: 무료 편지는 돌려줄 것 없음", refundable({ arriveAt: arr, usedStamp: false }, now), false);
+  eq("우표: 이미 돌려준 건 다시 안 줌", refundable({ arriveAt: arr, usedStamp: true, refunded: true }, now), false);
+  eq("우표: 남은 개수", stampBalance(5, 3, 1), 3);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
