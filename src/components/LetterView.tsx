@@ -21,11 +21,15 @@ import { savePolaroid } from "@/lib/photo";
 import { dateTimeText, isScheduled, whenText } from "../../core/schedule";
 import InstallCard from "@/components/InstallCard";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
+import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
+import { linkAccount, type LoginKind } from "@/lib/firebase/link";
+import { STORE } from "@/lib/release";
+import { storeFor, type StoreBtn } from "../../core/storeLinks";
 
 const clock = (ms: number) => whenText(ms); // 오늘이 아니면 "내일"·날짜까지
 
 /** 링크로 들어온 받는 사람의 화면에 필요한 정보 */
-type Incoming = { state: "loading" } | { state: "missing" } | { state: "ok"; meta: remote.Meta };
+type Incoming = { state: "loading" } | { state: "missing" } | { state: "ok"; meta: remote.Meta; /** 로그인 전(임시 계정)에 연 사람 */ guest: boolean };
 
 /** 편지 화면 본문. 웹은 /letter/[id], 토스는 /letter?id= 가 이 컴포넌트를 불러 쓴다. */
 export default function LetterView({ id }: { id: string }) {
@@ -37,6 +41,10 @@ export default function LetterView({ id }: { id: string }) {
   const [notice, setNotice] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [loginTick, setLoginTick] = useState(0); // 구글·애플로 받은 뒤 다시 확인
+  const [busy, setBusy] = useState<LoginKind | null>(null);
+  const [store, setStore] = useState<StoreBtn | null>(null);
+  useEffect(() => { if (!IS_TOSS) setStore(storeFor(navigator.userAgent, STORE, "letter")); }, []);
   const mine = letters.find((l) => l.id === id);
 
   // 주소 끝에 ?demo=1을 붙였을 때만 "빨리 감기"를 보여준다(일반 사용자에게는 숨김, 내 폰 저장 상태에서만 동작)
@@ -44,7 +52,9 @@ export default function LetterView({ id }: { id: string }) {
     setDemo(!IS_TOSS && new URLSearchParams(window.location.search).has("demo"));
   }, []);
 
-  // 내가 보낸 편지가 아니면, 링크로 받은 편지로 보고 서버에서 불러온다(처음 연 사람은 받는 사람으로 등록)
+  // 내가 보낸 편지가 아니면, 링크로 받은 편지로 보고 서버에서 불러온다.
+  // 날아오는 모습과 (도착 뒤) 내용은 로그인 없이도 보여요. "받는 사람"으로 등록은 로그인한 계정으로만 해요:
+  // 임시 계정으로 등록하면 나중에 앱을 깔고 카카오로 로그인했을 때 그 편지가 편지함에 없어서요(카카오페이 송금 받기와 같은 방식).
   useEffect(() => {
     if (!ready || backend !== "firebase" || mine) return;
     let off = false;
@@ -53,23 +63,27 @@ export default function LetterView({ id }: { id: string }) {
       if (off) return;
       if (!meta) return setIncoming({ state: "missing" });
       const user = await ensureUser();
+      const guest = user.isAnonymous;
       if (meta.fromUid !== user.uid && !meta.recipientUid) {
-        try {
-          await remote.claim(id);
-          meta.recipientUid = user.uid;
-          announceReceived(meta);
-          // 보낸 사람과 한 사람으로 이어요: 로그인했으면 바로 친구로, 아직이면 로그인할 때 잇도록 기억해요
-          const sender = { uid: meta.fromUid, name: meta.fromName };
-          if (user.isAnonymous) rememberSender(user.uid, sender);
-          else { const me = readProfile(); void befriendSender(sender, me.nickname, me.avatarBird || undefined, me.photo).catch(() => {}); }
-        } catch {}
+        const sender = { uid: meta.fromUid, name: meta.fromName };
+        // 로그인 전이면 기억만 해 두고, 로그인하면(이 화면이든 나중에 홈이든) 내 편지함으로 받고 보낸 사람과 친구가 돼요
+        if (guest) rememberSender(user.uid, sender, id);
+        else {
+          try {
+            await remote.claim(id);
+            meta.recipientUid = user.uid;
+            announceReceived(meta);
+            const me = readProfile();
+            void befriendSender(sender, me.nickname, me.avatarBird || undefined, me.photo).catch(() => {});
+          } catch {}
+        }
       }
-      if (!off) setIncoming({ state: "ok", meta });
+      if (!off) setIncoming({ state: "ok", meta, guest: guest && meta.fromUid !== user.uid });
     })();
     return () => {
       off = true;
     };
-  }, [ready, backend, mine, id]);
+  }, [ready, backend, mine, id, loginTick]);
 
   const meta = incoming.state === "ok" ? incoming.meta : null;
   const view: (Letter & { fromName?: string; fromUid?: string }) | null = mine
@@ -78,6 +92,8 @@ export default function LetterView({ id }: { id: string }) {
       ? { id: meta.id, to: meta.toName, routeId: meta.routeId, birdId: meta.birdId, message: body ?? "", sentAt: meta.sentAt, arriveAt: meta.arriveAt, fromName: meta.fromName, fromUid: meta.fromUid }
       : null;
   const isRecipient = !mine && !!meta;
+  const guest = incoming.state === "ok" && incoming.guest;
+  const mineNow = isRecipient && !guest && !!meta?.recipientUid; // 로그인해서 내 편지함으로 받은 편지
   const arrivedNow = view ? letterProgress(view, now).done : false;
 
   // 받는 사람은 도착 시각이 지난 뒤에만 서버가 내용을 줌
@@ -181,6 +197,15 @@ export default function LetterView({ id }: { id: string }) {
       }
     } catch {}
   };
+  // 받는 사람: 로그인 한 번으로 내 편지함에 받기(카카오는 카카오 화면에 갔다가 이 편지로 돌아와요)
+  const receive = async (kind: LoginKind) => {
+    if (kind === "kakao") { startKakaoLogin(letterHref(id)); return; }
+    setBusy(kind);
+    const r = await linkAccount(kind);
+    setBusy(null);
+    if (r.ok) setLoginTick((t) => t + 1);
+    else setNotice(r.message);
+  };
   const report = async () => {
     if (!window.confirm("이 편지를 신고할까요? 운영자가 확인해요.")) return;
     try {
@@ -206,6 +231,27 @@ export default function LetterView({ id }: { id: string }) {
       <p className="sub"><BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {route.title} · {route.km}km</p>
 
       <JourneyMap route={route} p={pr.p} birdId={bird.id} fx />
+
+      {isRecipient && guest && !IS_TOSS && (
+        <div className="recvcard">
+          <b>{withIGa(view.fromName || "누군가")} 보낸 편지를 내 편지함에 받을까요?</b>
+          <span>{pr.done ? "받아 두면 언제든 다시 열어 보고 답장할 수 있어요." : "받아 두면 도착할 때 알려 드리고, 답장도 할 수 있어요."}</span>
+          <button type="button" className="sbtn kakao" onClick={() => void receive("kakao")} disabled={busy !== null || !KAKAO_LOGIN_READY}>
+            <span aria-hidden>💬</span> 카카오로 받기
+          </button>
+          <div className="recv-more">
+            <button type="button" className="linkbtn" onClick={() => void receive("google")} disabled={busy !== null}>{busy === "google" ? "여는 중…" : "구글로 받기"}</button>
+            <button type="button" className="linkbtn" onClick={() => void receive("apple")} disabled={busy !== null}>{busy === "apple" ? "여는 중…" : "애플로 받기"}</button>
+          </div>
+        </div>
+      )}
+      {mineNow && store && (
+        <div className="recvcard">
+          <b>내 편지함에 받았어요 💌</b>
+          <span>앱을 받아 <b>같은 계정</b>으로 시작하면 이 편지가 그대로 있어요. 도착하면 알림도 와요.</span>
+          <a href={store.url} className="cta big">📲 {store.label}</a>
+        </div>
+      )}
 
       {!pr.done && (
         <>
@@ -304,13 +350,14 @@ export default function LetterView({ id }: { id: string }) {
         </>
       )}
 
-      <InstallCard hideWhenPushPrompt={!pr.done} />
+      {/* 스토어에 앱이 나오면 "앱 받기" 하나만(홈 화면 추가와 둘이면 헷갈려요). 그 전에는 홈 화면 추가가 앱 대신이에요 */}
+      {!store && <InstallCard hideWhenPushPrompt={!pr.done} />}
 
       {backend === "firebase" && !isRecipient && !mine?.toUid && (
         <button className="ghost" onClick={share}>{KAKAO_SHARE_READY ? "카카오톡으로 보내기" : "받는 사람에게 링크 보내기"}</button>
       )}
       {mine?.toUid && <div className="small" style={{ textAlign: "center" }}>친구의 새편지함으로 바로 날아가고 있어요.</div>}
-      {isRecipient && pr.done && backend === "firebase" && !IS_TOSS && (
+      {isRecipient && !guest && pr.done && backend === "firebase" && !IS_TOSS && (
         <Link href={`/send?reply=${view.id}`} className="cta">↩ 답장하기</Link>
       )}
       {isRecipient && (

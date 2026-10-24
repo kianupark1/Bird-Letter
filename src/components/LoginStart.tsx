@@ -5,6 +5,9 @@ import BirdIcon from "@/components/BirdIcon";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
+import { oneTapInstall, openInstallGuide, useInstall } from "@/lib/install";
+import { STORE } from "@/lib/release";
+import { storeFor, type StoreBtn } from "../../core/storeLinks";
 
 /**
  * 처음 열었을 때의 화면(시안 ⑫). 로그인이 곧 시작이에요: 카카오·구글·애플 버튼 하나로 끝, 가입 양식 없음.
@@ -14,6 +17,12 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [msg, setMsg] = useState("");
   const bird = useRandomBird();
+  // 아래 빈자리의 작은 버튼 두 개: 홈 화면에 추가(안드로이드 크롬은 한 번에, 아이폰은 방법 안내) · 스토어에서 앱 받기(출시 뒤)
+  const { env, oneTap } = useInstall();
+  const [store, setStore] = useState<StoreBtn | null>(null);
+  const [isIos, setIsIos] = useState(false);
+  useEffect(() => { setStore(storeFor(navigator.userAgent, STORE, "start")); setIsIos(/iphone|ipad|ipod|macintosh/i.test(navigator.userAgent)); }, []);
+  const canHome = env !== "checking" && env !== "installed" && env !== "desktop" && !(window as unknown as { Capacitor?: unknown }).Capacitor;
 
   useEffect(() => {
     document.body.dataset.hideNav = "1"; // 이 화면에서는 하단 메뉴를 숨겨요
@@ -53,10 +62,25 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         <button type="button" className="sbtn google" onClick={() => go("google")} disabled={busy !== null}>
           {busy === "google" ? "열고 있어요…" : "구글로 시작하기"}
         </button>
-        <button type="button" className="sbtn apple" onClick={() => go("apple")} disabled={busy !== null}>
-          {busy === "apple" ? "열고 있어요…" : "애플로 시작하기"}
-        </button>
+        {/* 애플 로그인은 아이폰에서만: 다른 로그인(카카오·구글)을 주는 아이폰 앱은 애플 규칙(4.8)상 애플 로그인도 있어야 해요 */}
+        {isIos && (
+          <button type="button" className="sbtn apple" onClick={() => go("apple")} disabled={busy !== null}>
+            {busy === "apple" ? "열고 있어요…" : "애플로 시작하기"}
+          </button>
+        )}
         {msg && <p className="start-msg" role="alert">{msg}</p>}
+        {(canHome || store) && (
+          <div className="start-opts">
+            {canHome && (
+              <button type="button" className="sopt" onClick={() => { if (oneTap) void oneTapInstall(); else openInstallGuide(); }}>
+                <span aria-hidden>🏠</span> 홈 화면에 추가
+              </button>
+            )}
+            {store && (
+              <a className="sopt" href={store.url}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
+            )}
+          </div>
+        )}
         <p className="start-fine">
           네이버는 곧 추가돼요<br />
           시작하면 <Link href="/terms">이용약관</Link>과 <Link href="/privacy">개인정보 처리방침</Link>에 동의한 것으로 봐요 · 만 14세 이상

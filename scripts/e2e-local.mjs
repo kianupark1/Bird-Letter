@@ -42,7 +42,7 @@ async function writeLetter({ to, bird, text, files = [], later = false }) {
 
 console.log("[0] 처음 쓰는 사람: 편지 쓰기 → 누구에게? → 대화방에서 바로 쓰기");
 await p.goto(BASE + "/");
-await p.click("text=✉ 편지 쓰기");
+await p.click("text=✉ 첫 편지 쓰기");
 await p.waitForSelector(".whoin");
 ok("편지 쓰기를 누르면 목록 화면 안에서 바로 이름 칸(다른 화면 아님)", new URL(p.url()).pathname === "/" && (await p.evaluate(() => document.activeElement?.className)) === "whoin");
 ok("이름 칸에 자동 완성 연락처를 띄우지 않음", (await p.$eval(".whoin", (e) => e.getAttribute("autocomplete"))) === "off");
@@ -53,13 +53,11 @@ await p.waitForSelector(".ch-in");
 ok("처음 쓰는 이름도 빈 대화방이 바로 열림", (await p.$eval(".roomhead", (e) => e.innerText)).includes("할머니"));
 await p.fill(".ch-in", "할머니 보고 싶어요");
 await p.click(".ch-go", { force: true });
-await p.waitForSelector("#to-place");
-await p.click("#to-place");
-await p.click(".pf-opt[data-place=busan] >> nth=0");
-await p.click("text=이 길로 할게요");
-await p.click(".ch-go", { force: true });
+await p.waitForSelector(".qchip");
+ok("받는 곳은 검색 없이 큰 도시 버튼으로 고름", (await p.$$(".qchip")).length >= 12);
+await p.click(".qchip >> text=부산");
 await p.waitForSelector(".ch-letter.me", { timeout: 15000 });
-ok("대화방 안에서 쓰고 ➤ 누르면 바로 날아감", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("할머니 보고 싶어요"));
+ok("도시를 누르면 ➤를 다시 누르지 않아도 바로 날아감", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("할머니 보고 싶어요"));
 await p.goto(BASE + "/?write=1");
 await p.waitForSelector(".whoin");
 await p.fill(".whoin", "ㅎㅁ");
