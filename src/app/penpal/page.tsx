@@ -15,6 +15,7 @@ import { MAX_PENPAL_CHARS } from "@/lib/limits";
 import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
 import { listBlocked } from "@/lib/firebase/remote";
 import { listPool, readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
+import { myPenpalDoc } from "@/lib/penpalSync";
 import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpal, poolIn } from "../../../core/penpal";
 
 /** 펜팔: 모르는 누군가에게 새 날려 보내기 (시안 v5-1·v5-2) */
@@ -55,8 +56,8 @@ function Penpal() {
   // 약속한 사람은 펜팔 받기 명단에 내 줄을 최신으로 올려 둬요(이름·관심사·도시가 바뀌었을 때)
   useEffect(() => {
     if (!ready || !profile.penpalAgreed || !firebaseEnabled) return;
-    void saveMyPenpal({ name: myName, bird: profile.avatarBird || "magpie", region: city, tags, open: profile.penpalRecv === true }).catch(() => {});
-  }, [ready, profile.penpalAgreed, profile.penpalRecv, myName, city, tags.join(","), profile.avatarBird]);
+    void saveMyPenpal(myPenpalDoc(profile, { region: city })).catch(() => {});
+  }, [ready, profile.penpalAgreed, profile.penpalRecv, profile.penpalListed, profile.penpalPhoto, myName, city, tags.join(","), profile.avatarBird]);
 
   if (!ready) return <main className="app" aria-busy="true" />;
 

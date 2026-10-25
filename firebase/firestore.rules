@@ -105,7 +105,10 @@ service cloud.firestore {
       allow get: if signedIn();
       allow list: if signedIn() && request.query.limit <= 50;
       allow create, update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['name', 'bird', 'region', 'tags', 'open', 'at', 'intro'])
+        && request.resource.data.keys().hasOnly(['name', 'bird', 'region', 'tags', 'open', 'at', 'intro', 'listed', 'photo'])
+        // 펜팔 친구 찾기 목록에 보이기(본인이 켰을 때만)·카드 사진(본인이 허락했을 때만, 프로필 사진과 같은 크기 제한)
+        && (!('listed' in request.resource.data) || request.resource.data.listed is bool)
+        && (!('photo' in request.resource.data) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 30000 && request.resource.data.photo.matches('data:image/jpeg;base64,[A-Za-z0-9+/=]+')))
         // 한 줄 소개(선택, 100자까지). 연락처처럼 보이는 글은 앱이 올리기 전에 가려요
         && (!('intro' in request.resource.data) || (request.resource.data.intro is string && request.resource.data.intro.size() <= 100))
         && request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 12
