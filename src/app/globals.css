@@ -993,7 +993,7 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 
 /* 비행 기록: 지도 위 선 하나 + 출발 → 도착 (2026-10-18) */
 .ch-mapmini { border-radius: 14px; overflow: hidden; margin: 4px 0 8px; }
-.ch-mapmini .map { height: auto; }
+.ch-mapmini .map { height: auto; aspect-ratio: 320 / 170; } /* 편지지보다 커 보이지 않게 납작하게(2026-10-25 대표님) */
 .ch-trip { display: flex; align-items: center; gap: 8px; }
 .ch-trip > span:not(.arr) { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ch-trip > span:last-child { text-align: right; }
@@ -1060,3 +1060,15 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .start-opts { display: flex; gap: 10px; }
 .start-opts .sopt { flex: 1; min-height: 52px; border-radius: 18px; border: 1.5px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; text-decoration: none; }
 .start-opts .sopt:active { transform: translateY(2px); }
+
+/* 펜팔 친구 둘러보기(/pen/browse): 허락한 사람의 펜팔 카드 */
+.ppbrowse { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 10px; }
+.ppcard2 { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 22px; background: var(--card); color: var(--text); text-decoration: none; box-shadow: var(--raise); min-height: 88px; }
+.ppcard2:active { transform: scale(.99); }
+.pp2mid { flex: 1; min-width: 0; display: grid; gap: 3px; }
+.pp2mid b { font-size: 18px; }
+.pp2city { font-size: 14px; color: color-mix(in srgb, var(--text) 62%, transparent); }
+.pp2intro { font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+.pp2intro.dim { color: color-mix(in srgb, var(--text) 62%, transparent); }
+.pp2tags { font-size: 13px; color: color-mix(in srgb, var(--text) 62%, transparent); }
+.pp2go { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--dahong); color: #fff; font-size: 20px; }

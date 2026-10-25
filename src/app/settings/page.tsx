@@ -10,6 +10,7 @@ import Face from "@/components/Face";
 import BirdPicker from "@/components/BirdPicker";
 import { compressAvatar } from "@/lib/photo";
 import { saveMyPenpal } from "@/lib/firebase/penpal";
+import { myPenpalDoc } from "@/lib/penpalSync";
 import { cityLabel, cityOf, penpalName } from "../../../core/penpal";
 import { KAKAO_LOGIN_READY, isKakaoLinked, startKakaoLogin } from "@/lib/firebase/kakao";
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
@@ -195,7 +196,7 @@ export default function Settings() {
               </div>
               <button role="switch" aria-checked={profile.penpalRecv === true} aria-label="랜덤 편지 받기" className="switch" onClick={() => {
                 const open = profile.penpalRecv !== true; update({ penpalRecv: open });
-                void saveMyPenpal({ name: penName, bird: profile.avatarBird || "magpie", region: cityOf(profile.homePlace), tags: profile.penpalTags ?? [], open }).catch(() => {});
+                void saveMyPenpal(myPenpalDoc(profile, { open })).catch(() => {});
               }} />
             </div>
             <button type="button" className="linkbtn" onClick={() => { const v = window.prompt("펜팔 이름(진짜 이름은 쓰지 않는 게 좋아요)", penName); if (v !== null) update({ penpalName: v.trim().slice(0, 12) }); }}>✎ 펜팔 이름 바꾸기</button>

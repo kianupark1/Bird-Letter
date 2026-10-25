@@ -14,6 +14,7 @@ import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
 import { publishPublicRank } from "@/lib/firebase/ranking";
 import { saveMyPenpal } from "@/lib/firebase/penpal";
+import { myPenpalDoc } from "@/lib/penpalSync";
 import { cityLabel, cityOf, penpalName } from "../../core/penpal";
 import { myStatsCapped } from "../../core/rank";
 import { claim as claimLetter, type Meta } from "@/lib/firebase/remote";
@@ -111,13 +112,12 @@ function InboxList({ welcome }: { welcome?: string }) {
   // 랜덤(펜팔) 편지는 받겠다고 신청한 사람에게만 가요: 예전에 약속만 하고 신청하지 않은 사람은 받기 명단에서 내려요
   useEffect(() => {
     if (!ready || !firebaseEnabled || !me.penpalAgreed) return;
-    const open = me.penpalRecv === true;
-    const sig = `recv:${open}`;
+    const d = myPenpalDoc(me);
+    // 사진이 바뀌면 다시 올려요(사진 글자 전체 대신 길이·끝부분만 비교)
+    const sig = `recv:${d.open}|list:${d.listed}|ph:${d.photo ? `${d.photo.length}:${d.photo.slice(-24)}` : "-"}`;
     try { if (localStorage.getItem("saepyeonji.penpalsync.v1") === sig) return; } catch {}
-    const city = cityOf(me.homePlace);
-    void saveMyPenpal({ name: me.penpalName?.trim() || penpalName(cityLabel(city), me.avatarBird || "magpie"), bird: me.avatarBird || "magpie", region: city, tags: me.penpalTags ?? [], open })
-      .then(() => { try { localStorage.setItem("saepyeonji.penpalsync.v1", sig); } catch {} }).catch(() => {});
-  }, [ready, me.penpalAgreed, me.penpalRecv]);
+    void saveMyPenpal(d).then(() => { try { localStorage.setItem("saepyeonji.penpalsync.v1", sig); } catch {} }).catch(() => {});
+  }, [ready, me.penpalAgreed, me.penpalRecv, me.penpalListed, me.penpalPhoto, me.photo]);
 
   const { book, merge, mergeSame, rename, hide } = usePeople();
   const [menu, setMenuRaw] = useState<{ t: Thread<Letter, Meta>; step: "menu" | "merge" } | null>(null);

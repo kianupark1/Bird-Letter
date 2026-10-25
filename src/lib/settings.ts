@@ -40,6 +40,10 @@ export type Profile = {
   penpalOpen?: boolean;
   /** 모르는 누군가의 랜덤(펜팔) 편지를 받겠다고 신청했는지. 신청한 사람에게만 랜덤 편지가 가요(기본 꺼짐) */
   penpalRecv?: boolean;
+  /** 펜팔 친구 찾기 목록에 내 펜팔 카드(펜팔 이름·도시·한 줄 소개)를 보이기. 기본 꺼짐, 받기를 켰을 때만 의미가 있어요 */
+  penpalListed?: boolean;
+  /** 그 카드에 내 프로필 사진도 보이기(모르는 사람에게 보여요). 기본 꺼짐 */
+  penpalPhoto?: boolean;
 };
 export type FontScale = "small" | "normal" | "large";
 export const FONT_SCALES: { id: FontScale; label: string }[] = [
