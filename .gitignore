@@ -22,3 +22,5 @@ toss/next-env.d.ts
 /ios/
 *.jks
 *.keystore
+promo/video/.frames/
+promo/video/.v2tmp/
