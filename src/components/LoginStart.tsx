@@ -63,6 +63,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         <div className="bubble">짹짹! 반가워요 🌤</div>
         {bird ? <BirdIcon id={bird} size={200} letter className="bob" /> : <div style={birdSlot(200)} />}
         <h1>새 편지</h1>
+        <div className="saekdong" aria-hidden />
         {inviter ? (
           <p><b>{inviter}</b>님이 편지 친구로 초대했어요.<br />시작하면 바로 연결돼요</p>
         ) : (
@@ -93,14 +94,14 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         {(canHome || phone) && (
           <div className="start-opts">
             {canHome && (
-              <button type="button" className="sopt" onClick={() => { if (oneTap) void oneTapInstall(); else openInstallGuide(); }}>
+              <button type="button" className="sopt o-home" onClick={() => { if (oneTap) void oneTapInstall(); else openInstallGuide(); }}>
                 <span aria-hidden>🏠</span> 홈 화면에 추가
               </button>
             )}
             {phone && (store ? (
-              <a className="sopt" href={store.url}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
+              <a className="sopt o-store" href={store.url}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
             ) : (
-              <button type="button" className="sopt" onClick={() => setSoon(true)}>
+              <button type="button" className="sopt o-store" onClick={() => setSoon(true)}>
                 <span aria-hidden>📲</span> {phone === "ios" ? "앱스토어" : "구글 플레이"}에서 받기
               </button>
             ))}
