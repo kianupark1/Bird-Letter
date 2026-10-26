@@ -480,6 +480,7 @@ html[data-scale="large"] { --zoom: 1.15; }
 .sbtn.google { background: transparent; border-color: var(--namsaek); color: var(--namsaek); }
 .sbtn.apple { background: #111; color: #fff; }
 .start-msg { color: var(--dahong); font-size: 16px; font-weight: 600; text-align: center; margin: 2px 0 0; }
+.start-one { font-size: 14px; line-height: 1.5; text-align: center; color: var(--text); opacity: 0.75; margin: 2px 0 0; }
 .start-fine { font-size: 14px; line-height: 1.6; opacity: .7; text-align: center; margin: 4px 0 0; }
 .start-fine a { text-decoration: underline; }
 
@@ -1072,3 +1073,9 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .pp2intro.dim { color: color-mix(in srgb, var(--text) 62%, transparent); }
 .pp2tags { font-size: 13px; color: color-mix(in srgb, var(--text) 62%, transparent); }
 .pp2go { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--dahong); color: #fff; font-size: 20px; }
+
+/* 휴대폰 번호로 시작·받기 시트 */
+.phonesheet h2 { margin: 4px 0 6px; font-size: 20px; text-align: center; }
+.phone-in { width: 100%; min-height: 56px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 22px; letter-spacing: .04em; padding: 0 16px; box-sizing: border-box; }
+.phone-in:focus { outline: none; border-color: var(--dahong); }
+.sbtn.phone { background: var(--card); color: var(--text); border: 0; }

@@ -700,6 +700,28 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("공유 사진: 가까운 노선도 너무 크게 확대하지 않음", Math.abs(Q(near.from.lng, near.from.lat)[1] - Q(near.to.lng, near.to.lat)[1]) < 300, true);
 }
 
+{
+  const { toE164, maskPhone } = await import("../core/phone.ts");
+  eq("휴대폰: 010-1234-5678 → +821012345678", toE164("010-1234-5678"), "+821012345678");
+  eq("휴대폰: 띄어쓰기·+82도 받음", toE164("+82 10 1234 5678"), "+821012345678");
+  eq("휴대폰: 82로 시작해도", toE164("82-10-1234-5678"), "+821012345678");
+  eq("휴대폰: 집 전화는 아님", toE164("02-123-4567"), null);
+  eq("휴대폰: 너무 짧으면 아님", toE164("010-123"), null);
+  eq("휴대폰: 화면엔 가운데 가림", maskPhone("+821012345678"), "010-12**-5678");
+}
+
+{
+  const { previewText, PREVIEW_DEFAULT } = await import("../core/letterPreview.ts");
+  const now = Date.UTC(2026, 9, 26);
+  const t = previewText({ fromName: "성하", birdId: "crane", routeId: "seoul-busan" }, now);
+  eq("미리보기: 보낸 사람 이름이 제목에", t.title, "성하님이 보낸 편지가 날아오고 있어요 🕊");
+  eq("미리보기: 새·노선이 설명에", t.description.startsWith("두루미가 ") && t.description.includes("km를"), true);
+  eq("미리보기: 예약 편지(출발 전)는 기본 문구", previewText({ fromName: "성하", departAt: now + 1000 }, now), PREVIEW_DEFAULT);
+  eq("미리보기: 펜팔은 기본 문구(진짜 이름 아님)", previewText({ fromName: "서울 사는 까치", penpal: true }, now), PREVIEW_DEFAULT);
+  eq("미리보기: 못 읽으면 기본 문구", previewText(null, now), PREVIEW_DEFAULT);
+  eq("미리보기: 이름이 비면 기본 문구", previewText({ fromName: " " }, now), PREVIEW_DEFAULT);
+}
+
 import { fillText, storeLines, upgraded, xText as xPost, ytMeta } from "./auto-post.mjs";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };

@@ -20,6 +20,8 @@ import LetterReveal from "@/components/Unroll";
 import { savePolaroid } from "@/lib/photo";
 import { dateTimeText, isScheduled, whenText } from "../../core/schedule";
 import InstallCard from "@/components/InstallCard";
+import PhoneLogin from "@/components/PhoneLogin";
+import { PHONE_LOGIN_READY } from "@/lib/firebase/phone";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
@@ -42,6 +44,7 @@ export default function LetterView({ id }: { id: string }) {
   const [photos, setPhotos] = useState<string[]>([]);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [loginTick, setLoginTick] = useState(0); // 구글·애플로 받은 뒤 다시 확인
+  const [phoneOn, setPhoneOn] = useState(false); // 문자로 받기(휴대폰 번호 인증) 시트
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [store, setStore] = useState<StoreBtn | null>(null);
   useEffect(() => { if (!IS_TOSS) setStore(storeFor(navigator.userAgent, STORE, "letter")); }, []);
@@ -242,7 +245,9 @@ export default function LetterView({ id }: { id: string }) {
           <div className="recv-more">
             <button type="button" className="linkbtn" onClick={() => void receive("google")} disabled={busy !== null}>{busy === "google" ? "여는 중…" : "구글로 받기"}</button>
             <button type="button" className="linkbtn" onClick={() => void receive("apple")} disabled={busy !== null}>{busy === "apple" ? "여는 중…" : "애플로 받기"}</button>
+            {PHONE_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => setPhoneOn(true)} disabled={busy !== null}>문자로 받기</button>}
           </div>
+          {phoneOn && <PhoneLogin title="문자로 받기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); setLoginTick((t) => t + 1); }} />}
         </div>
       )}
       {mineNow && store && (
