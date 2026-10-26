@@ -160,18 +160,29 @@ function Friends() {
         <>
           <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setAdd(false)} />
           <div className="ch-sheet" role="dialog" aria-label="친구 추가">
-            <h2>친구 추가</h2>
-            <p className="small" style={{ margin: "0 0 4px", textAlign: "center" }}>링크를 받은 친구가 시작하면 자동으로 친구가 돼요</p>
-            <button type="button" className="sbtn kakao" disabled={!code} onClick={inviteKakao} style={{ width: "100%", height: 64 }}>
+            <div className="saekdong" aria-hidden />
+            <h2>친구 초대</h2>
+            <p className="small" style={{ margin: "0 0 4px", textAlign: "center" }}>링크를 받은 친구가 버튼 한 번으로 가입하면 바로 친구가 돼요</p>
+            <button type="button" className="sbtn kakao" disabled={!code} onClick={inviteKakao}>
               <span aria-hidden>💬</span> 카카오톡으로 초대하기
             </button>
             {/* 문자 앱의 "받는 사람"에 이름을 쓰면 폰 연락처에서 가까운 이름을 찾아 줘요(아이폰도 됨). 번호는 저장하지 않아요 */}
-            <a className={`sheetbtn ${code ? "" : "off"}`} href={code ? smsHref("", `${text}\n${link(code)}`) : undefined} style={{ textAlign: "center", textDecoration: "none" }}>
-              💬 문자로 초대하기<small className="sheetsub">받는 사람 칸에 이름을 쓰면 연락처에서 찾아 줘요</small>
+            <a className={`sbtn sms ${code ? "" : "off"}`} href={code ? smsHref("", `${text}\n${link(code)}`) : undefined}>
+              <span aria-hidden>✉️</span> 문자로 초대하기
             </a>
-            {canPick && <button type="button" className="sheetbtn" disabled={!code} onClick={inviteFromContacts}>📇 연락처에서 골라 초대하기</button>}
+            {canPick && <button type="button" className="sbtn hwang" disabled={!code} onClick={inviteFromContacts}><span aria-hidden>📇</span> 연락처에서 골라 초대하기</button>}
+            {/* 구글 메시지·지메일·인스타 DM 등 폰에 있는 다른 앱으로(폰 공유 창, 없으면 링크 복사) */}
+            <button type="button" className="sbtn nam" disabled={!code} onClick={() => void shareAny()}><span aria-hidden>📤</span> 다른 앱으로 초대하기</button>
             <button type="button" className="sheetbtn" disabled={!code} onClick={copy}>🔗 초대 링크 복사하기</button>
-            <Link href="/penpal" className="sheetbtn" style={{ textAlign: "center", textDecoration: "none" }}>🌏 펜팔 친구 찾기<small className="sheetsub">어느 누군가에게 새 편지 보내기</small></Link>
+            {/* 펜팔 홍보(법무: "펜팔 친구"로만, 만남·연애 표현 없음, 만 14세 이상) */}
+            <Link href="/penpal" className="pppromo">
+              <div>
+                <b>🌏 펜팔, 아세요?</b>
+                <span className="pp-d">옛날 그 감성 그대로.<br />어느 도시의 누군가에게 편지를<br />날려 보내면, 새가 천천히 전해 줘요.</span>
+                <span className="pp-f">이름 대신 펜팔 이름과 도시만 보여요 · 만 14세 이상</span>
+                <span className="pp-go">✉ 펜팔 편지 날려 보내기 ›</span>
+              </div>
+            </Link>
             {msg && <div className="small" role="status" style={{ textAlign: "center" }}>{msg}</div>}
             <button type="button" className="sheetbtn plain" onClick={() => setAdd(false)}>닫기</button>
           </div>

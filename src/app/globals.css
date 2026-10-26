@@ -13,6 +13,7 @@
   --sky: #FFFFFF;
   --on-dahong: #FFFFFF;
   --on-cheong: #FFFFFF;
+  --on-nam: #FFFFFF;
   --hwangto-text: #8A5A06;
   /* 새 일러스트 색(BirdIcon) */
   --b-cream: #FBF3E4; --b-ink: #2A2118; --b-brown: #8A5A3C; --b-brown2: #5B3A29;
@@ -34,6 +35,7 @@
     --sky: #221C16;
     --on-dahong: #1A1613;
     --on-cheong: #10201B;
+    --on-nam: #10161F;
     --hwangto-text: #F0BC5C;
     --b-cream: #F3E9D8; --b-ink: #E9DDC8; --b-brown: #B58257; --b-brown2: #8A5A3C;
     --b-grey: #A9B7C6; --b-grey2: #7F90A3; --b-edge: rgba(243, 233, 216, 0.0);
@@ -1079,3 +1081,31 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .phone-in { width: 100%; min-height: 56px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 22px; letter-spacing: .04em; padding: 0 16px; box-sizing: border-box; }
 .phone-in:focus { outline: none; border-color: var(--dahong); }
 .sbtn.phone { background: var(--card); color: var(--text); border: 0; }
+.sbtn.sms { background: var(--cheongrok); color: var(--on-cheong); text-decoration: none; }
+.sbtn.sms.off { opacity: .6; pointer-events: none; }
+.sbtn.home { background: var(--dahong); color: var(--on-dahong); width: 100%; }
+.ch-sheet .sbtn { width: 100%; }
+.joinsheet { text-align: center; align-items: center; }
+.joinsheet h2 { margin: 4px 0 0; }
+.joinsheet .small { margin: 0 0 6px; font-size: 16px; line-height: 1.5; }
+
+/* 오방색 꾸밈(2026-10-26, 대표님: "오방색으로 더 이쁘게"): 색동 띠·버튼마다 오방색 한 가지 */
+.saekdong { height: 7px; width: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--dahong) 0 20%, var(--hwangto) 20% 40%, var(--cheongrok) 40% 60%, var(--namsaek) 60% 80%, #F4EDE0 80% 100%); box-shadow: inset 0 0 0 1px var(--line); }
+.start-hero .saekdong { width: 132px; margin: 2px 0 4px; }
+.ch-sheet > .saekdong { width: 64px; margin: -4px auto 4px; height: 6px; }
+.sbtn.hwang { background: var(--hwangto); color: #2A2118; }
+.sbtn.nam { background: var(--namsaek); color: var(--on-nam); }
+.start-btns .sbtn.phone { background: var(--cheongrok); color: var(--on-cheong); }
+.start-opts .sopt.o-home { border-color: var(--hwangto); background: color-mix(in srgb, var(--hwangto) 12%, var(--card)); }
+.start-opts .sopt.o-store { border-color: var(--namsaek); background: color-mix(in srgb, var(--namsaek) 10%, var(--card)); }
+/* 펜팔 홍보 카드: 오방색 테두리 */
+.pppromo { display: block; text-decoration: none; color: var(--text); border-radius: 22px; padding: 2px; background: linear-gradient(120deg, var(--dahong), var(--hwangto), var(--cheongrok), var(--namsaek)); margin-top: 4px; }
+.pppromo > div { border-radius: 20px; background: color-mix(in srgb, var(--hwangto) 9%, var(--bg)); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.pppromo b { font-size: 19px; }
+.pppromo .pp-d { font-size: 16px; line-height: 1.55; }
+.pppromo > div { word-break: keep-all; } /* 낱말 가운데서 줄이 바뀌지 않게("보/내면" 방지) */
+.pppromo .pp-f { font-size: 13px; opacity: .7; }
+.pppromo .pp-go { align-self: flex-start; margin-top: 6px; background: var(--dahong); color: var(--on-dahong); font-weight: 700; font-size: 16px; padding: 9px 16px; border-radius: 99px; }
+/* 가입 끝 창: 오방색 꽃가루 */
+.joinsheet .confetti { position: relative; width: 180px; height: 104px; display: flex; justify-content: center; }
+.joinsheet .confetti i { position: absolute; z-index: 1; width: 10px; height: 10px; border-radius: 3px; transform: rotate(var(--r)); }
