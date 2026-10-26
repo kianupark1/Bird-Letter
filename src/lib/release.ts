@@ -27,4 +27,4 @@ export const STORE = { android: false, iosUrl: "" };
  * - group: 테스터 모임(구글 그룹) 주소. 넣으면 /tester 화면의 [테스터 모임 가입하기]가 켜져요. 없으면 ""
  * - optIn: 플레이 콘솔의 비공개 테스트 참여 링크. 테스트를 연 뒤 넣으면 [테스트 참여하기]가 켜져요. 없으면 ""
  */
-export const TESTER = { group: "", optIn: "" };
+export const TESTER = { group: "https://groups.google.com/g/saepyeonji-testers", optIn: "" };
