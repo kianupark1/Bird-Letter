@@ -27,7 +27,7 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 820 }, ac
 const p = await ctx.newPage();
 const errors = [];
 p.on("pageerror", (e) => errors.push(e.message));
-await p.addInitScript(() => localStorage.setItem("saepyeonji.onboarded.v1", "1"));
+await p.addInitScript(() => { localStorage.setItem("saepyeonji.onboarded.v1", "1"); localStorage.setItem("saepyeonji.e2e.v1", "1"); });
 
 async function writeLetter({ to, bird, text, files = [], later = false }) {
   await p.goto(`${BASE}/send?test=1`);

@@ -236,7 +236,9 @@ function Room() {
         </form>
       )}
       {map}
-      {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid) && (
+      {/* 같은 사람일 수 있는 방(이름 없는 친구·친구 목록에 없는 예전 계정)이 있을 때만 물어요. 늘 띄우면 매번 합치라는 것처럼 보여요
+          (그 밖에는 이름이 같으면 저절로 합쳐지고, 홈에서 길게 누르기로도 합칠 수 있어요) */}
+      {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid && !isPenpalThread(t) && (isUnnamed(t.name) || !friends.some((f) => f.uid === t.uid))) && (
         <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
       )}
       {!pen && !sendUid && lastSent && (

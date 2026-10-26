@@ -175,7 +175,7 @@ if (!EDGE) {
     });
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.evaluateOnNewDocument(() => { try { localStorage.setItem("saepyeonji.onboarded.v1", "1"); } catch {} });
+    await page.evaluateOnNewDocument(() => { try { localStorage.setItem("saepyeonji.onboarded.v1", "1"); localStorage.setItem("saepyeonji.e2e.v1", "1"); } catch {} });
     const text = () => page.evaluate(() => document.body.innerText);
     const go = async (p) => { await page.goto(BASE + p, { waitUntil: "networkidle0", timeout: 30000 }); await new Promise((r) => setTimeout(r, 600)); };
 

@@ -9,7 +9,7 @@ import SwipeRow from "@/components/SwipeRow";
 import HomeCountdown from "@/components/HomeCountdown";
 import Face from "@/components/Face";
 import { befriendSender, cachedFriends, listFriends, syncMyName, type Friend } from "@/lib/firebase/friends";
-import { clearSenders, pendingSenders } from "@/lib/linkSenders";
+import { clearSenders, pendingSenders, rememberSender } from "@/lib/linkSenders";
 import { auth, firebaseEnabled } from "@/lib/firebase/client";
 import { publishStats } from "@/lib/firebase/stats";
 import { publishPublicRank } from "@/lib/firebase/ranking";
@@ -87,7 +87,12 @@ function InboxList({ welcome }: { welcome?: string }) {
     if (firebaseEnabled) { const c = cachedFriends(); if (c.length) setFriends(c); }
   }, []);
   useEffect(() => {
-    listFriends().then(setFriends).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
+    listFriends().then((list) => {
+      setFriends(list);
+      // 아직 임시 계정(로그인 전)인데 친구가 있으면 기억해 둬요 → 로그인하면 그 친구들과 저절로 다시 이어지고,
+      // 친구 화면에서도 임시 계정과 로그인 계정이 한 사람으로 모여요(합치기를 누르지 않아도)
+      try { const u = auth().currentUser; if (u?.isAnonymous) for (const f of list) rememberSender(u.uid, { uid: f.uid, name: f.name }); } catch {}
+    }).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
   // 스토어 앱이면 받은 편지를 두 통 읽은 뒤 한 번만 별점을 물어요(src/lib/appShell.ts)
   useEffect(() => { void import("@/lib/appShell").then((m) => m.maybeAskReview()).catch(() => {}); }, []);

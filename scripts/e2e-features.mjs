@@ -52,7 +52,7 @@ async function newUser(browser, nickname) {
   await page.evaluateOnNewDocument((nick) => {
     try {
       if (!localStorage.getItem("saepyeonji.onboarded.v1")) {
-        localStorage.setItem("saepyeonji.onboarded.v1", "1");
+        localStorage.setItem("saepyeonji.onboarded.v1", "1"); localStorage.setItem("saepyeonji.e2e.v1", "1");
         localStorage.setItem("saepyeonji.profile.v1", JSON.stringify({ nickname: nick, notify: { arrival: true, passing: false, reply: true } }));
       }
     } catch {}
