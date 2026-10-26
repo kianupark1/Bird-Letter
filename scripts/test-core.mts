@@ -722,7 +722,8 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("미리보기: 이름이 비면 기본 문구", previewText({ fromName: " " }, now), PREVIEW_DEFAULT);
 }
 
-import { fillText, storeLines, upgraded, xText as xPost, ytMeta } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
+import { SLOGAN } from "../promo/store.mts";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
   const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
@@ -734,6 +735,12 @@ import { fillText, storeLines, upgraded, xText as xPost, ytMeta } from "./auto-p
   let threw = false; try { storeLines({}, "threads"); } catch { threw = true; }
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
+  eq("슬로건: 그림·영상과 글이 같은 글자", POST_SLOGAN, SLOGAN);
+  eq("슬로건: 모든 글에 들어감(해시태그 위)", th.includes(`${SLOGAN}\n\n#새편지`), true);
+  eq("슬로건: 인스타에도", fillText(p, "instagram", ios).text.includes(SLOGAN), true);
+  eq("슬로건: 받기 자리가 없는 글에도", fillText({ text: "안녕", to: ["threads"] }, "threads", ios).text, `안녕\n\n${SLOGAN}`);
+  eq("슬로건: 두 번 넣지 않음", withSlogan(`a\n\n${SLOGAN}`), `a\n\n${SLOGAN}`);
+  eq("슬로건: X에도(길어서 줄여도 남음)", xPost(fillText({ text: "가".repeat(60) + "\n" + "나".repeat(60) + "\n" + "다".repeat(60) + "\n\n#새편지", to: ["x"] }, "x", ios)).includes(SLOGAN), true);
   eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
 }
 

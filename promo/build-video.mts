@@ -26,7 +26,7 @@ const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
 const { withIGa } = await import("../core/korean.ts");
 const { koreaMapSvg, routeCurve, MAP_CSS } = await import("./mapArt.mts");
-const { STORE_PILL, STORE_SUB } = await import("./store.mts");
+const { STORE_PILL, STORE_SUB, SLOGAN } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
 const root = resolve(import.meta.dirname, "..");
@@ -131,7 +131,7 @@ ${MAP_CSS}
   <div style="position:absolute;left:0;right:0;top:0;height:26px;display:flex"><i style="flex:1;background:#C1481F"></i><i style="flex:1;background:#E0A83C"></i><i style="flex:1;background:#1B6E5C"></i><i style="flex:1;background:#1E3A5C"></i></div>
   <div id="ebird" style="position:absolute;left:240px;top:250px">${fly("magpie", 8, 600)}</div>
   <div class="cap" style="top:860px;font-size:150px;letter-spacing:-4px">새 편지</div>
-  <div class="cap" style="top:1060px;font-size:60px;font-weight:700;color:#C1481F">기다림이 즐거운 편지</div>
+  <div class="cap" style="top:1060px;font-size:60px;font-weight:700;color:#C1481F">${SLOGAN}</div>
   <div style="position:absolute;left:0;right:0;top:1250px;text-align:center"><span class="pill" id="pill">${STORE_PILL}</span>
     ${STORE_SUB ? `<div style="font-size:40px;font-weight:600;opacity:.65;margin-top:34px">${STORE_SUB}</div>` : ""}
     ${"note" in v ? `<div style="font-size:34px;font-weight:600;opacity:.6;margin-top:22px">${v.note}</div>` : ""}</div>

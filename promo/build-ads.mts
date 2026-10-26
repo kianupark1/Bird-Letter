@@ -18,7 +18,7 @@ const { getBird } = await import("../core/birds.ts");
 const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
 const { koreaMapSvg } = await import("./mapArt.mts");
-const { STORE_SHORT } = await import("./store.mts");
+const { STORE_SHORT, SLOGAN } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
 const root = resolve(import.meta.dirname, "..");
@@ -41,13 +41,13 @@ h1 { font-size: 92px; line-height: 1.13; letter-spacing: -2.5px; font-weight: 85
 .hl { color: #C1481F; } .gold { color: #F0BC5C; }
 .sub { font-size: 38px; line-height: 1.45; opacity: .8; margin-top: 20px; font-weight: 500; }
 /* 아래 "받으러 가기" 띠: 광고의 [자세히 보기] 버튼 바로 위에 오는 자리 */
-.cta { position: absolute; left: 60px; right: 60px; bottom: 54px; height: 128px; border-radius: 40px; background: #C1481F; color: #fff; display: flex; align-items: center; gap: 22px; padding: 0 40px; box-shadow: 0 10px 0 #8E3214; }
+.cta { position: absolute; left: 60px; right: 60px; bottom: 54px; height: 150px; border-radius: 40px; background: #C1481F; color: #fff; display: flex; align-items: center; gap: 22px; padding: 0 40px; box-shadow: 0 10px 0 #8E3214; }
 .cta b { font-size: 44px; font-weight: 850; } .cta span { font-size: 28px; opacity: .92; display: block; margin-top: 4px; font-weight: 600; }
 .cta .free { margin-left: auto; background: #FBF3E4; color: #C1481F; font-weight: 850; font-size: 34px; padding: 12px 24px; border-radius: 999px; }
 .logo { display: flex; align-items: center; gap: 12px; font-size: 34px; font-weight: 850; }
 `;
 const BAND = `<div class="band"><i></i><i></i><i></i><i></i><i></i></div>`;
-const CTA = (birdId = "magpie") => `<div class="cta"><div style="width:96px;flex:none">${bird(birdId, 96, true)}</div><div><b>새 편지 · 무료</b><span>${STORE_SHORT}</span></div><div class="free">받기</div></div>`;
+const CTA = (birdId = "magpie") => `<div class="cta"><div style="width:96px;flex:none">${bird(birdId, 96, true)}</div><div><b>새 편지 · 무료</b><span>${SLOGAN}</span><span>${STORE_SHORT}</span></div><div class="free">받기</div></div>`;
 
 const ads: { file: string; html: string }[] = [
   // ① 고객의 문제로 시작: 너무 빠른 답장 → 기다림이 설레는 편지
