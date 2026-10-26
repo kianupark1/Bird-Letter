@@ -21,3 +21,10 @@ export const LEGAL_DRAFT_DATE = "2026-10-19";
  * - iosUrl: 앱스토어 주소(예: https://apps.apple.com/kr/app/id0000000000), 없으면 ""
  */
 export const STORE = { android: false, iosUrl: "" };
+
+/**
+ * 구글 플레이 비공개 테스트(개인 계정은 테스터 12명 × 14일, 2026-10-26 결정).
+ * - group: 테스터 모임(구글 그룹) 주소. 넣으면 /tester 화면의 [테스터 모임 가입하기]가 켜져요. 없으면 ""
+ * - optIn: 플레이 콘솔의 비공개 테스트 참여 링크. 테스트를 연 뒤 넣으면 [테스트 참여하기]가 켜져요. 없으면 ""
+ */
+export const TESTER = { group: "", optIn: "" };
