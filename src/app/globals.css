@@ -1102,7 +1102,8 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .pppromo { display: block; text-decoration: none; color: var(--text); border-radius: 22px; padding: 2px; background: linear-gradient(120deg, var(--dahong), var(--hwangto), var(--cheongrok), var(--namsaek)); margin-top: 4px; }
 .pppromo > div { border-radius: 20px; background: color-mix(in srgb, var(--hwangto) 9%, var(--bg)); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; text-align: left; }
 .pppromo b { font-size: 19px; }
-.pppromo .pp-d { font-size: 16px; line-height: 1.5; }
+.pppromo .pp-d { font-size: 16px; line-height: 1.55; }
+.pppromo > div { word-break: keep-all; } /* 낱말 가운데서 줄이 바뀌지 않게("보/내면" 방지) */
 .pppromo .pp-f { font-size: 13px; opacity: .7; }
 .pppromo .pp-go { align-self: flex-start; margin-top: 6px; background: var(--dahong); color: var(--on-dahong); font-weight: 700; font-size: 16px; padding: 9px 16px; border-radius: 99px; }
 /* 가입 끝 창: 오방색 꽃가루 */

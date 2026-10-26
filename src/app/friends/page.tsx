@@ -178,7 +178,7 @@ function Friends() {
             <Link href="/penpal" className="pppromo">
               <div>
                 <b>🌏 펜팔, 아세요?</b>
-                <span className="pp-d">옛날 그 감성 그대로. 어느 도시의 누군가에게 편지를 날려 보내면, 새가 천천히 전해 줘요.</span>
+                <span className="pp-d">옛날 그 감성 그대로.<br />어느 도시의 누군가에게 편지를<br />날려 보내면, 새가 천천히 전해 줘요.</span>
                 <span className="pp-f">이름 대신 펜팔 이름과 도시만 보여요 · 만 14세 이상</span>
                 <span className="pp-go">✉ 펜팔 편지 날려 보내기 ›</span>
               </div>
