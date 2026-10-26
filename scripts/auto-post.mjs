@@ -50,7 +50,21 @@ export function storeLines(st, to) {
   else out.push("안드로이드 앱은 곧 나와요");
   return out.join("\n");
 }
-export const fillText = (p, to, st = stores) => (p.text.includes("{{받기}}") ? { ...p, text: p.text.replaceAll("{{받기}}", storeLines(st, to)) } : p);
+// 슬로건은 모든 글에 꼭 들어가요(promo/store.mts SLOGAN과 같은 글자, 2026-10-26 대표님: "무조건적으로"). 해시태그 줄 바로 위에 넣어요.
+export const SLOGAN = "기다림도 소통의 일부입니다.";
+export function withSlogan(text) {
+  if (text.includes(SLOGAN)) return text;
+  const lines = text.trimEnd().split("\n");
+  if (lines.length > 1 && lines[lines.length - 1].trim().startsWith("#")) {
+    const tags = lines.pop();
+    return `${lines.join("\n").trimEnd()}\n\n${SLOGAN}\n\n${tags}`;
+  }
+  return `${lines.join("\n")}\n\n${SLOGAN}`;
+}
+export const fillText = (p, to, st = stores) => {
+  const text = p.text.includes("{{받기}}") ? p.text.replaceAll("{{받기}}", storeLines(st, to)) : p.text;
+  return { ...p, text: withSlogan(text) };
+};
 const dateOf = (p) => {
   if (p.date) return p.date;
   if (typeof p.day !== "number" || !/^\d{4}-\d{2}-\d{2}$/.test(launch ?? "")) return null;
@@ -106,11 +120,13 @@ async function postInstagram(p) {
 // X는 글자 수를 한글·이모지 2칸, 영문·숫자 1칸으로 세서 280칸까지예요. 링크가 있으면 글값이 13배라서 링크 줄은 빼요(앱 주소는 프로필에).
 const xWeight = (s) => [...s].reduce((n, ch) => n + (/[\u0000-ჿ -‍‐-‟′-‷]/.test(ch) ? 1 : 2), 0);
 export function xText(p) {
-  if (p.xText) return p.xText;
-  const lines = p.text.split("\n").filter((l) => !/https?:\/\//.test(l) && !/^(안드로이드|아이폰):/.test(l.trim()));
+  if (p.xText) return p.xText.includes(SLOGAN) || xWeight(`${p.xText}\n\n${SLOGAN}`) > 280 ? p.xText : `${p.xText}\n\n${SLOGAN}`;
+  // 슬로건은 줄일 때도 남겨요(해시태그처럼 끝에 따로 붙임)
+  const lines = p.text.split("\n").filter((l) => !/https?:\/\//.test(l) && !/^(안드로이드|아이폰):/.test(l.trim()) && l.trim() !== SLOGAN);
   const tags = lines.length && lines[lines.length - 1].trim().startsWith("#") ? lines.pop() : "";
   let body = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-  const join = () => (tags ? `${body}\n\n${tags}` : body);
+  const tail = tags ? `${SLOGAN}\n\n${tags}` : SLOGAN;
+  const join = () => `${body}\n\n${tail}`;
   while (xWeight(join()) > 280 && body.includes("\n")) body = body.slice(0, body.lastIndexOf("\n")).trim(); // 넘치면 뒤 줄부터 덜어내요
   return xWeight(join()) > 280 ? [...body].slice(0, 130).join("") + "…" : join();
 }

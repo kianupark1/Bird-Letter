@@ -150,7 +150,7 @@ export async function makeShareImage(input: ShareInput, bird: SVGSVGElement | nu
   // 맨 아래 앱 이름
   ctx.textAlign = "center";
   ctx.fillStyle = INK; ctx.font = `800 34px ${family}`; ctx.fillText("새 편지", W / 2, H - 120);
-  ctx.globalAlpha = 0.7; ctx.font = `600 26px ${family}`; ctx.fillText("기다림이 즐거운 편지", W / 2, H - 80);
+  ctx.globalAlpha = 0.7; ctx.font = `600 26px ${family}`; ctx.fillText("기다림도 소통의 일부입니다.", W / 2, H - 80);
   ctx.globalAlpha = 1;
 
   return new Promise((ok, no) => cv.toBlob((bl) => (bl ? ok(bl) : no(new Error("blob"))), "image/png"));

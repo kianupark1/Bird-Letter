@@ -16,7 +16,7 @@ const { default: BirdIcon } = await import("../src/components/BirdIcon.tsx");
 const { BIRDS_SLOW_TO_FAST, getBird } = await import("../core/birds.ts");
 const { travelMinutes, formatMinutes } = await import("../core/geo.ts");
 const { getRoute } = await import("../core/routes.ts");
-const { STORE_LINES } = await import("./store.mts");
+const { STORE_LINES, SLOGAN } = await import("./store.mts");
 const { chromium } = (() => { try { return req("playwright"); } catch { return req("/opt/node-tools/node_modules/playwright"); } })();
 
 const root = resolve(import.meta.dirname, "..");
@@ -44,7 +44,7 @@ h1 { font-size: 90px; line-height: 1.14; letter-spacing: -2px; font-weight: 800;
 .tile { background: #fff; border-radius: 32px; padding: 26px 30px; display: flex; align-items: center; gap: 22px; box-shadow: 0 6px 0 rgba(42,33,24,.06); }
 `;
 // 출시 전·후 어느 때 올려도 맞도록 "체험판·준비 중" 같은 시점 문구는 넣지 않아요(출시 알림은 06-launch 카드)
-const FOOT = `<div class="brand"><span>새 편지</span><small>기다림이 즐거운 편지</small></div>`;
+const FOOT = `<div class="brand"><span>새 편지</span><small>${SLOGAN}</small></div>`;
 const BAND = `<div class="band"><i></i><i></i><i></i><i></i><i></i></div>`;
 
 const cards: { file: string; w: number; h: number; html: string; copyTo?: string; out?: string }[] = [
@@ -114,7 +114,7 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
 
   // 구글 플레이 "그래픽 이미지"(필수, 1024×500). 글자는 적게, 가장자리에 중요한 것 두지 않기
   { file: "feature-1024x500", w: 1024, h: 500, out: resolve(root, "promo/store/feature-1024x500.png"), html: `<style>.wrap{padding:0 80px;flex-direction:row;align-items:center;gap:24px;inset:22px 0 0 0} h1{font-size:78px} .sub{font-size:30px;margin-top:16px}</style>${BAND}<div class="wrap">
-    <div style="flex:1"><h1>소식은<br><span class="hl">날아서</span> 와요</h1><p class="sub">기다림이 즐거운 편지, 새 편지</p></div>
+    <div style="flex:1"><h1>소식은<br><span class="hl">날아서</span> 와요</h1><p class="sub">${SLOGAN}</p></div>
     <div style="width:400px">${bird("magpie", 400, true)}</div></div>` },
 
   { file: "og", w: 1200, h: 630, copyTo: resolve(root, "public/og.png"), html: `<style>.wrap{padding:56px 76px 44px;flex-direction:row;align-items:center;gap:30px} h1{font-size:76px} .proverb{font-size:28px;margin-top:18px} .sub{font-size:27px;margin-top:14px}
