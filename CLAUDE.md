@@ -342,6 +342,7 @@
 - 전략: 앱 심사를 기다리지 않고 **10/26부터 웹으로 아는 사람 30명에게 직접 편지**(편지 = 초대장), 앱 승인 날 SNS 자동 게시 시작. 100명 계산·네 사람 원칙·팀별 할 일은 계획표에.
 - **아이폰 출시 자동 빌드** `.github/workflows/ios-release.yml`(맥 없이 xcodebuild archive → TestFlight 업로드, App Store Connect API 키 자동 서명 `-allowProvisioningUpdates`, 비밀 값 `APPLE_TEAM_ID·ASC_KEY_ID·ASC_ISSUER_ID·ASC_KEY_P8`, 키는 관리자 권한 「미확인」). 대표님 할 일 순서 `docs/아이폰-출시.md`(번들 ID 등록·앱 만들기·API 키·APNs 키·TestFlight). `ios-prepare.sh`에 `ITSAppUsesNonExemptEncryption=false`. **워크플로는 main에 있어야 Actions에서 실행 가능**.
 - **업그레이드 영상 자동 교체**: `promo/video/v2/`에 같은 이름으로 넣으면 그날부터 자동 게시가 새 영상을 씀(`scripts/auto-post.mjs upgraded`, 이미 올라간 글은 그대로, 시험 5개, test:core 406).
+- **애플 결제 11/5로 미룸(2026-10-26, 대표님: "카드 한도 때문에 11월 5일, 그전에 할 수 있는 건 다 해 놓는 컨셉")**: 11/5 결제 → 승인 → 바로 TestFlight·심사. 그전에 결제 없이 되는 것(웹 사람 모으기, 아이폰 알림 코드, 심사 자료·스크린샷, 빌드 시험, SNS 열쇠)은 모두 끝내 둠. 계획표 3번 일정 갱신.
 - 남은 개발: 아이폰 앱 알림(지금은 APNs 번호만 받아서 FCM으로 못 보냄 → Firebase Messaging으로, APNs 열쇠 뒤), 첫 TestFlight 시험표, 6.9인치 스크린샷, "계정 삭제(탈퇴)" 이름.
 
 ## 출시 날 바로 홍보: 인스타·스레드·틱톡·네이버 블로그 (2026-10-22, 대표님: "출시와 함께 바로 홍보, 인스타·스레드·틱톡 먼저, 네이버 블로그까지")
