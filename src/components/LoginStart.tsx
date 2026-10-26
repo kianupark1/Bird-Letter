@@ -7,7 +7,7 @@ import BirdIcon from "@/components/BirdIcon";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
-import { oneTapInstall, openInstallGuide, useInstall } from "@/lib/install";
+import { markJustJoined, oneTapInstall, openInstallGuide, useInstall } from "@/lib/install";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
 
@@ -46,13 +46,14 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
     setMsg("");
     if (kind === "kakao") {
       if (!KAKAO_LOGIN_READY) { setMsg("카카오 로그인이 아직 준비되지 않았어요."); return; }
+      markJustJoined(); // 돌아오면 "홈 화면에 추가할까요?"를 한 번 물어요(취소하고 돌아오면 로그인 화면이라 안 보여요)
       startKakaoLogin(next ?? "/"); // 카카오 화면으로 갔다가 돌아오면 홈으로
       return;
     }
     setBusy(kind);
     const r = await linkAccount(kind);
     setBusy(null);
-    if (r.ok) onDone();
+    if (r.ok) { markJustJoined(); onDone(); }
     else setMsg(r.message);
   }
 
@@ -86,7 +87,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
             <span aria-hidden>📱</span> 휴대폰 번호로 가입하기
           </button>
         )}
-        {phoneOn && <PhoneLogin title="휴대폰 번호로 가입하기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); onDone(); }} />}
+        {phoneOn && <PhoneLogin title="휴대폰 번호로 가입하기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); markJustJoined(); onDone(); }} />}
         <p className="start-one">누르면 바로 가입 끝 · 양식·비밀번호 없어요<br />이미 가입했다면 같은 버튼으로 바로 들어와요</p>
         {msg && <p className="start-msg" role="alert">{msg}</p>}
         {(canHome || phone) && (

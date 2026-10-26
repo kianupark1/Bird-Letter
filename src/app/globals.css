@@ -1079,3 +1079,10 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .phone-in { width: 100%; min-height: 56px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 22px; letter-spacing: .04em; padding: 0 16px; box-sizing: border-box; }
 .phone-in:focus { outline: none; border-color: var(--dahong); }
 .sbtn.phone { background: var(--card); color: var(--text); border: 0; }
+.sbtn.sms { background: var(--cheongrok); color: var(--on-cheong); text-decoration: none; }
+.sbtn.sms.off { opacity: .6; pointer-events: none; }
+.sbtn.home { background: var(--dahong); color: var(--on-dahong); width: 100%; }
+.ch-sheet .sbtn { width: 100%; }
+.joinsheet { text-align: center; align-items: center; }
+.joinsheet h2 { margin: 4px 0 0; }
+.joinsheet .small { margin: 0 0 6px; font-size: 16px; line-height: 1.5; }

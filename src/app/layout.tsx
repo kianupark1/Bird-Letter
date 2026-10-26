@@ -4,6 +4,7 @@ import "./globals.css";
 import BottomNav from "@/components/BottomNav";
 import Notifier from "@/components/Notifier";
 import InstallGuide from "@/components/InstallGuide";
+import JoinInstall from "@/components/JoinInstall";
 import FontScale from "@/components/FontScale";
 import SwBoot from "@/components/SwBoot";
 
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SwBoot />
         <Notifier />
         <InstallGuide />
+        <JoinInstall />
         <BottomNav />
       </body>
     </html>

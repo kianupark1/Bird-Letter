@@ -97,3 +97,15 @@ export function useInstall() {
   }, []);
   return { env, oneTap, hidden, needsInstall: env === "inapp" || env === "ios" };
 }
+
+/**
+ * 가입 직후 한 번 "홈 화면에 추가할까요?"를 물어요(2026-10-26, 대표님: "가입하면 저절로 홈 화면에 추가될 수는 없나?").
+ * 웹은 폰이 직접 허락해야 해서 완전히 저절로는 못 해요 → 가입하자마자 버튼 한 번(안드로이드 크롬)이나 안내(아이폰)로.
+ */
+const JOINED_KEY = "saepyeonji.justjoined.v1";
+export const markJustJoined = () => { try { localStorage.setItem(JOINED_KEY, String(Date.now())); } catch {} };
+export const clearJustJoined = () => { try { localStorage.removeItem(JOINED_KEY); } catch {} };
+/** 가입한 지 하루 안이면 물어요(카카오 화면에서 취소하고 돌아온 경우는 로그인 확인에서 걸러져요) */
+export function justJoined(): boolean {
+  try { const t = Number(localStorage.getItem(JOINED_KEY)); return !!t && Date.now() - t < 86400000; } catch { return false; }
+}

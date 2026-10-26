@@ -1,0 +1,40 @@
+"use client";
+import { useEffect, useState } from "react";
+import BirdIcon from "@/components/BirdIcon";
+import { clearJustJoined, justJoined, oneTapInstall, openInstallGuide, useInstall } from "@/lib/install";
+import { useSession } from "@/lib/session";
+
+/**
+ * 가입하자마자 한 번: "홈 화면에 새 편지를 놓아 둘까요?" 버튼 하나로 끝(안드로이드 크롬은 폰 설치 창, 아이폰·카톡 안은 방법 안내).
+ * 스토어 앱 안·이미 설치한 폰·컴퓨터에서는 안 보여요.
+ */
+export default function JoinInstall() {
+  const { state } = useSession();
+  const { env, oneTap } = useInstall();
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (state !== "ready" || env === "checking") return;
+    if (!justJoined()) return;
+    if (env === "installed" || env === "desktop") { clearJustJoined(); return; }
+    setOpen(true);
+  }, [state, env]);
+  if (!open) return null;
+  const close = () => { clearJustJoined(); setOpen(false); };
+  const add = async () => {
+    close();
+    if (oneTap && env !== "inapp") await oneTapInstall();
+    else openInstallGuide();
+  };
+  return (
+    <>
+      <button type="button" className="ch-dim" aria-label="닫기" onClick={close} />
+      <div className="ch-sheet joinsheet" role="dialog" aria-label="홈 화면에 추가">
+        <BirdIcon id="magpie" size={96} letter className="bob" />
+        <h2>가입 끝! 반가워요 🎉</h2>
+        <p className="small">홈 화면에 새 편지를 놓아 두면 앱처럼 한 번에 열리고, 편지가 도착하면 알려 줘요</p>
+        <button type="button" className="sbtn home" onClick={() => void add()}><span aria-hidden>🏠</span> 홈 화면에 추가하기</button>
+        <button type="button" className="sheetbtn plain" onClick={close}>나중에</button>
+      </div>
+    </>
+  );
+}
