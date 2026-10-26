@@ -480,6 +480,7 @@ html[data-scale="large"] { --zoom: 1.15; }
 .sbtn.google { background: transparent; border-color: var(--namsaek); color: var(--namsaek); }
 .sbtn.apple { background: #111; color: #fff; }
 .start-msg { color: var(--dahong); font-size: 16px; font-weight: 600; text-align: center; margin: 2px 0 0; }
+.start-one { font-size: 14px; line-height: 1.5; text-align: center; color: var(--text); opacity: 0.75; margin: 2px 0 0; }
 .start-fine { font-size: 14px; line-height: 1.6; opacity: .7; text-align: center; margin: 4px 0 0; }
 .start-fine a { text-decoration: underline; }
 
