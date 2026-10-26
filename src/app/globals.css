@@ -1072,3 +1072,9 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .pp2intro.dim { color: color-mix(in srgb, var(--text) 62%, transparent); }
 .pp2tags { font-size: 13px; color: color-mix(in srgb, var(--text) 62%, transparent); }
 .pp2go { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--dahong); color: #fff; font-size: 20px; }
+
+/* 휴대폰 번호로 시작·받기 시트 */
+.phonesheet h2 { margin: 4px 0 6px; font-size: 20px; text-align: center; }
+.phone-in { width: 100%; min-height: 56px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-size: 22px; letter-spacing: .04em; padding: 0 16px; box-sizing: border-box; }
+.phone-in:focus { outline: none; border-color: var(--dahong); }
+.sbtn.phone { background: var(--card); color: var(--text); border: 0; }

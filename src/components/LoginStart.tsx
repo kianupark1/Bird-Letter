@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import PhoneLogin from "@/components/PhoneLogin";
+import { PHONE_LOGIN_READY } from "@/lib/firebase/phone";
 import BirdIcon from "@/components/BirdIcon";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
@@ -24,6 +26,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   // 폰이면 스토어 버튼은 항상 보여요. 스토어에 올라가기 전에는 누르면 "곧 나와요" 안내(그동안은 홈 화면에 추가)
   const [phone, setPhone] = useState<"ios" | "android" | null>(null);
   const [soon, setSoon] = useState(false);
+  const [phoneOn, setPhoneOn] = useState(false);
   useEffect(() => {
     const ua = navigator.userAgent;
     setStore(storeFor(ua, STORE, "start"));
@@ -77,6 +80,12 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
             {busy === "apple" ? "열고 있어요…" : "애플로 시작하기"}
           </button>
         )}
+        {PHONE_LOGIN_READY && (
+          <button type="button" className="sbtn phone" onClick={() => setPhoneOn(true)} disabled={busy !== null}>
+            <span aria-hidden>📱</span> 휴대폰 번호로 시작하기
+          </button>
+        )}
+        {phoneOn && <PhoneLogin title="휴대폰 번호로 시작하기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); onDone(); }} />}
         {msg && <p className="start-msg" role="alert">{msg}</p>}
         {(canHome || phone) && (
           <div className="start-opts">
