@@ -1,7 +1,7 @@
 "use client";
 import { PUSH_CONFIGURED, usePushState } from "@/lib/push";
 import BirdIcon from "@/components/BirdIcon";
-import { openInstallGuide } from "@/lib/install";
+import { addToHome } from "@/lib/install";
 
 /** "닫아 둬도 알려드릴까요?" 안내 카드. 이미 켰거나 지원하지 않으면 보이지 않아요. */
 export default function PushPrompt({ birdId = "magpie" }: { birdId?: string }) {
@@ -22,7 +22,7 @@ export default function PushPrompt({ birdId = "magpie" }: { birdId?: string }) {
           <>
             <div className="t">홈 화면에 추가하면 알림을 받을 수 있어요</div>
             <div className="d">아이폰은 설치한 앱에서만 알림을 받을 수 있어요. 그림으로 따라 하면 1분이면 돼요.</div>
-            <button className="pushbtn" onClick={openInstallGuide}>설치 방법 보기</button>
+            <button className="pushbtn" onClick={addToHome}>설치 방법 보기</button>
           </>
         )}
         {state === "denied" && (

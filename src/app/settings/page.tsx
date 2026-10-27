@@ -16,7 +16,7 @@ import { KAKAO_LOGIN_READY, isKakaoLinked, startKakaoLogin } from "@/lib/firebas
 import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { isAppPush, PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
-import { openInstallGuide } from "@/lib/install";
+import { addToHome } from "@/lib/install";
 import { playChirp } from "@/lib/chirp";
 import { getBird } from "@/lib/birds";
 import { IS_TOSS } from "@/lib/target";
@@ -258,7 +258,7 @@ export default function Settings() {
               </div>
             </div>
             {PUSH_CONFIGURED && push === "needs-install" && (
-              <button className="chip" onClick={openInstallGuide}>설치 방법</button>
+              <button className="chip" onClick={addToHome}>설치 방법</button>
             )}
             {PUSH_CONFIGURED && (push === "enabled" || push === "default") && (
               <button role="switch" aria-checked={push === "enabled"} aria-label="앱을 닫아도 알림 받기" className="switch" onClick={push === "enabled" ? disablePush : enablePush} />

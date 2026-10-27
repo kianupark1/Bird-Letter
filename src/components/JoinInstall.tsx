@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
-import { clearJustJoined, justJoined, oneTapInstall, openInstallGuide, useInstall } from "@/lib/install";
+import { addToHome, clearJustJoined, justJoined, useInstall } from "@/lib/install";
 import { useSession } from "@/lib/session";
 
 /**
@@ -17,7 +17,7 @@ const CONFETTI: [string, string, string, string][] = [
 
 export default function JoinInstall() {
   const { state } = useSession();
-  const { env, oneTap } = useInstall();
+  const { env } = useInstall();
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (state !== "ready" || env === "checking") return;
@@ -29,8 +29,7 @@ export default function JoinInstall() {
   const close = () => { clearJustJoined(); setOpen(false); };
   const add = async () => {
     close();
-    if (oneTap && env !== "inapp") await oneTapInstall();
-    else openInstallGuide();
+    addToHome();
   };
   return (
     <>

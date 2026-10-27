@@ -63,9 +63,12 @@ export function detectEnv(): InstallEnv {
   return "desktop";
 }
 
-/** 지금 주소를 기본 브라우저로 여는 주소(가능한 환경에서만). 못 하면 null */
-export function externalOpenUrl(): string | null {
-  const href = location.href;
+/** 지금 주소를 기본 브라우저로 여는 주소(가능한 환경에서만). 못 하면 null.
+ *  forInstall이면 주소에 install=1을 붙여서, 기본 브라우저에서 열리자마자 홈 화면 추가 안내가 저절로 떠요 */
+export function externalOpenUrl(forInstall = false): string | null {
+  const u0 = new URL(location.href);
+  if (forInstall) u0.searchParams.set("install", "1");
+  const href = u0.toString();
   if (isKakao()) return `kakaotalk://web/openExternal?url=${encodeURIComponent(href)}`;
   if (isAndroid()) {
     const u = new URL(href);
@@ -75,6 +78,33 @@ export function externalOpenUrl(): string | null {
 }
 
 export const openInstallGuide = () => { try { window.dispatchEvent(new Event(OPEN)); } catch {} };
+
+/**
+ * "홈 화면에 추가" 버튼 하나로(2026-10-27, 대표님: "홈 화면에 추가 누르면 추가 안 되고 안내만 나와").
+ * - 안드로이드 크롬: 폰 설치 창 바로.
+ * - 카카오톡 같은 앱 안 브라우저: 그 안에서는 설치가 아예 안 돼요 → 안내 없이 곧바로 기본 브라우저(Safari·크롬)로 넘기고,
+ *   넘어간 화면에서 설치 안내가 저절로 떠요(install=1).
+ * - 아이폰 Safari: 애플이 웹에 "저절로 추가"를 막아 둬서 공유 → 홈 화면에 추가 안내(그림).
+ */
+export function addToHome() {
+  if (canOneTapInstall()) { void oneTapInstall(); return; }
+  if (detectEnv() === "inapp") {
+    const ext = externalOpenUrl(true);
+    if (ext) { location.href = ext; return; }
+  }
+  openInstallGuide();
+}
+
+/** 기본 브라우저로 넘어와 install=1이 붙어 있으면 안내를 한 번 열고 주소에서 지워요 */
+export function consumeInstallParam(): boolean {
+  try {
+    const u = new URL(location.href);
+    if (u.searchParams.get("install") !== "1") return false;
+    u.searchParams.delete("install");
+    history.replaceState(history.state, "", u.pathname + (u.search ? u.search : "") + u.hash);
+    return true;
+  } catch { return false; }
+}
 export const onInstallGuideOpen = (fn: () => void) => { window.addEventListener(OPEN, fn); return () => window.removeEventListener(OPEN, fn); };
 
 export function snoozeInstallCard(days = 7) {
