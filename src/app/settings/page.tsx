@@ -208,6 +208,11 @@ export default function Settings() {
         <span><b>스탬프 도감</b><span>편지가 지나간 명소를 모아요</span></span>
         <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
       </Link>
+      <Link href="/?tour=1" className="opt rankcard" style={{ marginTop: 8 }}>
+        <span className="oic" aria-hidden style={{ background: "var(--card)" }}>📖</span>
+        <span><b>사용법 다시 보기</b><span>편지 보내기·새·지도·초대·펜팔을 1분 만에</span></span>
+        <span style={{ marginLeft: "auto", fontSize: 26 }} aria-hidden>›</span>
+      </Link>
 
       <h2>알림</h2>
       <div className="list">

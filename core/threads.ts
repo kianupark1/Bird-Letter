@@ -197,6 +197,7 @@ export const AVATAR_BIRDS = ["magpie", "pigeon", "swallow", "crane", "bungbungi"
 /** 친구가 "내 새"를 고르지 않았거나 아직 모를 때: 이름으로 항상 같은 새를 정해 줘요 */
 export function avatarBirdFor(name: string, chosen?: string | null): string {
   if (chosen && (AVATAR_BIRDS as readonly string[]).includes(chosen)) return chosen;
+  if (name === "새편지") return "magpie"; // 환영 편지를 보낸 새편지는 앱 아이콘과 같은 까치
   return AVATAR_BIRDS[mix(name) % AVATAR_BIRDS.length];
 }
 

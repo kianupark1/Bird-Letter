@@ -76,7 +76,7 @@ export async function isKakaoLinked(): Promise<boolean> {
  * - "다시 가져오기"를 눌렀으면 둘 다 카카오 것으로
  * 친구들 화면의 내 이름·사진은 홈이 열릴 때 자동으로 고쳐져요(syncMyName).
  */
-async function applyKakaoProfile(nickname: unknown, photo: unknown) {
+export async function applyKakaoProfile(nickname: unknown, photo: unknown) {
   let refresh = false;
   try { refresh = sessionStorage.getItem(REFRESH_KEY) === "1"; sessionStorage.removeItem(REFRESH_KEY); } catch {}
   let p: Record<string, unknown> = {};

@@ -24,9 +24,11 @@ import PhoneLogin from "@/components/PhoneLogin";
 import { PHONE_LOGIN_READY } from "@/lib/firebase/phone";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
+import { NAVER_LOGIN_READY, startNaverLogin } from "@/lib/firebase/naver";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
+import { WELCOME_FROM } from "../../core/welcome";
 
 const clock = (ms: number) => whenText(ms); // 오늘이 아니면 "내일"·날짜까지
 
@@ -203,6 +205,7 @@ export default function LetterView({ id }: { id: string }) {
   // 받는 사람: 로그인 한 번으로 내 편지함에 받기(카카오는 카카오 화면에 갔다가 이 편지로 돌아와요)
   const receive = async (kind: LoginKind) => {
     if (kind === "kakao") { startKakaoLogin(letterHref(id)); return; }
+    if (kind === "naver") { startNaverLogin(letterHref(id)); return; }
     setBusy(kind);
     const r = await linkAccount(kind);
     setBusy(null);
@@ -243,6 +246,7 @@ export default function LetterView({ id }: { id: string }) {
             <span aria-hidden>💬</span> 카카오로 받기
           </button>
           <div className="recv-more">
+            {NAVER_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => void receive("naver")} disabled={busy !== null}>네이버로 받기</button>}
             <button type="button" className="linkbtn" onClick={() => void receive("google")} disabled={busy !== null}>{busy === "google" ? "여는 중…" : "구글로 받기"}</button>
             <button type="button" className="linkbtn" onClick={() => void receive("apple")} disabled={busy !== null}>{busy === "apple" ? "여는 중…" : "애플로 받기"}</button>
             {PHONE_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => setPhoneOn(true)} disabled={busy !== null}>문자로 받기</button>}
@@ -362,10 +366,10 @@ export default function LetterView({ id }: { id: string }) {
         <button className="ghost" onClick={share}>{KAKAO_SHARE_READY ? "카카오톡으로 보내기" : "받는 사람에게 링크 보내기"}</button>
       )}
       {mine?.toUid && <div className="small" style={{ textAlign: "center" }}>친구의 새편지함으로 바로 날아가고 있어요.</div>}
-      {isRecipient && !guest && pr.done && backend === "firebase" && !IS_TOSS && (
+      {isRecipient && !guest && pr.done && backend === "firebase" && !IS_TOSS && view.fromUid !== WELCOME_FROM && (
         <Link href={`/send?reply=${view.id}`} className="cta">↩ 답장하기</Link>
       )}
-      {isRecipient && (
+      {isRecipient && view.fromUid !== WELCOME_FROM && (
         <div style={{ display: "flex", gap: 8 }}>
           <button className="ghost" onClick={report}>신고하기</button>
           <button className="ghost" onClick={block}>이 사람 차단</button>
