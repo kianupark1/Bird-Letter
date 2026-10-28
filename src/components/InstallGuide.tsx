@@ -26,6 +26,71 @@ function SafariBar() {
   );
 }
 
+/** 새 Safari(iOS 26~): 공유 버튼이 주소창 오른쪽에 있거나, 맨 아래 ⋯ 안에 있어요(2026-10-28 대표님 폰 화면) */
+function SafariNewBar() {
+  return (
+    <svg viewBox="0 0 320 150" className="ig-art" role="img" aria-label="주소창 오른쪽 공유 버튼, 또는 맨 아래 오른쪽 점 세 개 버튼">
+      <rect x="6" y="8" width="308" height="44" rx="22" className="ig-bar" />
+      <rect x="60" y="24" width="150" height="10" rx="5" className="ig-dim" />
+      <g transform="translate(286 30)">
+        <circle r="19" className="ig-pulse" />
+        <rect x="-7" y="-3" width="14" height="12" rx="2.5" className="ig-ln" />
+        <path d="M0 -12 v12 M-4.5 -7.5 l4.5 -4.5 4.5 4.5" className="ig-ln" />
+      </g>
+      <text x="160" y="80" textAnchor="middle" className="ig-t" style={{ fontSize: 13, opacity: 0.7 }}>공유 버튼이 안 보이면 ↓</text>
+      <rect x="6" y="94" width="308" height="50" rx="18" className="ig-bar" />
+      <path d="M30 119 h18 M30 119 l6 -6 M30 119 l6 6" className="ig-ln" />
+      <path d="M90 119 h18 M108 119 l-6 -6 M108 119 l-6 6" className="ig-ln" />
+      <path d="M160 110 v18 M151 119 h18" className="ig-ln" />
+      <rect x="212" y="110" width="18" height="18" rx="4" className="ig-ln" />
+      <g transform="translate(282 119)">
+        <circle r="17" className="ig-pulse" />
+        <circle cx="-7" r="2.4" className="ig-dot" /><circle r="2.4" className="ig-dot" /><circle cx="7" r="2.4" className="ig-dot" />
+      </g>
+    </svg>
+  );
+}
+
+/** 새 Safari인지(iOS 26 이상): 공유 버튼 자리가 바뀌었어요 */
+const newSafari = () => { const m = navigator.userAgent.match(/OS (\d+)_/); return !!m && Number(m[1]) >= 26; };
+
+/**
+ * 아이폰 안내: 먼저 볼지 묻고(2026-10-28 대표님: "설명 듣기랑 아님이랑 선택"), 보면 한 장씩.
+ * 애플이 웹은 저절로 홈 화면에 추가하지 못하게 막아 둬서, 공유 메뉴에서 직접 두 번 눌러야 해요.
+ */
+function IosSteps({ onClose, onLater }: { onClose: () => void; onLater: () => void }) {
+  const [step, setStep] = useState<number | null>(null);
+  const fresh = newSafari();
+  const steps = [
+    { t: fresh ? <>주소창 오른쪽 <b>공유 버튼</b>(네모에 ↑)을 눌러요. 안 보이면 맨 아래 오른쪽 <b>점 세 개 버튼</b>을 누르면 있어요.</> : <>맨 아래 가운데 <b>공유 버튼</b>(네모에 ↑)을 눌러요.</>, art: fresh ? <SafariNewBar /> : <SafariBar /> },
+    { t: <>메뉴를 <b>위로 밀어서</b> <b>‘홈 화면에 추가’</b>를 눌러요. 안 보이면 <b>더 보기</b>를 눌러 찾아요.</>, art: <ShareMenu /> },
+    { t: <>오른쪽 위 <b>추가</b>를 누르면 끝! 홈 화면의 <b>새 편지</b> 아이콘으로 열고, 처음 한 번만 같은 버튼으로 로그인해요.</>, art: null },
+  ];
+  if (step === null)
+    return (
+      <>
+        <div className="ig-box">아이폰은 <b>Safari 공유 메뉴에서 두 번</b>만 누르면 홈 화면에 추가돼요.<br /><span style={{ opacity: 0.75, fontSize: 14 }}>애플이 웹사이트는 저절로 추가하지 못하게 막아 둬서, 직접 눌러야 해요.</span></div>
+        <button className="ig-main" onClick={() => setStep(0)}>방법 보기 (30초)</button>
+        <div className="ig-foot">
+          <button className="ig-sub" onClick={onClose}>괜찮아요, 할 줄 알아요</button>
+          <button className="ig-sub" onClick={onLater}>다음에 할게요</button>
+        </div>
+      </>
+    );
+  const s = steps[step], last = step === steps.length - 1;
+  return (
+    <>
+      <div className="ig-step"><span>{step + 1}</span><div>{s.t}</div></div>
+      {s.art}
+      <div className="tour-dots" aria-hidden>{steps.map((_, k) => <i key={k} className={k === step ? "on" : ""} />)}</div>
+      <div className="ig-foot">
+        {step > 0 ? <button className="ig-sub" onClick={() => setStep(step - 1)}>이전</button> : <button className="ig-sub" onClick={onClose}>닫기</button>}
+        <button className="ig-main" style={{ flex: 2 }} onClick={() => (last ? onClose() : setStep(step + 1))}>{last ? "알겠어요" : "다음"}</button>
+      </div>
+    </>
+  );
+}
+
 function ShareMenu() {
   return (
     <svg viewBox="0 0 320 120" className="ig-art" role="img" aria-label="메뉴를 위로 밀면 홈 화면에 추가가 보여요">
@@ -120,21 +185,14 @@ export default function InstallGuide() {
           </div>
         )}
 
-        {env === "ios" && (
-          <>
-            <div className="ig-step"><span>1</span><div><b>맨 아래 가운데 공유 버튼</b>을 눌러요</div></div>
-            <SafariBar />
-            <div className="ig-step"><span>2</span><div>메뉴를 <b>위로 밀어서</b> <b>‘홈 화면에 추가’</b>를 눌러요</div></div>
-            <ShareMenu />
-            <div className="ig-step"><span>3</span><div>오른쪽 위 <b>추가</b>를 누르고, 홈 화면의 <b>새 아이콘</b>으로 열어요</div></div>
-            <div className="ig-note">Safari가 아니면 공유 버튼이 다른 곳에 있어요. 그땐 Safari에서 이 주소를 열어 주세요.</div>
-          </>
-        )}
+        {env === "ios" && <IosSteps onClose={close} onLater={later} />}
 
-        <div className="ig-foot">
-          <button className="ig-sub" onClick={later}>다음에 할게요</button>
-          <button className="ig-sub" onClick={close}>닫기</button>
-        </div>
+        {env !== "ios" && (
+          <div className="ig-foot">
+            <button className="ig-sub" onClick={later}>다음에 할게요</button>
+            <button className="ig-sub" onClick={close}>닫기</button>
+          </div>
+        )}
       </div>
     </div>
   );
