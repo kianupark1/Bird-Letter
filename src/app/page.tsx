@@ -32,6 +32,8 @@ import { roomHref } from "@/lib/room";
 import { useBeforePaint } from "@/lib/fastStart";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
 import { usePeople } from "@/lib/people";
+import FirstTour from "@/components/FirstTour";
+import { isWelcome } from "../../core/welcome";
 import WhoSearch from "@/components/WhoSearch";
 import { rowInfo } from "@/lib/chatRow";
 
@@ -70,10 +72,13 @@ function knownName(nickname: string) {
   return "";
 }
 
+const isE2E = () => { try { return !!localStorage.getItem("saepyeonji.e2e.v1"); } catch { return false; } };
+
 function InboxList({ welcome }: { welcome?: string }) {
   const { letters, received, ready, backend } = useLetters();
   // "첫 편지를 보내 보세요"는 서버에서 정말 편지가 없다고 확인된 뒤에만(폰에 적어 둔 목록만 보고 띄우면 있던 편지가 잠깐 사라진 것처럼 보여요)
   const settled = ready && backend !== "checking";
+  const welcomeLetter = received.find((m) => isWelcome(m.id));
   // 예전에 열어 본 편지도 보낸 사람 화면에 "읽음"이 보이게 서버에 남겨요
   useEffect(() => { if (ready) syncReadMarks(received, Date.now()); }, [ready, received]);
   const heroBird = useRandomBird();
@@ -281,6 +286,8 @@ function InboxList({ welcome }: { welcome?: string }) {
       {threads.length > 0 && (
         <button type="button" className="kfab" aria-label="편지 쓰기" onClick={() => setWriting(true)}>✉ 편지 쓰기</button>
       )}
+      {/* 처음 쓰는 사람: "사용법 간단히 알려 드릴까요?" → 진짜 버튼을 비추며 한 장씩(환영 편지를 받는 새 계정에게 한 번) */}
+      <FirstTour auto={settled && !isE2E() && !!welcomeLetter} welcomeSoon={!!welcomeLetter && welcomeLetter.arriveAt > now} />
     </main>
   );
 }
