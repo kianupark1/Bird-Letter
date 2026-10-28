@@ -27,6 +27,7 @@ import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
+import { WELCOME_FROM } from "../../core/welcome";
 
 const clock = (ms: number) => whenText(ms); // 오늘이 아니면 "내일"·날짜까지
 
@@ -362,10 +363,10 @@ export default function LetterView({ id }: { id: string }) {
         <button className="ghost" onClick={share}>{KAKAO_SHARE_READY ? "카카오톡으로 보내기" : "받는 사람에게 링크 보내기"}</button>
       )}
       {mine?.toUid && <div className="small" style={{ textAlign: "center" }}>친구의 새편지함으로 바로 날아가고 있어요.</div>}
-      {isRecipient && !guest && pr.done && backend === "firebase" && !IS_TOSS && (
+      {isRecipient && !guest && pr.done && backend === "firebase" && !IS_TOSS && view.fromUid !== WELCOME_FROM && (
         <Link href={`/send?reply=${view.id}`} className="cta">↩ 답장하기</Link>
       )}
-      {isRecipient && (
+      {isRecipient && view.fromUid !== WELCOME_FROM && (
         <div style={{ display: "flex", gap: 8 }}>
           <button className="ghost" onClick={report}>신고하기</button>
           <button className="ghost" onClick={block}>이 사람 차단</button>

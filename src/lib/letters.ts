@@ -8,6 +8,8 @@ import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
 import { isScheduled } from "../../core/schedule";
 import { maskContacts } from "../../core/penpal";
+import { isWelcome } from "../../core/welcome";
+import { isNewAccount, welcomeFor } from "./welcome";
 import { LETTERS_CACHE_KEY, onClearFastCache, readJson, useBeforePaint, writeJson } from "./fastStart";
 
 export type Letter = {
@@ -52,7 +54,7 @@ export function readOpened(): Set<string> {
 const readSent = new Set<string>();
 /** 서버에 "읽음"을 남겨요(보낸 사람 화면에 보여요). 실패해도 다음에 다시 해요 */
 function sendRead(id: string) {
-  if (!firebaseEnabled || readSent.has(id)) return;
+  if (!firebaseEnabled || readSent.has(id) || isWelcome(id)) return;
   readSent.add(id);
   remote.markRead(id).catch(() => readSent.delete(id));
 }
@@ -160,7 +162,10 @@ function loadServer(): Promise<Snap> {
 
 export function useLetters() {
   const [letters, setLetters] = useState<Letter[]>([]);
-  const [receivedAll, setReceived] = useState<remote.Meta[]>([]);
+  const [receivedServer, setReceived] = useState<remote.Meta[]>([]);
+  // 환영 편지(core/welcome.ts): 새로 가입한 계정에만, 폰에서 만들어 받은 편지 목록 맨 앞에 끼워요
+  const [welcome, setWelcome] = useState<remote.Meta | null>(null);
+  const receivedAll = welcome ? [welcome, ...receivedServer.filter((m) => m.id !== welcome.id)] : receivedServer;
   const nowTick = useNow(15000);
   // 예약 편지는 출발하기 전에는 받는 사람에게 보이지 않아요(기다림의 미학: 깜짝 선물)
   const received = receivedAll.filter((m) => !isScheduled(m.sentAt, nowTick));
@@ -209,6 +214,7 @@ export function useLetters() {
           if (cancelled) return;
           setLetters(fresh.letters);
           setReceived(fresh.received);
+          try { const u = await ensureUser(); if (!cancelled) setWelcome(welcomeFor(u.uid, { eligible: isNewAccount(u) })); } catch {}
           setBackend("firebase");
           setReady(true);
           return;
@@ -223,6 +229,7 @@ export function useLetters() {
         if (raw && !cancelled) setLetters(JSON.parse(raw));
       } catch {}
       if (!cancelled) {
+        setWelcome(welcomeFor("local", { eligible: false })); // 서버 없는 모드는 화면 확인용으로 기록이 있을 때만
         setBackend("local");
         setReady(true);
       }

@@ -17,6 +17,7 @@ import { clockText, dateTimeText, isScheduled, whenText } from "../../core/sched
 import { withIGa } from "@/lib/korean";
 import { mishapMessage } from "@/lib/flight";
 import { isUnnamed } from "../../core/threads";
+import { isWelcome } from "../../core/welcome";
 
 /**
  * 대화방의 편지 말풍선(카카오톡처럼 깔끔하게): 한 줄 내용 + 작은 상태 한 줄 + 옆에 보낸 시각.
@@ -116,7 +117,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
             <span><small>{done ? "도착" : "도착 예정"} · {whenText(arriveAt)}</small><b>{route.to.name}</b></span>
           </div>
           <div className="ch-route">{route.km}km · {bird.name} 시속 약 {bird.kmh}km</div>
-          {!IS_TOSS && <button type="button" className="ch-sharelink" onClick={() => setShareOn(true)}>📸 지도 사진으로 공유하기</button>}
+          {!IS_TOSS && !isWelcome(entry.item.id) && <button type="button" className="ch-sharelink" onClick={() => setShareOn(true)}>📸 지도 사진으로 공유하기</button>}
           {shareOn && (
             <ShareMap birdId={bird.id} name={isUnnamed(name) ? undefined : name} onClose={() => setShareOn(false)}
               input={{ route, birdName: bird.name, mine, p: pr.p, done, stalled: pr.stalled && pr.mishap ? pr.mishap.kind : null, leftMin: Math.max(1, pr.total - pr.elapsed), totalMin: pr.total }} />
@@ -135,7 +136,7 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
           ) : null}
           {mine && !done && <div className="small" style={{ textAlign: "center" }}>{name}님은 편지가 도착한 뒤에 읽을 수 있어요</div>}
           {notice && <div className="small" role="status">{notice}</div>}
-          {!mine && done && <Link href={letterHref(entry.item.id)} className="ch-more">신고·차단</Link>}
+          {!mine && done && !isWelcome(entry.item.id) && <Link href={letterHref(entry.item.id)} className="ch-more">신고·차단</Link>}
         </div>
       )}
     </div>,

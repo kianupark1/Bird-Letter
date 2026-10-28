@@ -799,5 +799,17 @@ import { SLOGAN } from "../promo/store.mts";
   eq("우표: 남은 개수", stampBalance(5, 3, 1), 3);
 }
 
+import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from "../core/welcome.ts";
+{
+  const m = welcomeMeta({ uid: "kakao:123", start: 1000, name: "성하", home: "seoul" });
+  eq("환영 편지: 1분 뒤 도착", m.arriveAt - m.sentAt, 60000);
+  eq("환영 편지: 까치가 새편지에서", [m.birdId, m.fromUid, m.fromName].join(","), ["magpie", WELCOME_FROM, "새편지"].join(","));
+  eq("환영 편지: ID로 알아봄", isWelcome(m.id) && !isWelcome("abc"), true);
+  const [f, t] = welcomeRoute("seoul").split("-");
+  eq("환영 편지: 내 동네로, 다른 곳에서", t === "seoul" && f !== "seoul", true);
+  eq("환영 편지: 부산이면 부산으로", welcomeRoute("busan").endsWith("-busan"), true);
+  eq("환영 편지: 이름·슬로건", welcomeText("성하").startsWith("성하님,") && welcomeText("").includes("기다림도 소통의 일부입니다."), true);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

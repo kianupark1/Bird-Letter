@@ -9,6 +9,8 @@ import { totalMinutes } from "../flight";
 import { auth, db, ensureUser } from "./client";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "../limits";
 import { deleteFriendData } from "./friends";
+import { WELCOME_FROM, isWelcome } from "../../../core/welcome";
+import { welcomeBody, welcomeMetaById } from "../welcome";
 
 /** 서버에 저장된 편지의 겉정보 */
 export type Meta = {
@@ -86,6 +88,7 @@ export async function sendLetter(p: {
 }
 
 export async function getMeta(id: string): Promise<Meta | null> {
+  if (isWelcome(id)) return welcomeMetaById(id); // 환영 편지는 폰에서 만든 편지예요
   try {
     const s = await getDoc(doc(db(), "letters", id));
     return s.exists() ? toMeta(s.id, s.data({ serverTimestamps: "estimate" })) : null;
@@ -96,6 +99,7 @@ export async function getMeta(id: string): Promise<Meta | null> {
 
 /** 편지 내용. 도착 전이거나 권한이 없으면 null */
 export async function getBody(id: string): Promise<string | null> {
+  if (isWelcome(id)) return welcomeBody(id);
   try {
     const s = await getDoc(doc(db(), "letters", id, "private", "body"));
     return s.exists() ? (s.data().message as string) : null;
@@ -106,6 +110,7 @@ export async function getBody(id: string): Promise<string | null> {
 
 /** 편지에 담긴 사진들(줄인 JPEG 글자). 도착 전이거나 권한이 없으면 빈 목록 */
 export async function getPhotos(id: string): Promise<string[]> {
+  if (isWelcome(id)) return [];
   const d = db();
   const got = await Promise.all(
     Array.from({ length: MAX_PHOTOS }, (_, i) =>
@@ -126,12 +131,14 @@ export async function cancelLetter(id: string) {
 
 /** 링크를 연 사람이 "받는 사람"으로 등록(이미 등록됐거나 보낸 사람이면 서버가 거절) */
 export async function claim(id: string) {
+  if (isWelcome(id)) return;
   const user = await ensureUser();
   await updateDoc(doc(db(), "letters", id), { recipientUid: user.uid });
 }
 
 /** 받는 사람이 도착한 편지를 열어 봤다고 서버에 한 번 남겨요(보낸 사람 화면에 "읽음") */
 export async function markRead(id: string) {
+  if (isWelcome(id)) return;
   await ensureUser();
   await updateDoc(doc(db(), "letters", id), { readAt: serverTimestamp() });
 }
@@ -152,11 +159,13 @@ export async function listBlocked(uid: string): Promise<Set<string>> {
 }
 
 export async function blockSender(fromUid: string) {
+  if (fromUid === WELCOME_FROM) return;
   const user = await ensureUser();
   await setDoc(doc(db(), "users", user.uid, "blocks", fromUid), { at: serverTimestamp() });
 }
 
 export async function reportLetter(letterId: string, reason: string) {
+  if (isWelcome(letterId)) return;
   const user = await ensureUser();
   await addDoc(collection(db(), "reports"), { reporterUid: user.uid, letterId, reason: reason.slice(0, 200), createdAt: serverTimestamp() });
 }

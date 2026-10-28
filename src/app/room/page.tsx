@@ -22,6 +22,7 @@ import ShareMap from "@/components/ShareMap";
 import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
 import RoomComposer, { type Resend } from "@/components/RoomComposer";
+import { WELCOME_FROM } from "../../../core/welcome";
 import { asLike, buildChat } from "@/lib/chat";
 import { WAITING_LINES, pickLine } from "../../../core/waiting";
 import { readStats } from "@/lib/firebase/stats";
@@ -208,7 +209,7 @@ function Room() {
           <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined} size={52} />
         </button>
         <div style={{ minWidth: 0 }}>
-          {thread.uid ? (
+          {thread.uid && thread.uid !== WELCOME_FROM ? (
             <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
               onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (내 폰에만 저장돼요)", name); if (v !== null) rename(thread.uid!, v); }}>{name} <span aria-hidden>✎</span></button>
           ) : <div className="rname">{name}</div>}
@@ -290,7 +291,15 @@ function Room() {
         {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
         <div ref={endRef} />
       </div>
+      {thread.uid === WELCOME_FROM ? (
+        // 환영 편지 방: 새편지에게는 답장하지 않아요 → 첫 편지 쓰러 가기
+        <div className="welcomefoot">
+          <p>새편지가 보낸 환영 편지예요. 이제 가장 보고 싶은 사람에게 첫 편지를 보내 보세요 🕊</p>
+          <Link href="/?write=1" className="cta big welcomego">✉ 첫 편지 쓰기</Link>
+        </div>
+      ) : (
       <RoomComposer threadKey={key} name={name} toUid={sendUid} guessPlace={guess} friendPlace={friendPlace} add={add} needName={!pen && !!thread.uid && isUnnamed(name)} penpal={penpal} replyTo={thread.entries.find((e) => e.dir === "received" && e.item.fromUid === thread.uid)?.item.id} resend={resend} onResendDone={() => setResend(null)} cancel={cancel} />
+      )}
     </main>
   );
 }
