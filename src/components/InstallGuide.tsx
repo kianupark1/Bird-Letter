@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { consumeInstallParam, externalOpenUrl, isKakao, onInstallGuideOpen, oneTapInstall, snoozeInstallCard, useInstall } from "@/lib/install";
 import BirdIcon from "@/components/BirdIcon";
+import { STORE } from "@/lib/release";
 
 /** 아이폰 Safari 아래쪽 도구줄 그림: 공유 버튼에 깜빡이는 동그라미 */
 function SafariBar() {
@@ -66,6 +67,18 @@ function IosSteps({ onClose, onLater }: { onClose: () => void; onLater: () => vo
     { t: <>메뉴를 <b>위로 밀어서</b> <b>‘홈 화면에 추가’</b>를 눌러요. 안 보이면 <b>더 보기</b>를 눌러 찾아요.</>, art: <ShareMenu /> },
     { t: <>오른쪽 위 <b>추가</b>를 누르면 끝! 홈 화면의 <b>새 편지</b> 아이콘으로 열고, 처음 한 번만 같은 버튼으로 로그인해요.</>, art: null },
   ];
+  // 앱스토어에 나온 뒤에는 앱 받기가 1순위(누르면 끝·알림도 잘 옴), 홈 화면 추가는 그다음(2026-10-28 대표님: "애플 기준 1. 앱스토어 바로가기 2. 홈 화면에 추가 설명")
+  if (step === null && STORE.iosUrl)
+    return (
+      <>
+        <div className="ig-box">아이폰은 <b>앱스토어에서 받는 게 가장 쉬워요.</b><br />[받기] 한 번이면 끝, 알림도 잘 와요.</div>
+        <a className="ig-main" href={STORE.iosUrl}>📲 앱스토어에서 받기</a>
+        <button className="ig-sub" onClick={() => setStep(0)}>앱 없이 홈 화면에 추가하는 방법 보기</button>
+        <div className="ig-foot">
+          <button className="ig-sub" onClick={onLater}>다음에 할게요</button>
+        </div>
+      </>
+    );
   if (step === null)
     return (
       <>
