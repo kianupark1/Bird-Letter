@@ -63,6 +63,9 @@ await shot("3-birds", "/room?n=" + encodeURIComponent("할머니"), async () => 
 await shot("4-map", "/room?n=" + encodeURIComponent("할머니"), async () => {
   const map = page.locator("button.ch-map").first();
   if (await map.count()) { await map.click(); await page.waitForTimeout(1200); }
+  // 새만 크게 따라가면 바다만 보여서(2026-10-28 대표님: "서울이 나와야 하고 랜드마크·경로 더 자세히") 노선 전체가 보이게
+  const all = page.getByRole("button", { name: process.env.SHOT_MAP === "mid" ? "축소" : "노선 전체 보기" });
+  if (await all.count()) { await all.click(); await page.waitForTimeout(900); }
 });
 await shot("5-welcome", "/onboarding");
 

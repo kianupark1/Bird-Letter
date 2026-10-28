@@ -3,7 +3,8 @@ import {
   Timestamp, addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where, writeBatch,
   type DocumentData,
 } from "firebase/firestore";
-import { deleteUser } from "firebase/auth";
+import { deleteUser, signOut } from "firebase/auth";
+import { revokeAppleIfLinked } from "./link";
 import { getRoute } from "../routes";
 import { totalMinutes } from "../flight";
 import { auth, db, ensureUser } from "./client";
@@ -170,14 +171,23 @@ export async function reportLetter(letterId: string, reason: string) {
   await addDoc(collection(db(), "reports"), { reporterUid: user.uid, letterId, reason: reason.slice(0, 200), createdAt: serverTimestamp() });
 }
 
-/** 탈퇴 삭제: 내가 보낸 편지(내용 포함)와 차단 목록, 익명 계정을 모두 지웁니다. */
-export async function deleteMyData() {
+/**
+ * 계정 삭제(탈퇴): 내가 보낸 편지(내용 포함)와 차단 목록·친구·알림 주소·내 정보, 그리고 계정을 지웁니다.
+ * 계정은 서버(/api/account/delete)가 지워요(폰에서 지우면 "최근 로그인 필요"로 막힐 수 있어서). 서버가 안 되면 폰에서 지워요.
+ * 애플로 로그인한 계정은 먼저 애플 로그인 허락을 거둬요(취소하면 아무것도 지우지 않고 멈춤).
+ */
+export async function deleteMyData(): Promise<"deleted" | "cancelled"> {
   const user = await ensureUser();
+  if ((await revokeAppleIfLinked()) === "cancelled") return "cancelled";
   const d = db();
   for (const m of await listSent(user.uid)) await cancelLetter(m.id);
   for (const id of await listBlocked(user.uid)) await deleteDoc(doc(d, "users", user.uid, "blocks", id));
   await deleteFriendData(user.uid);
   await deleteDoc(doc(d, "users", user.uid, "push", "sub")).catch(() => {});
   await deleteDoc(doc(d, "users", user.uid)).catch(() => {});
-  await deleteUser(auth().currentUser ?? user);
+  const me = auth().currentUser ?? user;
+  const server = await fetch("/api/account/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: await me.getIdToken() }) }).catch(() => null);
+  if (server?.ok) await signOut(auth()).catch(() => {});
+  else await deleteUser(me);
+  return "deleted";
 }

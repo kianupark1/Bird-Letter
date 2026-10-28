@@ -165,8 +165,8 @@ try {
   console.log("\n[5] 정리(시험 데이터 삭제)와 오류 점검");
   for (const U of [A, B]) {
     await U.page.goto(`${BASE}/settings`, { waitUntil: "networkidle2" });
-    await waitText(U.page, "내 편지와 데이터 모두 삭제", 20000);
-    await clickText(U.page, "내 편지와 데이터 모두 삭제");
+    await waitText(U.page, "계정 삭제(탈퇴)", 20000);
+    await clickText(U.page, "계정 삭제(탈퇴)");
     await U.page.waitForFunction(() => location.pathname === "/", { timeout: 40000 }).catch(() => {});
   }
   ok("A 화면에 서버 연결 실패·스크립트 오류 없음", A.errors.length === 0, A.errors.join(" | "));

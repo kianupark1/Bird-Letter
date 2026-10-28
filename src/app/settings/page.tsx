@@ -82,17 +82,17 @@ export default function Settings() {
   const clearLetters = async () => {
     const server = backend === "firebase";
     const ask = server
-      ? "서버에 저장된 내 편지와 차단 목록, 내 계정을 모두 삭제할까요? 되돌릴 수 없어요."
+      ? "계정을 삭제할까요?\n내가 보낸 편지(사진 포함), 친구 목록, 랭킹·펜팔 기록, 내 정보와 계정이 모두 지워지고 되돌릴 수 없어요."
       : "보낸 편지를 모두 지울까요? 되돌릴 수 없어요.";
     if (!window.confirm(ask)) return;
     try {
-      if (server) await remote.deleteMyData();
+      if (server && (await remote.deleteMyData()) === "cancelled") { setMsg("애플 확인을 취소해서 계정 삭제를 멈췄어요."); return; }
       localStorage.removeItem(LETTERS_KEY);
     } catch {
       setMsg("삭제하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.");
       return;
     }
-    setMsg(server ? "내 편지와 데이터를 모두 삭제했어요." : "보낸 편지를 모두 지웠어요.");
+    setMsg(server ? "계정을 삭제했어요. 그동안 고마웠어요." : "보낸 편지를 모두 지웠어요.");
     setTimeout(() => window.location.assign("/"), 900);
   };
 
@@ -315,7 +315,7 @@ export default function Settings() {
           </button>
         )}
         <button className="listrow action danger" onClick={clearLetters}>
-          <span>{backend === "firebase" ? "내 편지와 데이터 모두 삭제" : "보낸 편지 모두 지우기"}</span><span aria-hidden>›</span>
+          <span>{backend === "firebase" ? "계정 삭제(탈퇴)" : "보낸 편지 모두 지우기"}</span><span aria-hidden>›</span>
         </button>
       </div>
       {msg && <div className="small" role="status">{msg}</div>}

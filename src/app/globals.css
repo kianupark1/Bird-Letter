@@ -1173,3 +1173,8 @@ a.sheetbtn.off { opacity: .5; pointer-events: none; }
 .tour-place .tc { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .tour-place .tc i { font-style: normal; text-align: center; padding: 8px 0; border-radius: 10px; background: var(--card); border: 1px solid var(--line, rgba(127,127,127,.25)); }
 .tour-slogan { text-align: center; font-weight: 800; color: var(--dahong); }
+
+/* 스토어 앱 안(html.inapp, layout SCALE_SCRIPT)에서는 체험판·초안 표시를 숨기고 정식 문구를 보여 줘요(애플 2.2: 베타·체험판 표시 금지) */
+.release-only { display: none; }
+html.inapp .beta-only { display: none !important; }
+html.inapp .release-only { display: inline; }

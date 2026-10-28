@@ -28,7 +28,7 @@ const STEPS = [
 export default function Welcome() {
   return (
     <main className="app welcome">
-      {IS_BETA && <span className="beta">출시 준비 중 · 체험판</span>}
+      {IS_BETA && <span className="beta beta-only">출시 준비 중 · 체험판</span>}
       <Magpie />
       <h1>소식은 날아서 와요</h1>
       <p className="proverb">“아침 까치가 울면 반가운 손님이 온다”</p>
@@ -76,7 +76,7 @@ export default function Welcome() {
 
       <Link href="/" className="cta" style={{ marginTop: 24 }}>첫 편지 보내 보기</Link>
       <p className="small" style={{ textAlign: "center" }}>
-        {IS_BETA ? "지금은 체험판이에요. " : ""}편지는 서버에 저장되고, 받는 사람은 링크로 열어요.
+        {IS_BETA ? <span className="beta-only">지금은 체험판이에요. </span> : ""}편지는 서버에 저장되고, 받는 사람은 링크로 열어요.
       </p>
       <div className="legal-links">
         <Link href="/privacy">개인정보 처리방침</Link>

@@ -1,6 +1,6 @@
 // 알림 팝업과 푸시 알림이 같은 문구를 쓰도록 한곳에 모았어요.
 import { getBird } from "./birds";
-import { withIGa } from "./korean";
+import { withEuro, withIGa } from "./korean";
 import type { Route } from "./routes";
 
 export type NotifyKind = "sent" | "received";
@@ -17,6 +17,6 @@ export function passingText(who: string, route: Route, birdId: string, idx: numb
   const pt = route.points[idx], next = route.points[idx + 1];
   return {
     title: `${who}에게 가는 편지가 ${pt.name} 근처예요`,
-    body: next ? `${bird.name}가 다음은 ${next.name}(으)로 날아가요` : `${bird.name}가 곧 도착해요`,
+    body: next ? `${bird.name}가 다음은 ${withEuro(next.name)} 날아가요` : `${bird.name}가 곧 도착해요`,
   };
 }
