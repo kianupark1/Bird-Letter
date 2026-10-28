@@ -3,9 +3,10 @@ import type { MetadataRoute } from "next";
 // 폰에 "홈 화면에 추가"로 설치할 때 쓰이는 정보
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: "새 편지",
     short_name: "새 편지",
-    description: "실제 거리만큼 걸려 도착하는 느린 편지",
+    description: "기다림도 소통의 일부입니다. 실제 거리만큼 걸려 도착하는 느린 편지",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
