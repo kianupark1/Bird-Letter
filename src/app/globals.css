@@ -988,6 +988,14 @@ button.kfab { font-size: 18px; }
 .whofind { display: flex; flex-direction: column; gap: 2px; margin: 0 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line, rgba(127,127,127,.18)); }
 .whoopt .whoico { flex: none; width: 58px; height: 58px; border-radius: 22px; display: grid; place-items: center; font-size: 28px; background: var(--tint-hot, rgba(193,72,31,.12)); }
 .whoopt .whoico.kakao { background: #FEE500; }
+.whofill { display: flex; flex-direction: column; gap: 8px; margin: -2px 0 12px; padding: 12px; border-radius: 16px; background: var(--card); border: 2px solid var(--hwangto); }
+.whofill-tip { margin: 0; font-size: 15px; line-height: 1.45; }
+.whofill-in { font: inherit; font-size: 17px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line, rgba(127,127,127,.3)); background: var(--bg); color: var(--text); }
+.whofill-row { display: flex; gap: 8px; }
+.whofill-go { flex: 1; font: inherit; font-weight: 800; font-size: 17px; min-height: 52px; border: 0; border-radius: 14px; background: var(--dahong); color: var(--on-dahong, #fff); }
+.whofill-go:disabled { opacity: .45; }
+.whofill-x { font: inherit; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line, rgba(127,127,127,.3)); background: transparent; color: var(--text); }
+.whofill-note { margin: 0; font-size: 13px; opacity: .65; }
 .whomsg { font-size: 15px; margin: -2px 4px 10px; padding: 10px 12px; border-radius: 12px; background: var(--card); opacity: .9; }
 .whobtn { flex: none; width: 48px; height: 48px; border: 0; border-radius: 14px; background: var(--bg); color: var(--text); font-size: 22px; cursor: pointer; }
 .who button.krow { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }

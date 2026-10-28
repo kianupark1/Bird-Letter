@@ -4,7 +4,7 @@
  * 환경별로 가장 쉬운 길만 보여줘요: 카톡 안이면 "기본 브라우저로 열기", 안드로이드면 "설치" 한 번, 아이폰이면 그림 3장.
  */
 import { useEffect, useState } from "react";
-import { externalOpenUrl, isKakao, onInstallGuideOpen, oneTapInstall, snoozeInstallCard, useInstall } from "@/lib/install";
+import { consumeInstallParam, externalOpenUrl, isKakao, onInstallGuideOpen, oneTapInstall, snoozeInstallCard, useInstall } from "@/lib/install";
 import BirdIcon from "@/components/BirdIcon";
 
 /** 아이폰 Safari 아래쪽 도구줄 그림: 공유 버튼에 깜빡이는 동그라미 */
@@ -49,6 +49,8 @@ export default function InstallGuide() {
   const [done, setDone] = useState(false);
 
   useEffect(() => onInstallGuideOpen(() => setOpen(true)), []);
+  // 카카오톡 안에서 [홈 화면에 추가]를 눌러 기본 브라우저로 넘어온 경우: 안내를 바로 열어요
+  useEffect(() => { if (consumeInstallParam()) setOpen(true); }, []);
   useEffect(() => {
     if (!open) return;
     const k = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -60,7 +62,7 @@ export default function InstallGuide() {
 
   const close = () => setOpen(false);
   const later = () => { snoozeInstallCard(7); setOpen(false); };
-  const ext = externalOpenUrl();
+  const ext = externalOpenUrl(true);
   const copy = async () => {
     try { await navigator.clipboard.writeText(location.href); setCopied(true); } catch { setCopied(false); }
   };

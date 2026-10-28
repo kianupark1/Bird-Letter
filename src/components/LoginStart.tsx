@@ -7,7 +7,7 @@ import BirdIcon from "@/components/BirdIcon";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
-import { markJustJoined, oneTapInstall, openInstallGuide, useInstall } from "@/lib/install";
+import { addToHome, markJustJoined, useInstall } from "@/lib/install";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
 
@@ -21,7 +21,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const [msg, setMsg] = useState("");
   const bird = useRandomBird();
   // 아래 빈자리의 작은 버튼 두 개: 홈 화면에 추가(안드로이드 크롬은 한 번에, 아이폰은 방법 안내) · 스토어에서 앱 받기(출시 뒤)
-  const { env, oneTap } = useInstall();
+  const { env } = useInstall();
   const [store, setStore] = useState<StoreBtn | null>(null);
   const [isIos, setIsIos] = useState(false);
   // 폰이면 스토어 버튼은 항상 보여요. 스토어에 올라가기 전에는 누르면 "곧 나와요" 안내(그동안은 홈 화면에 추가)
@@ -94,7 +94,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         {(canHome || phone) && (
           <div className="start-opts">
             {canHome && (
-              <button type="button" className="sopt o-home" onClick={() => { if (oneTap) void oneTapInstall(); else openInstallGuide(); }}>
+              <button type="button" className="sopt o-home" onClick={addToHome}>
                 <span aria-hidden>🏠</span> 홈 화면에 추가
               </button>
             )}

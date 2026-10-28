@@ -1,5 +1,5 @@
 "use client";
-import { openInstallGuide, oneTapInstall, snoozeInstallCard, useInstall } from "@/lib/install";
+import { addToHome, oneTapInstall, snoozeInstallCard, useInstall } from "@/lib/install";
 import BirdIcon from "@/components/BirdIcon";
 import { usePushState } from "@/lib/push";
 
@@ -24,7 +24,7 @@ export default function InstallCard({ hideWhenPushPrompt = false }: { hideWhenPu
           {oneTap && !inapp ? (
             <button className="pushbtn" onClick={() => oneTapInstall()}>앱으로 설치하기</button>
           ) : (
-            <button className="pushbtn" onClick={openInstallGuide}>{inapp ? "여는 방법 보기" : "설치 방법 보기"}</button>
+            <button className="pushbtn" onClick={addToHome}>{inapp ? "기본 브라우저로 열기" : "설치 방법 보기"}</button>
           )}
           <button className="pushlater" onClick={() => snoozeInstallCard(7)}>나중에</button>
         </div>
