@@ -21,6 +21,9 @@ let listening = false;
 function listen() {
   if (listening || typeof window === "undefined") return;
   listening = true;
+  // 화면이 뜨기 전에 온 신호는 layout의 INSTALL_SCRIPT가 window.__bip에 받아 둬요
+  const early = (window as unknown as { __bip?: DeferredPrompt }).__bip;
+  if (early) deferred = early;
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferred = e as DeferredPrompt;
@@ -28,16 +31,19 @@ function listen() {
   });
   window.addEventListener("appinstalled", () => {
     deferred = null;
+    try { delete (window as unknown as { __bip?: unknown }).__bip; } catch {}
     window.dispatchEvent(new Event(CHANGED));
   });
 }
 
-export const canOneTapInstall = () => !!deferred;
+export const canOneTapInstall = () => { listen(); return !!deferred; };
 
 export async function oneTapInstall(): Promise<boolean> {
+  listen();
   if (!deferred) return false;
   const d = deferred;
   deferred = null;
+  try { delete (window as unknown as { __bip?: unknown }).__bip; } catch {}
   try {
     await d.prompt();
     const r = await d.userChoice;

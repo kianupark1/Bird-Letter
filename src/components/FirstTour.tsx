@@ -7,12 +7,18 @@
  */
 import { useEffect, useLayoutEffect, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
+import { auth } from "@/lib/firebase/client";
+import { readOnboard, saveOnboard } from "@/lib/welcome";
 import { BIRDS_SLOW_TO_FAST } from "../../core/birds";
 import { formatMinutes } from "../../core/geo";
 
 const KEY = "saepyeonji.tour.v1";
 export const tourDone = () => { try { return !!localStorage.getItem(KEY); } catch { return true; } };
-const finish = (how: "done" | "skipped") => { try { localStorage.setItem(KEY, how); } catch {} };
+const finish = (how: "done" | "skipped") => {
+  try { localStorage.setItem(KEY, how); } catch {}
+  // 계정에도 남겨서, 홈 화면 앱(아이폰은 저장 공간이 따로)·새 폰에서 또 묻지 않게
+  void (async () => { try { const u = auth().currentUser; if (u && !u.isAnonymous) { const ob = await readOnboard(u.uid); await saveOnboard(u.uid, { ...ob, tourDone: true }); } } catch {} })();
+};
 
 type Step = { target?: string; icon: string; title: string; body: string; art?: "birds" | "place" | "end" };
 const STEPS: Step[] = [
@@ -37,7 +43,14 @@ export default function FirstTour({ auto, welcomeSoon }: { auto: boolean; welcom
   useEffect(() => {
     const forced = new URLSearchParams(location.search).get("tour") === "1";
     if (forced) { setPhase("ask"); history.replaceState(history.state, "", location.pathname); return; }
-    if (auto && !tourDone()) setPhase("ask");
+    if (!auto || tourDone()) return;
+    let off = false;
+    (async () => {
+      // 다른 곳에서 이미 봤으면(계정 기록) 묻지 않아요
+      try { const u = auth().currentUser; if (u && !u.isAnonymous && (await readOnboard(u.uid)).tourDone) { try { localStorage.setItem(KEY, "done"); } catch {} return; } } catch {}
+      if (!off) setPhase("ask");
+    })();
+    return () => { off = true; };
   }, [auto]);
 
   const step = typeof phase === "number" ? STEPS[phase] : null;

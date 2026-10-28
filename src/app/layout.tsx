@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   ),
   title: "새 편지",
   description: "실제 거리만큼 날아가는 슬로우 메시징",
+  // 아이폰 홈 화면에 추가했을 때: 아이콘 아래 이름 "새 편지", 주소창 없이 앱처럼(2026-10-28 홈 화면 추가 점검)
+  appleWebApp: { capable: true, title: "새 편지", statusBarStyle: "default" },
 };
 
 /**
@@ -38,6 +40,9 @@ const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.pro
 
 // 서비스 워커가 폰에 담아 둔 화면을 바로 띄운 뒤 새 버전을 받아 오면 알려 줘요(public/sw.js).
 // 열자마자(6초 안, 아직 안 눌렀으면) 바로 새 버전으로 바꾸고, 그 뒤면 쓰던 글이 날아가지 않게 그대로 두고 다음에 열 때 새 버전이에요. 30초에 한 번까지만(되풀이 방지)
+// 안드로이드 크롬의 "설치할 수 있어요" 신호(beforeinstallprompt)는 화면이 다 뜨기 전에 올 수 있어요.
+// 놓치면 [홈 화면에 추가]가 버튼 한 번 설치 대신 메뉴 안내로 바뀌어서, 맨 먼저 받아 둬요(src/lib/install.ts가 이어받음)
+const INSTALL_SCRIPT = `try{addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__bip=e;try{dispatchEvent(new Event("saepyeonji:install-changed"))}catch(x){}})}catch(e){}`;
 const UPDATE_SCRIPT = `try{var t0=Date.now(),hit=false;addEventListener("pointerdown",function(){hit=true},true);var go=function(){try{var k="saepyeonji.swreload",l=+sessionStorage.getItem(k)||0;if(Date.now()-l<30000)return;sessionStorage.setItem(k,String(Date.now()))}catch(e){}location.reload()};navigator.serviceWorker&&navigator.serviceWorker.addEventListener("message",function(e){if(!e.data||e.data.type!=="new-version")return;if(!hit&&Date.now()-t0<6000)go()})}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -46,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko" data-scale="normal" className={pretendard.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: SCALE_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: UPDATE_SCRIPT }} />
       </head>
       <body>

@@ -9,7 +9,7 @@ import * as remote from "./firebase/remote";
 import { isScheduled } from "../../core/schedule";
 import { maskContacts } from "../../core/penpal";
 import { isWelcome } from "../../core/welcome";
-import { isNewAccount, welcomeFor } from "./welcome";
+import { hasWelcome, isNewAccount, readOnboard, saveOnboard, welcomeFor } from "./welcome";
 import { LETTERS_CACHE_KEY, onClearFastCache, readJson, useBeforePaint, writeJson } from "./fastStart";
 
 export type Letter = {
@@ -214,7 +214,17 @@ export function useLetters() {
           if (cancelled) return;
           setLetters(fresh.letters);
           setReceived(fresh.received);
-          try { const u = await ensureUser(); if (!cancelled) setWelcome(welcomeFor(u.uid, { eligible: isNewAccount(u) })); } catch {}
+          try {
+            const u = await ensureUser();
+            const eligible = isNewAccount(u);
+            if (eligible && !hasWelcome(u.uid)) {
+              // 이 폰엔 기록이 없어요: 다른 곳(Safari·다른 폰)에서 이미 받았으면 그 시각 그대로, 처음이면 지금부터 1분
+              const ob = await readOnboard(u.uid);
+              const w = welcomeFor(u.uid, { eligible, serverStart: ob.welcomeAt });
+              if (w && !ob.welcomeAt) void saveOnboard(u.uid, { ...ob, welcomeAt: w.sentAt });
+              if (!cancelled) setWelcome(w);
+            } else if (!cancelled) setWelcome(welcomeFor(u.uid, { eligible }));
+          } catch {}
           setBackend("firebase");
           setReady(true);
           return;
