@@ -106,11 +106,6 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         {msg && <p className="start-msg" role="alert">{msg}</p>}
         {(canHome || phone) && (
           <div className="start-opts">
-            {canHome && (
-              <button type="button" className="sopt o-home" onClick={addToHome}>
-                <span aria-hidden>🏠</span> 홈 화면에 추가
-              </button>
-            )}
             {phone && (store ? (
               <a className="sopt o-store" href={store.url}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
             ) : (
@@ -118,6 +113,12 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
                 <span aria-hidden>📲</span> {phone === "ios" ? "앱스토어" : "구글 플레이"}에서 받기
               </button>
             ))}
+            {/* 스토어에 나온 뒤에는 앱 받기가 먼저, 홈 화면 추가는 그 옆(안 나왔으면 홈 화면 추가가 먼저) */}
+            {canHome && (
+              <button type="button" className="sopt o-home" style={store ? undefined : { order: -1 }} onClick={addToHome}>
+                <span aria-hidden>🏠</span> 홈 화면에 추가
+              </button>
+            )}
           </div>
         )}
         {soon && (
