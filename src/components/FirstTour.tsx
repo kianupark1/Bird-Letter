@@ -17,6 +17,7 @@ const finish = (how: "done" | "skipped") => { try { localStorage.setItem(KEY, ho
 type Step = { target?: string; icon: string; title: string; body: string; art?: "birds" | "place" | "end" };
 const STEPS: Step[] = [
   { target: ".kfab", icon: "✉", title: "편지 보내기", body: "여기를 누르고 받을 사람 이름을 쓰면 바로 대화방이 열려요. 편지를 쓰고 ➤를 누르면 새가 날아가요." },
+  { target: ".kfab", icon: "📇", title: "연락처에서 바로", body: "편지 쓰기를 누르면 맨 위에 ‘연락처에서 찾기’가 있어요. 폰 연락처에서 한 명만 고르면 바로 그 사람에게 써요. 번호는 저장하지 않아요." },
   { icon: "🕊", title: "새 고르기", body: "새마다 걸리는 시간이 달라요. 빠른 매는 몇 시간, 느긋한 까치는 하루가 넘게 걸려요. 오래 걸릴수록 더 설레요.", art: "birds" },
   { icon: "📍", title: "받는 곳", body: "처음 보낼 때 ‘어디 계세요?’가 나오면 도시 하나만 누르세요. 친구가 동네를 정해 두면 저절로 정해져요. 위치는 구까지만 써요.", art: "place" },
   { target: ".hcount", icon: "🗺", title: "지도로 같이 기다리기", body: "새가 지금 어디쯤 날고 있는지 보낸 사람도 받는 사람도 같이 봐요. 누르면 지도가 크게 열려요." },

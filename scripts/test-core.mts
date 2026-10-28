@@ -13,7 +13,7 @@ import { MAX_LETTER_CHARS } from "../core/limits.ts";
 import { validateSchedule, dedupKey, subKey, MAX_AHEAD_MS } from "../core/pushPayload.ts";
 import { generateKeyPairSync, createVerify, createSign } from "node:crypto";
 import { createCustomToken, createAccessAssertion, verifyFirebaseIdToken, parseServiceAccount, verifyGithubOidc } from "../core/serverAuth.ts";
-import { loginWithKakao, type KakaoDeps } from "../core/kakaoLogin.ts";
+import { loginWithKakao, loginWithSocial, type KakaoDeps } from "../core/kakaoLogin.ts";
 
 let pass = 0, fail = 0;
 const eq = (label: string, got: unknown, want: unknown) => {
@@ -358,6 +358,14 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("이미 다른 카카오가 연결된 계정은 409", !r6.ok && r6.status, 409);
   const r7 = await loginWithKakao({ code: "code-7", idToken: "good" }, mk("anonE", {}, "12abc"));
   eq("카카오 번호 형식이 이상하면 거절", !r7.ok, true);
+  // 네이버도 같은 흐름(번호는 영문·숫자 섞인 모양, 표시는 naver)
+  const nv = await loginWithSocial("naver", { code: "code-n", idToken: "good" }, mk("anonN", {}, "AbC_d-9xYz"));
+  eq("네이버: 첫 가입은 지금 계정 uid 유지", nv.ok && nv.uid, "anonN");
+  eq("네이버: 표시는 naver", nv.ok && nv.customToken.includes('"naver":true') && !nv.customToken.includes("kakao"), true);
+  const nv2 = await loginWithSocial("naver", { code: "code-n2", idToken: "good" }, mk("anonN2", { naverId: "other" }, "Zz9"));
+  eq("네이버: 이미 다른 네이버가 연결된 계정은 409", !nv2.ok && nv2.status, 409);
+  const nv3 = await loginWithSocial("naver", { code: "code-n3", idToken: "good" }, mk("anonN3", {}, "bad id!"));
+  eq("네이버: 번호 모양이 이상하면 거절", !nv3.ok, true);
 }
 
 

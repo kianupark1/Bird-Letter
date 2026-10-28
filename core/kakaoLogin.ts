@@ -22,7 +22,15 @@ export type KakaoResult =
   | { ok: true; customToken: string; uid: string; switched: boolean }
   | { ok: false; status: number; error: "bad-request" | "kakao-failed" | "bad-token" | "other-kakao" | "busy" };
 
+/** 네이버도 같은 흐름이에요(2026-10-28, 대표님: "어른들을 위해 네이버로 로그인도"). 사용자 번호 모양과 표시만 달라요 */
+export type SocialProvider = "kakao" | "naver";
+const ID_PATTERN: Record<SocialProvider, RegExp> = { kakao: /^\d{1,20}$/, naver: /^[A-Za-z0-9_-]{1,64}$/ };
+
 export async function loginWithKakao(input: { code?: unknown; idToken?: unknown }, deps: KakaoDeps): Promise<KakaoResult> {
+  return loginWithSocial("kakao", input, deps);
+}
+
+export async function loginWithSocial(provider: SocialProvider, input: { code?: unknown; idToken?: unknown }, deps: KakaoDeps): Promise<KakaoResult> {
   if (typeof input.code !== "string" || input.code.length < 5 || input.code.length > 600 || typeof input.idToken !== "string" || input.idToken.length > 4000) {
     return { ok: false, status: 400, error: "bad-request" };
   }
@@ -35,16 +43,16 @@ export async function loginWithKakao(input: { code?: unknown; idToken?: unknown 
   } catch {
     return { ok: false, status: 401, error: "kakao-failed" };
   }
-  if (!/^\d{1,20}$/.test(kakaoId)) return { ok: false, status: 401, error: "kakao-failed" };
+  if (!ID_PATTERN[provider].test(kakaoId)) return { ok: false, status: 401, error: "kakao-failed" };
 
-  const claims = { kakao: true, kakaoId };
+  const claims: Record<string, unknown> = provider === "kakao" ? { kakao: true, kakaoId } : { naver: true, naverId: kakaoId };
   const existing = await deps.accountUid(kakaoId);
   if (existing) {
     // 이미 연결된 카카오 계정: 그 계정으로 들어간다(새 폰 등). 지금 쓰던 익명 계정은 비어 있다고 보고 버린다.
     return { ok: true, customToken: deps.mintToken(existing, claims), uid: existing, switched: existing !== me.uid };
   }
   // 이 익명 계정에 이미 다른 카카오가 연결돼 있으면 거절(한 계정에 카카오 하나)
-  const had = me.claims.kakaoId;
+  const had = me.claims[provider === "kakao" ? "kakaoId" : "naverId"];
   if (typeof had === "string" && had !== kakaoId) return { ok: false, status: 409, error: "other-kakao" };
 
   const first = await deps.claimAccount(kakaoId, me.uid);

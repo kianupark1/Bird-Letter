@@ -6,6 +6,7 @@ import { PHONE_LOGIN_READY } from "@/lib/firebase/phone";
 import BirdIcon from "@/components/BirdIcon";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
+import { NAVER_LOGIN_READY, startNaverLogin } from "@/lib/firebase/naver";
 import { birdSlot, useRandomBird } from "@/lib/randomBird";
 import { addToHome, markJustJoined, useInstall } from "@/lib/install";
 import { STORE } from "@/lib/release";
@@ -50,6 +51,12 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
       startKakaoLogin(next ?? "/"); // 카카오 화면으로 갔다가 돌아오면 홈으로
       return;
     }
+    if (kind === "naver") {
+      if (!NAVER_LOGIN_READY) { setMsg("네이버 로그인이 아직 준비되지 않았어요."); return; }
+      markJustJoined();
+      startNaverLogin(next ?? "/");
+      return;
+    }
     setBusy(kind);
     const r = await linkAccount(kind);
     setBusy(null);
@@ -74,6 +81,12 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         <button type="button" className="sbtn kakao" onClick={() => go("kakao")} disabled={busy !== null}>
           <span aria-hidden>💬</span> 카카오로 가입하기
         </button>
+        {/* 네이버(2026-10-28, 대표님: "어른들을 위해"): 네이버 개발자 센터 열쇠를 넣으면 보여요 */}
+        {NAVER_LOGIN_READY && (
+          <button type="button" className="sbtn naver" onClick={() => go("naver")} disabled={busy !== null}>
+            <span aria-hidden className="naver-n">N</span> 네이버로 가입하기
+          </button>
+        )}
         <button type="button" className="sbtn google" onClick={() => go("google")} disabled={busy !== null}>
           {busy === "google" ? "열고 있어요…" : "구글로 가입하기"}
         </button>
@@ -114,7 +127,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
           </p>
         )}
         <p className="start-fine">
-          네이버는 곧 추가돼요<br />
+          {!NAVER_LOGIN_READY && <>네이버는 곧 추가돼요<br /></>}
           가입하면 <Link href="/terms">이용약관</Link>과 <Link href="/privacy">개인정보 처리방침</Link>에 동의한 것으로 봐요 · 만 14세 이상
         </p>
       </div>

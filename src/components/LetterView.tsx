@@ -24,6 +24,7 @@ import PhoneLogin from "@/components/PhoneLogin";
 import { PHONE_LOGIN_READY } from "@/lib/firebase/phone";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
+import { NAVER_LOGIN_READY, startNaverLogin } from "@/lib/firebase/naver";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
@@ -204,6 +205,7 @@ export default function LetterView({ id }: { id: string }) {
   // 받는 사람: 로그인 한 번으로 내 편지함에 받기(카카오는 카카오 화면에 갔다가 이 편지로 돌아와요)
   const receive = async (kind: LoginKind) => {
     if (kind === "kakao") { startKakaoLogin(letterHref(id)); return; }
+    if (kind === "naver") { startNaverLogin(letterHref(id)); return; }
     setBusy(kind);
     const r = await linkAccount(kind);
     setBusy(null);
@@ -244,6 +246,7 @@ export default function LetterView({ id }: { id: string }) {
             <span aria-hidden>💬</span> 카카오로 받기
           </button>
           <div className="recv-more">
+            {NAVER_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => void receive("naver")} disabled={busy !== null}>네이버로 받기</button>}
             <button type="button" className="linkbtn" onClick={() => void receive("google")} disabled={busy !== null}>{busy === "google" ? "여는 중…" : "구글로 받기"}</button>
             <button type="button" className="linkbtn" onClick={() => void receive("apple")} disabled={busy !== null}>{busy === "apple" ? "여는 중…" : "애플로 받기"}</button>
             {PHONE_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => setPhoneOn(true)} disabled={busy !== null}>문자로 받기</button>}

@@ -450,6 +450,12 @@
 
 - 새 계정(환영 편지를 받는 계정)이 홈을 처음 열면 **"새편지 사용법은 정말 쉬워요 · 1분만, 간단히 알려 드릴까요?"** [네, 알려 주세요] / [괜찮아요, 바로 쓸게요] → 7장(편지 보내기·새 고르기·받는 곳·지도로 같이 기다리기·친구 초대·펜팔·시작하기). 화면의 진짜 버튼(편지 쓰기·카운트다운·친구 탭·펜팔 탭)을 비추고(`.tour-hole`, 글씨 크기 배율 `--zoom` 반영), 새 6종·도시 버튼은 그림으로. 다음·이전·건너뛰기, 끝 장에 슬로건. 한 번만(`saepyeonji.tour.v1`), 설정 "📖 사용법 다시 보기"(`/?tour=1`). 자동 시험 기기(`saepyeonji.e2e.v1`)에는 안 뜸. `src/components/FirstTour.tsx`, 시안 `docs/시안/images/v10-tour.png`.
 
+## 네이버로 가입하기·카운트다운 색·사용법에 연락처 (2026-10-28, 대표님: "어른들을 위해 네이버로 로그인도", "파란색이 너무 튀어", "연락처로 추가")
+
+- **네이버 로그인**: 카카오와 같은 흐름(`core/kakaoLogin.ts loginWithSocial("naver")`, 네이버 번호는 영문·숫자, 표시 `naver:true·naverId`, 기록 `naverAccounts/{번호}`, 시험 4개 → test:core 434). 서버 `src/app/api/auth/naver/route.ts`(네이버 토큰 → `/v1/nid/me` 별명·사진(pstatic.net만) → Firebase 커스텀 토큰), 폰 `src/lib/firebase/naver.ts`(이름·사진은 카카오와 같은 규칙 `applyKakaoProfile`), 돌아오는 곳 `/auth/naver`. 첫 화면 초록 **[N 네이버로 가입하기]**(카카오 바로 아래)·편지 받기 화면 "네이버로 받기". **열쇠 넣기 전에는 숨김** → 대표님 몫 `docs/네이버-로그인.md`(네이버 개발자 센터 앱 등록·Callback `/auth/naver`, Vercel `NEXT_PUBLIC_NAVER_CLIENT_ID`·`NAVER_CLIENT_SECRET`, 모두가 쓰려면 검수 요청 「미확인」). 앱 안 이동 허용 `nid.naver.com`(capacitor). 개인정보처리방침에 네이버 추가. 시안 `docs/시안/images/v11-naver-login.png`.
+- 홈 카운트다운(`.hcount`): 남색 그라데이션 → **한지색 카드 + 황토 테두리, 숫자만 다홍**.
+- 사용법 안내에 "📇 연락처에서 바로"(편지 쓰기 → 연락처에서 찾기) 한 장 추가 → 8장.
+
 ## 읽음 표시 (2026-10-20, 대표님: "카카오톡처럼 상대방이 확인했다 안 했다 표시")
 
 - 받는 사람이 도착한 편지를 열면(`markOpened` → `remote.markRead`) 서버 편지 문서에 `readAt`(서버 시각)을 **한 번만** 남김. 예전에 열어 본 편지는 홈을 열 때 채워 넣음(`syncReadMarks`). 규칙: 받는 사람만·도착한 뒤에만·`readAt` 칸 하나·서버 시각·한 번만(에뮬레이터 134).

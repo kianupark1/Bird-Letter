@@ -18,7 +18,7 @@ const config: CapacitorConfig = {
     url: "https://bird-letter.vercel.app",
     cleartext: false,
     // 카카오 로그인 화면이 앱 밖(사파리·크롬)으로 튀어 나가지 않고 앱 안에서 열렸다가 돌아오게 해요
-    allowNavigation: ["kauth.kakao.com", "accounts.kakao.com", "logins.daum.net"],
+    allowNavigation: ["kauth.kakao.com", "accounts.kakao.com", "logins.daum.net", "nid.naver.com"],
   },
   plugins: {
     // 앱 안 로그인: 폰 기본 창으로 애플·구글 확인만 받고, 실제 로그인은 웹(Firebase)이 해요(src/lib/firebase/link.ts)
