@@ -36,7 +36,8 @@ const pretendard = localFont({
   fallback: ["Pretendard Full", "-apple-system", "Apple SD Gothic Neo", "Malgun Gothic", "sans-serif"],
 });
 
-const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontScale)||"normal";if(s==="xlarge")s="large";if(s==="small"||s==="normal"||s==="large")document.documentElement.dataset.scale=s}catch(e){}`;
+// 스토어 앱 안이면 <html class="inapp">: 심사·정식 앱에서는 "체험판·초안" 표시를 숨겨요(.beta-only, 웹은 출시 날 IS_BETA=false까지 그대로)
+const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontScale)||"normal";if(s==="xlarge")s="large";if(s==="small"||s==="normal"||s==="large")document.documentElement.dataset.scale=s}catch(e){}try{if(/SaePyeonjiApp/.test(navigator.userAgent))document.documentElement.classList.add("inapp")}catch(e){}`;
 
 // 서비스 워커가 폰에 담아 둔 화면을 바로 띄운 뒤 새 버전을 받아 오면 알려 줘요(public/sw.js).
 // 열자마자(6초 안, 아직 안 눌렀으면) 바로 새 버전으로 바꾸고, 그 뒤면 쓰던 글이 날아가지 않게 그대로 두고 다음에 열 때 새 버전이에요. 30초에 한 번까지만(되풀이 방지)

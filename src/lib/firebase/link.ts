@@ -1,9 +1,9 @@
 "use client";
 import {
-  GoogleAuthProvider, OAuthProvider, browserPopupRedirectResolver, linkWithCredential, linkWithPopup, signInWithCredential, signInWithPopup, unlink,
+  GoogleAuthProvider, OAuthProvider, browserPopupRedirectResolver, linkWithCredential, linkWithPopup, reauthenticateWithPopup, revokeAccessToken, signInWithCredential, signInWithPopup, unlink,
   type AuthCredential, type AuthProvider, type User,
 } from "firebase/auth";
-import { auth, ensureUser, firebaseEnabled } from "./client";
+import { auth, ensureUser, firebaseApiKey, firebaseEnabled } from "./client";
 
 /** 설정의 "계정 연결"에서 쓰는 로그인 종류. 구글·애플은 Firebase가 직접 처리하고, 나머지는 서버 연결이 끝나야 열립니다. */
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "./kakao";
@@ -105,6 +105,40 @@ async function linkNative(kind: LoginKind): Promise<LinkResult> {
     }
   } catch (e) {
     return { ok: false, message: friendlyError((e as { code?: string }).code) };
+  }
+}
+
+/**
+ * 계정 삭제 전: 애플로 로그인한 계정이면 애플 로그인 허락을 거둬요(애플 심사 5.1.1(v) "계정 삭제 때 애플 토큰 철회").
+ * 앱 안은 폰 기본 창으로 한 번 더 확인 → 받은 코드로 Firebase에 철회 요청, 웹은 애플 팝업으로 한 번 더 확인.
+ * Firebase 콘솔 Apple 로그인에 팀 ID·키 ID·비공개 키가 들어가 있어야 철회가 돼요(docs/앱스토어-심사.md).
+ * 취소하면 "cancelled"(삭제를 멈춤), 철회 요청만 실패하면 "failed"(삭제는 계속).
+ */
+export async function revokeAppleIfLinked(): Promise<"none" | "revoked" | "failed" | "cancelled"> {
+  const u = auth().currentUser;
+  if (!u || !u.providerData.some((p) => p.providerId === "apple.com")) return "none";
+  try {
+    if (nativeLoginReady()) {
+      const { FirebaseAuthentication } = await import("@capacitor-firebase/authentication");
+      let code: string | undefined;
+      try { code = (await FirebaseAuthentication.signInWithApple({ scopes: [] })).credential?.authorizationCode; }
+      catch (e) { return nativeCancelled(e) ? "cancelled" : "failed"; }
+      if (!code) return "failed";
+      const r = await fetch(`https://identitytoolkit.googleapis.com/v2/accounts:revokeToken?key=${firebaseApiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ providerId: "apple.com", tokenType: "CODE", token: code, idToken: await u.getIdToken() }),
+      });
+      return r.ok ? "revoked" : "failed";
+    }
+    let token: string | undefined;
+    try { token = OAuthProvider.credentialFromResult(await reauthenticateWithPopup(u, provider("apple"), browserPopupRedirectResolver))?.accessToken; }
+    catch (e) { return /popup-closed|cancelled/.test(String((e as { code?: string }).code)) ? "cancelled" : "failed"; }
+    if (!token) return "failed";
+    await revokeAccessToken(auth(), token);
+    return "revoked";
+  } catch {
+    return "failed";
   }
 }
 

@@ -33,7 +33,7 @@ import { IS_TOSS, letterHref } from "@/lib/target";
 import { smsHref } from "@/lib/contactInvite";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { telFor } from "@/lib/pendingTel";
-import { withIGa } from "@/lib/korean";
+import { euro, withIGa } from "@/lib/korean";
 import ProfileZoom from "@/components/ProfileZoom";
 
 export default function RoomPage() {
@@ -271,7 +271,7 @@ function Room() {
                   }
                 }}>
                 <Face name={t.name} bird={friends.find((f) => f.uid === t.uid)?.bird} photo={friends.find((f) => f.uid === t.uid)?.photo} />
-                <span className="tmid"><span className="tname">{t.name}</span><span className="tst">{t.entries.length ? `편지 ${t.entries.length}통` : "아직 편지 없음"} · 같은 사람으로 합치고 &quot;{name}&quot;(으)로 불러요</span></span>
+                <span className="tmid"><span className="tname">{t.name}</span><span className="tst">{t.entries.length ? `편지 ${t.entries.length}통` : "아직 편지 없음"} · 같은 사람으로 합치고 &quot;{name}&quot;{euro(name)} 불러요</span></span>
               </button>
             ))}
           </div>

@@ -5,6 +5,7 @@ import { routePosition, type Route } from "@/lib/routes";
 import { getBird } from "@/lib/birds";
 import { formatMinutes } from "@/lib/geo";
 import { whenText } from "../../core/schedule";
+import { euro, withEulReul } from "@/lib/korean";
 
 /**
  * 지도 크게 보기(2026-10-17, 대표님: "더 자세히, 멋지게, 계속 보고 싶게"):
@@ -212,7 +213,7 @@ export default function LiveMap({ route, birdId, progress, title, onClose }: {
         <div className="lm-odo"><span>날아온 거리</span><b>{flown.toFixed(2)}<small>km</small></b><span>/ {route.km}km</span></div>
         {pr.p < 1 ? (
           <>
-            <div className="lm-row">📍 {pos.passed?.name ? `${pos.passed.name}을(를) 지나` : "출발해서"} {next ? <><b>{next.name}</b>(으)로 가는 중</> : "날아가는 중"}</div>
+            <div className="lm-row">📍 {pos.passed?.name ? `${withEulReul(pos.passed.name)} 지나` : "출발해서"} {next ? <><b>{next.name}</b>{euro(next.name)} 가는 중</> : "날아가는 중"}</div>
             {next && <div className="lm-row">⏱ {next.name}까지 약 {formatMinutes(nextMin)} · 도착 예정 <b>{whenText(pr.arriveAt)}</b></div>}
             {pr.stalled && <div className="lm-row">🌳 잠깐 쉬어 가는 중이에요(곧 다시 날아요)</div>}
           </>

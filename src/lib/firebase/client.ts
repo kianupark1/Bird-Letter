@@ -20,6 +20,8 @@ const config = {
 };
 
 /** 설정값이 없으면(예: 내 컴퓨터에 .env.local이 없을 때) 서버 없이 "내 폰 저장" 방식으로 동작합니다. */
+/** 계정 삭제 때 애플 로그인 철회 요청(Identity Toolkit REST)에 써요 */
+export const firebaseApiKey = config.apiKey ?? "";
 export const firebaseEnabled = Boolean(config.apiKey && config.projectId && config.appId);
 
 function app() {

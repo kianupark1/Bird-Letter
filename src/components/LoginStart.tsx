@@ -128,7 +128,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
           </p>
         )}
         <p className="start-fine">
-          {!NAVER_LOGIN_READY && <>네이버는 곧 추가돼요<br /></>}
+          {!NAVER_LOGIN_READY && <span className="beta-only">네이버는 곧 추가돼요<br /></span>}
           가입하면 <Link href="/terms">이용약관</Link>과 <Link href="/privacy">개인정보 처리방침</Link>에 동의한 것으로 봐요 · 만 14세 이상
         </p>
       </div>

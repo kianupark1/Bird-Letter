@@ -7,7 +7,7 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
   return (
     <main className="app">
       <h1>{title}</h1>
-      <p className="sub">{IS_BETA ? `초안 ${LEGAL_DRAFT_DATE} · 정식 출시 전에 전문가 검토를 받아요` : `시행일 ${LEGAL_DRAFT_DATE}`}</p>
+      <p className="sub">{IS_BETA ? <><span className="beta-only">초안 {LEGAL_DRAFT_DATE} · 정식 출시 전에 전문가 검토를 받아요</span><span className="release-only">시행일 {LEGAL_DRAFT_DATE}</span></> : `시행일 ${LEGAL_DRAFT_DATE}`}</p>
       {children}
       <div className="legal-links">
         <Link href="/privacy">개인정보 처리방침</Link>
@@ -39,8 +39,10 @@ export function Contact() {
 export function BetaChecklist({ items }: { items: string[] }) {
   if (!IS_BETA) return null;
   return (
-    <Sec h="정식 출시 전에 확인할 것">
-      {items.map((t) => `· ${t}`).join("\n")}
-    </Sec>
+    <div className="beta-only">
+      <Sec h="정식 출시 전에 확인할 것">
+        {items.map((t) => `· ${t}`).join("\n")}
+      </Sec>
+    </div>
   );
 }

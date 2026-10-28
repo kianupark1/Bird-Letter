@@ -1,7 +1,7 @@
 // 핵심 계산 단위 시험: npm run test:core
 // 한국어 조사, 하버사인 거리, 새별 도착 시간 계산이 의도대로인지 확인합니다.
 import { readFileSync, existsSync } from "node:fs";
-import { withIGa, withEulReul } from "../core/korean.ts";
+import { withIGa, withEulReul, withEuro } from "../core/korean.ts";
 import { haversineKm, travelMinutes, cruiseMinutes, formatMinutes } from "../core/geo.ts";
 import { BIRDS } from "../core/birds.ts";
 import { ROUTES, getRoute, routePosition, makeRoute } from "../core/routes.ts";
@@ -30,6 +30,11 @@ for (const [n, want] of [["지민", "지민이"], ["민수", "민수가"], ["수
 
 for (const [n, want] of [["한라산", "한라산을"], ["오동도", "오동도를"], ["83타워", "83타워를"], ["추암 촛대바위", "추암 촛대바위를"], ["울릉도", "울릉도를"], ["소양강", "소양강을"]]) {
   eq(`목적격 ${n}`, withEulReul(n), want);
+}
+
+// 방향 조사: 받침 없거나 ㄹ이면 로, 그 밖은 으로
+for (const [n, want] of [["부산", "부산으로"], ["제주", "제주로"], ["서울", "서울로"], ["한라산", "한라산으로"], ["광안대교", "광안대교로"], ["63빌딩", "63빌딩으로"], ["N서울타워", "N서울타워로"]]) {
+  eq(`방향 ${n}`, withEuro(n), want);
 }
 
 // 하버사인: 남대문→도착지 직선거리가 노선에 적힌 거리와 비슷해야 함

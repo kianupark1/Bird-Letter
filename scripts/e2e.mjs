@@ -126,8 +126,8 @@ try {
   await shot(A.page, "08-A-home");
   await A.page.goto(`${BASE}/settings`, { waitUntil: "networkidle2" });
   ok("설정에 '보낸 편지 1'이 보임", await waitText(A.page, "보낸 편지", 15000));
-  ok("서버 연결 확인 뒤 삭제 버튼 이름이 바뀜", await waitText(A.page, "내 편지와 데이터 모두 삭제", 20000));
-  await clickText(A.page, "내 편지와 데이터 모두 삭제");
+  ok("서버 연결 확인 뒤 삭제 버튼 이름이 바뀜", await waitText(A.page, "계정 삭제(탈퇴)", 20000));
+  await clickText(A.page, "계정 삭제(탈퇴)");
   await A.page.waitForFunction(() => location.pathname === "/", { timeout: 40000 }).catch(() => {});
   ok("탈퇴 삭제 후 홈으로 돌아옴", new URL(A.page.url()).pathname === "/");
   ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "친구를 초대하면", 20000));
