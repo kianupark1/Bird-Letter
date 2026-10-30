@@ -37,11 +37,8 @@ jobs:
         env:
           VERSION_CODE: ${{ github.run_number }}
         run: bash scripts/ios-prepare.sh
-      - name: 앱 만들기(아카이브)
+      - name: 자동 올리기 열쇠 파일
         env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
-          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
           KEY="$RUNNER_TEMP/AuthKey.p8"
@@ -60,18 +57,48 @@ jobs:
           if ! openssl pkey -in "$KEY" -noout 2>/dev/null; then
             echo "::error::ASC_KEY_P8 열쇠를 읽을 수 없어요(글자 ${#BODY}자, 보통 약 200자). .p8 파일 내용을 처음부터 끝까지 다시 붙여 넣어 주세요."; exit 1
           fi
+          echo "ASC_KEY_PATH=$KEY" >> "$GITHUB_ENV"
+      # 자동 서명은 "등록된 아이폰이 없다"며 개발용 프로필에서 막혀서(2026-10-30), 배포용 인증서·App Store 프로필을 API로 만들어 손으로 서명해요
+      - name: 서명 준비(배포용 인증서·App Store 프로필)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          node scripts/ios-signing.mjs create
+          KC="$RUNNER_TEMP/build.keychain-db"; KCP=$(openssl rand -hex 12)
+          security create-keychain -p "$KCP" "$KC"
+          security set-keychain-settings -lut 3600 "$KC"
+          security unlock-keychain -p "$KCP" "$KC"
+          security import "$RUNNER_TEMP/signing/dist.p12" -P "$(cat "$RUNNER_TEMP/signing/p12pass")" -A -t cert -f pkcs12 -k "$KC"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KCP" "$KC" >/dev/null
+          security list-keychains -d user -s "$KC" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$KC"
+          echo "KEYCHAIN=$KC" >> "$GITHUB_ENV"
+      - name: 앱 만들기(아카이브)
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -o pipefail
+          # 앱(App) 칸에만 손 서명 설정을 넣어요(SPM 부품에는 프로필을 안 붙여야 해서 명령줄 대신 프로젝트 파일에)
+          PBX=ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g; s/CODE_SIGN_IDENTITY = "iPhone Developer";/CODE_SIGN_IDENTITY = "Apple Distribution";/g' "$PBX"
+          sed -i '' "s#PRODUCT_BUNDLE_IDENTIFIER = com.saepyeonji.app;#DEVELOPMENT_TEAM = $APPLE_TEAM_ID;\\
+          				PROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_NAME\";\\
+          				PRODUCT_BUNDLE_IDENTIFIER = com.saepyeonji.app;#" "$PBX"
+          grep -n "PROVISIONING_PROFILE_SPECIFIER\|CODE_SIGN_STYLE\|CODE_SIGN_IDENTITY" "$PBX"
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/App.xcarchive" \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
-            -allowProvisioningUpdates -authenticationKeyPath "$KEY" \
-            -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
-            archive | tail -60
+            OTHER_CODE_SIGN_FLAGS="--keychain $KEYCHAIN" \
+            archive | tail -80
+          test -d "$RUNNER_TEMP/App.xcarchive" || { echo "::error::아카이브가 만들어지지 않았어요(위 오류 확인)"; exit 1; }
+          codesign -d --entitlements :- "$RUNNER_TEMP/App.xcarchive/Products/Applications/App.app" 2>/dev/null | grep -E "aps-environment|applesignin|application-identifier" || true
       - name: App Store Connect(TestFlight)에 올리기
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
         run: |
+          set -o pipefail
           cat > "$RUNNER_TEMP/export.plist" <<PL
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -79,13 +106,23 @@ jobs:
             <key>method</key><string>app-store-connect</string>
             <key>destination</key><string>upload</string>
             <key>teamID</key><string>$APPLE_TEAM_ID</string>
-            <key>signingStyle</key><string>automatic</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
+            <key>provisioningProfiles</key><dict><key>com.saepyeonji.app</key><string>$PROFILE_NAME</string></dict>
             <key>manageAppVersionAndBuildNumber</key><false/>
           </dict></plist>
           PL
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" \
             -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/out" \
-            -allowProvisioningUpdates -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
             -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID" | tail -40
-          rm -f "$RUNNER_TEMP/AuthKey.p8"
           echo "올렸어요. 10~30분 뒤 App Store Connect → TestFlight에 빌드 ${{ github.run_number }} 이 보여요."
+      - name: 정리(이번에 만든 인증서·프로필·열쇠 지우기)
+        if: always()
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: |
+          [ -n "$ASC_KEY_PATH" ] && [ -f "$ASC_KEY_PATH" ] && node scripts/ios-signing.mjs cleanup || true
+          [ -n "$KEYCHAIN" ] && security delete-keychain "$KEYCHAIN" || true
+          rm -rf "$RUNNER_TEMP/signing" "$RUNNER_TEMP/AuthKey.p8"

@@ -24,12 +24,13 @@ if [ "$NATIVE_AUTH" = 1 ]; then
   else
     echo "::warning::$PL 에 REVERSED_CLIENT_ID가 없어요. 아이폰 앱 안 구글 로그인은 꺼진 채로 만들어요(Firebase에서 파일을 다시 받으면 켜져요)"
   fi
-  # 애플로 로그인(Sign in with Apple) 기능
+  # 애플로 로그인(Sign in with Apple)·앱 알림(APNs, TestFlight·앱스토어는 production) 기능
   cat > ios/App/App/App.entitlements <<'PL'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>com.apple.developer.applesignin</key><array><string>Default</string></array>
+  <key>aps-environment</key><string>production</string>
 </dict></plist>
 PL
   sed -i '' 's#PRODUCT_BUNDLE_IDENTIFIER = com.saepyeonji.app;#CODE_SIGN_ENTITLEMENTS = App/App.entitlements;\
