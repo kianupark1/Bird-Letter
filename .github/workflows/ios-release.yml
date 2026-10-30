@@ -45,7 +45,21 @@ jobs:
           ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
           KEY="$RUNNER_TEMP/AuthKey.p8"
-          if printf '%s' "$ASC_KEY_P8" | grep -q "BEGIN PRIVATE KEY"; then printf '%s\n' "$ASC_KEY_P8" > "$KEY"; else printf '%s' "$ASC_KEY_P8" | base64 -d > "$KEY"; fi
+          # 붙여 넣는 방식이 달라도 받아 줘요: 파일 전체 / 가운데 글자만(머리·꼬리 줄 없이) / base64로 한 번 더 감싼 것
+          RAW=$(printf '%s' "$ASC_KEY_P8" | tr -d '\r')
+          BODY=$(printf '%s' "$RAW" | tr -d ' \n\t')
+          if printf '%s' "$RAW" | grep -q "PRIVATE KEY-----"; then
+            printf '%s\n' "$RAW" > "$KEY"
+          elif DEC=$(printf '%s' "$BODY" | base64 --decode 2>/dev/null) && printf '%s' "$DEC" | grep -q "PRIVATE KEY-----"; then
+            printf '%s\n' "$DEC" > "$KEY"
+          elif printf '%s' "$BODY" | grep -Eq '^[A-Za-z0-9+/=]{100,}$'; then
+            { echo "-----BEGIN PRIVATE KEY-----"; printf '%s\n' "$BODY" | fold -w 64; echo "-----END PRIVATE KEY-----"; } > "$KEY"
+          else
+            echo "::error::ASC_KEY_P8 값이 .p8 파일 내용이 아니에요(글자 ${#BODY}자). AuthKey_….p8 파일을 텍스트 편집기로 열어 -----BEGIN PRIVATE KEY----- 부터 끝까지 전부 붙여 넣어 주세요."; exit 1
+          fi
+          if ! openssl pkey -in "$KEY" -noout 2>/dev/null; then
+            echo "::error::ASC_KEY_P8 열쇠를 읽을 수 없어요(글자 ${#BODY}자, 보통 약 200자). .p8 파일 내용을 처음부터 끝까지 다시 붙여 넣어 주세요."; exit 1
+          fi
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/App.xcarchive" \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Automatic \
