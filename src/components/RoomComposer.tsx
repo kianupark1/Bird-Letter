@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import PlaceField from "@/components/PlaceField";
-import { BIRDS_SLOW_TO_FAST, getBird, mishapShort } from "@/lib/birds";
+import { BIRDS_SLOW_TO_FAST, getBird, isRetired, mishapShort } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useProfile } from "@/lib/settings";
@@ -85,7 +85,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
 
   useEffect(() => {
     const b = read(LAST_BIRD);
-    if (b) setBirdId(b);
+    if (b && !isRetired(b)) setBirdId(b);
     setToId(friendPlace && getPlace(friendPlace) ? friendPlace : read(placeKey(threadKey)) || guessPlace || "");
     if (!IS_TOSS && new URLSearchParams(window.location.search).get("test")) speed.current = 600; // 직접 써 보기용 빠른 속도
   }, [threadKey, guessPlace, friendPlace]);

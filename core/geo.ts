@@ -21,9 +21,9 @@ export const MIN_FLIGHT_MIN = 60;
 export function cruiseMinutes(bird: Bird, km: number) {
   return Math.round((km / bird.kmh) * 60);
 }
-/** 새가 도착까지 걸리는 분(사고가 없을 때). 새마다 쉬는 정도(rest)·최소 시간(minMin)이 달라요(core/birds.ts) */
+/** 새가 도착까지 걸리는 분(사고가 없을 때, 지금 보내는 편지 기준): 진짜 새 순항 속도 그대로, 아무리 가까워도 새마다 최소 시간(realMin) */
 export function travelMinutes(bird: Bird, km: number) {
-  return Math.round(Math.max(bird.minMin, (km / bird.kmh) * 60 * bird.rest));
+  return Math.round(Math.max(bird.realMin, (km / bird.kmh) * 60));
 }
 
 /** "40분", "2시간 5분", 하루가 넘으면 "1일 7시간"(분은 빼요) */

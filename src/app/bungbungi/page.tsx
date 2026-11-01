@@ -1,45 +1,6 @@
-import Link from "next/link";
-import { IS_TOSS } from "@/lib/target";
-import { BIRDS, REFERENCE_KM, mishapText } from "@/lib/birds";
-import { ROUTES } from "@/lib/routes";
-import { formatMinutes, travelMinutes } from "@/lib/geo";
-import BirdIcon from "@/components/BirdIcon";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "붕붕이 · 새 편지" };
-
+/** 붕붕이는 새 고르기에서 뺐어요(2026-11-01 대표님: "새는 느린·중간·빠른 3개만"). 예전 링크는 홈으로 */
 export default function Bungbungi() {
-  const bird = BIRDS.find((b) => b.id === "bungbungi")!;
-  return (
-    <main className="app">
-      <div className="bung-hero" aria-hidden>
-        <span className="bung-copter"><BirdIcon id="bungbungi" size={186} /></span>
-      </div>
-      <h1>붕붕이</h1>
-      <p className="sub">새인 줄 알았죠? 프로펠러 달린 드론 새예요. 약속 시간은 칼같이 지켜요.</p>
-
-      <h2>한눈에 보기</h2>
-      <div className="stats">
-        <div><b>약 {formatMinutes(bird.minutesSeoulBusan)}</b><span>서울 → 부산 ({REFERENCE_KM}km) · 시속 약 {bird.kmh}km</span></div>
-        <div><b>재미</b><span>마스코트 새</span></div>
-      </div>
-
-      <h2>노선별 도착 시간</h2>
-      <div className="list">
-        {ROUTES.map((r) => (
-          <div key={r.id} className="listrow">
-            <span>{r.title} <span className="note">· {r.km}km</span></span>
-            <b className="time">{formatMinutes(travelMinutes(bird, r.km))}</b>
-          </div>
-        ))}
-      </div>
-
-      <h2>붕붕이는요</h2>
-      <div className="paper" style={{ marginTop: 0 }}>
-        {"· 배터리 걱정은 붕붕이도 해요. 그래도 이 노선은 한 번에 날아가요.\n· 날 때 “붕붕” 소리가 나요. 도착하면 조용히 편지를 내려놓아요.\n· 소형 드론 속도(시속 약 60km)로 날아요. 매보다는 느리고 두루미보다는 조금 빨라요.\n· " + mishapText(bird)}
-      </div>
-
-      <Link href="/send?bird=bungbungi" className="cta">붕붕이로 편지 보내기</Link>
-      {!IS_TOSS && <Link href="/" className="ghost">홈으로</Link>}
-    </main>
-  );
+  redirect("/");
 }

@@ -105,7 +105,7 @@ await p.waitForTimeout(500);
 ok("랭킹에 우주 여행 카드가 없고 순위만 보임", !(await p.$(".goalcard")) && (await p.$eval("main", (e) => e.innerText)).includes("누적 거리"));
 
 console.log("[2] 예약 발송: 입력 확인, 목록 표시, 취소");
-await writeLetter({ to: "엄마", bird: "두루미", text: "생일 축하해요", later: true });
+await writeLetter({ to: "엄마", bird: "까치", text: "생일 축하해요", later: true });
 await p.waitForSelector("#depart-at");
 await p.fill("#depart-at", "2020-01-01T09:00");
 ok("과거 시각이면 안내가 나오고 버튼이 꺼짐", (await p.$eval(".schedule .hint", (e) => e.textContent)).includes("1분 이상") && (await p.$eval(".dock .cta", (e) => e.disabled)));

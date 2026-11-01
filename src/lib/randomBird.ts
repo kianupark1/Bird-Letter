@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { BIRDS } from "./birds";
 
 /**
- * 앱을 열 때마다 새 6종 중 하나가 무작위로 나와요(로그인·빈 목록·이름 묻기 화면).
+ * 앱을 열 때마다 새 3종 중 하나가 무작위로 나와요(로그인·빈 목록·이름 묻기 화면).
  * 서버에서 미리 그리는 화면과 어긋나지 않게, 화면이 열린 뒤에 한 번만 골라요(그 전에는 null).
  */
 export function useRandomBird(): string | null {

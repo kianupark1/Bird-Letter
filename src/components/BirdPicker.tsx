@@ -3,7 +3,7 @@ import BirdIcon from "@/components/BirdIcon";
 import { getBird } from "@/lib/birds";
 import { AVATAR_BIRDS } from "../../core/threads";
 
-/** "내 새" 고르기: 새 6종 중 하나를 눌러요(가입할 때, 내 정보에서) */
+/** "내 새" 고르기: 새 3종 중 하나를 눌러요(가입할 때, 내 정보에서) */
 export default function BirdPicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   return (
     <div className="bpicker" role="radiogroup" aria-label="내 새 고르기">
