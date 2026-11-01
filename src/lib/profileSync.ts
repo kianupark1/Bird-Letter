@@ -37,3 +37,33 @@ export async function loadProfileRemote(): Promise<Partial<Profile> | null> {
     return null;
   }
 }
+
+/**
+ * 이름 화면을 띄울지 정하려고 내 계정에서 알 수 있는 것을 한 번에 모아요.
+ * - profile: 다른 폰·앱에서 정해 둔 프로필
+ * - serverName: 예전에 쓰던 이름(랭킹·친구 랭킹 기록에 남은 이름) — 계정 프로필이 생기기 전부터 쓰던 사람
+ * - asked: 이 계정에 이름 화면을 이미 한 번 보여 줬는지(폰을 바꾸거나 스토어 앱으로 옮겨도 다시 안 띄움)
+ * 2026-11-01 대표님: "편지든 친구든 뒤로 가든 이게 계속 떠, 처음에만 떠야 해"
+ */
+export async function loadAccountName(uid: string): Promise<{ profile: Partial<Profile> | null; serverName: string; serverBird: string; asked: boolean }> {
+  const out = { profile: null as Partial<Profile> | null, serverName: "", serverBird: "", asked: false };
+  if (!firebaseEnabled) return out;
+  const read = (col: string) => getDoc(doc(db(), col, uid)).then((s) => s.data() ?? null).catch(() => null);
+  const [me, rank, stats] = await Promise.all([read("users"), read("ranking"), read("stats")]);
+  const p = me?.profile as Partial<Profile> | undefined;
+  if (p && typeof p.nickname === "string" && p.nickname.trim()) out.profile = p;
+  out.asked = me?.onboard?.nameAsked === true;
+  for (const d of [rank, stats]) {
+    const n = typeof d?.name === "string" ? d.name.trim() : "";
+    if (n && n !== "새 친구" && !out.serverName) { out.serverName = n.slice(0, 12); out.serverBird = typeof d?.bird === "string" ? d.bird : ""; }
+  }
+  return out;
+}
+
+/** 이 계정에 이름 화면을 보여 줬다고 남겨요(users/{uid}.onboard.nameAsked, 내 계정만·규칙 변경 없음) */
+export function markNameAsked(uid: string) {
+  try { localStorage.setItem(`saepyeonji.nameasked.v1.${uid}`, "1"); } catch {}
+  if (!firebaseEnabled) return;
+  void setDoc(doc(db(), "users", uid), { onboard: { nameAsked: true } }, { merge: true }).catch(() => {});
+}
+export const nameAskedHere = (uid: string) => { try { return !!localStorage.getItem(`saepyeonji.nameasked.v1.${uid}`); } catch { return false; } };

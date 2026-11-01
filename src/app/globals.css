@@ -1183,3 +1183,10 @@ html.inapp .release-only { display: inline; }
    위쪽 덮개(::before)가 제목줄 위로 올라간 글을 가려서, 시계 줄 쪽으로 글이 비쳐 보이지 않아요 */
 main.app.room.chat .roomhead { position: sticky; top: 0; z-index: 15; background: var(--bg); margin: 0 -16px 12px; padding: 4px 16px 6px; border-bottom: 1px solid var(--line); }
 main.app.room.chat .roomhead::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 160px; background: var(--bg); }
+
+/* 처음 프로필 화면의 내 동네(2026-11-01) */
+.homepick { width: 100%; max-width: 340px; margin: 14px auto 0; padding: 12px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); text-align: left; }
+.homepick .hp-t { font-weight: 700; font-size: 16px; }
+.homepick .hp-row { display: flex; gap: 8px; margin-top: 8px; }
+.homepick .hp-btn { flex: 0 0 auto; width: auto; margin: 0; min-height: 44px; padding: 0 12px; font-size: 15px; }
+.homepick .hp-sel { flex: 1; min-width: 0; margin: 0; min-height: 44px; font-size: 15px; }

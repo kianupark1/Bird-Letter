@@ -11,7 +11,6 @@ import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvit
 import { KAKAO_SHARE_READY, shareInviteToKakao } from "@/lib/kakaoShare";
 import { useSession } from "@/lib/session";
 import LoginStart from "@/components/LoginStart";
-import NameStep, { shouldAskName } from "@/components/NameStep";
 import Face from "@/components/Face";
 import SwipeRow from "@/components/SwipeRow";
 import GearLink from "@/components/GearLink";
@@ -37,7 +36,6 @@ function Friends() {
   const params = useSearchParams();
   const { state, recheck } = useSession();
   const { profile, ready } = useProfile();
-  const [naming, setNaming] = useState(false);
   const [code, setCode] = useState("");
   const [friends, setFriends] = useState<Friend[]>([]);
   const { book } = usePeople();
@@ -60,18 +58,15 @@ function Friends() {
     if (c.length) { setFriends(c); setLoading(false); }
   }, []);
   const reload = useCallback(async (fresh = false) => setFriends(await listFriends({ fresh })), []);
-  const askName = ready && shouldAskName(profile);
   useEffect(() => {
     if (state !== "ready" || !ready || !firebaseEnabled || legacy) { if (state === "ready") setLoading(false); return; }
-    if (askName) { setNaming(true); return; }
-    setNaming(false);
     // 친구 목록은 바로 받고, 초대 코드(초대할 때만 필요)는 따로 뒤에서 만들어요(예전엔 코드를 다 만든 뒤에야 친구를 받아서 늦게 떴어요)
     reload().catch(() => setMsg("서버에 연결하지 못했어요. 잠시 후 다시 열어 주세요.")).finally(() => setLoading(false));
-  }, [state, ready, askName, reload, legacy]);
+  }, [state, ready, reload, legacy]);
   useEffect(() => {
-    if (state !== "ready" || !ready || !firebaseEnabled || legacy || askName) return;
+    if (state !== "ready" || !ready || !firebaseEnabled || legacy) return;
     ensureMyCode(profile.nickname, profile.avatarBird, profile.photo).then(setCode).catch(() => {});
-  }, [state, ready, askName, legacy, profile.nickname, profile.avatarBird, profile.photo]);
+  }, [state, ready, legacy, profile.nickname, profile.avatarBird, profile.photo]);
 
   const [zoom, setZoom] = useState<{ name: string; bird?: string | null; photo?: string } | null>(null);
   // 초대 코드는 뒤에서 만들어 두지만, 아직 안 됐으면 누르는 순간 만들어요
@@ -103,7 +98,6 @@ function Friends() {
   if (!firebaseEnabled) return <main className="app"><h1>친구</h1><div className="empty">서버에 연결된 뒤에 쓸 수 있어요.</div></main>;
   if (state === "checking") return <main className="app" aria-busy="true" />;
   if (state === "login") return <LoginStart onDone={recheck} next="/friends" />;
-  if (naming) return <NameStep onDone={() => setNaming(false)} />;
 
   // 카카오톡 친구 목록처럼: 맨 위에 나, 그 아래 친구들(같은 사람의 여러 계정은 한 줄로), 그다음 초대
   const people = buildThreads([], [], friends, book).filter((t) => t.uid);
