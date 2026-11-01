@@ -93,6 +93,8 @@ export function useProfile() {
       try {
         localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
       } catch {}
+      // 내 계정에도 올려서 새 폰·스토어 앱에서도 같은 이름·사진(src/lib/profileSync.ts)
+      void import("./profileSync").then((m) => m.saveProfileRemote(next)).catch(() => {});
       return next;
     });
   }, []);
