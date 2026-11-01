@@ -25,8 +25,8 @@ import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
-import NameStep, { needsName, shouldAskName } from "@/components/NameStep";
-import { loadProfileRemote, saveProfileRemote } from "@/lib/profileSync";
+import NameStep, { needsName } from "@/components/NameStep";
+import { loadAccountName, markNameAsked, nameAskedHere, saveProfileRemote } from "@/lib/profileSync";
 import { BIRDS, getBird } from "../../core/birds";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
@@ -47,47 +47,60 @@ export default function Home() {
 
 function Inbox() {
   const { profile, ready: profileReady, update } = useProfile();
-  const [named, setNamed] = useState(false);
   const [welcome, setWelcome] = useState("");
-  // 처음 로그인한 사람: 카카오·구글·애플이 알려 준 이름이 있으면 묻지 않고 그 이름 + 무작위 "내 새"로 바로 시작해요
-  // (2026-10-24 대표님: "카카오톡처럼 처음에 쓰기 편하게" → 이름 화면 한 장을 없앰, 설정에서 언제든 바꿈)
-  const ask = profileReady && !named && firebaseEnabled && shouldAskName(profile);
-  // 다른 폰·스토어 앱에서 이미 정한 프로필이 내 계정에 있으면 그대로 가져와요 → 이름 화면은 계정마다 딱 한 번
-  // (2026-11-01 대표님: "한번 설정하면 끝나야 하고, 바꾸고 싶으면 설정에서")
-  const [remote, setRemote] = useState<"idle" | "checking" | "done">("idle");
+  // 프로필(사진·이름·내 동네) 화면은 계정마다 딱 한 번만(2026-11-01 대표님: "편지든 친구든 뒤로 가든 계속 떠, 처음에만")
+  // - 로그인 확인이 끝난 뒤에 정해요(예전엔 확인 전에 정해서 계정 프로필을 못 읽고 화면이 떴어요)
+  // - 이 폰·내 계정·예전 이름(랭킹 기록)에 이름이 있으면 묻지 않아요
+  // - 처음 한 번 보여 주면 계정에 남겨서, 다른 화면으로 갔다 와도·스토어 앱으로 옮겨도 다시 안 떠요(이름은 카카오 이름을 미리 넣어 둠)
+  const [phase, setPhase] = useState<"idle" | "checking" | "ask" | "done">("idle");
+  const [prefill, setPrefill] = useState("");
   useEffect(() => {
-    if (!ask || remote !== "idle") return;
-    setRemote("checking");
-    void loadProfileRemote().then((p) => {
-      if (p) {
-        update((prev) => ({ ...p, fontScale: prev.fontScale, notify: { ...prev.notify, ...(p.notify ?? {}) }, avatarBird: p.avatarBird || prev.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id }));
-        setNamed(true);
+    if (!profileReady || phase !== "idle") return;
+    const randomBird = () => profile.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id;
+    if (!firebaseEnabled || !needsName(profile.nickname)) {
+      if (firebaseEnabled && !profile.avatarBird && profile.nickname.trim()) update({ avatarBird: randomBird() });
+      setPhase("done");
+      return;
+    }
+    setPhase("checking");
+    let off = false;
+    const finish = () => { if (!off) setPhase("done"); };
+    const timer = setTimeout(finish, 6000); // 인터넷이 느려도 6초 넘게 막지 않아요
+    void (async () => {
+      try { await auth().authStateReady(); } catch {}
+      const u = (() => { try { return auth().currentUser; } catch { return null; } })();
+      if (!u || u.isAnonymous) return finish();
+      const acc = await loadAccountName(u.uid);
+      if (off) return;
+      if (acc.profile) {
+        const p = acc.profile;
+        update((prev) => ({ ...p, fontScale: prev.fontScale, notify: { ...prev.notify, ...(p.notify ?? {}) }, avatarBird: p.avatarBird || prev.avatarBird || randomBird() }));
+        return finish();
       }
-      setRemote("done");
-    });
-  }, [ask, remote]); // eslint-disable-line react-hooks/exhaustive-deps
+      if (acc.serverName) { update({ nickname: acc.serverName, avatarBird: profile.avatarBird || acc.serverBird || randomBird() }); return finish(); }
+      const login = knownName();
+      if (acc.asked || nameAskedHere(u.uid)) { update({ ...(login ? { nickname: login } : {}), avatarBird: randomBird() }); return finish(); }
+      markNameAsked(u.uid);
+      if (login) update({ nickname: login, avatarBird: randomBird() }); // 화면을 그냥 떠나도 카카오 이름은 그대로 남게
+      clearTimeout(timer);
+      setPrefill(login);
+      setPhase("ask");
+    })();
+    return () => { off = true; clearTimeout(timer); };
+  }, [profileReady]); // eslint-disable-line react-hooks/exhaustive-deps
   // 예전부터 이 폰에 이름이 있던 사람은 한 번 계정에도 올려 둬요(다음에 스토어 앱·새 폰에서 다시 안 물어보게)
   useEffect(() => {
     if (!profileReady || !firebaseEnabled || !profile.nickname.trim()) return;
     try { if (localStorage.getItem("saepyeonji.profilesync.v1")) return; localStorage.setItem("saepyeonji.profilesync.v1", "1"); } catch { return; }
     saveProfileRemote(profile);
   }, [profileReady, profile.nickname]); // eslint-disable-line react-hooks/exhaustive-deps
-  const known = ask && remote === "done" ? knownName(profile.nickname) : "";
-  useEffect(() => {
-    if (!known) return;
-    const bird = profile.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id;
-    update({ nickname: known, avatarBird: bird });
-    setWelcome(`${known}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`);
-    setNamed(true);
-  }, [known]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (ask && remote === "done" && !known) return <NameStep onDone={() => setNamed(true)} />;
-  if (ask) return <main className="app" aria-busy="true" />;
+  if (phase === "ask") return <NameStep prefill={prefill} onDone={(name, bird) => { if (name) setWelcome(`${name}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`); setPhase("done"); }} />;
+  if (phase === "checking" || (phase === "idle" && profileReady && firebaseEnabled && needsName(profile.nickname))) return <main className="app" aria-busy="true" />;
   return <InboxList welcome={welcome} />;
 }
 
-/** 로그인할 때 받은 이름(직접 정한 이름 > 카카오 닉네임 > 구글·애플 이름). 없으면 "" */
-function knownName(nickname: string) {
-  if (!needsName(nickname)) return nickname.trim();
+/** 로그인할 때 받은 이름(카카오·네이버 별명 > 구글·애플 이름). 없으면 "" */
+function knownName() {
   try { const k = localStorage.getItem("saepyeonji.kakaoNick.v1")?.trim(); if (k) return k.slice(0, 12); } catch {}
   try { const n = auth().currentUser?.displayName?.trim(); if (n) return n.slice(0, 12); } catch {}
   return "";

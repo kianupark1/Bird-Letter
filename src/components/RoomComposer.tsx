@@ -23,6 +23,10 @@ const LAST_BIRD = "saepyeonji.lastbird.v1";
 const placeKey = (k: string) => `saepyeonji.roomplace.v1.${k}`;
 const read = (k: string) => { try { return localStorage.getItem(k) ?? ""; } catch { return ""; } };
 const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
+const FROM_OK = "saepyeonji.fromok.v1";
+/** 보내는 곳을 최근 3시간 안에 확인했는지(자동 시험 기기는 묻지 않아요) */
+const fromOk = () => { if (read("saepyeonji.e2e.v1")) return true; const t = Number(read(FROM_OK)); return t > 0 && Date.now() - t < 3 * 3600000; };
+const markFromOk = () => write(FROM_OK, String(Date.now()));
 /** 처음 보낼 때 한 번에 누르는 큰 도시(2026-10-24, 대표님: "처음 쓰기 편하게" → 검색해서 치지 않고 누르면 바로 날아가게) */
 const QUICK = ["seoul", "busan", "daegu", "incheon", "gwangju", "daejeon", "ulsan", "suwon", "sejong", "gangneung", "chuncheon", "cheongju", "jeonju", "pohang", "changwon", "jeju"];
 const SEOUL = PLACES.filter((p) => p.region === "서울");
@@ -51,7 +55,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const [message, setMessage] = useState("");
   const [birdId, setBirdId] = useState("pigeon");
   const [toId, setToId] = useState("");
-  const [sheet, setSheet] = useState<"" | "bird" | "place" | "later" | "more" | "quick">("");
+  const [sheet, setSheet] = useState<"" | "bird" | "place" | "later" | "more" | "quick" | "from">("");
   const [seoulOpen, setSeoulOpen] = useState(false);
   const [justSent, setJustSent] = useState(false);
   /** ➤를 눌렀는데 받는 곳이 없어서 고르는 중이면, 고르자마자 이어서 보내요 */
@@ -134,6 +138,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     const maxChars = penpal ? MAX_PENPAL_CHARS : MAX_LETTER_CHARS;
     if (message.length > maxChars) { setInfo(`${penpal ? "펜팔 편지는 " : ""}한 통에 ${maxChars.toLocaleString("ko-KR")}자까지 담을 수 있어요.`); return; }
     if (departError) { setInfo(departError); setSheet("later"); return; }
+    // 보내기 전에 "여기서 보낼까요?"를 물어요(2026-11-01 대표님: "보낼 때 위치를 바꾸겠습니까 물어보게"). 한 번 확인하면 3시간 동안은 안 물어요
+    if (!penpal && !fromOk()) { setInfo(""); pendingSend.current = true; setSheet("from"); return; }
     setBusy(true); setInfo("");
     try {
       const normal = (replyTo?: string) => add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined, replyTo });
@@ -164,6 +170,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (pendingSend.current && ok && sheet === "") { pendingSend.current = false; void send(); }
   }, [toId, ok, sheet]); // eslint-disable-line react-hooks/exhaustive-deps
   const quickPick = (id: string) => {
+    markFromOk(); // 이 창 아래에 "나는 ○○에서 보내요 · 바꾸기"가 있어서 한 번 더 묻지 않아요
     if (id === "seoul" && getPlace(fromId)?.region === "서울") { setSeoulOpen(true); return; } // 나도 서울이면 구까지
     pickTo(id); setSheet("");
   };
@@ -193,6 +200,15 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           )}
           <button type="button" className="ghost qmore" onClick={() => setSheet("place")}>🔍 다른 곳 찾기</button>
           <button type="button" className="qfrom" onClick={() => setSheet("place")}>📍 나는 <b>{getPlace(fromId)?.name}</b>에서 보내요 · 바꾸기</button>
+        </div>
+      )}
+      {sheet === "from" && (
+        <div className="ch-sheet" role="dialog" aria-label="보내는 곳 확인">
+          <h2>📍 {getPlace(fromId)?.name}에서 보낼까요?</h2>
+          <p className="small qsub">지금 있는 곳이 바뀌었으면 바꿔 주세요 · 새가 여기서 출발해요</p>
+          <button type="button" className="chunky" onClick={() => { markFromOk(); setSheet(""); }}>네, 여기서 보낼게요</button>
+          {!IS_TOSS && <button type="button" className="ghost" onClick={() => { markFromOk(); locate(); setSheet("place"); }}>내 위치로 다시 찾기</button>}
+          <button type="button" className="ghost" onClick={() => { markFromOk(); setSheet("place"); }}>다른 곳으로 바꾸기</button>
         </div>
       )}
       {sheet === "bird" && (

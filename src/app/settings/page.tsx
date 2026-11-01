@@ -37,6 +37,8 @@ export default function Settings() {
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [homeMsg, setHomeMsg] = useState("");
+  const [inStoreApp, setInStoreApp] = useState(false);
+  useEffect(() => setInStoreApp(!!(window as any).Capacitor?.isNativePlatform?.()), []); // eslint-disable-line @typescript-eslint/no-explicit-any
   /** 내 동네 바꾸기: 너무 빠른 이동은 막아요(거리를 일부러 늘리는 것 방지) */
   const moveHome = (id: string) => {
     const r = tryMoveHome(profile.homePlace, id);
@@ -257,12 +259,13 @@ export default function Settings() {
                 {push === "enabled" ? "켜져 있어요. 편지가 도착하면 폰으로 알려줘요."
                   : !PUSH_CONFIGURED ? "준비 중이에요."
                   : push === "unsupported" ? "이 기기·브라우저에서는 쓸 수 없어요."
+                  : push === "needs-install" && inStoreApp ? "앱 알림은 곧 업데이트로 켜져요. 지금은 앱을 열어 두면 팝업으로 알려줘요."
                   : push === "needs-install" ? "아이폰은 ‘홈 화면에 추가’한 앱에서 켤 수 있어요."
                   : push === "denied" ? "브라우저(폰 설정)에서 알림이 막혀 있어요."
                   : "꺼 둔 사이에 도착해도 알려줘요."}
               </div>
             </div>
-            {PUSH_CONFIGURED && push === "needs-install" && (
+            {PUSH_CONFIGURED && push === "needs-install" && !inStoreApp && (
               <button className="chip" onClick={addToHome}>설치 방법</button>
             )}
             {PUSH_CONFIGURED && (push === "enabled" || push === "default") && (

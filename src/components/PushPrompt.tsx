@@ -1,11 +1,15 @@
 "use client";
-import { PUSH_CONFIGURED, usePushState } from "@/lib/push";
+import { isAppPush, PUSH_CONFIGURED, usePushState } from "@/lib/push";
 import BirdIcon from "@/components/BirdIcon";
 import { addToHome } from "@/lib/install";
 
 /** "닫아 둬도 알려드릴까요?" 안내 카드. 이미 켰거나 지원하지 않으면 보이지 않아요. */
 export default function PushPrompt({ birdId = "magpie" }: { birdId?: string }) {
   const { state, enable } = usePushState();
+  // 스토어 앱 안에서는 "홈 화면에 추가" 안내가 필요 없어요(이미 설치한 앱). 아이폰 앱 알림은 앱 알림(FCM) 연결 뒤에 켜요
+  const inStoreApp = typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
+  if (inStoreApp && !isAppPush()) return null;
+  if (state === "needs-install" && inStoreApp) return null;
   if (!PUSH_CONFIGURED || state === "checking" || state === "enabled" || state === "unsupported") return null;
   return (
     <div className="pushcard" role="region" aria-label="알림 켜기">
