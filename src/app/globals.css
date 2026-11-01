@@ -38,7 +38,7 @@
     --on-nam: #10161F;
     --hwangto-text: #F0BC5C;
     --b-cream: #F3E9D8; --b-ink: #E9DDC8; --b-brown: #B58257; --b-brown2: #8A5A3C;
-    --b-grey: #A9B7C6; --b-grey2: #7F90A3; --b-edge: rgba(243, 233, 216, 0.0);
+    --b-grey: #A9B7C6; --b-grey2: #7F90A3; --b-edge: rgba(243, 233, 216, 0.0); --cb-rim: rgba(243, 233, 216, 0.5);
     --sea: #1C2B34; --land-dim: #2B251E; --coast: #5E5039; --grid: rgba(157, 191, 227, 0.10); --map-text: #E6DAC4;
     --lbl-halo: #1A1613; /* 어두운 모드: 지도 글자 테두리는 어둡게 (밝은 글자가 뭉개지지 않게) */
   }
