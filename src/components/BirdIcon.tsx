@@ -4,6 +4,7 @@
  * 모두 오른쪽을 보는 옆모습, viewBox 200x160. HTML에서도, 지도(svg) 안에서도 x/y를 주면 쓸 수 있어요.
  */
 import type { CSSProperties } from "react";
+import { CuteArt, isCute } from "./CuteBird";
 
 const c = (v: string): CSSProperties => ({ fill: `var(${v})` });
 const s = (v: string, w: number): CSSProperties => ({ stroke: `var(${v})`, strokeWidth: w, strokeLinecap: "round", strokeLinejoin: "round", fill: "none" });
@@ -303,6 +304,8 @@ type Props = {
 };
 
 export default function BirdIcon({ id, size = 40, className, x, y, title, letter }: Props) {
+  // 지금 고를 수 있는 새 3종(까치·비둘기·매)은 귀여운 새 그림(1안), 빠진 새는 예전 그림(예전 편지용)
+  const cute = isCute(id);
   const Art = ART[id] ?? Pigeon;
   return (
     <svg
@@ -318,8 +321,7 @@ export default function BirdIcon({ id, size = 40, className, x, y, title, letter
       focusable="false"
       style={letter ? { overflow: "visible" } : undefined}
     >
-      {letter && <Letter id={id} />}
-      <Art />
+      {cute ? <CuteArt id={id} letter={letter} /> : <>{letter && <Letter id={id} />}<Art /></>}
     </svg>
   );
 }

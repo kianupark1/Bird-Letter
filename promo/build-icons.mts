@@ -8,8 +8,15 @@ import { createRequire } from "node:module";
 import { copyFileSync, mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 
+import React, { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+(globalThis as { React?: typeof React }).React = React; // tsx는 그림 파일(JSX)을 옛 방식으로 읽어서 React가 필요해요
+const { CuteArt } = await import("../src/components/CuteBird.tsx");
+
 const req = createRequire(import.meta.url);
 const { chromium } = req("playwright");
+// 2026-11-01 대표님: "앱 바로가기 디자인도 새가 편지 물고 날아가는 모습(C안)으로" → 귀여운 까치(C안) + 편지
+const CUTE = renderToStaticMarkup(createElement(CuteArt, { id: "magpie", variant: "C", letter: true })).replace(/var\(--cb-rim, ([^)]*\))\)/g, "$1");
 
 const root = resolve(import.meta.dirname, "..");
 // 날개를 활짝 펼친 까치가 편지를 물고 구름 사이를 날아가는 그림(200x200). 색은 앱의 오방색 그대로.
@@ -59,18 +66,22 @@ ${clouds ? "" : "<!--"}<g fill="${CREAM}">
   <path d="M157 92 L182 100 L157 101 Z" fill="${GOLD}"/>
 </g>`;
 
+/** 앱 아이콘 그림: 구름 + 날아가는 귀여운 까치(편지를 문 모습). k는 그림 크기 */
+const cuteScene = (k: number, clouds = true) => `${scene(0, clouds).split("<g transform=")[0]}
+<g transform="translate(94 104) scale(${k * 1.12}) translate(-104 -64)">${CUTE}</g>`;
+
 const GRAD = "linear-gradient(160deg,#D2552A 0%,#C1481F 55%,#A83B17 100%)";
-const html = (size: number, k: number, rounded: boolean, bg = GRAD, art = true, clouds = true) => `<!doctype html><meta charset="utf-8"><style>
+const html = (size: number, k: number, rounded: boolean, bg = GRAD, art = true, clouds = true, sc: (k: number, c?: boolean) => string = cuteScene) => `<!doctype html><meta charset="utf-8"><style>
 *{margin:0;box-sizing:border-box}html,body{width:${size}px;height:${size}px;background:transparent}
 .bg{position:relative;width:${size}px;height:${size}px;background:${bg};overflow:hidden;${rounded ? `border-radius:${Math.round(size * 0.22)}px;` : ""}}
 .bg svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-</style><div class="bg">${art ? `<svg viewBox="0 0 200 200">${scene(k, clouds)}</svg>` : ""}</div>`;
+</style><div class="bg">${art ? `<svg viewBox="0 0 200 200">${sc(k, clouds)}</svg>` : ""}</div>`;
 // 시작 화면: 한지(또는 먹빛) 바탕 가운데에 둥근 아이콘 하나
 const splash = (size: number, page: string) => `<!doctype html><meta charset="utf-8"><style>
 *{margin:0}html,body{width:${size}px;height:${size}px;background:${page};display:grid;place-items:center}
 .i{width:${Math.round(size * 0.22)}px;height:${Math.round(size * 0.22)}px;border-radius:22%;background:${GRAD};overflow:hidden}
 .i svg{width:100%;height:100%;display:block}
-</style><div class="i"><svg viewBox="0 0 200 200">${scene(0.9)}</svg></div>`;
+</style><div class="i"><svg viewBox="0 0 200 200">${cuteScene(0.9)}</svg></div>`;
 
 mkdirSync(resolve(root, "public"), { recursive: true });
 const browser = await chromium.launch();
@@ -94,12 +105,12 @@ await shot("assets/icon-background.png", 1024, html(1024, 0.9, false, GRAD, fals
 await shot("assets/splash.png", 2732, splash(2732, "#FBF3E4"));
 await shot("assets/splash-dark.png", 2732, splash(2732, "#1A1613"));
 // 안드로이드 알림 줄의 작은 아이콘: 흰색 실루엣만(투명 바탕). 구름은 빼요.
-await shot("assets/notify-icon.png", 96, `<!doctype html><style>*{margin:0}html,body{width:96px;height:96px;background:transparent}svg{width:96px;height:96px;display:block;filter:brightness(0) invert(1)}</style><svg viewBox="0 0 200 200">${scene(1, false)}</svg>`);
+await shot("assets/notify-icon.png", 96, `<!doctype html><style>*{margin:0}html,body{width:96px;height:96px;background:transparent}svg{width:96px;height:96px;display:block;filter:brightness(0) invert(1)}</style><svg viewBox="0 0 200 200">${cuteScene(1, false)}</svg>`);
 // SNS 프로필 사진(인스타·틱톡·유튜브는 동그랗게 잘라 보여 줘서 그림을 가운데로 작게, 잘리는 구름은 뺌): promo/sns/
 mkdirSync(resolve(root, "promo/sns"), { recursive: true });
-await shot("promo/sns/profile-dahong.png", 1080, html(1080, 0.7, false, GRAD, true, false));
-await shot("promo/sns/profile-hanji.png", 1080, html(1080, 0.7, false, "radial-gradient(circle at 50% 40%,#FFF9EE 0%,#FBF3E4 60%,#F1E2C6 100%)", true, false));
-await shot("promo/sns/profile-night.png", 1080, html(1080, 0.7, false, "linear-gradient(160deg,#2A4B73 0%,#1E3A5C 55%,#142A45 100%)", true, false));
+await shot("promo/sns/profile-dahong.png", 1080, html(1080, 0.7, false, GRAD, true, false, scene));
+await shot("promo/sns/profile-hanji.png", 1080, html(1080, 0.7, false, "radial-gradient(circle at 50% 40%,#FFF9EE 0%,#FBF3E4 60%,#F1E2C6 100%)", true, false, scene));
+await shot("promo/sns/profile-night.png", 1080, html(1080, 0.7, false, "linear-gradient(160deg,#2A4B73 0%,#1E3A5C 55%,#142A45 100%)", true, false, scene));
 await browser.close();
 copyFileSync(resolve(root, "public/apple-icon.png"), resolve(root, "src/app/apple-icon.png"));
 copyFileSync(resolve(root, "public/icon-192.png"), resolve(root, "src/app/icon.png"));

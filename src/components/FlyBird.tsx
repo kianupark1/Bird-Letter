@@ -4,6 +4,8 @@
  * 새마다 색과 특징(제비 갈라진 꼬리, 까치 긴 꼬리, 두루미 붉은 정수리·긴 다리, 붕붕이 프로펠러)이 달라요.
  * 오른쪽을 보는 모습이 기본, 가운데가 (0,0). 부리에 편지를 물고 있어요.
  */
+import { CuteArt, isCute } from "./CuteBird";
+
 type Look = { body: string; wing: string; wing2: string; belly: string; head: string; beak: string; cheek?: string; tail: "fan" | "fork" | "long" | "short"; extra?: "crane" | "pigeon" | "swallow" | "hawk" };
 const LOOKS: Record<string, Look> = {
   hawk: { body: "#8A5A3C", wing: "#6B4229", wing2: "#5B3A29", belly: "#F1E2C8", head: "#8A5A3C", beak: "#E0A83C", tail: "fan", extra: "hawk" },
@@ -32,6 +34,21 @@ export default function FlyBird({ birdId, x, y, angle = 0, size = 1, still }: { 
             <circle cx="6" cy="1" r="6" fill="#FBF3E4" stroke="#5B3A29" strokeWidth="1.5" /><circle cx="7.5" cy="1" r="2.8" fill="#241a12" /><circle cx="8.6" cy="-0.2" r="1" fill="#fff" />
             <ellipse cx="-6" cy="6" rx="3" ry="2" fill="#F29B8E" opacity=".8" />
             <g transform="translate(13 9) rotate(-10)"><rect x="0" y="-4" width="12" height="8" rx="1.5" fill="#fff" stroke="#C1481F" strokeWidth="1.2" /><path d="M0.5 -3.4 L6 0.6 L11.5 -3.4" fill="none" stroke="#C1481F" strokeWidth="1" /></g>
+          </g>
+        </g>
+      </g>
+    );
+  }
+
+  // 새 3종(까치·비둘기·매)은 귀여운 나는 모습(C안, 2026-11-01 대표님 확정): 날개 퍼덕임 + 부리에 편지
+  if (isCute(birdId)) {
+    return (
+      <g transform={`translate(${x} ${y})`} className="flybird" aria-hidden>
+        <ellipse cx={4 * size} cy={26 * size} rx={16 * size} ry={3.8 * size} className="fb-shadow">{anim("1 1; 0.86 0.86; 1 1", "1.2s", "scale")}</ellipse>
+        <g transform={`scale(${size}) ${flip} rotate(${tilt})`}>
+          <g>
+            {anim("0 0; 0 -3.5; 0 0", "1.2s", "translate")}
+            <g transform="scale(0.32) translate(-116 -78)"><CuteArt id={birdId} variant="C" letter flap={!still} /></g>
           </g>
         </g>
       </g>

@@ -1,5 +1,5 @@
 /**
- * 귀여운 새 3종(까치·비둘기·매) 시안 — 2026-11-01 대표님: "더 귀엽게" → "너무 뚱뚱해, 3안까지".
+ * 귀여운 새 3종(까치·비둘기·매) — 2026-11-01 대표님: "더 귀엽게" → "너무 뚱뚱해, 3안까지" → "1안으로, 지도에 나는 새와 앱 아이콘은 나는 모습(C)".
  *  A 날씬 동글: 둥근 머리 + 날씬한 물방울 몸, 서 있는 모습
  *  B 머리 큰 이모티콘: 큰 머리 + 작고 가는 몸, 긴 꼬리
  *  C 나는 모습: 날개를 위로 편 날씬한 옆모습(발은 접음)
@@ -51,8 +51,20 @@ function Beak({ id, x, y, s }: { id: string; x: number; y: number; s: number }) 
   );
 }
 
+/** 부리에 문 편지(항공우편 봉투 + 하트 도장) */
+function Envelope({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(12) scale(${s})`}>
+      <rect x="0" y="-9" width="26" height="18" rx="2.5" fill="#FFF9EC" style={RIM} />
+      <rect x="1.8" y="-7.2" width="22.4" height="14.4" rx="1.5" fill="none" stroke="#C1481F" strokeWidth="1.6" strokeDasharray="3.5 3" />
+      <path d="M2 -7 L13 1.5 L24 -7" fill="none" stroke="#C1481F" strokeWidth="1.6" strokeLinejoin="round" />
+      <path d="M13 6.4 C9.6 3.8 11.2 1.2 13 2.8 C14.8 1.2 16.4 3.8 13 6.4 Z" fill="#C1481F" />
+    </g>
+  );
+}
+
 /* ───── A 날씬 동글 ───── */
-function A({ id }: { id: string }) {
+function A({ id, letter }: { id: string; letter?: boolean; flap?: boolean }) {
   const p = PAL[id];
   const long = id === "magpie";
   return (
@@ -71,13 +83,14 @@ function A({ id }: { id: string }) {
       <path d="M122 46 Q134 36 150 40" style={ln("#fff", 3.4, 0.3)} />
       <Eye x={147} y={58} r={8.5} ring={id === "magpie"} />
       <Blush x={151} y={74} />
+      {letter && <Envelope x={168} y={66} s={0.95} />}
       <Beak id={id} x={164} y={62} s={1} />
     </>
   );
 }
 
 /* ───── B 머리 큰 이모티콘 ───── */
-function B({ id }: { id: string }) {
+function B({ id, letter }: { id: string; letter?: boolean; flap?: boolean }) {
   const p = PAL[id];
   const long = id === "magpie";
   return (
@@ -96,45 +109,59 @@ function B({ id }: { id: string }) {
       <path d="M102 44 Q118 30 140 34" style={ln("#fff", 4, 0.3)} />
       <Eye x={138} y={60} r={11} ring={id === "magpie"} />
       <Blush x={142} y={80} s={1.2} />
+      {letter && <Envelope x={164} y={72} />}
       <Beak id={id} x={160} y={66} s={1.1} />
     </>
   );
 }
 
 /* ───── C 나는 모습 ───── */
-function C({ id }: { id: string }) {
+function C({ id, letter, flap }: { id: string; letter?: boolean; flap?: boolean }) {
+  // 날개 퍼덕임(지도 위 새): 어깨(96,90)를 중심으로 위아래
+  const beat = (far: boolean) => flap ? <animateTransform attributeName="transform" type="rotate" values={far ? "-14 104 88; 20 104 88; -14 104 88" : "-22 96 90; 28 96 90; -22 96 90"} dur="0.55s" repeatCount="indefinite" /> : null;
   const p = PAL[id];
   const long = id === "magpie";
   return (
     <>
-      <path d="M96 86 Q90 40 118 22 Q124 56 112 88 Z" style={{ ...f(p.wing), opacity: 0.55 }} />
+      <g>{beat(true)}<path d="M96 86 Q90 40 118 22 Q124 56 112 88 Z" style={{ ...f(p.wing), opacity: 0.55 }} /></g>
       <path d={long ? "M58 96 L8 110 L12 122 L62 104 Z" : "M58 96 L22 106 L26 118 L62 104 Z"} style={f(p.tail)} />
       <path d="M54 98 Q74 76 120 76 Q158 78 160 96 Q150 112 110 112 Q72 112 54 98 Z" style={f(p.body)} />
       <path d="M92 110 Q130 116 154 100 Q146 94 128 96 Q104 100 92 110 Z" fill={p.belly} />
       {id === "pigeon" && <path d="M136 80 Q150 86 158 82 Q160 94 146 96 Q136 92 136 80 Z" fill="#3EA890" />}
       {id === "hawk" && <path d="M110 104 l3 3 l3 -3 M122 106 l3 3 l3 -3" style={ln("#B58257", 2.4)} />}
-      <path d="M84 90 Q66 40 92 12 Q112 50 108 90 Z" style={f(p.wing)} />
-      {id === "magpie" && <path d="M86 70 Q90 50 96 38" style={ln("#FBF3E4", 5)} />}
-      {id === "pigeon" && <path d="M86 62 Q92 56 98 60 M88 74 Q94 68 102 72" style={ln("#6F8094", 3)} />}
-      {id === "hawk" && <path d="M84 50 l6 2 M86 62 l7 2 M88 74 l7 2" style={ln("#E0A83C", 2.4, 0.8)} />}
+      <g>
+        {beat(false)}
+        <path d="M84 90 Q66 40 92 12 Q112 50 108 90 Z" style={f(p.wing)} />
+        {id === "magpie" && <path d="M86 70 Q90 50 96 38" style={ln("#FBF3E4", 5)} />}
+        {id === "pigeon" && <path d="M86 62 Q92 56 98 60 M88 74 Q94 68 102 72" style={ln("#6F8094", 3)} />}
+        {id === "hawk" && <path d="M84 50 l6 2 M86 62 l7 2 M88 74 l7 2" style={ln("#E0A83C", 2.4, 0.8)} />}
+      </g>
       <circle cx="152" cy="72" r="22" style={f(p.body)} />
       <HeadMark id={id} hx={152} hy={72} r={22} />
       <path d="M138 58 Q148 50 162 54" style={ln("#fff", 3, 0.3)} />
       <Eye x={158} y={70} r={7.5} ring={id === "magpie"} />
       <Blush x={162} y={84} s={0.9} />
+      {letter && <Envelope x={175} y={78} s={0.8} />}
       <Beak id={id} x={172} y={74} s={0.9} />
     </>
   );
 }
 
-const V: Record<string, (p: { id: string }) => JSX.Element> = { A, B, C };
+type ArtProps = { id: string; letter?: boolean; flap?: boolean };
+const V: Record<string, (p: ArtProps) => JSX.Element> = { A, B, C };
 export const CUTE_BIRDS = Object.keys(PAL);
+export const isCute = (id: string) => id in PAL;
 
-export default function CuteBird({ id, variant = "A", size = 64, className }: { id: string; variant?: "A" | "B" | "C"; size?: number; className?: string }) {
+/** svg 안에 바로 넣는 그림(viewBox 200x160 좌표). A = 앱 전체 새(2026-11-01 대표님 확정 1안), C = 지도 위 나는 새·앱 아이콘 */
+export function CuteArt({ id, variant = "A", letter, flap }: ArtProps & { variant?: "A" | "B" | "C" }) {
   const Art = V[variant] ?? A;
+  return <Art id={PAL[id] ? id : "pigeon"} letter={letter} flap={flap} />;
+}
+
+export default function CuteBird({ id, variant = "A", size = 64, className, letter }: { id: string; variant?: "A" | "B" | "C"; size?: number; className?: string; letter?: boolean }) {
   return (
     <svg viewBox="0 0 200 160" width={size} height={(size * 160) / 200} className={className} aria-hidden>
-      <Art id={PAL[id] ? id : "pigeon"} />
+      <CuteArt id={id} variant={variant} letter={letter} />
     </svg>
   );
 }
