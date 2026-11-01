@@ -192,7 +192,7 @@ export function avatarTone(name: string, tones = 4) {
 }
 
 /** 새 얼굴 후보(core/birds.ts의 id와 같아야 해요) */
-export const AVATAR_BIRDS = ["magpie", "pigeon", "swallow", "crane", "bungbungi", "hawk"] as const;
+export const AVATAR_BIRDS = ["magpie", "pigeon", "hawk"] as const; // 2026-11-01 새 3종으로 줄임
 
 /** 친구가 "내 새"를 고르지 않았거나 아직 모를 때: 이름으로 항상 같은 새를 정해 줘요 */
 export function avatarBirdFor(name: string, chosen?: string | null): string {

@@ -19,7 +19,7 @@ export const metadata = {
 };
 
 const STEPS = [
-  { n: "1", title: "새를 골라요", desc: "빠른 매부터 귀한 소식용 두루미까지, 6종의 새 중에서요." },
+  { n: "1", title: "새를 골라요", desc: "빠른 매·믿음직한 비둘기·느긋한 까치, 3종의 새 중에서요." },
   { n: "2", title: "편지를 써요", desc: "내가 있는 곳과 받는 사람이 있는 곳을 고르고, 마음을 적어요. 길이는 마음대로예요." },
   { n: "3", title: "새가 날아가요", desc: "서울에서 부산까지 실제 거리만큼, 지도 위를 날아가는 모습을 볼 수 있어요." },
   { n: "4", title: "도착!", desc: "기다린 시간만큼 반가운 편지가 내려앉아요." },
@@ -51,7 +51,7 @@ export default function Welcome() {
         ))}
       </ol>
 
-      <h2>6종의 새</h2>
+      <h2>3종의 새</h2>
       <p className="small" style={{ marginTop: 0 }}>실제 새의 비행 속도로 날아가요. 서울 → 부산({REFERENCE_KM}km) 기준 소요 시간이에요. 아주 가끔(새마다 50~100통에 1번) 길을 잃거나 나무에 걸려 늦어질 수 있고, 편지는 꼭 도착해요.</p>
       <div className="birdgrid">
         {BIRDS_SLOW_TO_FAST.map((b) => (
@@ -62,7 +62,6 @@ export default function Welcome() {
           </div>
         ))}
       </div>
-      <Link href="/bungbungi" className="ghost">드론 새 마스코트, 붕붕이 만나기</Link>
 
       <h2>전국 어디로든, 이런 길을 날아요</h2>
       <div className="list">

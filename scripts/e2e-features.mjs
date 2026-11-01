@@ -147,7 +147,7 @@ try {
 
   console.log("\n[4] 예약 발송: 출발 전에는 받는 사람에게 안 보임");
   await A.page.goto(`${BASE}/send?test=1`, { waitUntil: "networkidle2" });
-  const sid = await writeLetter(A.page, { to: "수진", text: SECRET, later: localInput(3 * 60 * 1000), bird: "제비" });
+  const sid = await writeLetter(A.page, { to: "수진", text: SECRET, later: localInput(3 * 60 * 1000), bird: "까치" });
   ok("예약 편지가 서버에 저장됨", sid.length === 20, `ID=${sid}`);
   ok("A에게는 '출발해요' 안내가 보임", await waitText(A.page, "출발해요", 20000));
   await shot(A.page, "f4-A-scheduled");

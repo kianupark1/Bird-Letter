@@ -27,7 +27,7 @@ import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
 import NameStep, { needsName } from "@/components/NameStep";
 import { loadAccountName, markNameAsked, nameAskedHere, saveProfileRemote } from "@/lib/profileSync";
-import { BIRDS, getBird } from "../../core/birds";
+import { BIRDS, getBird, isRetired } from "../../core/birds";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
 import { useBeforePaint } from "@/lib/fastStart";
@@ -88,6 +88,10 @@ function Inbox() {
     })();
     return () => { off = true; clearTimeout(timer); };
   }, [profileReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 내 새가 빠진 새(제비·두루미·붕붕이)면 남은 3종(까치·비둘기·매) 중 하나로 바꿔요(2026-11-01 새 3종으로 줄임)
+  useEffect(() => {
+    if (profileReady && profile.avatarBird && isRetired(profile.avatarBird)) update({ avatarBird: BIRDS[Math.floor(Math.random() * BIRDS.length)].id });
+  }, [profileReady, profile.avatarBird]); // eslint-disable-line react-hooks/exhaustive-deps
   // 예전부터 이 폰에 이름이 있던 사람은 한 번 계정에도 올려 둬요(다음에 스토어 앱·새 폰에서 다시 안 물어보게)
   useEffect(() => {
     if (!profileReady || !firebaseEnabled || !profile.nickname.trim()) return;

@@ -16,7 +16,7 @@ const SLOGAN = "기다림도 소통의 일부입니다.";
 const FRAMES = [
   { shot: "1-list", title: "보고 싶은 사람에게<br>새가 편지를 물고 날아가요", sub: SLOGAN, bg: "#C1481F" },
   { shot: "2-room", title: "편지가 어디쯤 왔는지<br>둘이 같이 기다려요", sub: "도착 시각까지 카운트다운", bg: "#1E3A5C" },
-  { shot: "3-birds", title: "새 6종, 걸리는 시간이<br>저마다 달라요", sub: "빠른 매부터 느긋한 까치까지", bg: "#1B6E5C" },
+  { shot: "3-birds", title: "느린 까치·중간 비둘기<br>빠른 매", sub: "빠른 매부터 느긋한 까치까지", bg: "#1B6E5C" },
   { shot: "4-map", title: "날아오는 길을<br>지도로 따라가요", sub: "지금 지나는 곳과 남은 거리", bg: "#B07A1E" },
   { shot: "5-welcome", title: "느리게 와서<br>더 설레는 편지", sub: SLOGAN, bg: "#C1481F" },
 ];
