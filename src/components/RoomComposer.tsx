@@ -24,8 +24,8 @@ const placeKey = (k: string) => `saepyeonji.roomplace.v1.${k}`;
 const read = (k: string) => { try { return localStorage.getItem(k) ?? ""; } catch { return ""; } };
 const write = (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} };
 const FROM_OK = "saepyeonji.fromok.v1";
-/** 보내는 곳을 최근 3시간 안에 확인했는지(자동 시험 기기는 묻지 않아요) */
-const fromOk = () => { if (read("saepyeonji.e2e.v1")) return true; const t = Number(read(FROM_OK)); return t > 0 && Date.now() - t < 3 * 3600000; };
+/** 보내는 곳을 최근 5시간 안에 확인했는지(자동 시험 기기는 묻지 않아요) */
+const fromOk = () => { if (read("saepyeonji.e2e.v1")) return true; const t = Number(read(FROM_OK)); return t > 0 && Date.now() - t < 5 * 3600000; };
 const markFromOk = () => write(FROM_OK, String(Date.now()));
 /** 처음 보낼 때 한 번에 누르는 큰 도시(2026-10-24, 대표님: "처음 쓰기 편하게" → 검색해서 치지 않고 누르면 바로 날아가게) */
 const QUICK = ["seoul", "busan", "daegu", "incheon", "gwangju", "daejeon", "ulsan", "suwon", "sejong", "gangneung", "chuncheon", "cheongju", "jeonju", "pohang", "changwon", "jeju"];
@@ -138,7 +138,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     const maxChars = penpal ? MAX_PENPAL_CHARS : MAX_LETTER_CHARS;
     if (message.length > maxChars) { setInfo(`${penpal ? "펜팔 편지는 " : ""}한 통에 ${maxChars.toLocaleString("ko-KR")}자까지 담을 수 있어요.`); return; }
     if (departError) { setInfo(departError); setSheet("later"); return; }
-    // 보내기 전에 "여기서 보낼까요?"를 물어요(2026-11-01 대표님: "보낼 때 위치를 바꾸겠습니까 물어보게"). 한 번 확인하면 3시간 동안은 안 물어요
+    // 보내기 전에 "여기서 보낼까요?"를 물어요(2026-11-01 대표님: "보낼 때 위치를 바꾸겠습니까 물어보게"). 한 번 확인하면 5시간 동안은 안 물어요
     if (!penpal && !fromOk()) { setInfo(""); pendingSend.current = true; setSheet("from"); return; }
     setBusy(true); setInfo("");
     try {
