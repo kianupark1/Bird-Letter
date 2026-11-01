@@ -1,113 +1,140 @@
 /**
- * 더 귀여운 새 3종(까치·비둘기·매) — 2026-11-01 대표님: "전체적으로 새 디자인을 더 귀엽게".
- * 동글동글한 한 덩어리 몸, 큰 눈(반짝이 두 개), 볼터치, 작은 부리, 짧은 발. 오른쪽을 보는 옆모습, viewBox 200x160(BirdIcon과 같음).
- * 색은 고정값(어두운 화면에서도 새 색이 바뀌지 않게), 테두리는 --cb-rim(어두운 화면에서 밝은 테두리로 배경과 구분).
+ * 귀여운 새 3종(까치·비둘기·매) 시안 — 2026-11-01 대표님: "더 귀엽게" → "너무 뚱뚱해, 3안까지".
+ *  A 날씬 동글: 둥근 머리 + 날씬한 물방울 몸, 서 있는 모습
+ *  B 머리 큰 이모티콘: 큰 머리 + 작고 가는 몸, 긴 꼬리
+ *  C 나는 모습: 날개를 위로 편 날씬한 옆모습(발은 접음)
+ * 오른쪽을 보는 옆모습, viewBox 200x160(BirdIcon과 같음). 테두리는 --cb-rim(어두운 화면에서 밝게).
  */
 import type { CSSProperties, JSX } from "react";
 
-const RIM: CSSProperties = { stroke: "var(--cb-rim, rgba(42,33,24,.18))", strokeWidth: 3, strokeLinejoin: "round" };
-const f = (fill: string, rim = false): CSSProperties => ({ fill, ...(rim ? RIM : {}) });
-const line = (stroke: string, w: number, op = 1): CSSProperties => ({ stroke, strokeWidth: w, strokeLinecap: "round", strokeLinejoin: "round", fill: "none", opacity: op });
+type Pal = { body: string; belly: string; wing: string; tail: string; beak: string; feet: string };
+const PAL: Record<string, Pal> = {
+  magpie: { body: "#2A2118", belly: "#FBF3E4", wing: "#1E3A5C", tail: "#1E3A5C", beak: "#E0A83C", feet: "#E0A83C" },
+  pigeon: { body: "#9AA8B8", belly: "#C9D3DE", wing: "#B5C1CE", tail: "#6F8094", beak: "#3A2E26", feet: "#E8683F" },
+  hawk: { body: "#8A5A3C", belly: "#FBF3E4", wing: "#5B3A29", tail: "#5B3A29", beak: "#E0A83C", feet: "#E0A83C" },
+};
 
-/** 큰 눈: 눈동자 + 큰 반짝이 + 작은 반짝이 */
-function Eye({ x, y, r = 11, ring }: { x: number; y: number; r?: number; ring?: string }) {
+const RIM: CSSProperties = { stroke: "var(--cb-rim, rgba(42,33,24,.2))", strokeWidth: 2.6, strokeLinejoin: "round" };
+const f = (fill: string, rim = true): CSSProperties => ({ fill, ...(rim ? RIM : {}) });
+const ln = (stroke: string, w: number, op = 1): CSSProperties => ({ stroke, strokeWidth: w, strokeLinecap: "round", strokeLinejoin: "round", fill: "none", opacity: op });
+
+function Eye({ x, y, r, ring }: { x: number; y: number; r: number; ring?: boolean }) {
   return (
     <>
-      {ring && <ellipse cx={x} cy={y} rx={r + 5} ry={r * 1.12 + 5} fill={ring} />}
+      {ring && <ellipse cx={x} cy={y} rx={r + 4} ry={r * 1.1 + 4} fill="#FBF3E4" />}
       <ellipse cx={x} cy={y} rx={r} ry={r * 1.12} fill="#241a12" />
-      <circle cx={x + r * 0.32} cy={y - r * 0.4} r={r * 0.36} fill="#fff" />
-      <circle cx={x - r * 0.36} cy={y + r * 0.42} r={r * 0.16} fill="#fff" />
+      <circle cx={x + r * 0.32} cy={y - r * 0.4} r={r * 0.38} fill="#fff" />
+      <circle cx={x - r * 0.34} cy={y + r * 0.44} r={r * 0.17} fill="#fff" />
     </>
   );
 }
-const Blush = ({ x, y }: { x: number; y: number }) => <ellipse cx={x} cy={y} rx="11" ry="6.5" fill="#F28B82" opacity=".55" />;
-const Feet = ({ color = "#E0A83C" }: { color?: string }) => (
-  <g style={line(color, 5)}>
-    <path d="M86 140 v10 M80 151 h12" />
-    <path d="M112 140 v10 M106 151 h12" />
-  </g>
-);
+const Blush = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => <ellipse cx={x} cy={y} rx={8 * s} ry={4.8 * s} fill="#F28B82" opacity=".55" />;
 
-function Magpie() {
+/** 매는 크림색 얼굴과 눈썹 */
+function HeadMark({ id, hx, hy, r }: { id: string; hx: number; hy: number; r: number }) {
+  if (id !== "hawk") return null;
   return (
     <>
-      {/* 긴 꼬리(남색 윤기) */}
-      <path d="M44 104 Q14 104 4 128 Q26 132 52 118 Z" style={f("#1E3A5C", true)} />
-      <path d="M40 108 Q20 112 12 124" style={line("#3EA890", 3, 0.7)} />
-      <Feet />
-      {/* 동글한 몸: 까만 머리·등 + 하얀 배 */}
-      <ellipse cx="100" cy="92" rx="62" ry="54" style={f("#2A2118", true)} />
-      <path d="M58 104 Q66 140 104 142 Q146 140 154 106 Q132 124 104 124 Q76 124 58 104 Z" fill="#FBF3E4" />
-      {/* 작은 날개: 남색 + 하얀 무늬 */}
-      <path d="M62 86 Q90 70 108 92 Q92 116 64 104 Z" style={f("#1E3A5C", true)} />
-      <path d="M72 92 Q86 86 96 96" style={line("#FBF3E4", 5)} />
-      {/* 머리 윤기 */}
-      <path d="M74 56 Q96 40 122 46" style={line("#fff", 4, 0.28)} />
-      <Eye x={128} y={78} ring="#FBF3E4" />
-      <Blush x={136} y={104} />
-      {/* 작은 부리(노랑, 까만 몸에서도 보이게) */}
-      <path d="M156 84 L174 90 L156 96 Z" style={f("#E0A83C", true)} />
+      <path d={`M${hx - r * 0.1} ${hy - r * 0.2} Q${hx + r * 1.05} ${hy - r * 0.55} ${hx + r * 0.95} ${hy + r * 0.45} Q${hx + r * 0.4} ${hy + r * 1.05} ${hx - r * 0.2} ${hy + r * 0.7} Q${hx + r * 0.1} ${hy + r * 0.25} ${hx - r * 0.1} ${hy - r * 0.2} Z`} fill="#FBF3E4" />
+      <path d={`M${hx - r * 0.05} ${hy - r * 0.42} Q${hx + r * 0.4} ${hy - r * 0.68} ${hx + r * 0.85} ${hy - r * 0.36}`} style={ln("#5B3A29", r * 0.2)} />
     </>
   );
 }
-
-function Pigeon() {
+function Beak({ id, x, y, s }: { id: string; x: number; y: number; s: number }) {
+  const p = PAL[id];
+  if (id === "hawk") return <path d={`M${x} ${y - 6 * s} Q${x + 16 * s} ${y - 6 * s} ${x + 16 * s} ${y + 7 * s} Q${x + 10 * s} ${y + 3 * s} ${x} ${y + 5 * s} Z`} style={f(p.beak)} />;
   return (
     <>
-      <path d="M44 106 Q20 110 12 126 Q32 128 52 118 Z" style={f("#6F8094", true)} />
-      <Feet color="#E8683F" />
-      <ellipse cx="100" cy="92" rx="62" ry="54" style={f("#9AA8B8", true)} />
-      {/* 연한 배 */}
-      <path d="M60 104 Q68 140 104 142 Q144 140 152 108 Q130 124 104 124 Q78 124 60 104 Z" fill="#C9D3DE" />
-      {/* 청록·보라 목띠 */}
-      <path d="M112 102 Q130 112 152 102 Q150 116 132 120 Q116 118 112 102 Z" fill="#3EA890" />
-      <path d="M118 112 Q132 118 148 112" style={line("#8E6FB8", 4, 0.8)} />
-      {/* 날개 + 줄무늬 두 개 */}
-      <path d="M60 84 Q90 68 110 92 Q92 118 62 104 Z" style={f("#B5C1CE", true)} />
-      <path d="M70 92 Q84 88 94 96 M74 101 Q86 98 96 104" style={line("#6F8094", 3.4)} />
-      <path d="M74 56 Q96 40 122 46" style={line("#fff", 4, 0.35)} />
-      <Eye x={128} y={76} />
-      <Blush x={134} y={96} />
-      {/* 부리 + 하얀 콧등 */}
-      <path d="M156 82 L172 88 L156 94 Z" style={f("#3A2E26", true)} />
-      <ellipse cx="157" cy="81" rx="4" ry="3" fill="#FBF3E4" />
+      <path d={`M${x} ${y - 5 * s} L${x + 15 * s} ${y} L${x} ${y + 5 * s} Z`} style={f(p.beak)} />
+      {id === "pigeon" && <ellipse cx={x + 1} cy={y - 5 * s} rx={3.6 * s} ry={2.6 * s} fill="#FBF3E4" />}
     </>
   );
 }
 
-function Hawk() {
+/* ───── A 날씬 동글 ───── */
+function A({ id }: { id: string }) {
+  const p = PAL[id];
+  const long = id === "magpie";
   return (
     <>
-      <path d="M44 104 Q18 106 8 124 Q20 132 50 118 Z" style={f("#5B3A29", true)} />
-      <path d="M22 116 l6 4 M30 112 l6 4" style={line("#E0A83C", 2.6, 0.8)} />
-      <Feet />
-      <ellipse cx="100" cy="92" rx="62" ry="54" style={f("#8A5A3C", true)} />
-      {/* 크림색 얼굴·배 */}
-      <path d="M104 64 Q150 58 158 92 Q160 128 112 140 Q72 142 64 112 Q100 120 112 100 Q102 82 104 64 Z" fill="#FBF3E4" />
-      {/* 배의 작은 V 무늬 */}
-      <path d="M96 124 l4 4 l4 -4 M112 128 l4 4 l4 -4 M126 120 l4 4 l4 -4" style={line("#B58257", 2.6)} />
-      {/* 날개 */}
-      <path d="M58 82 Q88 64 108 90 Q92 118 60 104 Z" style={f("#5B3A29", true)} />
-      <path d="M66 94 q6 6 12 4 M78 100 q6 6 12 3" style={line("#E0A83C", 2.6, 0.7)} />
-      {/* 눈 위 갈색 줄(씩씩한 표정, 그래도 귀엽게) */}
-      <path d="M112 62 Q128 56 144 64" style={line("#5B3A29", 6)} />
-      <path d="M74 56 Q90 44 108 46" style={line("#fff", 4, 0.28)} />
-      <Eye x={128} y={80} />
-      <Blush x={136} y={102} />
-      {/* 노란 갈고리 부리 */}
-      <path d="M154 82 Q172 82 172 96 Q166 92 154 94 Z" style={f("#E0A83C", true)} />
+      <path d={long ? "M70 112 L10 132 L16 142 L76 120 Z" : "M70 112 L28 128 L34 138 L76 120 Z"} style={f(p.tail)} />
+      <path d="M100 124 v20 M93 145 h13 M116 122 v22 M109 145 h13" style={ln(p.feet, 4)} />
+      <path d="M62 112 Q72 82 112 76 Q148 74 150 100 Q148 128 110 132 Q78 134 62 112 Z" style={f(p.body)} />
+      <path d="M96 128 Q126 132 144 108 Q140 96 126 96 Q104 104 96 128 Z" fill={p.belly} />
+      {id === "pigeon" && <path d="M120 84 Q138 92 150 84 Q150 96 134 100 Q122 98 120 84 Z" fill="#3EA890" />}
+      <path d="M74 104 Q92 82 122 90 Q108 118 78 116 Z" style={f(p.wing)} />
+      {id === "magpie" && <path d="M86 102 Q98 96 110 100" style={ln("#FBF3E4", 4.5)} />}
+      {id === "pigeon" && <path d="M86 102 Q98 98 108 102 M90 109 Q100 106 110 109" style={ln("#6F8094", 3)} />}
+      {id === "hawk" && <path d="M110 112 l3 3 l3 -3 M122 114 l3 3 l3 -3" style={ln("#B58257", 2.4)} />}
+      <circle cx="140" cy="60" r="26" style={f(p.body)} />
+      <HeadMark id={id} hx={140} hy={60} r={26} />
+      <path d="M122 46 Q134 36 150 40" style={ln("#fff", 3.4, 0.3)} />
+      <Eye x={147} y={58} r={8.5} ring={id === "magpie"} />
+      <Blush x={151} y={74} />
+      <Beak id={id} x={164} y={62} s={1} />
     </>
   );
 }
 
-const ART: Record<string, () => JSX.Element> = { magpie: Magpie, pigeon: Pigeon, hawk: Hawk };
-export const CUTE_BIRDS = Object.keys(ART);
+/* ───── B 머리 큰 이모티콘 ───── */
+function B({ id }: { id: string }) {
+  const p = PAL[id];
+  const long = id === "magpie";
+  return (
+    <>
+      <path d={long ? "M66 112 Q30 122 6 142 Q34 140 72 122 Z" : "M66 112 Q42 122 26 138 Q48 136 72 122 Z"} style={f(p.tail)} />
+      <path d="M92 128 v18 M86 147 h12 M106 128 v18 M100 147 h12" style={ln(p.feet, 4)} />
+      <ellipse cx="96" cy="112" rx="34" ry="21" style={f(p.body)} />
+      <path d="M80 124 Q100 136 122 120 Q118 106 104 108 Q88 112 80 124 Z" fill={p.belly} />
+      <path d="M68 108 Q84 96 104 104 Q94 122 72 118 Z" style={f(p.wing)} />
+      {id === "magpie" && <path d="M78 110 Q88 106 98 110" style={ln("#FBF3E4", 4)} />}
+      {id === "pigeon" && <path d="M78 110 Q88 107 97 110" style={ln("#6F8094", 2.8)} />}
+      <circle cx="126" cy="64" r="36" style={f(p.body)} />
+      {id === "pigeon" && <path d="M100 86 Q126 104 152 86 Q150 100 126 104 Q104 100 100 86 Z" fill="#3EA890" />}
+      {id === "magpie" && <path d="M108 92 Q128 104 152 88 Q146 100 128 102 Q112 100 108 92 Z" fill="#FBF3E4" />}
+      <HeadMark id={id} hx={126} hy={64} r={36} />
+      <path d="M102 44 Q118 30 140 34" style={ln("#fff", 4, 0.3)} />
+      <Eye x={138} y={60} r={11} ring={id === "magpie"} />
+      <Blush x={142} y={80} s={1.2} />
+      <Beak id={id} x={160} y={66} s={1.1} />
+    </>
+  );
+}
 
-export default function CuteBird({ id, size = 64, className }: { id: string; size?: number; className?: string }) {
-  const Art = ART[id] ?? Pigeon;
+/* ───── C 나는 모습 ───── */
+function C({ id }: { id: string }) {
+  const p = PAL[id];
+  const long = id === "magpie";
+  return (
+    <>
+      <path d="M96 86 Q90 40 118 22 Q124 56 112 88 Z" style={{ ...f(p.wing), opacity: 0.55 }} />
+      <path d={long ? "M58 96 L8 110 L12 122 L62 104 Z" : "M58 96 L22 106 L26 118 L62 104 Z"} style={f(p.tail)} />
+      <path d="M54 98 Q74 76 120 76 Q158 78 160 96 Q150 112 110 112 Q72 112 54 98 Z" style={f(p.body)} />
+      <path d="M92 110 Q130 116 154 100 Q146 94 128 96 Q104 100 92 110 Z" fill={p.belly} />
+      {id === "pigeon" && <path d="M136 80 Q150 86 158 82 Q160 94 146 96 Q136 92 136 80 Z" fill="#3EA890" />}
+      {id === "hawk" && <path d="M110 104 l3 3 l3 -3 M122 106 l3 3 l3 -3" style={ln("#B58257", 2.4)} />}
+      <path d="M84 90 Q66 40 92 12 Q112 50 108 90 Z" style={f(p.wing)} />
+      {id === "magpie" && <path d="M86 70 Q90 50 96 38" style={ln("#FBF3E4", 5)} />}
+      {id === "pigeon" && <path d="M86 62 Q92 56 98 60 M88 74 Q94 68 102 72" style={ln("#6F8094", 3)} />}
+      {id === "hawk" && <path d="M84 50 l6 2 M86 62 l7 2 M88 74 l7 2" style={ln("#E0A83C", 2.4, 0.8)} />}
+      <circle cx="152" cy="72" r="22" style={f(p.body)} />
+      <HeadMark id={id} hx={152} hy={72} r={22} />
+      <path d="M138 58 Q148 50 162 54" style={ln("#fff", 3, 0.3)} />
+      <Eye x={158} y={70} r={7.5} ring={id === "magpie"} />
+      <Blush x={162} y={84} s={0.9} />
+      <Beak id={id} x={172} y={74} s={0.9} />
+    </>
+  );
+}
+
+const V: Record<string, (p: { id: string }) => JSX.Element> = { A, B, C };
+export const CUTE_BIRDS = Object.keys(PAL);
+
+export default function CuteBird({ id, variant = "A", size = 64, className }: { id: string; variant?: "A" | "B" | "C"; size?: number; className?: string }) {
+  const Art = V[variant] ?? A;
   return (
     <svg viewBox="0 0 200 160" width={size} height={(size * 160) / 200} className={className} aria-hidden>
-      <Art />
+      <Art id={PAL[id] ? id : "pigeon"} />
     </svg>
   );
 }
