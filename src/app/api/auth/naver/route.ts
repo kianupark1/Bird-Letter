@@ -59,6 +59,7 @@ export async function POST(req: Request) {
   };
 
   let nick = "", thumb = "";
+  let thumbP: Promise<string> = Promise.resolve("");
   const deps: KakaoDeps = {
     async kakaoUserId(code) {
       const t = await fetch(`https://nid.naver.com/oauth2.0/token?${new URLSearchParams({ grant_type: "authorization_code", client_id: clientId, client_secret: secret, code, state })}`);
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
       // 네이버 별명(없으면 이름): 앱 이름으로 그대로 쓰도록 폰에 돌려줘요. 서버에는 저장하지 않아요
       const n = r.nickname || r.name;
       if (typeof n === "string") nick = n.trim().slice(0, 12);
-      if (typeof r.profile_image === "string") thumb = r.profile_image;
+      if (typeof r.profile_image === "string") { thumb = r.profile_image; thumbP = fetchThumb(thumb); }
       if (typeof r.id !== "string") throw new Error("naver-id");
       return r.id;
     },
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
   try {
     const res = await loginWithSocial("naver", input, deps);
     if (!res.ok) return NextResponse.json({ error: res.error }, { status: res.status });
-    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: nick || undefined, photo: (await fetchThumb(thumb)) || undefined });
+    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: nick || undefined, photo: (await thumbP) || undefined });
   } catch {
     return NextResponse.json({ error: "server-error" }, { status: 502 });
   }

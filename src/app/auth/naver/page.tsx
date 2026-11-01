@@ -14,7 +14,7 @@ export default function NaverReturn() {
       const r = await finishNaverLogin(location.search);
       if (off) return;
       const next = naverNext();
-      if (r.ok) { setMsg(r.switched ? "이전에 가입한 계정으로 들어왔어요." : "가입이 끝났어요!"); setTimeout(() => router.replace(next), 900); }
+      if (r.ok) { setMsg(r.switched ? "이전에 가입한 계정으로 들어왔어요." : "가입이 끝났어요!"); router.replace(next); /* 기다리지 않고 바로(2026-11-01 대표님: "이 화면이 너무 오래 걸림") */ }
       else { setMsg(r.message); setTimeout(() => router.replace(next), 2500); }
     })();
     return () => { off = true; };

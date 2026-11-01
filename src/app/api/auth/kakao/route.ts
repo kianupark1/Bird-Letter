@@ -60,6 +60,8 @@ export async function POST(req: Request) {
 
   let kakaoNick = "";
   let kakaoThumb = "";
+  // 사진은 카카오 정보를 받자마자 따로 받기 시작해요(계정 확인과 같이 진행 → 기다리는 시간 줄임)
+  let thumbP: Promise<string> = Promise.resolve("");
   const deps: KakaoDeps = {
     async kakaoUserId(code) {
       const form = new URLSearchParams({ grant_type: "authorization_code", client_id: restKey, redirect_uri: `${base}/auth/kakao`, code });
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
       // 카카오 프로필 사진(동의항목 "프로필 사진"): 기본 그림이 아닐 때만 작은 사진 주소를 받아 둬요
       const pr = j?.kakao_account?.profile;
       const th = pr?.thumbnail_image_url ?? j?.properties?.thumbnail_image;
-      if (typeof th === "string" && pr?.is_default_image !== true) kakaoThumb = th;
+      if (typeof th === "string" && pr?.is_default_image !== true) { kakaoThumb = th; thumbP = fetchThumb(kakaoThumb); }
       return String(j.id);
     },
     async verifyIdToken(idToken) {
@@ -108,7 +110,7 @@ export async function POST(req: Request) {
   try {
     const res = await loginWithKakao(input, deps);
     if (!res.ok) return NextResponse.json({ error: res.error }, { status: res.status });
-    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: kakaoNick || undefined, photo: (await fetchThumb(kakaoThumb)) || undefined });
+    return NextResponse.json({ customToken: res.customToken, switched: res.switched, nickname: kakaoNick || undefined, photo: (await thumbP) || undefined });
   } catch {
     return NextResponse.json({ error: "server-error" }, { status: 502 });
   }
