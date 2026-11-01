@@ -51,6 +51,23 @@ const OPENED_KEY = "saepyeonji.opened.v1";
 export function readOpened(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(OPENED_KEY) ?? "[]") as string[]); } catch { return new Set(); }
 }
+/** 대화방에 들어가서 "본" 받은 편지 ID들(카카오톡처럼 방에 들어가면 목록의 안 읽은 수가 꺼져요).
+ *  두루마리를 펼친 것(opened·서버 "읽음")과는 따로예요: 말풍선은 그대로 "눌러서 열기" */
+const SEEN_KEY = "saepyeonji.seen.v1";
+export function readSeen(): Set<string> {
+  try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) ?? "[]") as string[]); } catch { return new Set(); }
+}
+export function markSeen(ids: string[]) {
+  if (!ids.length) return;
+  try {
+    const s = readSeen();
+    const before = s.size;
+    for (const id of ids) s.add(id);
+    if (s.size !== before) localStorage.setItem(SEEN_KEY, JSON.stringify([...s].slice(-1000)));
+  } catch {}
+}
+/** 채팅 목록의 안 읽은 수에 쓰는 "확인한 편지": 펼친 편지 + 대화방에서 본 편지 */
+export const readChecked = () => new Set([...readOpened(), ...readSeen()]);
 const readSent = new Set<string>();
 /** 서버에 "읽음"을 남겨요(보낸 사람 화면에 보여요). 실패해도 다음에 다시 해요 */
 function sendRead(id: string) {

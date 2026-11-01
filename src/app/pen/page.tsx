@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { readOpened, useLetters, useNow } from "@/lib/letters";
+import { readChecked, useLetters, useNow } from "@/lib/letters";
 import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends";
 import { firebaseEnabled } from "@/lib/firebase/client";
 import { saveMyPenpal } from "@/lib/firebase/penpal";
@@ -38,7 +38,7 @@ function PenList() {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [opened, setOpened] = useState<Set<string>>(new Set());
   useBeforePaint(() => {
-    setOpened(readOpened());
+    setOpened(readChecked());
     if (firebaseEnabled) { const c = cachedFriends(); if (c.length) setFriends(c); }
   }, []);
   useEffect(() => { listFriends().then(setFriends).catch(() => {}); }, []);

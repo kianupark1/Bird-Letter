@@ -5,7 +5,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
-import { letterProgress, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
+import { letterProgress, markSeen, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
 import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
@@ -104,6 +104,11 @@ function Room() {
     return () => { off = true; };
   }, [theirUid]);
   const items = useMemo(() => (thread ? buildChat(thread.entries, now) : []), [thread, now, name]);
+  // 방에 들어와서 본 도착한 편지는 목록의 안 읽은 수를 꺼요(카카오톡처럼, 2026-11-01 대표님: "확인해도 계속 떠")
+  useEffect(() => {
+    if (!thread) return;
+    markSeen(thread.entries.filter((e) => e.dir === "received" && letterProgress(asLike(e), now).done).map((e) => e.item.id));
+  }, [thread, now]);
 
   // 새 소식이 쌓이면 맨 아래로 내려가요
   const last = items[items.length - 1]?.key;
