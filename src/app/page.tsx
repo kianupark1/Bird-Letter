@@ -26,6 +26,7 @@ import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
 import NameStep, { needsName, shouldAskName } from "@/components/NameStep";
+import { loadProfileRemote, saveProfileRemote } from "@/lib/profileSync";
 import { BIRDS, getBird } from "../../core/birds";
 import { useProfile } from "@/lib/settings";
 import { roomHref } from "@/lib/room";
@@ -51,7 +52,27 @@ function Inbox() {
   // 처음 로그인한 사람: 카카오·구글·애플이 알려 준 이름이 있으면 묻지 않고 그 이름 + 무작위 "내 새"로 바로 시작해요
   // (2026-10-24 대표님: "카카오톡처럼 처음에 쓰기 편하게" → 이름 화면 한 장을 없앰, 설정에서 언제든 바꿈)
   const ask = profileReady && !named && firebaseEnabled && shouldAskName(profile);
-  const known = ask ? knownName(profile.nickname) : "";
+  // 다른 폰·스토어 앱에서 이미 정한 프로필이 내 계정에 있으면 그대로 가져와요 → 이름 화면은 계정마다 딱 한 번
+  // (2026-11-01 대표님: "한번 설정하면 끝나야 하고, 바꾸고 싶으면 설정에서")
+  const [remote, setRemote] = useState<"idle" | "checking" | "done">("idle");
+  useEffect(() => {
+    if (!ask || remote !== "idle") return;
+    setRemote("checking");
+    void loadProfileRemote().then((p) => {
+      if (p) {
+        update((prev) => ({ ...p, fontScale: prev.fontScale, notify: { ...prev.notify, ...(p.notify ?? {}) }, avatarBird: p.avatarBird || prev.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id }));
+        setNamed(true);
+      }
+      setRemote("done");
+    });
+  }, [ask, remote]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 예전부터 이 폰에 이름이 있던 사람은 한 번 계정에도 올려 둬요(다음에 스토어 앱·새 폰에서 다시 안 물어보게)
+  useEffect(() => {
+    if (!profileReady || !firebaseEnabled || !profile.nickname.trim()) return;
+    try { if (localStorage.getItem("saepyeonji.profilesync.v1")) return; localStorage.setItem("saepyeonji.profilesync.v1", "1"); } catch { return; }
+    saveProfileRemote(profile);
+  }, [profileReady, profile.nickname]); // eslint-disable-line react-hooks/exhaustive-deps
+  const known = ask && remote === "done" ? knownName(profile.nickname) : "";
   useEffect(() => {
     if (!known) return;
     const bird = profile.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id;
@@ -59,7 +80,7 @@ function Inbox() {
     setWelcome(`${known}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`);
     setNamed(true);
   }, [known]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (ask && !known) return <NameStep onDone={() => setNamed(true)} />;
+  if (ask && remote === "done" && !known) return <NameStep onDone={() => setNamed(true)} />;
   if (ask) return <main className="app" aria-busy="true" />;
   return <InboxList welcome={welcome} />;
 }
