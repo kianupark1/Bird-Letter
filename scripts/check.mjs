@@ -17,7 +17,6 @@ const PAGES = [
   ["/stamps", null], // 로그인·편지 목록을 읽는 화면: 응답만 확인
   ["/settings", null], // 브라우저 저장소를 읽는 화면: 응답만 확인
   ["/welcome", "소식은 날아서 와요"],
-  ["/bungbungi", "붕붕이"],
   ["/privacy", "개인정보 처리방침"],
   ["/terms", "이용약관"],
   ["/policy", "운영정책"],
