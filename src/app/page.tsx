@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getRoute } from "@/lib/routes";
-import { letterProgress, readOpened, syncReadMarks, useLetters, useNow, type Letter } from "@/lib/letters";
+import { letterProgress, readChecked, syncReadMarks, useLetters, useNow, type Letter } from "@/lib/letters";
 import { isScheduled } from "../../core/schedule";
 import { buildThreads, isPenpalThread, isUnnamed, visibleThreads, type Thread } from "../../core/threads";
 import SwipeRow from "@/components/SwipeRow";
@@ -126,7 +126,7 @@ function InboxList({ welcome }: { welcome?: string }) {
 
   // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
   useBeforePaint(() => {
-    setOpened(readOpened());
+    setOpened(readChecked());
     if (firebaseEnabled) { const c = cachedFriends(); if (c.length) setFriends(c); }
   }, []);
   useEffect(() => {

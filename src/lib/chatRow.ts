@@ -26,7 +26,8 @@ export function rowInfo(t: Thread<Letter, Meta>, now: number, opened: Set<string
   for (const e of t.entries) {
     if (e.dir === "received") {
       const done = letterProgress(recvLike(e.item), now).done;
-      if (done && !opened.has(e.item.id)) { unread++; newAt = Math.max(newAt, e.item.arriveAt); }
+      // 다른 폰·Safari에서 이미 열어 본 편지(서버 "읽음")도 안 읽은 수에서 빼요(스토어 앱은 Safari와 저장 공간이 따로라서)
+      if (done && !opened.has(e.item.id) && !e.item.readAt) { unread++; newAt = Math.max(newAt, e.item.arriveAt); }
       if (!done && !isScheduled(e.item.sentAt, now) && !flyingRecv) flyingRecv = e.item;
     } else if (isScheduled(e.item.sentAt, now)) {
       if (!scheduled) scheduled = e.item;
