@@ -16,7 +16,7 @@ export default function KakaoReturn() {
       if (r.ok) {
         setMsg(r.switched ? "이전에 연결한 계정으로 들어왔어요." : "카카오 연결이 끝났어요.");
         const next = kakaoNext();
-        setTimeout(() => router.replace(next), 900);
+        router.replace(next); // 기다리지 않고 바로(2026-11-01 대표님: "이 화면이 너무 오래 걸림")
       } else {
         setMsg(r.message);
         const next = kakaoNext();
