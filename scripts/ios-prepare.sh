@@ -46,7 +46,8 @@ fi
 
 npx cap sync ios
 BUILD="${VERSION_CODE:-1}"
-VERSION_NAME="$(node -p "require('./package.json').version")"
+# 앱스토어 버전 칸(1.0)과 같게: 1.0.0 → 1.0 (끝의 .0 한 번만 뗌)
+VERSION_NAME="$(node -p "require('./package.json').version.replace(/\\.0$/, '')")"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" "$INFO" 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION_NAME" "$INFO" 2>/dev/null || true
 grep -c CODE_SIGN_ENTITLEMENTS ios/App/App.xcodeproj/project.pbxproj || true
