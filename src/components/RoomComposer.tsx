@@ -9,7 +9,6 @@ import { useProfile } from "@/lib/settings";
 import { MAX_LETTER_CHARS, MAX_PENPAL_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
 import { getPlace, PLACES } from "../../core/places";
-import PushPrompt from "@/components/PushPrompt";
 import { locate as findDistrict } from "../../core/districts";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../core/schedule";
 import type { Letter } from "@/lib/letters";
@@ -283,7 +282,6 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <button type="button" className="chip" onClick={() => { setMessage(""); onResendDone?.(); }}>그만두기</button></div>
       )}
       {info && <div className="ch-info" role="alert">{info}</div>}
-      {justSent && !penpal && <PushPrompt birdId={birdId} />}
       {sent && !info && <div className="ch-sent" role="status">{sent}</div>}
       {/* 새 고르기: 큰 새 그림을 옆으로 넘기며 바로 고를 수 있어요(누르면 바로 바뀜) */}
       <div className="ch-birds" role="radiogroup" aria-label="어떤 새로 보낼까요?">

@@ -21,7 +21,6 @@ import { claim as claimLetter, type Meta } from "@/lib/firebase/remote";
 import BirdIcon from "@/components/BirdIcon";
 import GearLink from "@/components/GearLink";
 import { todayLine } from "../../core/waiting";
-import PushPrompt from "@/components/PushPrompt";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
@@ -320,8 +319,7 @@ function InboxList({ welcome }: { welcome?: string }) {
         </>
       )}
 
-      {flyingAny && <PushPrompt birdId={flyingAny.birdId} />}
-      {(letters.length > 0 || received.length > 0) && <InstallCard hideWhenPushPrompt={Boolean(flyingAny)} />}
+      {(letters.length > 0 || received.length > 0) && <InstallCard />}
 
       {threads.length > 0 && (
         <button type="button" className="kfab" aria-label="편지 쓰기" onClick={() => setWriting(true)}>✉ 편지 쓰기</button>

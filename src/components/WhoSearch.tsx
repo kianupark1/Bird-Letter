@@ -10,7 +10,8 @@ import { readProfile } from "@/lib/settings";
 import { STORE } from "@/lib/release";
 import { roomHref } from "@/lib/room";
 import { IS_TOSS } from "@/lib/target";
-import { contactPickerSupported, pickContact } from "@/lib/contactInvite";
+import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvite";
+import { inviteLink, inviteText } from "@/lib/inviteMsg";
 import { keepTel } from "@/lib/pendingTel";
 import { isPenpalThread, nameKey, type Thread } from "../../core/threads";
 import { suggestNames } from "../../core/nameSearch";
@@ -62,28 +63,35 @@ export default function WhoSearch<S, R>({ people, friends, onClose }: { people: 
     if (which === "name") setFName(v); else setFTel(v);
     if (quick && n.trim() && t.replace(/\D/g, "").length >= 9) pickFilled(n, t);
   };
+  /** 연락처에서 한 명 → 그 사람에게 앱 받는 초대 링크를 문자로(2026-11-02 대표님: 바로 편지 쓰기가 아니라 앱 링크) */
+  const myCode = async () => {
+    if (!firebaseEnabled) { setMsg("서버에 연결된 뒤에 쓸 수 있어요."); return ""; }
+    const p = readProfile();
+    const code = await ensureMyCode(p.nickname, p.avatarBird, p.photo).catch(() => "");
+    if (!code) setMsg("서버에 연결하지 못했어요. 잠시 후 다시 해 주세요.");
+    return code;
+  };
   const fromContacts = async () => {
     if (!canPick) {
-      // 키보드가 바로 뜨도록 누른 순간에 칸을 그리고 바로 눌러 둬요(아이폰은 누른 순간에만 키보드를 열어 줘요)
-      flushSync(() => { setFill(true); setMsg(""); });
-      fillRef.current?.focus();
+      // 아이폰 웹은 연락처를 직접 못 열어요 → 문자 앱의 받는 사람 칸에서 이름으로 찾게 해요
+      const code = await myCode(); if (!code) return;
+      location.href = smsHref("", `${inviteText(readProfile().nickname)}\n${inviteLink(code)}`);
       return;
     }
     const c = await pickContact();
-    if (c?.name) { keepTel(c.name, c.tel); go(list.find((t) => nameKey(t.name) === nameKey(c.name)) ?? { name: c.name }); }
-    else if (c === null) setMsg("전화번호가 있는 연락처를 골라 주세요.");
+    if (!c) { if (c === null) setMsg("전화번호가 있는 연락처를 골라 주세요."); return; }
+    const code = await myCode(); if (!code) return;
+    setMsg(`${c.name || "친구"}님께 보낼 문자를 열어요.`);
+    location.href = smsHref(c.tel, `${inviteText(readProfile().nickname)}\n${inviteLink(code)}`);
   };
   const fromKakao = async () => {
-    if (!firebaseEnabled) { setMsg("서버에 연결된 뒤에 쓸 수 있어요."); return; }
+    const code = await myCode(); if (!code) return;
     const p = readProfile();
-    const code = await ensureMyCode(p.nickname, p.avatarBird, p.photo).catch(() => "");
-    if (!code) { setMsg("서버에 연결하지 못했어요. 잠시 후 다시 해 주세요."); return; }
     if (KAKAO_SHARE_READY && (await shareInviteToKakao(code, p.nickname))) return;
     // 카카오 설정 전이면 폰 공유창(카카오톡도 거기에 있어요)
-    const url = `${location.origin}/invite?c=${code}`;
-    const text = `${p.nickname || "친구"}님이 새편지 친구로 초대했어요!${STORE.android || STORE.iosUrl ? " 링크를 누르면 친구가 되고 앱도 받을 수 있어요." : ""}`;
+    const url = inviteLink(code), text = inviteText(p.nickname);
     try {
-      if (navigator.share) await navigator.share({ title: "새편지 친구 초대", text, url });
+      if (navigator.share) await navigator.share({ title: "새편지 초대", text, url });
       else { await navigator.clipboard.writeText(`${text}\n${url}`); setMsg("초대 링크를 복사했어요. 카카오톡에 붙여넣어 보내 주세요."); }
     } catch {}
   };
@@ -100,11 +108,11 @@ export default function WhoSearch<S, R>({ people, friends, onClose }: { people: 
         <div className="whofind">
           <button type="button" className="krow whoopt" onClick={fromContacts}>
             <span className="whoico" aria-hidden>📇</span>
-            <span className="kmid"><b className="kname">연락처에서 찾기</b><span className="kprev">폰 연락처에서 골라 바로 편지를 써요</span></span>
+            <span className="kmid"><b className="kname">연락처에서 초대하기</b><span className="kprev">골라서 새편지 앱 받는 링크를 문자로 보내요</span></span>
           </button>
           <button type="button" className="krow whoopt" onClick={fromKakao}>
             <span className="whoico kakao" aria-hidden>💬</span>
-            <span className="kmid"><b className="kname">카카오톡에서 찾기</b><span className="kprev">카카오톡 친구를 골라 초대해요</span></span>
+            <span className="kmid"><b className="kname">카카오톡으로 초대하기</b><span className="kprev">카카오톡 친구에게 앱 받는 링크를 보내요</span></span>
           </button>
         </div>
       )}
