@@ -1,0 +1,1 @@
+14566	0	UIKitApplication:com.saepyeonji.app[a840][rb-legacy]
