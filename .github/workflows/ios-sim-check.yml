@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [full, nopatch, nomsg, push, theme, scene]
+        variant: [push, plist]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,7 +30,7 @@ jobs:
       - name: 아이폰 프로젝트 준비
         env:
           SKIP_PATCH: ${{ matrix.variant == 'nopatch' && '1' || '0' }}
-          PATCH_PARTS: ${{ matrix.variant == 'push' && 'push' || matrix.variant == 'theme' && 'push,theme' || matrix.variant == 'scene' && 'push,theme,scene' || '' }}
+          ADD_PLIST: ${{ matrix.variant == 'plist' && '1' || '0' }}
         run: bash scripts/ios-prepare.sh
       - name: 시뮬레이터용 빌드
         run: |

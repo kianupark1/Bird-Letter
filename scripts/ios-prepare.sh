@@ -15,6 +15,14 @@ npx --yes @capacitor/assets@3.0.5 generate --ios \
 INFO=ios/App/App/Info.plist
 if [ "$NATIVE_AUTH" = 1 ]; then
   cp "$PL" ios/App/App/GoogleService-Info.plist
+  # 폴더에 복사만 하면 앱 파일에 안 들어가요 → Xcode 프로젝트 묶음에도 넣어요(그래야 Firebase 앱 알림·폰 기본 로그인이 켜짐)
+  # (시험 중) ADD_PLIST=1 일 때만: 시뮬레이터에서 확인한 뒤 기본으로 켤 것
+  if [ "${ADD_PLIST:-0}" = 1 ]; then
+    node scripts/ios-add-plist.mjs ios/App/App.xcodeproj/project.pbxproj
+    # 앱이 꺼져 있을 때 온 알림도 받게
+    /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" "$INFO" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string remote-notification" "$INFO" 2>/dev/null || true
+  fi
   # 구글 로그인 창이 앱으로 돌아오는 주소(REVERSED_CLIENT_ID). 파일에 없으면(구글 아이폰 로그인 설정 전) 건너뛰어요: 애플·카카오 로그인은 그대로 돼요
   REV=$(/usr/libexec/PlistBuddy -c "Print :REVERSED_CLIENT_ID" "$PL" 2>/dev/null || true)
   if [ -n "$REV" ]; then

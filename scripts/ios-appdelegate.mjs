@@ -9,7 +9,8 @@ import { dirname, join } from "node:path";
 
 const file = process.argv[2];
 // 시험용 스위치: PATCH_PARTS="push,theme,scene,opaque" 중 일부만(기본 전부)
-const PARTS = (process.env.PATCH_PARTS || "push,theme,scene,opaque").split(",");
+// 2026-11-02: 화면 색칠(theme)은 시뮬레이터에서 앱을 멈추게(검은 화면·꺼짐) 해서 기본은 알림(push)만
+const PARTS = (process.env.PATCH_PARTS || "push").split(",");
 let s = readFileSync(file, "utf8");
 if (s.includes("SaepyeonjiTheme")) { console.log("AppDelegate 이미 손질됨"); process.exit(0); }
 
