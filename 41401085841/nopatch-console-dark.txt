@@ -1,0 +1,10 @@
+2026-11-02 06:41:56.225 App[12896:49029] DiskCookieStorage changing policy from 2 to 0, cookie file: file:///Users/runner/Library/Developer/CoreSimulator/Devices/F5C4661C-7B05-4238-BF71-BF2845D2630A/data/Containers/Data/Application/8F4B5342-1344-4171-8C90-21334FEABFFB/Library/Cookies/com.saepyeonji.app.binarycookies
+[FirebaseMessaging] Firebase was not configured: GoogleService-Info.plist is missing from the app bundle.
+[FirebaseAuthentication] Firebase was not configured: GoogleService-Info.plist is missing from the app bundle.
+⚡️  Loading app at https://bird-letter.vercel.app...
+⚡️  WebView loaded
+⚡️  To Native ->  FirebaseMessaging checkPermissions 89258023
+⚡️  To Native ->  FirebaseMessaging addListener 89258024
+⚡️  To Native ->  FirebaseMessaging addListener 89258025
+⚡️  To Native ->  App addListener 89258026
+⚡️  TO JS {"receive":"prompt"}
