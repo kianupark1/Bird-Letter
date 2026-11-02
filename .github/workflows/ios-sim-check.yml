@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [plist, noproxy]
+        variant: [default]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,8 +30,8 @@ jobs:
       - name: 아이폰 프로젝트 준비
         env:
           SKIP_PATCH: ${{ matrix.variant == 'nopatch' && '1' || '0' }}
-          ADD_PLIST: ${{ (matrix.variant == 'plist' || matrix.variant == 'noproxy') && '1' || '0' }}
-          NO_PROXY_SWIZZLE: ${{ matrix.variant == 'noproxy' && '1' || '0' }}
+          ADD_PLIST: ${{ matrix.variant == 'push' && '0' || '1' }}
+          CAP_LOG: '1'
         run: bash scripts/ios-prepare.sh
       - name: 시뮬레이터용 빌드
         run: |
@@ -47,6 +47,8 @@ jobs:
           APP=$(find build/Build/Products -name "App.app" -maxdepth 3 | head -1)
           xcrun simctl install "$DEV" "$APP"
           (xcrun simctl launch --console-pty "$DEV" com.saepyeonji.app > shots/${{ matrix.variant }}-console.txt 2>&1 &)
+          sleep 12; xcrun simctl io "$DEV" screenshot shots/${{ matrix.variant }}-light-12s.png
+          sleep 20; xcrun simctl io "$DEV" screenshot shots/${{ matrix.variant }}-light-32s.png
           sleep 30
           xcrun simctl io "$DEV" screenshot shots/${{ matrix.variant }}-light.png
           xcrun simctl spawn "$DEV" launchctl list | grep -i saepyeonji > shots/${{ matrix.variant }}-alive.txt || echo "NOT RUNNING" > shots/${{ matrix.variant }}-alive.txt
