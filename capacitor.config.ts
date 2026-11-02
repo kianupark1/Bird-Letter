@@ -34,6 +34,8 @@ const config: CapacitorConfig = {
   // 웹이 "스토어 앱 안"인지 알 수 있게 브라우저 이름표 끝에 붙여요. FCM 설정이 들어간 빌드만 "/fcm"(src/lib/push.ts isAppPush)
   appendUserAgent: process.env.FCM_READY === "1" ? "SaePyeonjiApp/fcm" : "SaePyeonjiApp",
   // 위·아래 여백 색은 AppDelegate가 화면 모드(밝음·어두움)에 맞춰 다시 칠해요(scripts/ios-appdelegate.mjs)
+  // 시뮬레이터 점검(CAP_LOG=1)일 때만 웹 화면의 console 기록을 앱 기록으로 넘겨요
+  ...(process.env.CAP_LOG === "1" ? { loggingBehavior: "production" as const } : {}),
   ios: { contentInset: "always", backgroundColor: "#FBF3E4" },
   android: { backgroundColor: "#FBF3E4" },
 };
