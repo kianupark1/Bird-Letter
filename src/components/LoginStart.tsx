@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PhoneLogin from "@/components/PhoneLogin";
 import { PHONE_LOGIN_READY } from "@/lib/firebase/phone";
-import BirdIcon from "@/components/BirdIcon";
+import { CuteArt } from "@/components/CuteBird";
 import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { KAKAO_LOGIN_READY, startKakaoLogin } from "@/lib/firebase/kakao";
 import { NAVER_LOGIN_READY, startNaverLogin } from "@/lib/firebase/naver";
@@ -68,7 +68,10 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
     <main className="start">
       <div className="start-hero">
         <div className="bubble">짹짹! 반가워요 🌤</div>
-        {bird ? <BirdIcon id={bird} size={200} letter className="bob" /> : <div style={birdSlot(200)} />}
+        {/* 첫 화면 새는 편지를 물고 날갯짓하는 모습(2026-11-02 대표님: "새가 날아가는 그림으로") */}
+        {bird ? (
+          <svg viewBox="0 0 200 160" width={200} height={160} className="bob" aria-hidden><CuteArt id={bird} variant="C" letter flap /></svg>
+        ) : <div style={birdSlot(200)} />}
         <h1>새 편지</h1>
         <div className="saekdong" aria-hidden />
         {inviter ? (
