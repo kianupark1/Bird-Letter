@@ -1,0 +1,2 @@
++ for f in '"$HOME"/Library/Logs/DiagnosticReports/App*.ips'
++ '[' -f '/Users/runner/Library/Logs/DiagnosticReports/App*.ips' ']'
