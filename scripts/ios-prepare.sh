@@ -5,7 +5,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 PL=native/GoogleService-Info.plist
-if [ -f "$PL" ]; then export NATIVE_AUTH=1; else export NATIVE_AUTH=0; echo "::warning::$PL 가 없어 폰 기본 로그인 없이 만들어요(앱 안 애플·구글 로그인은 안 돼요)"; fi
+# 같은 파일이 있으면 앱 알림(Firebase Messaging)도 켜요 → 앱이 이름표에 "SaePyeonjiApp/fcm"을 붙여 웹이 앱 알림을 써요(src/lib/push.ts isAppPush)
+if [ -f "$PL" ]; then export NATIVE_AUTH=1 FCM_READY=1; else export NATIVE_AUTH=0 FCM_READY=0; echo "::warning::$PL 가 없어 폰 기본 로그인·앱 알림 없이 만들어요"; fi
 
 npx cap add ios
 npx --yes @capacitor/assets@3.0.5 generate --ios \
@@ -45,10 +46,12 @@ fi
 /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$INFO" 2>/dev/null || true
 
 npx cap sync ios
+# 앱 알림(APNs 번호 → FCM 토큰)과 어두운 화면 위·아래 여백 색
+node scripts/ios-appdelegate.mjs ios/App/App/AppDelegate.swift
 BUILD="${VERSION_CODE:-1}"
 # 앱스토어 버전 칸(1.0)과 같게: 1.0.0 → 1.0 (끝의 .0 한 번만 뗌)
 VERSION_NAME="$(node -p "require('./package.json').version.replace(/\\.0$/, '')")"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" "$INFO" 2>/dev/null || true
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION_NAME" "$INFO" 2>/dev/null || true
 grep -c CODE_SIGN_ENTITLEMENTS ios/App/App.xcodeproj/project.pbxproj || true
-grep -n '"FirebaseAuthentication"\|includePlugins' ios/App/App/capacitor.config.json || true
+grep -n '"FirebaseAuthentication"\|"FirebaseMessaging"\|includePlugins\|appendUserAgent' ios/App/App/capacitor.config.json || true

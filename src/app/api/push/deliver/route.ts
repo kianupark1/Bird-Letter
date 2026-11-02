@@ -31,6 +31,8 @@ async function sendFcm(token: string, p: PushPayload): Promise<"ok" | "gone" | "
         notification: { title: p.title, body: p.body },
         data: { url: p.url, tag: p.tag },
         android: { priority: "HIGH", ttl: "86400s", notification: { tag: p.tag, icon: "ic_stat_notify", color: "#C1481F" } },
+        // 아이폰(APNs): 소리와 같은 편지끼리 묶기
+        apns: { payload: { aps: { sound: "default", "thread-id": p.tag } } },
       },
     }),
   });
