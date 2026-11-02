@@ -19,9 +19,9 @@ mkdirSync(OUT, { recursive: true });
 const now = Date.now(), H = 3600_000;
 // 날아가는 편지 2통, 도착한 편지 2통. 도착 시각을 정해 두어 진행률이 화면마다 같아요.
 const letters = [
-  { id: "shotMom01", to: "엄마", routeId: "seoul-busan", birdId: "magpie", message: "엄마, 이번 주말에 내려갈게요. 된장찌개 해 주세요 🙂", sentAt: now - 22 * H, arriveAt: now + 33 * H },
-  { id: "shotGma02", to: "할머니", routeId: "seoul-jeju", birdId: "crane", message: "할머니, 귤 잘 받았어요. 보고 싶어요.", sentAt: now - 20 * H, arriveAt: now + 9 * H },
-  { id: "shotMinji3", to: "민지", routeId: "seoul-gangneung", birdId: "swallow", message: "바다 사진 고마워! 다음엔 같이 가자", sentAt: now - 30 * H, arriveAt: now - 4 * H },
+  { id: "shotMom01", to: "엄마", routeId: "seoul-busan", birdId: "magpie", message: "엄마, 이번 주말에 내려갈게요. 된장찌개 해 주세요 🙂", sentAt: now - 3 * H, arriveAt: now + 6.3 * H },
+  { id: "shotGma02", to: "할머니", routeId: "seoul-jeju", birdId: "pigeon", message: "할머니, 귤 잘 받았어요. 보고 싶어요.", sentAt: now - 3 * H, arriveAt: now + 4 * H },
+  { id: "shotMinji3", to: "민지", routeId: "seoul-gangneung", birdId: "hawk", message: "바다 사진 고마워! 다음엔 같이 가자", sentAt: now - 30 * H, arriveAt: now - 4 * H },
   { id: "shotJunho4", to: "준호", routeId: "seoul-daejeon", birdId: "pigeon", message: "생일 축하해! 늦지 않게 날려 보낸다", sentAt: now - 50 * H, arriveAt: now - 40 * H },
 ];
 const profile = { nickname: "하늘", avatarBird: "magpie", homePlace: "seoul", homeSet: true, fontScale: "normal", chirp: false, notify: { arrival: true, passing: false, reply: true } };
