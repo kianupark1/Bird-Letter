@@ -78,11 +78,12 @@ async function isStaleSub(): Promise<boolean> {
 const notify = () => { try { window.dispatchEvent(new Event(EVENT)); } catch {} };
 
 /* ---------- 스토어 앱(안드로이드·아이폰): Firebase Messaging FCM 토큰 ---------- */
-const plugin = () => import("@capacitor-firebase/messaging").then((m) => m.FirebaseMessaging);
+// 주의: Capacitor 플러그인은 Promise로 돌려주면 안 돼요(플러그인이 "then"을 가진 것처럼 보여서 네이티브 then()을 부르다 실패) → 상자 { P }에 담아 돌려줘요
+const plugin = () => import("@capacitor-firebase/messaging").then((m) => ({ P: m.FirebaseMessaging }));
 
 async function nativeState(): Promise<PushState> {
   try {
-    const p = await (await plugin()).checkPermissions();
+    const p = await (await plugin()).P.checkPermissions();
     if (p.receive === "denied") return "denied";
     return p.receive === "granted" && getStoredSub() ? "enabled" : "default";
   } catch { return "unsupported"; }
@@ -90,7 +91,7 @@ async function nativeState(): Promise<PushState> {
 
 async function nativeEnable(): Promise<PushState> {
   try {
-    const P = await plugin();
+    const { P } = await plugin();
     let perm = await P.checkPermissions();
     if (perm.receive !== "granted") perm = await P.requestPermissions();
     if (perm.receive !== "granted") return perm.receive === "denied" ? "denied" : "default";
@@ -117,7 +118,7 @@ const AUTO_KEY = "saepyeonji.autopush.v1";
 export async function autoEnableAppPush() {
   if (!isAppPush() || getStoredSub()) return;
   try {
-    const p = await (await plugin()).checkPermissions();
+    const p = await (await plugin()).P.checkPermissions();
     if (p.receive === "denied") return;
     if (p.receive !== "granted") {
       if (localStorage.getItem(AUTO_KEY)) return; // 한 번만 물어요
@@ -132,7 +133,7 @@ let tapReady = false;
 export function initAppPush() {
   if (tapReady || !isAppPush()) return;
   tapReady = true;
-  plugin().then((P) => {
+  plugin().then(({ P }) => {
     P.addListener("notificationActionPerformed", (a) => {
       const url = (a.notification?.data as { url?: unknown } | undefined)?.url;
       if (typeof url === "string" && url.startsWith("/")) window.location.href = url;
@@ -177,7 +178,7 @@ export async function enablePush(): Promise<PushState> {
 }
 
 export async function disablePush() {
-  if (isAppPush()) await plugin().then((P) => P.deleteToken()).catch(() => {});
+  if (isAppPush()) await plugin().then(({ P }) => P.deleteToken()).catch(() => {});
   else try {
     const reg = await navigator.serviceWorker.getRegistration("/sw.js");
     await (await reg?.pushManager.getSubscription())?.unsubscribe();

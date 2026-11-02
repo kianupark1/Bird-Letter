@@ -36,11 +36,18 @@ export function useSession() {
 
   const check = useCallback(() => {
     if (!firebaseEnabled || bypassed()) { setState("ready"); return () => {}; }
-    return onAuthStateChanged(auth(), (u) => {
-      const ok = !!u && !u.isAnonymous;
-      remember(ok);
-      setState(ok ? "ready" : "login");
-    });
+    // 로그인 확인이 5초 넘게 안 끝나면(앱 속 웹 화면 등) 빈 화면 대신 로그인 화면을 먼저 보여 줘요. 확인이 끝나면 맞게 바뀌어요
+    const late = setTimeout(() => setState((s) => (s === "checking" ? "login" : s)), 5000);
+    let off = () => {};
+    try {
+      off = onAuthStateChanged(auth(), (u) => {
+        clearTimeout(late);
+        const ok = !!u && !u.isAnonymous;
+        remember(ok);
+        setState(ok ? "ready" : "login");
+      });
+    } catch { clearTimeout(late); setState("login"); }
+    return () => { clearTimeout(late); off(); };
   }, []);
 
   useEffect(() => check(), [check]);
