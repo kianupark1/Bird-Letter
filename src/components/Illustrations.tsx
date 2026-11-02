@@ -1,18 +1,11 @@
 /** 온보딩용 간단한 SVG 일러스트. 나중에 디자이너 에셋으로 교체 가능 */
+import { CuteArt } from "./CuteBird";
 
+/** 온보딩·소개 화면의 까치: 앱 아이콘과 같은 "편지를 문 나는 까치"(2026-11-01 귀여운 새 그림) */
 export function Magpie() {
   return (
-    <svg viewBox="0 0 200 160" role="img" aria-label="까치 일러스트" className="illust">
-      <path d="M40 92 L6 118 L46 108 Z" fill="#1E3A5C" />
-      <ellipse cx="96" cy="88" rx="52" ry="34" fill="#1E3A5C" />
-      <ellipse cx="104" cy="104" rx="30" ry="18" fill="#FBF3E4" />
-      <path d="M66 82 Q96 52 128 82 Q100 96 66 82 Z" fill="#1B6E5C" />
-      <circle cx="140" cy="62" r="22" fill="#1E3A5C" />
-      <circle cx="148" cy="58" r="3.5" fill="#FBF3E4" />
-      <circle cx="149" cy="58" r="1.5" fill="#2A2118" />
-      <path d="M160 62 L184 68 L160 74 Z" fill="#E0A83C" />
-      <path d="M86 120 L82 144 M106 120 L110 144" stroke="#E0A83C" strokeWidth="4" strokeLinecap="round" />
-      <path d="M20 40 q8 -10 16 0 M168 28 q8 -10 16 0" stroke="#E0A83C" strokeWidth="3" fill="none" strokeLinecap="round" />
+    <svg viewBox="0 0 200 160" role="img" aria-label="편지를 문 까치 일러스트" className="illust">
+      <CuteArt id="magpie" variant="C" letter flap />
     </svg>
   );
 }
