@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [push, plist]
+        variant: [plist, noproxy]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,7 +30,8 @@ jobs:
       - name: 아이폰 프로젝트 준비
         env:
           SKIP_PATCH: ${{ matrix.variant == 'nopatch' && '1' || '0' }}
-          ADD_PLIST: ${{ matrix.variant == 'plist' && '1' || '0' }}
+          ADD_PLIST: ${{ (matrix.variant == 'plist' || matrix.variant == 'noproxy') && '1' || '0' }}
+          NO_PROXY_SWIZZLE: ${{ matrix.variant == 'noproxy' && '1' || '0' }}
         run: bash scripts/ios-prepare.sh
       - name: 시뮬레이터용 빌드
         run: |
@@ -55,7 +56,8 @@ jobs:
           sleep 25
           xcrun simctl io "$DEV" screenshot shots/${{ matrix.variant }}-dark.png
           xcrun simctl spawn "$DEV" log show --last 3m --style compact --predicate 'process == "App"' > shots/${{ matrix.variant }}-log.txt 2>&1 || true
-          ls "$HOME/Library/Logs/DiagnosticReports" > shots/${{ matrix.variant }}-crashes.txt 2>&1 || true
+          for f in "$HOME"/Library/Logs/DiagnosticReports/App*.ips; do [ -f "$f" ] && { echo "=== $f"; head -c 60000 "$f"; } ; done > shots/${{ matrix.variant }}-crashes.txt 2>&1 || true
+          echo "===== crash ====="; head -c 6000 shots/${{ matrix.variant }}-crashes.txt
           echo "===== console ====="; head -c 20000 shots/${{ matrix.variant }}-console.txt
           echo "===== alive ====="; cat shots/${{ matrix.variant }}-alive.txt
           echo "===== log (errors) ====="; grep -iE "error|fault|crash|exception|capacitor|firebase|⚡" shots/${{ matrix.variant }}-log.txt | head -150

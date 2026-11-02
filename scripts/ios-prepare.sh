@@ -22,6 +22,8 @@ if [ "$NATIVE_AUTH" = 1 ]; then
     # 앱이 꺼져 있을 때 온 알림도 받게
     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes array" "$INFO" 2>/dev/null || true
     /usr/libexec/PlistBuddy -c "Add :UIBackgroundModes:0 string remote-notification" "$INFO" 2>/dev/null || true
+    # (시험) Firebase가 AppDelegate를 몰래 바꿔치기하지 않게(알림 번호는 우리 AppDelegate가 직접 넘김)
+    if [ "${NO_PROXY_SWIZZLE:-0}" = 1 ]; then /usr/libexec/PlistBuddy -c "Add :FirebaseAppDelegateProxyEnabled bool false" "$INFO" 2>/dev/null || true; fi
   fi
   # 구글 로그인 창이 앱으로 돌아오는 주소(REVERSED_CLIENT_ID). 파일에 없으면(구글 아이폰 로그인 설정 전) 건너뛰어요: 애플·카카오 로그인은 그대로 돼요
   REV=$(/usr/libexec/PlistBuddy -c "Print :REVERSED_CLIENT_ID" "$PL" 2>/dev/null || true)

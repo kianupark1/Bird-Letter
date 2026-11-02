@@ -1,4 +1,5 @@
 "use client";
+import { inviteLink, inviteText } from "@/lib/inviteMsg";
 import Link from "next/link";
 import { usePeople } from "@/lib/people";
 import { Suspense, useCallback, useEffect, useState } from "react";
@@ -71,9 +72,8 @@ function Friends() {
   const [zoom, setZoom] = useState<{ name: string; bird?: string | null; photo?: string } | null>(null);
   // 초대 코드는 뒤에서 만들어 두지만, 아직 안 됐으면 누르는 순간 만들어요
   const getCode = async () => code || (await ensureMyCode(profile.nickname, profile.avatarBird, profile.photo).then((c) => { setCode(c); return c; }));
-  const link = (c: string) => `${location.origin}/invite?c=${c}`;
-  // 스토어에 앱이 올라간 뒤에는 "앱 받기"도 같이 알려요(링크를 누르면 친구가 되고, 그 화면에 앱 받기 버튼이 있어요)
-  const text = `${profile.nickname || "친구"}님이 새편지 친구로 초대했어요!${STORE.android || STORE.iosUrl ? " 링크를 누르면 친구가 되고 앱도 받을 수 있어요." : ""}`;
+  const link = inviteLink;
+  const text = inviteText(profile.nickname);
   const inviteKakao = async () => {
     const c = await getCode().catch(() => "");
     if (!c) { setMsg("서버에 연결하지 못했어요. 잠시 후 다시 해 주세요."); return; }
