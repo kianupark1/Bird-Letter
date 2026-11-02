@@ -117,6 +117,8 @@ function InboxList({ welcome }: { welcome?: string }) {
   // "첫 편지를 보내 보세요"는 서버에서 정말 편지가 없다고 확인된 뒤에만(폰에 적어 둔 목록만 보고 띄우면 있던 편지가 잠깐 사라진 것처럼 보여요)
   const settled = ready && backend !== "checking";
   const welcomeLetter = received.find((m) => isWelcome(m.id));
+  // 스토어 앱: 처음 홈을 열 때 알림 허용을 한 번 물어서 바로 켜요(설정에 안 들어가도 되게, 카카오톡처럼)
+  useEffect(() => { if (ready && !isE2E()) void import("@/lib/push").then((m) => m.autoEnableAppPush()).catch(() => {}); }, [ready]);
   // 예전에 열어 본 편지도 보낸 사람 화면에 "읽음"이 보이게 서버에 남겨요
   useEffect(() => { if (ready) syncReadMarks(received, Date.now()); }, [ready, received]);
   const heroBird = useRandomBird();

@@ -108,6 +108,25 @@ async function nativeEnable(): Promise<PushState> {
   } catch { return "default"; }
 }
 
+const AUTO_KEY = "saepyeonji.autopush.v1";
+/**
+ * 카카오톡처럼 설정에 들어가지 않아도 알림이 켜지게(2026-11-02 대표님: "별도로 설정 안 해도 되게").
+ * 스토어 앱에서 로그인하고 홈을 처음 열 때 폰이 "알림을 허용할까요?"를 한 번 묻고, 허용하면 바로 켜져요.
+ * 이미 허용돼 있으면 묻지 않고 조용히 켜요. 거절했으면 다시 묻지 않아요(설정 스위치로는 언제든 켤 수 있어요).
+ */
+export async function autoEnableAppPush() {
+  if (!isAppPush() || getStoredSub()) return;
+  try {
+    const p = await (await plugin()).checkPermissions();
+    if (p.receive === "denied") return;
+    if (p.receive !== "granted") {
+      if (localStorage.getItem(AUTO_KEY)) return; // 한 번만 물어요
+      localStorage.setItem(AUTO_KEY, "1");
+    }
+    await nativeEnable();
+  } catch {}
+}
+
 let tapReady = false;
 /** 알림을 누르면 그 편지로 가요(스토어 앱). 토큰이 바뀌면 서버에 다시 맡겨요. 앱이 열릴 때 한 번 불러요. */
 export function initAppPush() {
