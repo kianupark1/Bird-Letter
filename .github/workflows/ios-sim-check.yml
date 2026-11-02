@@ -1,0 +1,71 @@
+# 아이폰 시뮬레이터에서 앱을 직접 열어 보고 화면 사진·기록을 남겨요(앱이 안 열릴 때 원인 찾기용, 계정 불필요).
+# 직접 실행: GitHub → Actions → "아이폰 시뮬레이터 열어 보기" → Run workflow
+# 결과 사진은 ci-shots 브랜치에 올라가요.
+name: 아이폰 시뮬레이터 열어 보기
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sim:
+    runs-on: macos-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [full, nopatch, nomsg]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: 알림 플러그인 빼기(nomsg 시험)
+        if: matrix.variant == 'nomsg'
+        run: npm uninstall --no-save @capacitor-firebase/messaging
+      - name: 아이폰 프로젝트 준비
+        env:
+          SKIP_PATCH: ${{ matrix.variant == 'nopatch' && '1' || '0' }}
+        run: bash scripts/ios-prepare.sh
+      - name: 시뮬레이터용 빌드
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Release \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -20
+      - name: 시뮬레이터에서 열기·사진·기록
+        run: |
+          set -x
+          mkdir -p shots
+          DEV=$(xcrun simctl list devices available | grep -E "iPhone 1[5-7]" | head -1 | grep -oE "[0-9A-F-]{36}")
+          xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b
+          APP=$(find build/Build/Products -name "App.app" -maxdepth 3 | head -1)
+          xcrun simctl install "$DEV" "$APP"
+          (xcrun simctl launch --console-pty "$DEV" com.saepyeonji.app > shots/${{ matrix.variant }}-console.txt 2>&1 &)
+          sleep 30
+          xcrun simctl io "$DEV" screenshot shots/${{ matrix.variant }}-light.png
+          xcrun simctl spawn "$DEV" launchctl list | grep -i saepyeonji > shots/${{ matrix.variant }}-alive.txt || echo "NOT RUNNING" > shots/${{ matrix.variant }}-alive.txt
+          xcrun simctl terminate "$DEV" com.saepyeonji.app || true
+          xcrun simctl ui "$DEV" appearance dark
+          (xcrun simctl launch --console-pty "$DEV" com.saepyeonji.app > shots/${{ matrix.variant }}-console-dark.txt 2>&1 &)
+          sleep 25
+          xcrun simctl io "$DEV" screenshot shots/${{ matrix.variant }}-dark.png
+          xcrun simctl spawn "$DEV" log show --last 3m --style compact --predicate 'process == "App"' > shots/${{ matrix.variant }}-log.txt 2>&1 || true
+          ls "$HOME/Library/Logs/DiagnosticReports" > shots/${{ matrix.variant }}-crashes.txt 2>&1 || true
+          echo "===== console ====="; head -c 20000 shots/${{ matrix.variant }}-console.txt
+          echo "===== alive ====="; cat shots/${{ matrix.variant }}-alive.txt
+          echo "===== log (errors) ====="; grep -iE "error|fault|crash|exception|capacitor|firebase|⚡" shots/${{ matrix.variant }}-log.txt | head -150
+      - name: 사진을 ci-shots 브랜치에 올리기
+        if: always()
+        run: |
+          git config user.name "ci"; git config user.email "ci@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            rm -rf /tmp/cs && git clone -q --depth 1 --branch ci-shots "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" /tmp/cs 2>/dev/null \
+              || (git init -q /tmp/cs && cd /tmp/cs && git checkout -q -b ci-shots && git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}")
+            mkdir -p /tmp/cs/${{ github.run_id }} && cp shots/* /tmp/cs/${{ github.run_id }}/ 2>/dev/null || true
+            cd /tmp/cs && git add -A && git commit -qm "sim ${{ matrix.variant }} ${{ github.run_id }}" && git push -q origin ci-shots && break
+            cd - ; sleep $((i*3))
+          done
