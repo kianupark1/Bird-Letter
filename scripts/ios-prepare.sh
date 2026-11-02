@@ -47,7 +47,7 @@ fi
 
 npx cap sync ios
 # 앱 알림(APNs 번호 → FCM 토큰)과 어두운 화면 위·아래 여백 색
-node scripts/ios-appdelegate.mjs ios/App/App/AppDelegate.swift
+if [ "${SKIP_PATCH:-0}" = 1 ]; then echo "AppDelegate 손질 건너뜀(시험)"; else node scripts/ios-appdelegate.mjs ios/App/App/AppDelegate.swift; fi
 BUILD="${VERSION_CODE:-1}"
 # 앱스토어 버전 칸(1.0)과 같게: 1.0.0 → 1.0 (끝의 .0 한 번만 뗌)
 VERSION_NAME="$(node -p "require('./package.json').version.replace(/\\.0$/, '')")"
