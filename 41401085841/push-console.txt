@@ -1,0 +1,12 @@
+2026-11-02 06:45:41.246 App[12625:42665] You've implemented -[<UIApplicationDelegate> application:didReceiveRemoteNotification:fetchCompletionHandler:], but you still need to add "remote-notification" to the list of your supported UIBackgroundModes in your Info.plist.
+2026-11-02 06:45:41.511 App[12625:42665] DiskCookieStorage changing policy from 2 to 0, cookie file: file:///Users/runner/Library/Developer/CoreSimulator/Devices/2263B19F-42E8-4C8B-8AF1-D79508216C90/data/Containers/Data/Application/11C80EFC-931B-4E04-ACA3-B8C1700A0D11/Library/Cookies/com.saepyeonji.app.binarycookies
+[FirebaseMessaging] Firebase was not configured: GoogleService-Info.plist is missing from the app bundle.
+[FirebaseAuthentication] Firebase was not configured: GoogleService-Info.plist is missing from the app bundle.
+⚡️  Loading app at https://bird-letter.vercel.app...
+⚡️  WebView loaded
+⚡️  To Native ->  FirebaseMessaging checkPermissions 50404672
+⚡️  To Native ->  FirebaseMessaging addListener 50404673
+⚡️  To Native ->  FirebaseMessaging addListener 50404674
+⚡️  To Native ->  App addListener 50404675
+⚡️  TO JS {"receive":"prompt"}
+com.saepyeonji.app: 12625
