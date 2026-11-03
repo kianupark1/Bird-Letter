@@ -36,16 +36,18 @@ jobs:
       - name: 가상 폰에서 열기·사진·기록
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 34
+          api-level: 33
           target: google_apis
           arch: x86_64
           profile: pixel_6
           disable-animations: true
+          emulator-boot-timeout: 900
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
           script: bash scripts/android-emu-shots.sh
       - name: 사진을 ci-shots 브랜치에 올리기
         if: always()
         run: |
-          git config user.name "ci"; git config user.email "ci@users.noreply.github.com"
+          git config --global user.name "ci"; git config --global user.email "ci@users.noreply.github.com"
           for i in 1 2 3 4 5; do
             rm -rf /tmp/cs && git clone -q --depth 1 --branch ci-shots "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" /tmp/cs 2>/dev/null \
               || (git init -q /tmp/cs && cd /tmp/cs && git checkout -q -b ci-shots && git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}")
