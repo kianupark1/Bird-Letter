@@ -808,8 +808,9 @@ import { SLOGAN } from "../promo/store.mts";
   const { freeLeft, needsStamp, refundable, stampBalance, kstDay, REFUND_DAYS } = await import("../core/penpalStamp.ts");
   const D = 86_400_000;
   const now = Date.UTC(2026, 10, 2, 3, 0); // 한국 11/2 정오
-  eq("우표: 오늘 첫 편지 전이면 무료 1통", freeLeft([], now), 1);
-  eq("우표: 오늘 이미 1통 보냈으면 우표 필요", needsStamp([now - 3_600_000], now), true);
+  eq("우표: 오늘 첫 편지 전이면 무료 5통", freeLeft([], now), 5);
+  eq("우표: 오늘 4통 보냈으면 1통 남음", freeLeft([1, 2, 3, 4].map((h) => now - h * 600_000), now), 1);
+  eq("우표: 오늘 5통 보냈으면 우표 필요", needsStamp([1, 2, 3, 4, 5].map((h) => now - h * 600_000), now), true);
   eq("우표: 어제 보낸 건 오늘 무료에 안 셈", needsStamp([now - D], now), false);
   eq("우표: 한국 자정 기준 날짜", kstDay(Date.UTC(2026, 10, 1, 15, 0)) === kstDay(Date.UTC(2026, 10, 2, 14, 59)), true);
   const arr = now - (REFUND_DAYS + 1) * D;
