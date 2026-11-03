@@ -5,7 +5,7 @@
  * - 상대가 도착 뒤 REFUND_DAYS일 안에 답장하지 않으면 그 우표는 돌려줘요("수락 안 하면 돈 안 냄").
  * 결제·우표 개수는 서버가 정해요(앱이 계산한 값을 믿지 않음). 여기는 화면과 서버가 같이 쓰는 계산만 있어요.
  */
-export const FREE_PER_DAY = 1;
+export const FREE_PER_DAY = 5; // 2026-11-03 대표님: "1통은 너무 심해, 5통 공짜로"
 export const REFUND_DAYS = 7;
 const DAY = 86_400_000;
 
