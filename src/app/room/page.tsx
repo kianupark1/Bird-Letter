@@ -112,7 +112,20 @@ function Room() {
 
   // 새 소식이 쌓이면 맨 아래로 내려가요
   const last = items[items.length - 1]?.key;
-  useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [last, ready]);
+  // (2026-11-03 대표님: "들어가면 맨 밑으로 저절로 가야 하는데 바로 전까지만 떠") 입력줄이 아래에 붙어 있어서 끝 표시만 보이게 하면
+  // 마지막 편지가 입력줄 뒤에 가려졌고, 지도·사진이 늦게 그려지면 높이가 늘어 다시 위로 밀렸어요 → 문서 맨 끝까지, 처음 1.5초 동안은 높이가 늘 때마다 다시
+  useEffect(() => {
+    if (!ready) return;
+    const toEnd = () => { const se = document.scrollingElement ?? document.documentElement; se.scrollTop = se.scrollHeight; };
+    toEnd();
+    const raf = requestAnimationFrame(toEnd);
+    const feed = endRef.current?.parentElement;
+    const ro = typeof ResizeObserver !== "undefined" && feed ? new ResizeObserver(toEnd) : null;
+    if (ro && feed) ro.observe(feed);
+    const ts = [150, 400, 900].map((ms) => setTimeout(toEnd, ms));
+    const stop = setTimeout(() => ro?.disconnect(), 1500);
+    return () => { cancelAnimationFrame(raf); ts.forEach(clearTimeout); clearTimeout(stop); ro?.disconnect(); };
+  }, [last, ready]);
 
   if (state !== "ready" || !ready) return <main className="app" aria-busy="true" />;
   if (!thread && key && backend === "checking") return <main className="app" aria-busy="true" />; // 서버 목록을 받기 전에는 "찾을 수 없어요"를 띄우지 않아요
