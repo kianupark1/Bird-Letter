@@ -55,6 +55,9 @@ fi
 # 암호화 수출 질문: 일반 HTTPS만 쓰는 앱이라 "해당 없음"(올릴 때마다 묻지 않게)
 /usr/libexec/PlistBuddy -c "Add :ITSAppUsesNonExemptEncryption bool false" "$INFO" 2>/dev/null || true
 
+# 아이폰 전용(아이패드 칸 없이 심사): TARGETED_DEVICE_FAMILY "1,2" → 1 (아이패드에서는 아이폰 화면 그대로 열림)
+sed -i '' -e 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' ios/App/App.xcodeproj/project.pbxproj 2>/dev/null || sed -i -e 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' ios/App/App.xcodeproj/project.pbxproj
+grep -n "TARGETED_DEVICE_FAMILY" ios/App/App.xcodeproj/project.pbxproj || true
 npx cap sync ios
 # 앱 알림(APNs 번호 → FCM 토큰)과 어두운 화면 위·아래 여백 색
 if [ "${SKIP_PATCH:-0}" = 1 ]; then echo "AppDelegate 손질 건너뜀(시험)"; else node scripts/ios-appdelegate.mjs ios/App/App/AppDelegate.swift; fi
