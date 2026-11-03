@@ -30,8 +30,11 @@ export function useSession() {
   const [state, setState] = useState<SessionState>("checking");
 
   // 화면에 보이기 전에: 지난번에 로그인해 있었으면 바로 "ready"
+  // 처음 깐 폰(로그인한 적 없음)은 확인(1~3초)을 기다리지 않고 바로 로그인 화면(2026-11-03 대표님: "첫 실행 5~6초 → 1~2초로").
+  // 혹시 로그인돼 있었다면 확인이 끝나는 대로 저절로 홈으로 바뀌어요.
   useBeforePaint(() => {
     if (!firebaseEnabled || bypassed() || hinted()) setState("ready");
+    else setState("login");
   }, []);
 
   const check = useCallback(() => {

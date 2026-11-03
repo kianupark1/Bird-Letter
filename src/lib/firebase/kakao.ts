@@ -1,4 +1,5 @@
 "use client";
+import { SESSION_HINT_KEY } from "@/lib/fastStart";
 import { getIdTokenResult, signInWithCustomToken } from "firebase/auth";
 import { auth, ensureUser, firebaseEnabled } from "./client";
 
@@ -55,6 +56,7 @@ export async function finishKakaoLogin(search: string): Promise<KakaoOutcome> {
     if (!res.ok) return { ok: false, message: "카카오 연결에 실패했어요. 잠시 뒤에 다시 해 주세요." };
     const { customToken, switched, nickname, photo } = await res.json();
     await signInWithCustomToken(auth(), customToken);
+    try { localStorage.setItem(SESSION_HINT_KEY, "1"); } catch {} // 홈이 로그인 확인을 기다리지 않고 바로 열리게
     await applyKakaoProfile(nickname, photo);
     return { ok: true, switched: Boolean(switched) };
   } catch {
