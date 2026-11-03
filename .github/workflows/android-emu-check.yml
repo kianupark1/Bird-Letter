@@ -1,0 +1,55 @@
+# 안드로이드 에뮬레이터(가상 폰)에서 앱을 직접 열어 보고 화면 사진·기록을 남겨요(계정 불필요).
+# 직접 실행: GitHub → Actions → "안드로이드 에뮬레이터 열어 보기" → Run workflow
+# 결과 사진은 ci-shots 브랜치의 실행 번호 폴더에 올라가요.
+name: 안드로이드 에뮬레이터 열어 보기
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  emu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - name: 안드로이드 프로젝트 준비
+        run: bash scripts/android-prepare.sh
+      - name: 시험용 앱(APK) 만들기
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - name: 가상 폰 속도 켜기(KVM)
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: 가상 폰에서 열기·사진·기록
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: bash scripts/android-emu-shots.sh
+      - name: 사진을 ci-shots 브랜치에 올리기
+        if: always()
+        run: |
+          git config user.name "ci"; git config user.email "ci@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            rm -rf /tmp/cs && git clone -q --depth 1 --branch ci-shots "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" /tmp/cs 2>/dev/null \
+              || (git init -q /tmp/cs && cd /tmp/cs && git checkout -q -b ci-shots && git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}")
+            mkdir -p /tmp/cs/${{ github.run_id }} && cp shots/* /tmp/cs/${{ github.run_id }}/ 2>/dev/null || true
+            cd /tmp/cs && git add -A && git commit -qm "emu ${{ github.run_id }}" && git push -q origin ci-shots && break
+            cd - ; sleep $((i*3))
+          done
