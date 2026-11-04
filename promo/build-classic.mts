@@ -135,6 +135,111 @@ const cards: { file: string; w: number; h: number; html: string }[] = [
     <div class="pen" style="position:absolute;left:96px;top:820px;font-size:56px;color:${NAVY};transform:rotate(-6deg);line-height:1.2">기다리는 시간도<br>편지의 일부예요</div>
     <div class="batang" style="position:absolute;left:0;right:0;bottom:122px;text-align:center;font-size:28px;opacity:.8">${STORE_SHORT}</div>
     ${FOOT}` },
+
+  // ④ 여행지 엽서 — 여행지에서 보내던 엽서처럼
+  { file: "classic-4-postcard", w: 1080, h: 1350, html: `
+    <div style="position:absolute;left:80px;right:80px;top:96px">
+      <h1 style="font-size:80px">여행지에서 보내던<br><span style="color:${RED}">엽서 한 장처럼</span></h1>
+      <p class="batang" style="font-size:33px;line-height:1.7;margin-top:24px;opacity:.85">“여기 바다가 참 예뻐요.”<br>그 한 줄이 며칠 뒤 도착하던 설렘.</p>
+    </div>
+    <div style="position:absolute;left:90px;top:610px;width:900px;height:560px;background:#FFF8E8;transform:rotate(2deg);box-shadow:0 18px 36px rgba(60,40,20,.25);display:flex">
+      <div style="width:430px;margin:26px;background:linear-gradient(#9CC7E0 0%,#CFE3EA 45%,#E9D7B5 62%,#C9A27A 100%);position:relative;overflow:hidden">
+        <svg width="430" height="508" style="position:absolute;inset:0"><path d="M0 330 Q 80 300 160 322 T 320 315 T 430 320 V508 H0Z" fill="#3E7FA6" opacity=".7"/><path d="M0 360 Q 90 340 180 356 T 430 352" fill="none" stroke="#fff" stroke-width="4" opacity=".7"/><circle cx="330" cy="110" r="44" fill="#F6D27A"/></svg>
+        <div class="batang" style="position:absolute;left:22px;bottom:18px;font-size:30px;color:#fff;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.35)">해운대에서</div>
+      </div>
+      <div style="flex:1;position:relative;border-left:3px dashed ${INK}33;margin:26px 0">
+        <div class="pen" style="position:absolute;left:34px;top:150px;font-size:54px;line-height:1.3;color:${NAVY}">잘 지내지?<br>바다 보니까<br>네 생각 나더라</div>
+        ${[0, 1, 2].map((i) => `<div style="position:absolute;left:34px;right:34px;top:${400 + i * 44}px;border-bottom:2px solid ${INK}33"></div>`).join("")}
+      </div>
+    </div>
+    ${stamp(800, 560, 170, 210, "pigeon", -5)}
+    ${FOOT}` },
+
+  // ⑤ 편지 묶음 — 버리지 못한 편지, 다들 하나쯤 있잖아요
+  { file: "classic-5-bundle", w: 1080, h: 1350, html: `
+    <div style="position:absolute;left:80px;right:80px;top:96px;text-align:center">
+      <h1 style="font-size:80px">버리지 못한 편지 묶음,<br><span style="color:${RED}">다들 하나쯤 있잖아요</span></h1>
+      <p class="batang" style="font-size:33px;line-height:1.7;margin-top:24px;opacity:.85">다시 꺼내 읽으면 그날로 돌아가는 편지.<br>새 편지는 받은 편지를 그대로 간직해요.</p>
+    </div>
+    ${[["#FFF3D8", -9, 0], ["#F5E6C4", 5, 40], ["#FFF8E8", -2, 80]].map(([bg, r, dy]) => `<div style="position:absolute;left:190px;top:${640 + (dy as number)}px;width:700px;height:400px;background:${bg};transform:rotate(${r}deg);box-shadow:0 10px 24px rgba(60,40,20,.2)"><div style="position:absolute;inset:0;background:linear-gradient(160deg,transparent 49.5%,${INK}22 50%,transparent 50.6%),linear-gradient(20deg,transparent 49.5%,${INK}22 50%,transparent 50.6%)"></div></div>`).join("")}
+    <svg width="1080" height="1350" style="position:absolute;inset:0"><path d="M540 700 V1140 M190 930 H890" stroke="#9C5B32" stroke-width="12"/><path d="M540 930 c -70 -60 -120 -10 -70 30 c 40 30 70 -30 70 -30 c 0 0 30 60 70 30 c 50 -40 0 -90 -70 -30" fill="none" stroke="#9C5B32" stroke-width="10"/></svg>
+    <div class="pen" style="position:absolute;left:250px;top:760px;font-size:54px;color:${NAVY};transform:rotate(-2deg)">보고 싶은 너에게</div>
+    <div style="position:absolute;right:120px;top:1010px;transform:rotate(6deg)">${bird("magpie", 180, true)}</div>
+    ${FOOT}` },
+
+  // ⑥ 학창 시절 펜팔 — 펜팔 친구, 기억나요?
+  { file: "classic-6-penpal", w: 1080, h: 1350, html: `
+    <div style="position:absolute;left:80px;right:80px;top:96px">
+      <div class="batang" style="font-size:34px;color:${RED};letter-spacing:6px;font-weight:700">학창 시절</div>
+      <h1 style="font-size:84px;margin-top:20px">펜팔 친구,<br>기억나요?</h1>
+      <p class="batang" style="font-size:33px;line-height:1.7;margin-top:24px;opacity:.85">얼굴도 모르는 누군가의 답장을<br>일주일 내내 기다리던 그때 그 마음.</p>
+    </div>
+    <div style="position:absolute;left:150px;top:720px;width:780px;height:430px;padding:20px;background:${airmail};transform:rotate(4deg);box-shadow:0 18px 36px rgba(60,40,20,.25)">
+      <div style="width:100%;height:100%;background:#FFF8E8;position:relative">
+        <div class="pen" style="position:absolute;left:60px;top:150px;font-size:62px;line-height:1.25;color:${NAVY}">여수 사는 비둘기에게<br><span style="font-size:46px">— 서울 사는 까치가</span></div>
+      </div>
+    </div>
+    ${stamp(760, 660, 180, 220, "pigeon", 8)}
+    <div class="batang" style="position:absolute;left:0;right:0;bottom:128px;text-align:center;font-size:25px;opacity:.7">펜팔은 만 14세 이상 · 이름 대신 펜팔 이름과 도시만 보여요</div>
+    ${FOOT}` },
+
+  // ⑦ 밤새 고쳐 쓴 편지 — 공감 유머
+  { file: "classic-7-night", w: 1080, h: 1350, html: `<style>body{background:${NOISE},radial-gradient(ellipse at 70% 30%,#2A3D5C 0%,#16243A 70%,#0F1A2B 100%);color:#F6EAD0}.foot b{color:#F6EAD0}.foot span{color:#F0BC5C;border-color:#F0BC5C}</style>
+    <div style="position:absolute;left:80px;right:80px;top:96px">
+      <h1 style="font-size:80px">밤새 고쳐 쓴 편지,<br><span style="color:#F0BC5C">아침엔 못 부쳤죠</span></h1>
+      <p class="batang" style="font-size:33px;line-height:1.7;margin-top:24px;opacity:.9">이번엔 새가 대신 날아가요.<br>보내고 나면, 이제 기다리기만 하면 돼요.</p>
+    </div>
+    <svg width="1080" height="1350" style="position:absolute;inset:0">
+      <ellipse cx="540" cy="1000" rx="420" ry="230" fill="#F0BC5C" opacity=".14"/>
+      ${[[180, 470], [860, 430], [930, 620], [120, 700], [760, 300]].map(([x, y]) => `<text x="${x}" y="${y}" font-size="40" fill="#F0BC5C">✦</text>`).join("")}
+    </svg>
+    ${[[-14, 200, 880], [10, 640, 900], [-4, 380, 940]].map(([r, x, y]) => `<div style="position:absolute;left:${x}px;top:${y}px;width:220px;height:170px;background:#EDE0C2;border-radius:30% 40% 35% 45%;transform:rotate(${r}deg);box-shadow:inset -10px -12px 20px rgba(80,60,30,.35)"></div>`).join("")}
+    <div style="position:absolute;left:310px;top:760px;width:460px;height:320px;background:#FFF8E8;transform:rotate(-3deg);box-shadow:0 14px 30px rgba(0,0,0,.4);padding:40px 44px">
+      <div class="pen" style="font-size:52px;line-height:1.3;color:${NAVY}">미안했어.<br>그리고 고마워.</div>
+    </div>
+    <div style="position:absolute;left:720px;top:640px;transform:rotate(-10deg)">${bird("hawk", 190, true)}</div>
+    ${FOOT}` },
+
+  // ⑧ 우표 고르던 재미 — 이젠 새를 골라요(기능 소개)
+  { file: "classic-8-stamps", w: 1080, h: 1350, html: `
+    <div style="position:absolute;left:80px;right:80px;top:96px;text-align:center">
+      <h1 style="font-size:80px">우표 고르던 재미,<br><span style="color:${RED}">이젠 새를 골라요</span></h1>
+      <p class="batang" style="font-size:31px;line-height:1.7;margin-top:22px;opacity:.85">실제 새의 비행 속도를 바탕으로 · 서울 → 부산</p>
+    </div>
+    <div style="position:absolute;left:90px;right:90px;top:520px;height:640px;background:#F7E7C6;border:3px solid ${INK}33;box-shadow:0 14px 30px rgba(60,40,20,.18)"></div>
+    ${(["magpie", "pigeon", "hawk"] as const).map((id, i) => stamp(140 + i * 280, 580, 240, 300, id, [-3, 2, -1][i])).join("")}
+    ${(["magpie", "pigeon", "hawk"] as const).map((id, i) => `<div style="position:absolute;left:${140 + i * 280}px;width:240px;top:930px;text-align:center"><div class="batang" style="font-size:26px;color:#1B6E5C;font-weight:700">${["느긋하게", "적당히", "빠르게"][i]}</div><div class="serif" style="font-size:44px;font-weight:800;color:${RED};margin-top:6px">${mins(id, "seoul-busan")}</div></div>`).join("")}
+    <div class="batang" style="position:absolute;left:0;right:0;top:1080px;text-align:center;font-size:27px;opacity:.75">세 마리 모두 무료 · 가끔 길을 잃어도 편지는 꼭 도착해요</div>
+    ${FOOT}` },
+
+  // ⑨ "편지 왔어요!" — 그 한마디
+  { file: "classic-9-arrived", w: 1080, h: 1350, html: `
+    <div style="position:absolute;left:80px;right:80px;top:96px">
+      <h1 style="font-size:84px">“편지 왔어요!”</h1>
+      <p class="serif" style="font-size:52px;font-weight:800;color:${RED};margin-top:14px;line-height:1.35">그 한마디에 뛰어나가던 날</p>
+      <p class="batang" style="font-size:33px;line-height:1.7;margin-top:24px;opacity:.85">새가 도착하면 알림이 와요.<br>편지는 두루마리처럼 천천히 펼쳐져요.</p>
+    </div>
+    <div style="position:absolute;left:160px;top:700px;width:760px;height:460px">
+      <div style="position:absolute;left:0;right:0;bottom:0;height:330px;background:#F2DDB2;box-shadow:0 18px 36px rgba(60,40,20,.25)"></div>
+      <div style="position:absolute;left:60px;right:60px;bottom:150px;height:330px;background:#FFFBF0;box-shadow:0 4px 12px rgba(60,40,20,.15);padding:40px 46px">
+        <div class="pen" style="font-size:56px;line-height:1.3;color:${NAVY}">엄마, 이번 주말에<br>내려갈게요 :)</div>
+      </div>
+      <svg width="760" height="460" style="position:absolute;inset:0"><path d="M0 250 L380 400 L760 250 V460 H0 Z" fill="#EAD2A2"/><path d="M0 460 L380 300 L760 460" fill="none" stroke="#C9A877" stroke-width="3"/></svg>
+      <div style="position:absolute;left:330px;top:340px;width:100px;height:100px;border-radius:50%;background:${RED};box-shadow:inset 0 -6px 0 rgba(0,0,0,.2);display:grid;place-items:center;color:#FFE7C7;font-family:'Gowun Batang';font-weight:700;font-size:30px">새</div>
+    </div>
+    <div style="position:absolute;left:70px;top:620px;transform:rotate(-8deg)">${bird("magpie", 200, true)}</div>
+    ${FOOT}` },
+
+  // ⑩ 손편지 — 할머니께
+  { file: "classic-10-grandma", w: 1080, h: 1350, html: `<style>.lined{position:absolute;left:120px;top:560px;width:840px;height:600px;background:#FFFBF0;box-shadow:0 16px 34px rgba(60,40,20,.2);transform:rotate(-1.5deg);
+      background-image:linear-gradient(transparent 76px,${NAVY}33 76px,${NAVY}33 78px);background-size:100% 78px;padding:20px 70px;border-left:4px solid ${RED}66}</style>
+    <div style="position:absolute;left:80px;right:80px;top:96px">
+      <h1 style="font-size:80px">전화는 쑥스럽고,<br><span style="color:${RED}">문자는 너무 짧을 때</span></h1>
+      <p class="batang" style="font-size:33px;line-height:1.7;margin-top:24px;opacity:.85">할머니께 손편지처럼 한 통.<br>까치가 천천히 날아가 전해 드려요.</p>
+    </div>
+    <div class="lined"><div class="pen" style="font-size:62px;line-height:78px;color:${INK};padding-top:8px">할머니, 날이 많이 추워요.<br>감기 조심하시고요.<br>주말에 꼭 놀러 갈게요.<br><span style="padding-left:340px">— 손녀 올림</span></div></div>
+    <div style="position:absolute;right:90px;top:1040px;transform:rotate(4deg)">${bird("magpie", 190, true)}</div>
+    ${FOOT}` },
 ];
 
 mkdirSync(resolve(root, "promo/cards-src"), { recursive: true });
