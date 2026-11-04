@@ -744,7 +744,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("미리보기: 이름이 비면 기본 문구", previewText({ fromName: " " }, now), PREVIEW_DEFAULT);
 }
 
-import { fillText, storeLines, upgraded, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, slotOf, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
 import { SLOGAN } from "../promo/store.mts";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
@@ -773,6 +773,8 @@ import { SLOGAN } from "../promo/store.mts";
   eq("업그레이드 영상: v2가 있으면 새 영상", u.video, "video/v2/saepyeonji-15s.mp4");
   eq("업그레이드 영상: v2 표지가 없으면 예전 표지", u.cover, "video/saepyeonji-15s-cover.png");
   eq("업그레이드 영상: v2 표지가 있으면 새 표지", upgraded(v, () => true).cover, "video/v2/saepyeonji-15s-cover.png");
+  eq("하루 두 번: slot 없는 글은 낮", slotOf({ text: "a", to: ["x"] }), "noon");
+  eq("하루 두 번: evening 글은 저녁", slotOf({ text: "a", to: ["x"], slot: "evening" }), "evening");
   eq("업그레이드 영상: 사진 글은 그대로", upgraded({ text: "a", to: ["x"], image: "01.png" }, () => true).image, "01.png");
 }
 

@@ -24,3 +24,4 @@ toss/next-env.d.ts
 *.keystore
 promo/video/.frames/
 promo/video/.v2tmp/
+promo/fonts-classic/
