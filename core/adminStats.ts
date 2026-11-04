@@ -4,7 +4,9 @@
  */
 
 /** 숫자판을 볼 수 있는 계정(대표님). 계정 번호는 비밀 값이 아니고, 서버가 로그인 토큰으로 본인인지 확인해요 */
-export const ADMIN_UIDS: string[] = [];
+export const ADMIN_UIDS: string[] = [
+  "7ELiJyz7qPX34kUvZ3JFzKpmi9D2", // 대표님 카카오 계정(2026-11-04 등록)
+];
 
 export const isAdmin = (uid: string, extra: string[] = []) => [...ADMIN_UIDS, ...extra].includes(uid);
 
