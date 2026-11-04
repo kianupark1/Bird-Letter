@@ -75,7 +75,7 @@ const ads: { file: string; html: string }[] = [
       <div style="width:100%;height:100%;border-radius:50px;overflow:hidden;background:#FBF3E4"><img src="${shot("phone-2-room.png")}" style="width:100%;display:block"></div>
     </div>
     <div style="position:absolute;right:56px;top:560px;background:#fff;border-radius:28px;padding:18px 26px;font-size:30px;font-weight:800;box-shadow:0 8px 0 rgba(42,33,24,.08);transform:rotate(4deg)">🕊 까치 · 서울 → 부산<br><span class="hl">${mins("magpie", BUSAN)} 걸려요</span></div>
-    ${CTA("crane")}` },
+    ${CTA("magpie")}` },
 
   // ③ 도착하면 두루마리처럼 펼쳐져요 + 폴라로이드
   { file: "ad-3-scroll", html: `<style>
@@ -98,8 +98,8 @@ const ads: { file: string; html: string }[] = [
     </div>
     <div class="rod" style="top:880px"></div>
     <div class="pola"><i></i></div>
-    <div style="position:absolute;left:110px;top:900px;transform:rotate(-6deg)">${bird("crane", 230, true)}</div>
-    ${CTA("crane")}` },
+    <div style="position:absolute;left:110px;top:900px;transform:rotate(-6deg)">${bird("pigeon", 230, true)}</div>
+    ${CTA("pigeon")}` },
 ];
 
 mkdirSync(resolve(root, "promo/ads-src"), { recursive: true });
