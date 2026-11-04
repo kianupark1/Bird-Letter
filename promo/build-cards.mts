@@ -57,11 +57,11 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
   { file: "02-birds", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
     <h1 style="font-size:76px">어떤 새에게<br>편지를 맡길까요?</h1>
     <p class="sub" style="margin-top:14px;font-size:30px">실제 새의 비행 속도를 바탕으로 · 서울 → 부산 ${BUSAN}km</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:22px;margin:36px 0 34px;flex:1">
-    ${BIRDS_SLOW_TO_FAST.map((b) => `<div class="tile" style="padding:20px 24px">${bird(b.id, 130)}
-      <div><div style="font-size:44px;font-weight:800">${b.name}</div>
-      <div style="font-size:30px;font-weight:800;color:#C1481F">${mins(b.id, BUSAN)}</div>
-      <div style="font-size:23px;opacity:.7;margin-top:2px">시속 약 ${b.kmh}km</div></div></div>`).join("")}
+    <div style="display:grid;grid-template-columns:1fr;grid-auto-rows:1fr;gap:22px;margin:36px 0 34px;flex:1">
+    ${BIRDS_SLOW_TO_FAST.map((b, i) => `<div class="tile" style="padding:20px 34px;gap:34px">${bird(b.id, 190)}
+      <div style="flex:1"><div style="font-size:26px;font-weight:800;color:#1B6E5C">${["느긋한 새", "중간 새", "빠른 새"][i]}</div><div style="font-size:54px;font-weight:800">${b.name}</div>
+      <div style="font-size:24px;opacity:.7;margin-top:2px">시속 약 ${b.kmh}km</div></div>
+      <div style="font-size:44px;font-weight:800;color:#C1481F">${mins(b.id, BUSAN)}</div></div>`).join("")}
     </div>${FOOT}</div>` },
 
   { file: "03-magpie", w: 1080, h: 1350, html: `<style>body{background:#16243A;color:#FBF3E4}.brand small{color:#F0BC5C;border-color:#F0BC5C}.sp{position:absolute;font-size:50px;color:#F0BC5C}</style>${BAND}
@@ -75,16 +75,16 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
     <h1 style="font-size:80px">서울 → 제주<br><span class="hl">${JEJU}km</span>, 새로 보내면?</h1>
     <p class="sub" style="margin-top:14px;font-size:30px">새마다 걸리는 시간이 달라요</p>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;grid-auto-rows:1fr;gap:18px;margin:38px 0 34px;flex:1">
-    ${BIRDS_SLOW_TO_FAST.map((b) => `<div class="tile" style="flex-direction:column;gap:6px;padding:22px 10px;text-align:center">${bird(b.id, 190)}
-      <div style="font-size:34px;font-weight:800">${b.name}</div><div style="font-size:30px;font-weight:800;color:#C1481F">${mins(b.id, JEJU)}</div></div>`).join("")}
+    ${BIRDS_SLOW_TO_FAST.map((b) => `<div class="tile" style="flex-direction:column;justify-content:center;gap:18px;padding:22px 10px;text-align:center">${bird(b.id, 270)}
+      <div style="font-size:52px;font-weight:800">${b.name}</div><div style="font-size:38px;font-weight:800;color:#C1481F;line-height:1.25">${mins(b.id, JEJU).replace(" ", "<br>")}</div></div>`).join("")}
     </div>${FOOT}</div>` },
 
   { file: "05-mishap", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
     <h1 style="font-size:84px">가끔은<br>길을 잃기도 해요</h1>
     <p class="sub" style="margin-top:20px">나무에 걸리기도 하고요.<br>조금 늦어질 뿐, 편지는 <b>꼭 도착해요</b>.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:22px;margin:40px 0 34px;flex:1">
-    ${BIRDS_SLOW_TO_FAST.map((b) => `<div class="tile" style="padding:18px 24px">${bird(b.id, 120)}
-      <div><div style="font-size:40px;font-weight:800">${b.name}</div><div style="font-size:26px;font-weight:700;color:#C1481F">약 ${b.mishapOneIn}통에 1번</div></div></div>`).join("")}
+    <div style="display:grid;grid-template-columns:1fr;grid-auto-rows:1fr;gap:22px;margin:40px 0 34px;flex:1">
+    ${BIRDS_SLOW_TO_FAST.map((b) => `<div class="tile" style="padding:18px 34px;gap:34px">${bird(b.id, 170)}
+      <div style="font-size:50px;font-weight:800;flex:1">${b.name}</div><div style="font-size:38px;font-weight:800;color:#C1481F">약 ${b.mishapOneIn}통에 1번</div></div>`).join("")}
     </div>${FOOT}</div>` },
 
   { file: "06-launch", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
@@ -97,17 +97,17 @@ const cards: { file: string; w: number; h: number; html: string; copyTo?: string
     <h1 style="font-size:88px;margin-top:20px">기다리는 시간도<br><span style="color:#F0BC5C">편지의 일부</span>예요</h1>
     <p class="sub" style="opacity:.9">바로 도착하지 않아서 더 설레는 편지.<br>새가 지금 어디쯤 날고 있는지 같이 지켜봐요.</p>
     <div style="margin:auto auto 40px;width:640px;background:#FBF3E4;color:#2A2118;border-radius:36px;padding:36px 40px">
-      <div style="display:flex;align-items:center;gap:20px">${bird("crane", 150, true)}<div><div style="font-size:40px;font-weight:800">두루미가 날아가는 중</div><div style="font-size:30px;opacity:.75;margin-top:4px">서울 → 부산 · ${mins("crane", BUSAN)}</div></div></div>
+      <div style="display:flex;align-items:center;gap:20px">${bird("magpie", 150, true)}<div><div style="font-size:40px;font-weight:800">까치가 날아가는 중</div><div style="font-size:30px;opacity:.75;margin-top:4px">서울 → 부산 · ${mins("magpie", BUSAN)}</div></div></div>
       <div style="height:16px;border-radius:99px;background:rgba(42,33,24,.12);margin-top:26px;overflow:hidden"><div style="width:62%;height:100%;background:#E0A83C"></div></div>
-      <div style="font-size:28px;font-weight:700;color:#C1481F;margin-top:14px">대전을 지났어요 · 내일 오후 도착</div>
+      <div style="font-size:28px;font-weight:700;color:#C1481F;margin-top:14px">대전을 지났어요 · 오늘 저녁 도착</div>
     </div>${FOOT}</div>` },
 
   // 펜팔(2026-10-23 대표님: "예전 그 느낌, 새로운 친구를 만나다") — 만 14세 이상·펜팔 이름과 도시만(법무 점검표 1번)
   { file: "08-penpal", w: 1080, h: 1350, html: `${BAND}<div class="wrap">
     <h1 style="font-size:96px;margin-top:20px">펜팔, 아세요?<br><span style="color:#C1481F">옛날 그 감성</span>을<br>핸드폰으로</h1>
     <p class="sub">모르는 누군가에게 편지를 쓰고, 답장을 기다리던 그 설렘.<br>이제 새가 대신 날아가요.</p>
-    <div style="margin:auto auto 30px;width:680px;background:#fff;border-radius:36px;padding:34px 40px;box-shadow:0 12px 0 rgba(42,33,24,.08)">
-      <div style="display:flex;align-items:center;gap:20px">${bird("swallow", 140, true)}<div><div style="font-size:40px;font-weight:800">‘여수 사는 까치’에게</div><div style="font-size:30px;opacity:.75;margin-top:4px">서울 → 여수 · 제비 · ${mins("swallow", 321)}</div></div></div>
+    <div style="margin:auto auto 30px;width:820px;background:#fff;border-radius:36px;padding:34px 40px;box-shadow:0 12px 0 rgba(42,33,24,.08)">
+      <div style="display:flex;align-items:center;gap:20px">${bird("pigeon", 140, true)}<div><div style="font-size:40px;font-weight:800">‘여수 사는 비둘기’에게</div><div style="font-size:30px;opacity:.75;margin-top:4px;white-space:nowrap">서울 → 여수 · 비둘기 · ${mins("pigeon", 321)}</div></div></div>
       <div style="font-size:28px;font-weight:700;color:#1B6E5C;margin-top:20px">✉ 펜팔 이름과 도시만 보여요</div>
     </div>
     <div style="text-align:center;font-size:26px;opacity:.6;margin-bottom:8px">펜팔은 만 14세 이상 · 신고·차단 기능이 있어요</div>${FOOT}</div>` },
