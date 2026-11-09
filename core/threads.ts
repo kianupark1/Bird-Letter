@@ -38,7 +38,7 @@ export function keyFromParams(u: string | null, n: string | null): string | null
  * - nick: 친구를 내가 부르는 이름
  * 이름을 아직 안 정한 기본 이름("새 친구")은 서로 다른 사람일 수 있어서 저절로 합치지 않아요.
  */
-export type PeopleBook = { alias?: Record<string, string>; same?: Record<string, string>; nick?: Record<string, string>; /** 나간 채팅방(방 key → 나간 시각 ms, 글자로). 그 뒤에 새 편지가 오면 다시 보여요 */ hidden?: Record<string, string> };
+export type PeopleBook = { alias?: Record<string, string>; same?: Record<string, string>; nick?: Record<string, string>; /** 내가 ✎로 직접 바꾼 이름(uid → "1"). 이것만 친구가 정한 이름보다 앞서요 */ pin?: Record<string, string>; /** 나간 채팅방(방 key → 나간 시각 ms, 글자로). 그 뒤에 새 편지가 오면 다시 보여요 */ hidden?: Record<string, string> };
 
 /**
  * 이름 비교용: "석영이"와 "석영", "지민님"과 "지민"을 같은 이름으로 봐요(부르는 말끝만 떼고 비교).
@@ -77,7 +77,10 @@ export const unnamed = (uid: string) => `친구 #${uidTag(uid)}`;
 export const isUnnamed = (name: string) => PLACEHOLDER_NAMES.has(name.trim()) || /^친구 #[A-Z2-9]{4}$/.test(name) || /^이름 없는 친구 \d+$/.test(name);
 
 export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S[], received: R[], friends: FriendLike[], book: PeopleBook = {}): Thread<S, R>[] {
-  const alias = book.alias ?? {}, nick = book.nick ?? {};
+  const alias = book.alias ?? {}, nick = book.nick ?? {}, pin = book.pin ?? {};
+  // 2026-11-09 대표님: "친구가 프로필을 바꿨는데 적용이 안 돼, 카카오 기반이면 상대방이 알아서 딱 설정돼야" →
+  // 친구가 직접 정한 이름(카카오 이름 포함)이 먼저예요. 내가 ✎로 직접 바꾼 이름(pin)만 그보다 앞서요.
+  const mine = (uid: string) => (pin[uid] ? nick[uid] ?? "" : "");
   const same: Record<string, string> = { ...(book.same ?? {}) };
   // 친구가 예전에 쓰던 계정(링크로 편지를 받았던 임시 계정 등)은 그 친구와 같은 사람이에요
   for (const f of friends) for (const p of f.prev ?? []) if (p && p !== f.uid && !same[p]) same[p] = f.uid;
@@ -90,7 +93,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
     if (!cur || s.sentAt > cur.at) sentName.set(s.toUid, { name: s.to.trim(), at: s.sentAt });
   }
   const real = (uid: string) => { const n = friendName.get(uid) ?? ""; return isUnnamed(n) ? "" : n; };
-  const shown = (uid: string) => nick[uid] || real(uid) || sentName.get(uid)?.name || "";
+  const shown = (uid: string) => mine(uid) || real(uid) || nick[uid] || sentName.get(uid)?.name || "";
   // 이름이 같은 친구 계정들은 같은 사람으로 봐요("석영이"="석영", 이름 없는 계정은 제외)
   const byName = new Map<string, string>();
   for (const f of [...friends].sort((x, y) => x.uid.localeCompare(y.uid))) {
@@ -143,8 +146,8 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
       const ids = [...t.uids];
       const r = root(ids[0]);
       t.uid = sendTo.get(t.key)?.uid ?? (friendName.has(r) ? r : ids.find((u) => friendName.has(u)) ?? r);
-      // 이름: 내가 부르는 이름 > 친구가 정한 진짜 이름 > 받은 편지에 적힌 이름 > 기본 이름
-      const names = [...ids.map((u) => nick[u]), ...ids.map((u) => real(u)), ...ids.map((u) => recvName.get(u)), ...ids.map((u) => sentName.get(u)?.name)].filter((n): n is string => !!n);
+      // 이름: 내가 직접 바꾼 이름 > 친구가 정한 진짜 이름 > 합칠 때 적은 이름 > 받은 편지에 적힌 이름 > 기본 이름
+      const names = [...ids.map((u) => mine(u)), ...ids.map((u) => real(u)), ...ids.map((u) => nick[u]), ...ids.map((u) => recvName.get(u)), ...ids.map((u) => sentName.get(u)?.name)].filter((n): n is string => !!n);
       t.name = names.find((n) => !isUnnamed(n)) ?? ""; // 이름이 없으면 아래에서 "이름 없는 친구 N"으로
     }
   }

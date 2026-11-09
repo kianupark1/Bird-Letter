@@ -29,7 +29,7 @@ const fromOk = () => { if (read("saepyeonji.e2e.v1")) return true; const t = Num
 const markFromOk = () => write(FROM_OK, String(Date.now()));
 /** 처음 보낼 때 한 번에 누르는 큰 도시(2026-10-24, 대표님: "처음 쓰기 편하게" → 검색해서 치지 않고 누르면 바로 날아가게) */
 const QUICK = ["seoul", "busan", "daegu", "incheon", "gwangju", "daejeon", "ulsan", "suwon", "sejong", "gangneung", "chuncheon", "cheongju", "jeonju", "pohang", "changwon", "jeju"];
-const SEOUL = PLACES.filter((p) => p.region === "서울");
+const SEOUL = PLACES.filter((p) => p.region === "서울").sort((a, b) => a.name.localeCompare(b.name, "ko"));
 const short = (id: string) => (id === "seoul" ? "서울" : getPlace(id)?.name.replace(/^서울 /, "") ?? id);
 
 /** 대화방 맨 아래 입력줄: 글을 쓰고 ➤를 누르면 그 자리에서 새가 출발해요. 새·받는 곳·사진·나중에 보내기는 위의 알약으로 바꿔요 */
@@ -98,7 +98,6 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const mins = route ? Math.max(1, Math.round(travelMinutes(bird, route.km) / speed.current)) : 0;
   const departMs = later ? fromInputValue(later) : null;
   const departError = later ? validateDepart(departMs, Date.now()) : null;
-  const canSend = ready && !!message.trim() && ok && !busy && !photoBusy && message.length <= (penpal ? MAX_PENPAL_CHARS : MAX_LETTER_CHARS) && !departError;
 
   const pickBird = (id: string) => { setBirdId(id); write(LAST_BIRD, id); setSheet(""); };
   const pickTo = (id: string) => { setToId(id); write(placeKey(threadKey), id); };
@@ -127,6 +126,9 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9, 0, 0, 0); // 기본값: 내일 오전 9시
     setLater(toInputValue(d.getTime())); setSheet("later");
   };
+
+  // 아래에서 올라오는 창이 열리면 키보드를 내려요(아이폰은 키보드가 창을 가려서 "눌러도 안 가는 것"처럼 보였어요)
+  useEffect(() => { if (sheet) (document.activeElement as HTMLElement | null)?.blur?.(); }, [sheet]);
 
   const send = async () => {
     // 왜 못 보내는지 알려 줘요(버튼을 눌러도 아무 일이 없으면 답답해요)
@@ -184,7 +186,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <p className="small qsub">{pendingSend.current ? "누르면 바로 날아가요" : "누르면 정해져요"} · 시·도까지만 골라도 돼요</p>
           {!seoulOpen ? (
             <div className="qgrid">
-              {QUICK.map((id) => (
+              {[...QUICK].sort((a, b) => short(a).localeCompare(short(b), "ko")).map((id) => (
                 <button key={id} type="button" className={`qchip ${id === toId ? "on" : ""}`} disabled={id === fromId && id !== "seoul"} onClick={() => quickPick(id)}>{short(id)}</button>
               ))}
             </div>
@@ -284,6 +286,12 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       )}
       {info && <div className="ch-info" role="alert">{info}</div>}
       {sent && !info && <div className="ch-sent" role="status">{sent}</div>}
+      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => { if (!penpal) { setSeoulOpen(false); setSheet(ok ? "place" : "quick"); } }}>
+        <span aria-hidden>📍</span>
+        <span>{ok && route ? <>{penpal ? cityLabel(fromId) : getPlace(fromId)?.name} → {penpal ? cityLabel(toPick) : getPlace(toPick)?.name} · {route.km}km{declared ? " ✓" : ""}</> : `${name}님이 계신 곳 고르기`}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
+        {/* 2026-11-09 대표님: "눌러서 위치를 정하는 건지 모르겠어, 글로 '위치 설정하기'" */}
+        {!penpal ? <span className="ch-setlbl">위치 설정하기 ›</span> : <span aria-hidden>›</span>}
+      </button>
       {/* 새 고르기: 큰 새 그림을 옆으로 넘기며 바로 고를 수 있어요(누르면 바로 바뀜) */}
       <div className="ch-birds" role="radiogroup" aria-label="어떤 새로 보낼까요?">
         {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
@@ -295,17 +303,11 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           </button>
         ))}
       </div>
-      <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => { if (!penpal) { setSeoulOpen(false); setSheet(ok ? "place" : "quick"); } }}>
-        <span aria-hidden>📍</span>
-        <span>{ok && route ? <>{penpal ? cityLabel(fromId) : getPlace(fromId)?.name} → {penpal ? cityLabel(toPick) : getPlace(toPick)?.name} · {route.km}km{declared ? " ✓" : ""}</> : `${name}님이 계신 곳 고르기`}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
-        {/* 2026-11-09 대표님: "눌러서 위치를 정하는 건지 모르겠어, 글로 '위치 설정하기'" */}
-        {!penpal ? <span className="ch-setlbl">위치 설정하기 ›</span> : <span aria-hidden>›</span>}
-      </button>
       <div className="ch-inrow">
         <button type="button" className="ch-plus" aria-label="새·사진·나중에 보내기" onClick={() => setSheet("more")}>＋</button>
         <textarea className="ch-in" rows={1} maxLength={penpal ? MAX_PENPAL_CHARS : undefined} placeholder="편지를 써 보세요" value={message} aria-label="편지 내용"
           onChange={(e) => { setMessage(e.target.value); if (info) setInfo(""); }} />
-        <button type="button" className="ch-go" aria-label={later ? "예약하고 보내기" : "보내기"} aria-disabled={!canSend} data-off={!message.trim() || undefined} onClick={send}>{busy ? "…" : "➤"}</button>
+        <button type="button" className="ch-go" aria-label={later ? "예약하고 보내기" : "보내기"} data-off={!message.trim() || undefined} onMouseDown={(e) => e.preventDefault()} onClick={send}>{busy ? "…" : "➤"}</button>
       </div>
     </div>
   );

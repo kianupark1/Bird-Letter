@@ -3,6 +3,7 @@
  * 앱 설치 안내 창(아래에서 올라오는 시트).
  * 환경별로 가장 쉬운 길만 보여줘요: 카톡 안이면 "기본 브라우저로 열기", 안드로이드면 "설치" 한 번, 아이폰이면 그림 3장.
  */
+import { openAppOrStore } from "@/lib/openApp";
 import { useEffect, useState } from "react";
 import { consumeInstallParam, externalOpenUrl, isKakao, onInstallGuideOpen, oneTapInstall, snoozeInstallCard, useInstall } from "@/lib/install";
 import BirdIcon from "@/components/BirdIcon";
@@ -72,7 +73,7 @@ function IosSteps({ onClose, onLater }: { onClose: () => void; onLater: () => vo
     return (
       <>
         <div className="ig-box">아이폰은 <b>앱스토어에서 받는 게 가장 쉬워요.</b><br />[받기] 한 번이면 끝, 알림도 잘 와요.</div>
-        <a className="ig-main" href={STORE.iosUrl}>📲 앱스토어에서 받기</a>
+        <a className="ig-main" href={STORE.iosUrl} onClick={(e) => openAppOrStore(e, STORE.iosUrl)}>📲 앱스토어에서 받기</a>
         <button className="ig-sub" onClick={() => setStep(0)}>앱 없이 홈 화면에 추가하는 방법 보기</button>
         <div className="ig-foot">
           <button className="ig-sub" onClick={onLater}>다음에 할게요</button>

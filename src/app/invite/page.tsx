@@ -1,4 +1,5 @@
 "use client";
+import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -83,7 +84,7 @@ function Invite() {
         {result === "error" && <><BirdIcon id="magpie" size={120} /><p>친구로 연결하지 못했어요.<br />잠시 뒤에 링크를 다시 눌러 주세요.</p></>}
       </div>
       <div className="start-btns">
-        {result === "done" && store && <a href={store.url} className="cta big">📲 {store.label}</a>}
+        {result === "done" && store && <a href={store.url} className="cta big" onClick={(e) => openAppOrStore(e, store.url)}>📲 {store.label}</a>}
         {result === "done" && <Link href={`/room?u=${encodeURIComponent(inviter.uid)}`} className={store ? "ghost" : "cta big"} style={store ? { minHeight: 56 } : undefined}>{store ? "앱 없이 여기서 바로 쓰기" : `${inviter.name}에게 첫 편지 쓰기`}</Link>}
         {!store && <Link href="/" className="ghost" style={{ minHeight: 56 }}>{result === "done" ? "나중에 쓸게요" : "처음으로"}</Link>}
       </div>

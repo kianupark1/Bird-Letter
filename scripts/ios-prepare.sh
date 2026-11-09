@@ -42,11 +42,18 @@ if [ "$NATIVE_AUTH" = 1 ]; then
 <plist version="1.0"><dict>
   <key>com.apple.developer.applesignin</key><array><string>Default</string></array>
   <key>aps-environment</key><string>production</string>
+  <key>com.apple.developer.associated-domains</key><array><string>applinks:bird-letter.vercel.app</string></array>
 </dict></plist>
 PL
   sed -i '' 's#PRODUCT_BUNDLE_IDENTIFIER = com.saepyeonji.app;#CODE_SIGN_ENTITLEMENTS = App/App.entitlements;\
 				PRODUCT_BUNDLE_IDENTIFIER = com.saepyeonji.app;#' ios/App/App.xcodeproj/project.pbxproj
 fi
+# 앱이 있으면 링크를 앱으로 바로 열기(카카오톡 안 브라우저 등에서 "앱에서 열기"): saepyeonji://open?path=/letter/ID
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$INFO" 2>/dev/null || true
+N=0; while /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes:$N" "$INFO" >/dev/null 2>&1; do N=$((N+1)); done
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:$N dict" "$INFO"
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:$N:CFBundleURLSchemes array" "$INFO"
+/usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:$N:CFBundleURLSchemes:0 string saepyeonji" "$INFO"
 # 한국어 앱: 날짜·권한 안내를 한국어로
 /usr/libexec/PlistBuddy -c "Set :CFBundleDevelopmentRegion ko" "$INFO" 2>/dev/null || true
 # 편지 쓰기 "연락처에서 찾기"(고른 한 명의 이름·번호만 씀, 저장·서버 전송 안 함)

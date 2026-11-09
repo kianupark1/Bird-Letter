@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   title: "새 편지",
   description: "실제 거리만큼 날아가는 슬로우 메시징",
   // 아이폰 홈 화면에 추가했을 때: 아이콘 아래 이름 "새 편지", 주소창 없이 앱처럼(2026-10-28 홈 화면 추가 점검)
+  // 사파리 위 "새 편지" 앱 띠(앱이 있으면 [열기], 없으면 [받기])
+  itunes: { appId: "6828785320" },
   appleWebApp: { capable: true, title: "새 편지", statusBarStyle: "default" },
 };
 

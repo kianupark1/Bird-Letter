@@ -146,6 +146,8 @@ export function nearestPlace(lat: number, lng: number): Place {
 
 /** 도(道)별로 묶은 목록(선택 상자용) */
 export function placesByRegion() {
-  const order = ["서울", "수도권", "강원", "충청", "전라", "경상", "제주"];
-  return order.map((region) => ({ region, places: PLACES.filter((p) => p.region === region) }));
+  // 가나다 순(2026-11-09 대표님: "위치가 가나다 순으로 나와야 해"): 지역 묶음도, 그 안의 곳도
+  const ko = (a: string, b: string) => a.localeCompare(b, "ko");
+  const order = ["서울", "수도권", "강원", "충청", "전라", "경상", "제주"].sort(ko);
+  return order.map((region) => ({ region, places: PLACES.filter((p) => p.region === region).sort((a, b) => ko(a.name, b.name)) }));
 }
