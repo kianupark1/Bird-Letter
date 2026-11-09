@@ -74,12 +74,17 @@ await p.waitForSelector(".ch-feed");
 ok("보낸 뒤 대화방에 내 말풍선이 '비행 중'으로 보임", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("비행 중"));
 ok("내 편지는 쓴 글이 말풍선에 바로 보임", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("봄 사진을 폴라로이드로 보내요."));
 ok("내 편지 사진 두 장이 말풍선에 작게 보임", (await p.$$(".ch-letter.me .ch-thumbs img")).length === 2);
-ok("내 편지에는 두루마리가 없음", (await p.$(".scroll-open")) === null);
+ok("내 편지 말풍선에 '편지지로 읽기' 안내", (await p.$eval(".ch-letter.me", (e) => e.innerText)).includes("편지지로 읽기"));
 await p.waitForFunction(() => document.querySelector(".ch-letter.me")?.textContent?.includes("도착 ✓"), null, { timeout: 120000 });
 ok("도착하면 말풍선이 '도착 ✓'로 바뀜", true);
 await p.click(".ch-letter.me .ch-tap");
 await p.waitForSelector(".ch-trip", { timeout: 20000 });
 ok("누르면 지도 선과 출발 → 도착이 보임", (await p.$(".ch-mapmini svg")) !== null && (await p.$eval(".ch-trip", (e) => e.innerText)).includes("출발") && (await p.$eval(".ch-trip", (e) => e.innerText)).includes("도착"));
+ok("내 편지도 누르면 받은 편지처럼 두루마리", (await p.$(".ch-letter.me .scroll-open")) !== null);
+await p.click(".ch-letter.me .scroll-open");
+await p.waitForTimeout(500);
+ok("펼치면 편지지에 내 글 전체", (await p.$eval(".ch-letter.me .scrollpaper .msg", (e) => e.textContent)).includes("봄 사진을 폴라로이드로 보내요."));
+ok("편지지 아래 사진 두 장이 폴라로이드로", (await p.$$(".ch-letter.me .reveal .photos img")).length === 2);
 ok("지나온 곳 목록은 없음", !(await p.$eval(".ch-detail", (e) => e.innerText)).includes("지났어요"));
 
 console.log("[1-2] 스탬프 도감과 내 동네");
