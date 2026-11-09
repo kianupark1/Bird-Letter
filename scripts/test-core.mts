@@ -744,7 +744,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("미리보기: 이름이 비면 기본 문구", previewText({ fromName: " " }, now), PREVIEW_DEFAULT);
 }
 
-import { fillText, storeLines, upgraded, slotOf, targetsOf, igHostFor, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, slotOf, targetsOf, igHostFor, igJpg, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
 import { SLOGAN } from "../promo/store.mts";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
@@ -764,6 +764,10 @@ import { SLOGAN } from "../promo/store.mts";
   eq("슬로건: 받기 자리가 없는 글에도", fillText({ text: "안녕", to: ["threads"] }, "threads", ios).text, `안녕\n\n${SLOGAN}`);
   eq("슬로건: 두 번 넣지 않음", withSlogan(`a\n\n${SLOGAN}`), `a\n\n${SLOGAN}`);
   eq("슬로건: X에도(길어서 줄여도 남음)", xPost(fillText({ text: "가".repeat(60) + "\n" + "나".repeat(60) + "\n" + "다".repeat(60) + "\n\n#새편지", to: ["x"] }, "x", ios)).includes(SLOGAN), true);
+  eq("슬로건: 한 줄이 아주 길어도 온전히 남음", xPost(fillText({ text: "가".repeat(300), to: ["x"] }, "x", ios)).endsWith(SLOGAN), true);
+  { const sch = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8")); const miss = sch.posts.filter((q: any) => q.image && !existsSync(new URL(`../promo/cards/${igJpg(q.image)}`, import.meta.url))).map((q: any) => q.image);
+    eq("인스타용 JPG: 일정표 그림마다 있음", miss.join(","), "");
+    eq("일정표: 글만 있는 글 없음", sch.posts.filter((q: any) => !q.image && !q.video).length, 0); }
   eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
 }
 

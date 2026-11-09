@@ -143,6 +143,8 @@ async function postThreads(p) {
   return call(`${base}/threads_publish`, { params: { creation_id: c.id, access_token: token } });
 }
 
+// 인스타 자동 게시는 JPG 사진만 받아요 → 카드마다 같은 이름의 .jpg를 같이 둠(promo/cards/*.jpg)
+export const igJpg = (f) => f.replace(/\.png$/i, ".jpg");
 async function postInstagram(p) {
   const token = env("IG_ACCESS_TOKEN");
   if (!token) throw new Error("IG_ACCESS_TOKEN 이 없어요");
@@ -151,7 +153,7 @@ async function postInstagram(p) {
   // 인스타그램 로그인 열쇠: user_id = 게시용 인스타 프로페셔널 계정 번호(id는 앱 전용 번호라 쓰지 않음)
   const id = await igAccount(host, token);
   const base = `${host}/v21.0/${id}`;
-  const media = p.video ? { media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, share_to_feed: "true" } : { image_url: `${MEDIA_BASE}/cards/${p.image}` };
+  const media = p.video ? { media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, share_to_feed: "true" } : { image_url: `${MEDIA_BASE}/cards/${igJpg(p.image)}` };
   const c = await call(`${base}/media`, { params: { caption: p.text, access_token: token, ...media } });
   if (p.video) await waitReady(`${host}/v21.0/${c.id}?fields=status_code&access_token=${encodeURIComponent(token)}`, "status_code");
   else await sleep(8000);
@@ -170,7 +172,9 @@ export function xText(p) {
   const tail = tags ? `${SLOGAN}\n\n${tags}` : SLOGAN;
   const join = () => `${body}\n\n${tail}`;
   while (xWeight(join()) > 280 && body.includes("\n")) body = body.slice(0, body.lastIndexOf("\n")).trim(); // 넘치면 뒤 줄부터 덜어내요
-  return xWeight(join()) > 280 ? [...body].slice(0, 130).join("") + "…" : join();
+  // 그래도 넘치면 본문만 줄이고 슬로건은 끝까지 온전히 남겨요(2026-11-09 대표님: "완전한 슬로건으로")
+  while (xWeight(join()) > 280 && body.length > 1) body = [...body].slice(0, -2).join("").trimEnd() + "…";
+  return join();
 }
 const pct = (s) => encodeURIComponent(s).replace(/[!'()*]/g, (c) => "%" + c.charCodeAt(0).toString(16).toUpperCase());
 /** OAuth 1.0a 서명(X 공식 방식). 본문(JSON·사진)은 서명에 넣지 않아요 */
