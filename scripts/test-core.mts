@@ -875,19 +875,20 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("애플 결제: 모르는 상품은 0장", stampsFor({ ...ok!, productId: "x" }, true), 0);
 }
 
-// ── 가장자리 밀기로 뒤로(2026-11-09, 앞으로는 끔) ──
+// ── 가장자리 밀기로 뒤로(2026-11-09, 앞으로는 끔·손맛) ──
 {
-  const { swipeAction, swipeProgress } = await import("../core/swipeNav.ts");
+  const { lockDirection, shouldGoBack, paneOffset } = await import("../core/swipeNav.ts");
   const W = 390;
-  eq("밀기: 왼쪽 끝에서 오른쪽 → 뒤로", swipeAction({ x0: 5, y0: 300, x1: 160, y1: 310, ms: 250, width: W }), "back");
-  eq("밀기: 오른쪽 끝에서 왼쪽은 아무것도(앞으로 끔)", swipeAction({ x0: 385, y0: 300, x1: 230, y1: 305, ms: 250, width: W }), null);
-  eq("밀기: 끝에서 조금 떨어져(35px) 시작해도 뒤로", swipeAction({ x0: 35, y0: 300, x1: 140, y1: 300, ms: 300, width: W }), "back");
-  eq("밀기: 가운데서 시작하면 아무것도", swipeAction({ x0: 150, y0: 300, x1: 330, y1: 300, ms: 200, width: W }), null);
-  eq("밀기: 짧게 밀면 아무것도", swipeAction({ x0: 5, y0: 300, x1: 50, y1: 300, ms: 200, width: W }), null);
-  eq("밀기: 세로로 더 많이 움직이면(목록 내리기) 아무것도", swipeAction({ x0: 5, y0: 100, x1: 120, y1: 400, ms: 300, width: W }), null);
-  eq("밀기: 너무 천천히면 아무것도", swipeAction({ x0: 5, y0: 300, x1: 160, y1: 300, ms: 2000, width: W }), null);
-  eq("밀기: 왼쪽 끝에서 왼쪽으로는 아무것도", swipeAction({ x0: 5, y0: 300, x1: 0, y1: 300, ms: 200, width: W }), null);
-  eq("밀기: 진행 표시 방향", swipeProgress(5, 40, W)?.dir, "back");
+  eq("밀기: 오른쪽으로 먼저 움직이면 가로", lockDirection(12, 3), "h");
+  eq("밀기: 세로로 먼저 움직이면 목록 내리기", lockDirection(3, 14), "v");
+  eq("밀기: 왼쪽으로 움직이면 뒤로 아님", lockDirection(-12, 2), "v");
+  eq("밀기: 아직 조금이면 판정 안 함", lockDirection(3, 2), null);
+  eq("밀기: 화면 30% 넘게 끌면 뒤로", shouldGoBack(130, 0, W), true);
+  eq("밀기: 조금 끌고 멈추면 제자리", shouldGoBack(60, 0.05, W), false);
+  eq("밀기: 짧아도 빠르게 튕기면 뒤로", shouldGoBack(50, 0.6, W), true);
+  eq("밀기: 끌다가 되돌리면 취소", shouldGoBack(200, -0.5, W), false);
+  eq("밀기: 판은 손가락을 그대로 따라옴", paneOffset(120, true), 120);
+  eq("밀기: 갈 곳 없으면(탭 첫 화면) 고무줄처럼 조금만", paneOffset(300, false), 36);
 }
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

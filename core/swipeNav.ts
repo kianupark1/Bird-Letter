@@ -1,24 +1,32 @@
 /**
- * 가장자리 밀기로 뒤로(2026-11-09 대표님: "왼쪽에서 오른쪽으로 밀면 뒤로" → 같은 날 "뒤로 가는 것만 켜 줘": 앞으로는 끔).
- * 아이폰 앱(스토어 앱·홈 화면 앱)은 사파리와 달리 이 동작이 없어서 화면이 직접 계산해요.
- * - 화면 왼쪽 끝(EDGE px 안)에서 시작해 오른쪽으로 MIN_DX 넘게 밀면 "back"
- * - 세로로 더 많이 움직였거나 너무 느리면(목록을 내리는 중) 아무것도 안 함
+ * 가장자리 밀기로 뒤로(2026-11-09 대표님: "왼쪽에서 오른쪽으로 밀면 뒤로" → "뒤로만" → "손맛 더 살려 줘").
+ * 아이폰처럼: 왼쪽 끝(EDGE px 안)에서 손가락을 대면 판이 손가락을 따라오고,
+ * 놓았을 때 화면 폭의 THRESHOLD 넘게 왔거나 빠르게 튕겼으면 뒤로, 아니면 제자리로 돌아가요.
+ * 천천히 끌어도 됨(시간 제한 없음). 처음 몇 px에서 세로로 더 움직이면 목록 내리기로 보고 손을 뗌.
  */
 export const EDGE = 40;
-export const MIN_DX = 60;
-export const MAX_MS = 900;
+export const THRESHOLD = 0.3;
+export const FLICK_V = 0.35; // px/ms
+export const FLICK_MIN = 40;
+export const LOCK_PX = 8;
 
-export type Swipe = { x0: number; y0: number; x1: number; y1: number; ms: number; width: number };
-
-export function swipeAction(s: Swipe): "back" | null {
-  const dx = s.x1 - s.x0, dy = Math.abs(s.y1 - s.y0);
-  if (s.ms > MAX_MS || dy > Math.abs(dx) * 0.6) return null;
-  if (s.x0 <= EDGE && dx >= MIN_DX) return "back";
+/** 처음 움직임으로 가로(h)·세로(v) 판정. 아직 모르면 null */
+export function lockDirection(dx: number, dy: number): "h" | "v" | null {
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (ay >= LOCK_PX && ay > ax) return "v";
+  if (ax >= LOCK_PX && ax > ay * 1.2) return dx > 0 ? "h" : "v";
   return null;
 }
 
-/** 밀고 있는 동안 표시할 진행 정도(0~1)와 방향. 가장자리에서 시작하지 않았으면 null */
-export function swipeProgress(x0: number, x1: number, _width?: number): { dir: "back"; p: number } | null {
-  if (x0 <= EDGE && x1 > x0) return { dir: "back", p: Math.min(1, (x1 - x0) / MIN_DX) };
-  return null;
+/** 손을 뗐을 때 뒤로 갈지. dx = 끌어온 거리, vx = 마지막 순간 속도(px/ms) */
+export function shouldGoBack(dx: number, vx: number, width: number): boolean {
+  if (dx <= 0) return false;
+  if (vx < -0.2) return false; // 되돌리는 쪽으로 튕겼으면 취소
+  return dx >= width * THRESHOLD || (vx >= FLICK_V && dx >= FLICK_MIN);
+}
+
+/** 판 위치: 손가락을 그대로 따라오되, 더 갈 곳이 없으면(탭 첫 화면) 고무줄처럼 조금만 */
+export function paneOffset(dx: number, canGoBack: boolean): number {
+  if (dx <= 0) return 0;
+  return canGoBack ? dx : Math.min(36, dx * 0.18);
 }

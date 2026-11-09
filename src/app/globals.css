@@ -1191,7 +1191,12 @@ main.app.room.chat .roomhead::before { content: ""; position: absolute; left: 0;
 .homepick .hp-btn { flex: 0 0 auto; width: auto; margin: 0; min-height: 44px; padding: 0 12px; font-size: 15px; }
 .homepick .hp-sel { flex: 1; min-width: 0; margin: 0; min-height: 44px; font-size: 15px; }
 
-/* 가장자리 밀기로 뒤로(src/lib/swipeNav.ts): 손가락 따라 보이는 동그란 화살표 */
-.swipe-tip { position: fixed; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 30px; line-height: 1; color: var(--on-dahong, #fff); background: var(--dahong); box-shadow: 0 4px 14px rgba(0,0,0,.2);
-  opacity: 0; pointer-events: none; transition: opacity .12s; left: calc(8px + env(safe-area-inset-left, 0px)); }
+/* 가장자리 밀기로 뒤로(src/lib/swipeNav.ts): 왼쪽에서 손가락을 따라 들어오는 한지색 판 + 가운데 ‹ 동그라미 */
+.swipe-pane { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; z-index: 2147483000; pointer-events: none;
+  visibility: hidden; transform: translate3d(-100vw,0,0); will-change: transform;
+  background: var(--bg, #FBF3E4); box-shadow: 10px 0 28px rgba(40,25,10,.22); }
+.swipe-arrow { position: absolute; top: 50%; right: 18px; width: 52px; height: 52px; margin-right: -26px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 34px; line-height: 1; padding-bottom: 3px; box-sizing: border-box;
+  color: var(--dahong); background: var(--bg, #FBF3E4); border: 2px solid var(--dahong); opacity: .35;
+  transform: translate(-50%,-50%) scale(.7); transition: background .15s, color .15s; }
+.swipe-arrow.on { background: var(--dahong); color: var(--on-dahong, #fff); }
