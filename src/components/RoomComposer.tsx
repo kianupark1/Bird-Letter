@@ -1,4 +1,5 @@
 "use client";
+import { quickPosition } from "@/lib/fastGeo";
 import { useEffect, useRef, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import PlaceField from "@/components/PlaceField";
@@ -114,12 +115,12 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   const locate = () => {
     if (!navigator.geolocation) return setGeo("이 기기에서는 위치를 알 수 없어요. 직접 골라 주세요.");
     setGeo("위치를 찾는 중이에요...");
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만, 좌표는 저장하지 않아요
+    quickPosition().then((pos) => {
+      const here = findDistrict(pos.lat, pos.lng); // 구까지만, 좌표는 저장하지 않아요
       if (!moveHome(here.place.id)) return;
       update({ homeLabel: here.label, homeSet: true });
       setGeo(here.label === here.place.name ? `${here.label} 근처로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
-    }, () => setGeo("위치를 허용하지 않아서 직접 골라야 해요."), { timeout: 10000, maximumAge: 600000 });
+    }, () => setGeo("위치를 찾지 못했어요. 직접 골라 주세요."));
   };
   const toggleLater = () => {
     if (later) { setLater(""); return; }

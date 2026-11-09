@@ -1,4 +1,5 @@
 "use client";
+import { quickPosition } from "@/lib/fastGeo";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
@@ -161,15 +162,14 @@ function SendForm() {
   const locate = () => {
     if (!navigator.geolocation) return setGeoMsg("이 기기에서는 위치를 알 수 없어요. 직접 골라 주세요.");
     setGeoMsg("위치를 찾는 중이에요...");
-    navigator.geolocation.getCurrentPosition(
+    quickPosition().then(
       (pos) => {
-        const here = findDistrict(pos.coords.latitude, pos.coords.longitude); // 구까지만 알아내고 좌표는 저장하지 않아요
+        const here = findDistrict(pos.lat, pos.lng); // 구까지만 알아내고 좌표는 저장하지 않아요
         pickFrom(here.place.id);
         update({ homeLabel: here.label });
         setGeoMsg(here.label === here.place.name ? `${here.label} 근처에 있는 것으로 정했어요.` : `${here.label}에 있는 것 같아요. ${here.place.name}에서 출발해요.`);
       },
-      () => setGeoMsg("위치를 허용하지 않아서 직접 골라야 해요."),
-      { timeout: 10000, maximumAge: 600000 },
+      () => setGeoMsg("위치를 찾지 못했어요. 직접 골라 주세요."),
     );
   };
 
