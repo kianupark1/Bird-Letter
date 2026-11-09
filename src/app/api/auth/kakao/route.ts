@@ -6,6 +6,8 @@ import { createAccessAssertion, createCustomToken, parseServiceAccount, verifyFi
 // 카카오로 "연결"하는 서버 입구. 폰이 카카오 code와 현재(익명) 계정의 Firebase 토큰을 보내면,
 // 카카오에 확인한 뒤 Firebase 커스텀 토큰을 돌려준다. 서비스 계정 키는 환경 변수에만 둔다(docs/로그인-설정.md).
 export const runtime = "nodejs";
+/** 카카오 개발자 콘솔의 앱 번호(새 편지). 앱의 간편 로그인 토큰이 다른 앱 것이 아닌지 확인할 때 써요 */
+const KAKAO_APP_ID = "1578396";
 export const dynamic = "force-dynamic";
 
 const siteUrl = () =>
@@ -64,11 +66,21 @@ export async function POST(req: Request) {
   let thumbP: Promise<string> = Promise.resolve("");
   const deps: KakaoDeps = {
     async kakaoUserId(code) {
+      // 앱의 카카오톡 간편 로그인(카카오 공식 아이폰 도구)이 준 접근 토큰: 우리 카카오 앱이 발급한 토큰인지 먼저 확인해요
+      let access_token: string;
+      if (code.startsWith("token:")) {
+        access_token = code.slice(6);
+        const info = await fetch("https://kapi.kakao.com/v1/user/access_token_info", { headers: { Authorization: `Bearer ${access_token}` } });
+        if (!info.ok) throw new Error("kakao-token-info");
+        const appId = String((await info.json())?.app_id ?? "");
+        if (appId !== (process.env.KAKAO_APP_ID?.trim() || KAKAO_APP_ID)) throw new Error("kakao-other-app");
+      } else {
       const form = new URLSearchParams({ grant_type: "authorization_code", client_id: restKey, redirect_uri: `${base}/auth/kakao`, code });
       if (process.env.KAKAO_CLIENT_SECRET) form.set("client_secret", process.env.KAKAO_CLIENT_SECRET.trim());
       const t = await fetch("https://kauth.kakao.com/oauth/token", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" }, body: form });
       if (!t.ok) throw new Error("kakao-token");
-      const { access_token } = await t.json();
+      access_token = (await t.json()).access_token;
+      }
       const me = await fetch("https://kapi.kakao.com/v2/user/me", { headers: { Authorization: `Bearer ${access_token}` } });
       if (!me.ok) throw new Error("kakao-me");
       const j = await me.json();

@@ -31,7 +31,7 @@ export async function loginWithKakao(input: { code?: unknown; idToken?: unknown 
 }
 
 export async function loginWithSocial(provider: SocialProvider, input: { code?: unknown; idToken?: unknown }, deps: KakaoDeps): Promise<KakaoResult> {
-  if (typeof input.code !== "string" || input.code.length < 5 || input.code.length > 600 || typeof input.idToken !== "string" || input.idToken.length > 4000) {
+  if (typeof input.code !== "string" || input.code.length < 5 || input.code.length > 1200 || typeof input.idToken !== "string" || input.idToken.length > 4000) {
     return { ok: false, status: 400, error: "bad-request" };
   }
   const me = await deps.verifyIdToken(input.idToken);

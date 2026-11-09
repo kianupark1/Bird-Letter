@@ -32,6 +32,8 @@ jobs:
           SKIP_PATCH: ${{ matrix.variant == 'nopatch' && '1' || '0' }}
           ADD_PLIST: ${{ matrix.variant == 'push' && '0' || '1' }}
           CAP_LOG: '1'
+          # 카카오톡 간편 로그인 꾸러미가 붙은 채로 빌드·실행되는지 보려고 시험용 가짜 키(실제 로그인은 안 됨)
+          KAKAO_NATIVE_KEY: '0123456789abcdef0123456789abcdef'
         run: bash scripts/ios-prepare.sh
       - name: 시뮬레이터용 빌드
         run: |
