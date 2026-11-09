@@ -1191,8 +1191,7 @@ main.app.room.chat .roomhead::before { content: ""; position: absolute; left: 0;
 .homepick .hp-btn { flex: 0 0 auto; width: auto; margin: 0; min-height: 44px; padding: 0 12px; font-size: 15px; }
 .homepick .hp-sel { flex: 1; min-width: 0; margin: 0; min-height: 44px; font-size: 15px; }
 
-/* 가장자리 밀기로 뒤로·앞으로(src/lib/swipeNav.ts): 손가락 따라 보이는 동그란 화살표 */
+/* 가장자리 밀기로 뒤로(src/lib/swipeNav.ts): 손가락 따라 보이는 동그란 화살표 */
 .swipe-tip { position: fixed; z-index: 9999; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
   font-size: 30px; line-height: 1; color: var(--on-dahong, #fff); background: var(--dahong); box-shadow: 0 4px 14px rgba(0,0,0,.2);
   opacity: 0; pointer-events: none; transition: opacity .12s; left: calc(8px + env(safe-area-inset-left, 0px)); }
-.swipe-tip[data-dir="forward"] { left: auto; right: calc(8px + env(safe-area-inset-right, 0px)); }
