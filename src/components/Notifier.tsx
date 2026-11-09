@@ -13,7 +13,8 @@ import { getRoute, routePosition } from "@/lib/routes";
 import { letterProgress, useLetters, useNow } from "@/lib/letters";
 import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
 import { useProfile } from "@/lib/settings";
-import { arrivalText, passingText } from "@/lib/notifyText";
+import { arrivalText, incomingPassingText, passingText, soonText } from "@/lib/notifyText";
+import { withIGa } from "@/lib/korean";
 import { hasPushSub, initAppPush, schedulePush, syncSubToServer, usePushState } from "@/lib/push";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import BirdIcon from "@/components/BirdIcon";
@@ -23,7 +24,7 @@ const STORE = "saepyeonji.notified.v1";
 const RECENT_MS = 24 * 3600 * 1000;
 
 type Popup = { key: string; id: string; birdId: string; title: string; sub: string };
-type Rec = { a: number; p: number; m?: number };
+type Rec = { a: number; p: number; m?: number; s?: number };
 
 function load(): Record<string, Rec> {
   try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; }
@@ -80,18 +81,26 @@ export default function Notifier() {
       // 길을 잃거나 나무에 걸렸을 때(내가 보낸 편지만, 한 번만)
       if (pr.mishap && !r.m && (pr.stalled || (pr.p > pr.mishap.at && !pr.done))) {
         r.m = 1; changed = true;
-        if (it.kind === "sent" && pr.stalled && profile.notify.passing) {
+        if (pr.stalled && profile.notify.passing) {
           const t = mishapMessage(pr.mishap.kind, getBird(it.birdId).name);
-          out.push({ key: `m-${it.id}`, id: it.id, birdId: it.birdId, title: `${it.who}에게 가는 편지: ${t.title}`, sub: t.body });
+          out.push({ key: `m-${it.id}`, id: it.id, birdId: it.birdId, title: it.kind === "sent" ? `${it.who}에게 가는 편지: ${t.title}` : `${withIGa(it.who)} 보낸 편지: ${t.title}`, sub: t.body });
         }
       }
-      // 경유지 통과(내가 보낸 편지만, 도착 전에)
+      // 경유지 통과(보낸 편지·받는 편지 모두, 도착 전에 — 2026-11-09 받는 사람도 실시간으로)
       if (!pr.done && pos.passedIdx > r.p) {
         const idx = pos.passedIdx;
         r.p = idx; changed = true;
-        if (it.kind === "sent" && profile.notify.passing && idx > 0) {
-          const t = passingText(it.who, route, it.birdId, idx);
+        if (profile.notify.passing && idx > 0) {
+          const t = it.kind === "sent" ? passingText(it.who, route, it.birdId, idx) : incomingPassingText(it.who, route, it.birdId, idx, Math.ceil(pr.total - pr.elapsed));
           out.push({ key: `p-${it.id}-${idx}`, id: it.id, birdId: it.birdId, title: t.title, sub: t.body });
+        }
+      }
+      // 받는 편지: 도착 30분 전 "곧 도착"(비행이 1시간 넘을 때, 한 번만)
+      if (it.kind === "received" && !pr.done && !r.s && pr.total > 60 && pr.total - pr.elapsed <= 30) {
+        r.s = 1; changed = true;
+        if (profile.notify.passing) {
+          const t = soonText(it.who, it.birdId, Math.max(1, Math.ceil(pr.total - pr.elapsed)));
+          out.push({ key: `s-${it.id}`, id: it.id, birdId: it.birdId, title: t.title, sub: t.body });
         }
       }
     }
@@ -132,20 +141,29 @@ export default function Notifier() {
           const t = arrivalText(it.kind, it.who, route, it.birdId);
           await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-${it.kind === "sent" ? "a" : "r"}` }, arriveMs);
         }
-        if (it.kind === "sent" && profile.notify.passing) {
+        if (profile.notify.passing) {
           const plan = pr.plan;
+          const mine = it.kind === "sent";
           if (plan.mishap && plan.stall) {
             const mt = it.sentAt + plan.stall.from;
             if (mt > Date.now()) {
               const t = mishapMessage(plan.mishap.kind, getBird(it.birdId).name);
-              await schedulePush(`${it.id}:m`, { title: `${it.who}에게 가는 편지: ${t.title}`, body: t.body, url, tag: `l-${it.id}-m` }, mt);
+              await schedulePush(`${it.id}:m`, { title: mine ? `${it.who}에게 가는 편지: ${t.title}` : `${withIGa(it.who)} 보낸 편지: ${t.title}`, body: t.body, url, tag: `l-${it.id}-m` }, mt);
             }
           }
           for (let i = 1; i < route.points.length - 1; i++) {
             const at = it.sentAt + elapsedAtFraction(plan, route.fractions[i]);
             if (at <= Date.now()) continue;
-            const t = passingText(it.who, route, it.birdId, i);
+            const t = mine ? passingText(it.who, route, it.birdId, i) : incomingPassingText(it.who, route, it.birdId, i, Math.ceil((arriveMs - at) / 60000));
             await schedulePush(`${it.id}:p${i}`, { title: t.title, body: t.body, url, tag: `l-${it.id}-p${i}` }, at);
+          }
+          // 받는 편지는 도착 30분 전에 "곧 도착"(비행이 1시간 넘을 때만) — 기다림의 마지막 설렘
+          if (!mine && pr.total > 60) {
+            const at = arriveMs - 30 * 60000;
+            if (at > Date.now()) {
+              const t = soonText(it.who, it.birdId, 30);
+              await schedulePush(`${it.id}:s`, { title: t.title, body: t.body, url, tag: `l-${it.id}-s` }, at);
+            }
           }
         }
       }

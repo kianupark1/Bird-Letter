@@ -19,6 +19,7 @@ import { useSession } from "@/lib/session";
 import JourneyMap from "@/components/JourneyMap";
 import LiveMap from "@/components/LiveMap";
 import ShareMap from "@/components/ShareMap";
+import LiveTrack from "@/components/LiveTrack";
 import BirdIcon from "@/components/BirdIcon";
 import ChatLetter from "@/components/ChatLetter";
 import RoomComposer, { type Resend } from "@/components/RoomComposer";
@@ -155,7 +156,7 @@ function Room() {
         <div className="ch-mapwrap">
           <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
             {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx ends /> : <div className="map" style={{ height: 108 }} aria-hidden />}
-            <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
+            <LiveTrack l={l} incoming={active.dir === "received"} />
             <span className="zoom" aria-hidden>⤢</span>
           </button>
           {!IS_TOSS && <button type="button" className="ch-share" onClick={() => setShareOn(true)}>📸 공유</button>}
