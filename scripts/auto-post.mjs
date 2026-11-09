@@ -18,7 +18,7 @@ const args = process.argv.slice(2);
 const SEND = args.includes("--send");
 const dateArg = args.includes("--date") ? args[args.indexOf("--date") + 1] : null;
 const today = dateArg ?? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date()); // YYYY-MM-DD
-// 하루 두 번(2026-11-04 대표님: "매번 똑같이보다 다르게 자주"): 낮 12시 = slot 없는 글(귀여운 그림), 저녁 8시 = slot "evening" 글(클래식 그림)
+// 하루 두 번(2026-11-04 대표님: "매번 똑같이보다 다르게 자주"): 아침 8시 30분(2026-11-09부터, 예전 낮 12시) = slot 없는 글(귀여운 그림), 저녁 6시(예전 8시) = slot "evening" 글(클래식 그림)
 const SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
 export const slotOf = (p) => (p.slot === "evening" ? "evening" : "noon");
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
@@ -194,7 +194,7 @@ export const POSTERS = { threads: postThreads, instagram: postInstagram, x: post
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => upgraded(p));
-  console.log(`${today} ${SLOT === "evening" ? "저녁" : "낮"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
+  console.log(`${today} ${SLOT === "evening" ? "저녁" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
