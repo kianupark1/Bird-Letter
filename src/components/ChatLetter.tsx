@@ -122,10 +122,9 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
             <ShareMap birdId={bird.id} name={isUnnamed(name) ? undefined : name} onClose={() => setShareOn(false)}
               input={{ route, birdName: bird.name, mine, p: pr.p, done, stalled: pr.stalled && pr.mishap ? pr.mishap.kind : null, leftMin: Math.max(1, pr.total - pr.elapsed), totalMin: pr.total }} />
           )}
-          {mine && !ownPhotos.length && photos.length > 0 && <span className="ch-thumbs">{photos.map((src, i) => <img key={i} src={src} alt={`보낸 사진 ${i + 1}`} />)}</span>}
-          {done && !mine ? (
+          {(done || mine) ? (
             <LetterReveal
-              message={body ?? ""} photos={photos} caption={`${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading
+              message={mine ? myText : body ?? ""} photos={mine && ownPhotos.length ? ownPhotos : photos} caption={mine ? "내가 보낸 사진" : `${bird.name}가 물고 온 사진`} sub={`${route.title} · ${dateTimeText(arriveAt)}`} loading={!mine}
               onSave={async (src) => {
                 try {
                   const r = await savePolaroid(src, `${bird.name}가 물고 온 사진`, `${route.title} · ${dateTimeText(arriveAt)}`);
