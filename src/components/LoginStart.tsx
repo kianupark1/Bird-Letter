@@ -1,4 +1,5 @@
 "use client";
+import { lastLogin, type LoginKind as LastKind } from "@/lib/lastLogin";
 import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -65,6 +66,11 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
     else setMsg(r.message);
   }
 
+  // 지난번에 이 폰에서 들어온 방법(같은 사람이 다른 버튼으로 또 가입해 계정이 둘이 되지 않게)
+  const [last, setLast] = useState<LastKind | null>(null);
+  useEffect(() => { setLast(lastLogin()?.kind ?? null); }, []);
+  const badge = (k: LastKind) => (last === k ? <span className="lastbadge">지난번에 이걸로 들어왔어요</span> : null);
+
   return (
     <main className="start">
       <div className="start-hero">
@@ -83,26 +89,26 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
       </div>
       <div className="start-btns">
         <button type="button" className="sbtn kakao" onClick={() => go("kakao")} disabled={busy !== null}>
-          <span aria-hidden>💬</span> 카카오로 가입하기
+          <span aria-hidden>💬</span> 카카오로 가입하기{badge("kakao")}
         </button>
         {/* 네이버(2026-10-28, 대표님: "어른들을 위해"): 네이버 개발자 센터 열쇠를 넣으면 보여요 */}
         {NAVER_LOGIN_READY && (
           <button type="button" className="sbtn naver" onClick={() => go("naver")} disabled={busy !== null}>
-            <span aria-hidden className="naver-n">N</span> 네이버로 가입하기
+            <span aria-hidden className="naver-n">N</span> 네이버로 가입하기{badge("naver")}
           </button>
         )}
         <button type="button" className="sbtn google" onClick={() => go("google")} disabled={busy !== null}>
-          {busy === "google" ? "열고 있어요…" : "구글로 가입하기"}
+          {busy === "google" ? "열고 있어요…" : "구글로 가입하기"}{badge("google")}
         </button>
         {/* 애플 로그인은 아이폰에서만: 다른 로그인(카카오·구글)을 주는 아이폰 앱은 애플 규칙(4.8)상 애플 로그인도 있어야 해요 */}
         {isIos && (
           <button type="button" className="sbtn apple" onClick={() => go("apple")} disabled={busy !== null}>
-            {busy === "apple" ? "열고 있어요…" : "애플로 가입하기"}
+            {busy === "apple" ? "열고 있어요…" : "애플로 가입하기"}{badge("apple")}
           </button>
         )}
         {PHONE_LOGIN_READY && (
           <button type="button" className="sbtn phone" onClick={() => setPhoneOn(true)} disabled={busy !== null}>
-            <span aria-hidden>📱</span> 휴대폰 번호로 가입하기
+            <span aria-hidden>📱</span> 휴대폰 번호로 가입하기{badge("phone")}
           </button>
         )}
         {phoneOn && <PhoneLogin title="휴대폰 번호로 가입하기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); markJustJoined(); onDone(); }} />}
