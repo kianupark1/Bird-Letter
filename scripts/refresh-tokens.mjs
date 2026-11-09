@@ -25,7 +25,7 @@ let failed = 0;
 const jobs = [];
 if (env("THREADS_ACCESS_TOKEN")) jobs.push(["THREADS_ACCESS_TOKEN", `https://graph.threads.net/refresh_access_token?grant_type=th_refresh_token&access_token=${encodeURIComponent(env("THREADS_ACCESS_TOKEN"))}`]);
 else console.log("- 스레드 열쇠가 아직 없어요(건너뜀)");
-if (env("IG_ACCESS_TOKEN") && env("IG_LOGIN") !== "facebook") jobs.push(["IG_ACCESS_TOKEN", `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${encodeURIComponent(env("IG_ACCESS_TOKEN"))}`]);
+if (env("IG_ACCESS_TOKEN") && env("IG_LOGIN") !== "facebook" && !/^EAA/.test(env("IG_ACCESS_TOKEN"))) jobs.push(["IG_ACCESS_TOKEN", `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${encodeURIComponent(env("IG_ACCESS_TOKEN"))}`]);
 else console.log("- 인스타: 페이지 열쇠(만료 없음)이거나 열쇠가 없어서 건너뜀");
 for (const [name, url] of jobs) { try { await refresh(name, url); } catch (e) { failed++; console.log("✗ " + e.message); } }
 process.exit(failed ? 1 : 0);

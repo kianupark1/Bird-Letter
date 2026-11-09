@@ -39,7 +39,7 @@ export function upgraded(p, exists = (rel) => existsSync(promoFile(rel))) {
 
 // 글마다 날짜(date) 대신 출시일 기준 며칠째(day: -3 = 출시 3일 전, 0 = 출시일)를 쓸 수 있어요.
 // 출시일(launch)이 정해지기 전(null)에는 day 글은 하나도 올라가지 않아요.
-const { launch, posts, stores = {}, channels } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
+const { launch, posts, stores = {}, channels, igUserId } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
 // 지금 집중하는 채널만 올림(schedule.json channels, 없으면 글에 적힌 곳 전부). 2026-11-09 대표님: 인스타·스레드·틱톡에 집중.
 export const targetsOf = (p, ch = channels) => (Array.isArray(ch) ? p.to.filter((t) => ch.includes(t)) : p.to);
 
@@ -97,7 +97,16 @@ async function waitReady(url, field, ok = "FINISHED") {
   throw new Error("영상 처리가 5분 넘게 안 끝났어요");
 }
 
-const igHost = () => (env("IG_LOGIN") === "facebook" ? "https://graph.facebook.com" : "https://graph.instagram.com");
+// 열쇠 종류: "EAA…"로 시작하면 페이스북식(통합 로그인·시스템 사용자 열쇠, 만료 없음) → graph.facebook.com
+export const igHostFor = (token, login) => (login === "facebook" || /^EAA/.test(token || "") ? "https://graph.facebook.com" : "https://graph.instagram.com");
+const igHost = () => igHostFor(env("IG_ACCESS_TOKEN"), env("IG_LOGIN"));
+/** 게시할 인스타 계정 번호: IG_USER_ID > (페이스북식 열쇠면) schedule.json igUserId > 열쇠로 알아냄 */
+async function igAccount(host, token) {
+  if (env("IG_USER_ID")) return env("IG_USER_ID");
+  if (host.includes("facebook") && igUserId) return igUserId;
+  const me = await call(`${host}/v21.0/me?fields=user_id,id&access_token=${encodeURIComponent(token)}`, { method: "GET" });
+  return me.user_id ?? me.id;
+}
 
 /** 열쇠 확인(--check): 계정 이름만 읽어 봐요. 아무것도 올리지 않아요. */
 async function checkKeys() {
@@ -108,7 +117,7 @@ async function checkKeys() {
   catch (e) { bad++; console.log("✗ 스레드 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
   const g = env("IG_ACCESS_TOKEN");
   if (!g) { bad++; console.log("✗ 인스타: IG_ACCESS_TOKEN 이 아직 없어요"); }
-  else try { const me = await call(`${igHost()}/v21.0/me?fields=id,username&access_token=${encodeURIComponent(g)}`, { method: "GET" }); console.log(`✓ 인스타 열쇠 OK → @${me.username}`); }
+  else try { const h = igHost(); const id = await igAccount(h, g); const me = await call(`${h}/v21.0/${id}?fields=id,username&access_token=${encodeURIComponent(g)}`, { method: "GET" }); console.log(`✓ 인스타 열쇠 OK → @${me.username} (${h.includes("facebook") ? "통합 로그인 열쇠" : "인스타 로그인 열쇠"})`); }
   catch (e) { bad++; console.log("✗ 인스타 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
   return bad;
 }
@@ -132,7 +141,7 @@ async function postInstagram(p) {
   if (!p.image && !p.video) throw new Error("인스타그램은 사진이나 영상이 꼭 필요해요");
   const host = igHost();
   // 인스타그램 로그인 열쇠: user_id = 게시용 인스타 프로페셔널 계정 번호(id는 앱 전용 번호라 쓰지 않음)
-  const id = env("IG_USER_ID") || await (async () => { const me = await call(`${host}/v21.0/me?fields=user_id,id&access_token=${encodeURIComponent(token)}`, { method: "GET" }); return me.user_id ?? me.id; })();
+  const id = await igAccount(host, token);
   const base = `${host}/v21.0/${id}`;
   const media = p.video ? { media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, share_to_feed: "true" } : { image_url: `${MEDIA_BASE}/cards/${p.image}` };
   const c = await call(`${base}/media`, { params: { caption: p.text, access_token: token, ...media } });
