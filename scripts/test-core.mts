@@ -744,7 +744,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("미리보기: 이름이 비면 기본 문구", previewText({ fromName: " " }, now), PREVIEW_DEFAULT);
 }
 
-import { fillText, storeLines, upgraded, slotOf, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, slotOf, targetsOf, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
 import { SLOGAN } from "../promo/store.mts";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
@@ -775,6 +775,8 @@ import { SLOGAN } from "../promo/store.mts";
   eq("업그레이드 영상: v2 표지가 있으면 새 표지", upgraded(v, () => true).cover, "video/v2/saepyeonji-15s-cover.png");
   eq("하루 두 번: slot 없는 글은 낮", slotOf({ text: "a", to: ["x"] }), "noon");
   eq("하루 두 번: evening 글은 저녁", slotOf({ text: "a", to: ["x"], slot: "evening" }), "evening");
+  eq("집중 채널: 인스타·스레드만 남김", targetsOf({ to: ["threads", "instagram", "x", "youtube"] }, ["instagram", "threads"]).join(","), "threads,instagram");
+  eq("집중 채널: 목록 없으면 전부", targetsOf({ to: ["threads", "x"] }, null).join(","), "threads,x");
   eq("업그레이드 영상: 사진 글은 그대로", upgraded({ text: "a", to: ["x"], image: "01.png" }, () => true).image, "01.png");
 }
 

@@ -38,7 +38,9 @@ export function upgraded(p, exists = (rel) => existsSync(promoFile(rel))) {
 
 // 글마다 날짜(date) 대신 출시일 기준 며칠째(day: -3 = 출시 3일 전, 0 = 출시일)를 쓸 수 있어요.
 // 출시일(launch)이 정해지기 전(null)에는 day 글은 하나도 올라가지 않아요.
-const { launch, posts, stores = {} } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
+const { launch, posts, stores = {}, channels } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
+// 지금 집중하는 채널만 올림(schedule.json channels, 없으면 글에 적힌 곳 전부). 2026-11-09 대표님: 인스타·스레드·틱톡에 집중.
+export const targetsOf = (p, ch = channels) => (Array.isArray(ch) ? p.to.filter((t) => ch.includes(t)) : p.to);
 
 // 글 속 {{받기}} 자리: 나온 스토어 주소만 넣어요(아이폰 먼저 출시). 인스타는 글 속 링크가 눌리지 않아서 프로필 링크로 안내해요.
 export function storeLines(st, to) {
@@ -195,7 +197,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   console.log(`${today} ${SLOT === "evening" ? "저녁" : "낮"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
-    for (const to of p.to) {
+    for (const to of targetsOf(p)) {
       let q;
       try { q = fillText(p, to); } catch (e) { failed++; console.log(`  ✗ [${to}] ${e.message}`); continue; }
       const media = p.video ? ` (+영상 ${p.video})` : p.image ? ` (+${p.image})` : "";
