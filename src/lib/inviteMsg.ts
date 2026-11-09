@@ -10,7 +10,9 @@ export const inviteLink = (code: string) => `${typeof location !== "undefined" ?
 export function inviteText(nickname: string) {
   const who = nickname || "친구";
   const live = STORE.android || !!STORE.iosUrl;
+  // 2026-11-09 대표님: "내가 보낸 걸 상대가 받길 원하는 것 · 카톡으로 힘든 말을 기분 풀리는 시간을 주는 것 · 궁금증"
+  const head = `💌 ${who}님이 당신과 편지를 주고받고 싶대요\n카톡으로는 꺼내기 어려운 말도, 새가 천천히 전해 주면 마음이 한결 풀려요 🕊`;
   return live
-    ? `${who}님이 새편지로 초대했어요 🕊 새가 편지를 물고 천천히 날아가는 앱이에요. 링크를 누르면 앱을 받고 바로 친구가 돼요.`
-    : `${who}님이 새편지로 초대했어요 🕊 새가 편지를 물고 천천히 날아가는 앱이에요. 링크를 누르면 버튼 한 번으로 가입하고 바로 친구가 돼요.`;
+    ? `${head}\n링크를 누르면 앱을 받고 바로 ${who}님과 친구가 돼요.`
+    : `${head}\n링크를 누르면 버튼 한 번으로 가입하고 바로 ${who}님과 친구가 돼요.`;
 }

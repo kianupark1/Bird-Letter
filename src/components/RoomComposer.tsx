@@ -297,7 +297,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => { if (!penpal) { setSeoulOpen(false); setSheet(ok ? "place" : "quick"); } }}>
         <span aria-hidden>📍</span>
         <span>{ok && route ? <>{penpal ? cityLabel(fromId) : getPlace(fromId)?.name} → {penpal ? cityLabel(toPick) : getPlace(toPick)?.name} · {route.km}km{declared ? " ✓" : ""}</> : `${name}님이 계신 곳 고르기`}{later && departMs ? ` · ⏰ ${dateTimeText(departMs)}` : ""}</span>
-        <span aria-hidden>›</span>
+        {/* 2026-11-09 대표님: "눌러서 위치를 정하는 건지 모르겠어, 글로 '위치 설정하기'" */}
+        {!penpal ? <span className="ch-setlbl">위치 설정하기 ›</span> : <span aria-hidden>›</span>}
       </button>
       <div className="ch-inrow">
         <button type="button" className="ch-plus" aria-label="새·사진·나중에 보내기" onClick={() => setSheet("more")}>＋</button>

@@ -44,6 +44,11 @@ const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.pro
 // 안드로이드 크롬의 "설치할 수 있어요" 신호(beforeinstallprompt)는 화면이 다 뜨기 전에 올 수 있어요.
 // 놓치면 [홈 화면에 추가]가 버튼 한 번 설치 대신 메뉴 안내로 바뀌어서, 맨 먼저 받아 둬요(src/lib/install.ts가 이어받음)
 const INSTALL_SCRIPT = `try{addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__bip=e;try{dispatchEvent(new Event("saepyeonji:install-changed"))}catch(x){}})}catch(e){}`;
+// 첫 화면(2026-11-09 대표님: "뜨는 게 더 자연스럽고 빨리, 첫 이미지가 가장 중요"): 앱 시작 그림(한지 + 편지 문 까치)과
+// 똑같은 그림을 웹이 그리기 전 첫 순간부터 보여 주고, 화면 내용이 준비되면 까치가 살짝 떠오르며 스르륵 걷혀요.
+// → 앱 시작 그림 → 빈 화면 → 내용으로 '깜빡'이던 것이 한 장면으로 이어져요. 자바스크립트가 늦어도 4초 뒤엔 저절로 걷혀요.
+const BOOT_CSS = `#boot{position:fixed;inset:0;z-index:2147483600;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FBF3E4;transition:opacity .22s ease-out,visibility .22s;animation:bootauto .4s 4s forwards}#boot picture,#boot img{display:block;width:22vmax;height:22vmax;max-width:210px;max-height:210px;transition:transform .3s cubic-bezier(.2,.8,.2,1)}#boot .bt{margin-top:22px;font:800 26px/1.2 -apple-system,"Apple SD Gothic Neo",sans-serif;letter-spacing:-.5px;color:#2B2420;opacity:0;animation:bootin .45s .25s forwards}#boot .bs{margin-top:8px;font:500 15px/1.4 -apple-system,"Apple SD Gothic Neo",sans-serif;color:#C1481F;opacity:0;animation:bootin .45s .4s forwards}#boot.out{opacity:0;visibility:hidden;pointer-events:none}#boot.out img{transform:translateY(-14px) scale(1.06)}@keyframes bootin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}@keyframes bootauto{to{opacity:0;visibility:hidden}}@media (prefers-color-scheme:dark){#boot{background:#1A1613}#boot .bt{color:#EFE6D8}#boot .bs{color:#E8683F}}@media (prefers-reduced-motion:reduce){#boot,#boot *{animation-duration:.01s!important;transition:none!important}}`;
+
 const UPDATE_SCRIPT = `try{var t0=Date.now(),hit=false;addEventListener("pointerdown",function(){hit=true},true);var go=function(){try{var k="saepyeonji.swreload",l=+sessionStorage.getItem(k)||0;if(Date.now()-l<30000)return;sessionStorage.setItem(k,String(Date.now()))}catch(e){}location.reload()};navigator.serviceWorker&&navigator.serviceWorker.addEventListener("message",function(e){if(!e.data||e.data.type!=="new-version")return;if(!hit&&Date.now()-t0<6000)go()})}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -54,8 +59,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: SCALE_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: INSTALL_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: UPDATE_SCRIPT }} />
+        <style dangerouslySetInnerHTML={{ __html: BOOT_CSS }} />
       </head>
       <body>
+        <div id="boot" aria-hidden="true">
+          <picture>
+            <source srcSet="/boot-icon-dark.png" media="(prefers-color-scheme: dark)" />
+            <img src="/boot-icon.png" alt="" width={210} height={210} fetchPriority="high" />
+          </picture>
+          <div className="bt">새 편지</div>
+          <div className="bs">기다림도 소통의 일부입니다.</div>
+        </div>
         {children}
         <FontScale />
         <SwBoot />
