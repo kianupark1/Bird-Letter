@@ -874,5 +874,19 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("애플 결제: 환불된 거래는 0장", stampsFor({ ...ok!, revocationDate: 5 }, true), 0);
   eq("애플 결제: 모르는 상품은 0장", stampsFor({ ...ok!, productId: "x" }, true), 0);
 }
+
+// ── 가장자리 밀기로 뒤로·앞으로(2026-11-09) ──
+{
+  const { swipeAction, swipeProgress } = await import("../core/swipeNav.ts");
+  const W = 390;
+  eq("밀기: 왼쪽 끝에서 오른쪽 → 뒤로", swipeAction({ x0: 5, y0: 300, x1: 160, y1: 310, ms: 250, width: W }), "back");
+  eq("밀기: 오른쪽 끝에서 왼쪽 → 앞으로", swipeAction({ x0: 385, y0: 300, x1: 230, y1: 305, ms: 250, width: W }), "forward");
+  eq("밀기: 가운데서 시작하면 아무것도", swipeAction({ x0: 150, y0: 300, x1: 330, y1: 300, ms: 200, width: W }), null);
+  eq("밀기: 짧게 밀면 아무것도", swipeAction({ x0: 5, y0: 300, x1: 50, y1: 300, ms: 200, width: W }), null);
+  eq("밀기: 세로로 더 많이 움직이면(목록 내리기) 아무것도", swipeAction({ x0: 5, y0: 100, x1: 120, y1: 400, ms: 300, width: W }), null);
+  eq("밀기: 너무 천천히면 아무것도", swipeAction({ x0: 5, y0: 300, x1: 160, y1: 300, ms: 2000, width: W }), null);
+  eq("밀기: 왼쪽 끝에서 왼쪽으로는 아무것도", swipeAction({ x0: 5, y0: 300, x1: 0, y1: 300, ms: 200, width: W }), null);
+  eq("밀기: 진행 표시 방향", swipeProgress(5, 40, W)?.dir, "back");
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

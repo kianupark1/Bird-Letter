@@ -5,6 +5,8 @@ import { useEffect } from "react";
 export default function SwBoot() {
   // 스토어 앱이면 안드로이드 뒤로 가기 버튼을 앱답게(src/lib/appShell.ts)
   useEffect(() => { void import("@/lib/appShell").then((m) => m.initAppShell()).catch(() => {}); }, []);
+  // 아이폰 앱이면 화면 가장자리를 밀어 뒤로·앞으로(src/lib/swipeNav.ts)
+  useEffect(() => { void import("@/lib/swipeNav").then((m) => m.initSwipeNav()).catch(() => {}); }, []);
   useEffect(() => {
     if (!("serviceWorker" in navigator) || process.env.NODE_ENV !== "production") return;
     const go = () => navigator.serviceWorker.register("/sw.js").catch(() => {});

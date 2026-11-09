@@ -15,7 +15,7 @@ export function initAppShell() {
   import("@capacitor/app").then(({ App }) => {
     void App.addListener("backButton", ({ canGoBack }) => {
       // 열린 창 먼저 닫기(얼굴 크게 보기 ✕, 아래에서 올라온 시트의 어두운 바깥)
-      const close = document.querySelector<HTMLElement>(".pz-x, .ch-dim");
+      const close = document.querySelector<HTMLElement>(".pz-x, .ch-dim, .mf-close, .whobtn");
       if (close) { close.click(); return; }
       if (TAB_ROOTS.includes(location.pathname)) { void App.minimizeApp(); return; }
       if (canGoBack) history.back();
