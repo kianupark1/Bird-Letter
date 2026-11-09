@@ -36,6 +36,7 @@ import FirstTour from "@/components/FirstTour";
 import { isWelcome } from "../../core/welcome";
 import WhoSearch from "@/components/WhoSearch";
 import { rowInfo } from "@/lib/chatRow";
+import { KIND_LABEL, loginKind, markSameAsked, otherAccountHere, saveLastLogin, type LastLogin } from "@/lib/lastLogin";
 
 export default function Home() {
   const { state, recheck } = useSession();
@@ -124,6 +125,8 @@ function InboxList({ welcome }: { welcome?: string }) {
   const now = useNow();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [opened, setOpened] = useState<Set<string>>(new Set());
+  const [friendsLoaded, setFriendsLoaded] = useState(false);
+  const [sameMe, setSameMe] = useState<LastLogin | null>(null);
 
   // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
   useBeforePaint(() => {
@@ -132,7 +135,7 @@ function InboxList({ welcome }: { welcome?: string }) {
   }, []);
   useEffect(() => {
     listFriends().then((list) => {
-      setFriends(list);
+      setFriends(list); setFriendsLoaded(true);
       // 아직 임시 계정(로그인 전)인데 친구가 있으면 기억해 둬요 → 로그인하면 그 친구들과 저절로 다시 이어지고,
       // 친구 화면에서도 임시 계정과 로그인 계정이 한 사람으로 모여요(합치기를 누르지 않아도)
       try { const u = auth().currentUser; if (u?.isAnonymous) for (const f of list) rememberSender(u.uid, { uid: f.uid, name: f.name }); } catch {}
@@ -142,8 +145,29 @@ function InboxList({ welcome }: { welcome?: string }) {
   useEffect(() => { void import("@/lib/appShell").then((m) => m.maybeAskReview()).catch(() => {}); }, []);
 
   const friendBird = useMemo(() => new Map(friends.map((f) => [f.uid, f])), [friends]);
-  // 내 거리 기록을 서버에 올려 둬요(친구가 랭킹에서 볼 수 있게). 로그인한 사람만, 값이 바뀔 때만 올려요
   const { profile: me } = useProfile();
+  // 같은 사람이 계정 둘로 갈라지지 않게: 이 폰의 지난 계정과 다르면 한 번 묻고, 아니면 지금 계정을 기억해요(src/lib/lastLogin.ts)
+  useEffect(() => {
+    if (!firebaseEnabled || !friendsLoaded || isE2E()) return;
+    let u; try { u = auth().currentUser; } catch { return; }
+    if (!u || u.isAnonymous) return;
+    const other = otherAccountHere(u.uid);
+    if (other) { setSameMe(other); return; }
+    const uid = u.uid;
+    void loginKind(u).then((kind) => { if (kind) saveLastLogin({ uid, kind, name: me.nickname, friends: friends.map((f) => ({ uid: f.uid, name: f.name })).slice(0, 200), at: Date.now() }); });
+  }, [friendsLoaded, friends, me.nickname]); // eslint-disable-line react-hooks/exhaustive-deps
+  const answerSameMe = (yes: boolean) => {
+    const old = sameMe; if (!old) return;
+    let uid = ""; try { uid = auth().currentUser?.uid ?? ""; } catch {}
+    if (!uid) return;
+    markSameAsked(old.uid, uid, yes ? "yes" : "no");
+    setSameMe(null);
+    if (!yes) return;
+    // 예전 계정의 친구들과 다시 이어요. 친구들 화면에서는 예전 계정(prev)과 지금 계정이 한 사람으로 모여요
+    void Promise.all(old.friends.filter((f) => f.uid !== uid).map((f) => befriendSender(f, me.nickname, me.avatarBird, me.photo, [old.uid]).catch(() => {})))
+      .then(() => listFriends({ fresh: true }).then(setFriends)).catch(() => {});
+  };
+  // 내 거리 기록을 서버에 올려 둬요(친구가 랭킹에서 볼 수 있게). 로그인한 사람만, 값이 바뀔 때만 올려요
   useEffect(() => {
     if (!ready || !firebaseEnabled) return;
     try { const u = auth().currentUser; if (!u || u.isAnonymous) return; } catch { return; }
@@ -237,6 +261,17 @@ function InboxList({ welcome }: { welcome?: string }) {
 
       {ready && threads.length > 0 && <HomeCountdown threads={threads} />}
 
+      {sameMe && (
+        <div className="sameme" role="dialog" aria-label="같은 사람 확인">
+          <b>이 폰에서 전에 {KIND_LABEL[sameMe.kind]}로 쓰던 ‘{sameMe.name || "예전"}’ 계정이 있어요</b>
+          <span>같은 사람이면 친구 {sameMe.friends.length}명을 지금 계정으로 이어 드려요. 친구 화면에서도 한 사람으로 보여요.</span>
+          <span className="sameme-btns">
+            <button type="button" className="chip hot" onClick={() => answerSameMe(true)}>네, 저예요</button>
+            <button type="button" className="chip" onClick={() => answerSameMe(false)}>아니에요</button>
+          </span>
+          <small>다음부터는 {KIND_LABEL[sameMe.kind]}로 들어오면 계정이 하나로 유지돼요</small>
+        </div>
+      )}
       {welcome && <div className="welcomebar" role="status">{welcome} <Link href="/settings">바꾸기 ›</Link></div>}
 
       {settled && threads.length === 0 && (

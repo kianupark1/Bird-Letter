@@ -1216,3 +1216,13 @@ html { background: var(--bg); }
 .ltrack .lt-bar { display: block; height: 3px; margin-top: 3px; border-radius: 2px; background: color-mix(in srgb, var(--hwangto) 25%, transparent); overflow: hidden; }
 .ltrack .lt-bar i { display: block; height: 100%; background: var(--hwangto); transition: width 1s linear; }
 main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
+
+/* 같은 사람 확인(src/lib/lastLogin.ts): 이 폰의 지난 계정과 다른 계정으로 들어왔을 때 한 번 */
+.sameme { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 12px; padding: 14px 16px; border-radius: 16px; background: var(--card, #fff); border: 2px solid color-mix(in srgb, var(--dahong) 35%, transparent); }
+.sameme b { font-size: 16px; }
+.sameme span { font-size: 14px; line-height: 1.45; }
+.sameme .sameme-btns { display: flex; gap: 8px; margin-top: 4px; }
+.sameme small { font-size: 12px; opacity: .7; }
+/* 첫 화면: 지난번에 들어온 방법 */
+.sbtn { position: relative; }
+.sbtn .lastbadge { position: absolute; top: -9px; right: 12px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--dahong); color: var(--on-dahong, #fff); box-shadow: 0 1px 3px rgba(0,0,0,.15); }

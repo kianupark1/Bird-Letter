@@ -263,6 +263,15 @@
 - **위치 줄**: 편지 쓰기 위 📍 줄 오른쪽에 다홍 알약 "위치 설정하기 ›"(`.ch-setlbl`, 펜팔 제외).
 - **대화방 지도**: 제목줄과 날아가는 편지 지도를 한 덩어리(`.roomtop`)로 위에 붙임(편지를 내려 봐도 늘 보임), 지도 높이 150 → 108px. 날아가는 편지가 없으면 지도 없음. test:core 466, e2e-local 28, 밀기 8.
 
+## 카카오톡 간편 로그인·앱으로 바로 열기·같은 사람 하나로 5차 (2026-11-09 밤, 대표님: "카카오 로그인 안 치고 바로", "내 위치 찾기 오래 걸려", "보내기 눌러도 안 가", "앱 깔면 앱으로 바로", "번호·카톡 기반으로 사람이 겹치면 안 돼")
+
+- **카카오톡 간편 로그인**(`src/lib/firebase/kakao.ts startKakaoLogin`): ①스토어 앱 = 카카오 공식 아이폰 도구(SPM 꾸러미 `native/ios/SaepyeonjiKakao`, `scripts/ios-kakao.mjs`가 CapApp-SPM·packageClassList·Info.plist `kakao{키}`·`kakaokompassauth`에 붙임) → 접근 토큰 → 서버 `/api/auth/kakao`가 `access_token_info`로 우리 앱(1578396) 것인지 확인 ②웹 = 카카오 JS 도구 `throughTalk`(`NEXT_PUBLIC_KAKAO_JS_KEY` 있을 때) ③그 밖 예전 화면. **네이티브 앱 키(`native/kakao-native-key.txt`)·JS 키·카카오 콘솔 iOS 플랫폼 등록 = 대표님 대기**. 시뮬레이터 빌드(가짜 키) 통과.
+- **내 위치 빨리**(`src/lib/fastGeo.ts quickPosition`): 폰에 남은 위치 바로·대략 위치 5km/2초·30분 재사용(메모리만). 앱 Info.plist 위치 안내 추가.
+- **보내기**: 위치 줄을 새 고르기 위로(➤와 멀리), 시트가 열리면 키보드 내림(아이폰에서 시트가 키보드 뒤에 숨었음), ➤ 눌러도 키보드 유지. **위치 가나다 순**(`placesByRegion`, 큰 도시·서울 구).
+- **친구 이름은 친구가 정한 이름 먼저**(`PeopleBook.pin`: 내가 ✎로 직접 바꾼 이름만 앞섬), 내 프로필 바꾸면 친구들 화면에도 바로(`profileSync` → `syncMyName`).
+- **앱으로 바로 열기**: 유니버설 링크(`/.well-known/apple-app-site-association`, entitlements `applinks:bird-letter.vercel.app`, `ios-signing.mjs`가 ASSOCIATED_DOMAINS 켬), `saepyeonji://open?path=`, 사파리 앱 띠(`itunes` 메타), 카톡 안 '앱 받기'는 앱부터(`src/lib/openApp.ts`), 앱은 `appUrlOpen`으로 이동(`appShell.ts appPathOf`). 새 앱 파일부터.
+- **같은 사람 하나로 5차**(`src/lib/lastLogin.ts`): 카카오 계정 하나 = 새편지 계정 하나(서버 `kakaoAccounts`)라 겹침은 같은 사람이 구글·애플로 또 가입할 때 → 첫 화면에 "지난번에 이걸로 들어왔어요" 표시, 이 폰에서 다른 계정으로 들어오면 "전에 쓰던 ○○ 계정과 같은 사람인가요?" → 네면 예전 친구들과 이어 주고 `prev`로 한 사람. **번호로 같은 사람 찾기는 확인된 번호가 필요**(카카오 동의항목 전화번호 = 비즈 앱·검수, 또는 문자 인증 = Blaze·요금) → 법무·대표님 결정 뒤.
+
 ## 나중에 넣을 것 (2026-10-18 밤, 대표님: "우선 이건 나중에")
 
 - **이미 새편지를 쓰는 사람을 앱 안에서 친구로 추가**(지금은 초대·편지 링크를 한 번 주고받아야 친구가 됨). 제안: "내 QR 보여 주기 → 친구가 앱으로 찍으면 바로 친구"(이름 검색은 원치 않는 연락 위험).
