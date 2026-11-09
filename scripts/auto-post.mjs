@@ -119,6 +119,13 @@ async function checkKeys() {
   if (!g) { bad++; console.log("✗ 인스타: IG_ACCESS_TOKEN 이 아직 없어요"); }
   else try { const h = igHost(); const id = await igAccount(h, g); const me = await call(`${h}/v21.0/${id}?fields=id,username&access_token=${encodeURIComponent(g)}`, { method: "GET" }); console.log(`✓ 인스타 열쇠 OK → @${me.username} (${h.includes("facebook") ? "통합 로그인 열쇠" : "인스타 로그인 열쇠"})`); }
   catch (e) { bad++; console.log("✗ 인스타 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
+  if (!Array.isArray(channels) || channels.includes("x")) {
+    const k = { key: env("X_API_KEY"), secret: env("X_API_SECRET"), token: env("X_ACCESS_TOKEN"), tokenSecret: env("X_ACCESS_SECRET") };
+    const miss = Object.entries({ X_API_KEY: k.key, X_API_SECRET: k.secret, X_ACCESS_TOKEN: k.token, X_ACCESS_SECRET: k.tokenSecret }).filter(([, v]) => !v).map(([n]) => n);
+    if (miss.length) { bad++; console.log("✗ X: 아직 없는 열쇠 → " + miss.join(", ")); }
+    else try { const u = "https://api.x.com/2/users/me"; const me = await call(u, { method: "GET", headers: { Authorization: oauthHeader("GET", u, k) } }); console.log(`✓ X 열쇠 OK → @${me.data?.username}`); }
+    catch (e) { bad++; console.log("✗ X 열쇠 확인 실패(크레딧이 0이면 이렇게 나올 수 있어요) → " + e.message.slice(0, 200)); }
+  }
   return bad;
 }
 
