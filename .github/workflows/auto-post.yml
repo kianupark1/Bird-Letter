@@ -19,7 +19,8 @@ on:
 jobs:
   post:
     # 레포 Settings → Secrets and variables → Actions → Variables 에 AUTO_POST_ENABLED = true 를 넣어야 켜져요(기본은 꺼짐)
-    if: ${{ vars.AUTO_POST_ENABLED == 'true' }}
+    # 예약 실행은 AUTO_POST_ENABLED=true일 때만, 손으로 누른 실행(열쇠 확인·미리보기)은 언제나
+    if: ${{ vars.AUTO_POST_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -45,4 +46,5 @@ jobs:
           SEND: ${{ github.event_name == 'schedule' && 'true' || inputs.send }}
           SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 9 * * *' && 'evening' || 'noon') || inputs.slot }}
         run: |
+          if [ "$SEND" != "true" ]; then echo "── 열쇠 확인 ──"; node scripts/auto-post.mjs --check || echo "(열쇠가 아직 다 들어가지 않았어요 — 위 ✗ 줄을 보세요)"; echo "── 오늘 글 미리보기 ──"; fi
           if [ "$SEND" = "true" ]; then node scripts/auto-post.mjs --send --slot "$SLOT"; else node scripts/auto-post.mjs --slot "$SLOT"; fi

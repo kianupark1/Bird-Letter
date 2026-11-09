@@ -3,12 +3,13 @@
 // 일정은 promo/schedule.json, 매일 자동 실행은 .github/workflows/auto-post.yml, 열쇠 자동 갱신은 refresh-tokens.yml 이에요.
 //
 // 필요한 비밀값(GitHub 레포 Settings → Secrets and variables → Actions 에 넣기, 코드에 적지 마세요):
-//   THREADS_USER_ID, THREADS_ACCESS_TOKEN                     스레드(Threads API)
-//   IG_USER_ID, IG_ACCESS_TOKEN                               인스타그램(비즈니스 계정, Graph API)
+//   THREADS_ACCESS_TOKEN                                      스레드(Threads API). THREADS_USER_ID는 없어도 됨(없으면 열쇠로 알아냄)
+//   IG_ACCESS_TOKEN                                           인스타그램(인스타그램 로그인으로 받은 열쇠). IG_USER_ID는 없어도 됨(없으면 열쇠로 알아냄)
 //   X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET  X(쓴 만큼 내는 요금, 글 1개 약 0.015달러·링크가 있으면 0.2달러 「미확인」)
 //   YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN          유튜브 쇼츠(영상 글만, scripts/youtube-login.mjs 로 받음)
 // 선택: YT_PRIVACY=public  유튜브 API 심사를 통과한 뒤에만(심사 전 프로젝트는 유튜브가 "비공개"로만 올려 줘요 → 기본 private)
-// 선택: IG_LOGIN=instagram  인스타 열쇠를 "인스타그램 로그인"으로 받았으면(기본은 페이스북 페이지 연결)
+// 선택: IG_LOGIN=facebook   인스타 열쇠를 "페이스북 페이지 연결"로 받았을 때만(2026-11-09부터 기본은 인스타그램 로그인)
+// 열쇠 확인: node scripts/auto-post.mjs --check  (스레드·인스타 열쇠가 맞는지 계정 이름만 확인, 아무것도 안 올림)
 //       MEDIA_BASE_URL       그림·영상이 올라가 있는 공개 주소(기본: 이 레포 main 브랜치의 promo 폴더)
 // 글의 image는 promo/cards 안 파일, video는 promo 아래 경로(예: video/saepyeonji-15s.mp4 → 인스타 릴스·스레드 영상, X는 표지 사진)
 import { existsSync, readFileSync } from "node:fs";
@@ -96,9 +97,26 @@ async function waitReady(url, field, ok = "FINISHED") {
   throw new Error("영상 처리가 5분 넘게 안 끝났어요");
 }
 
+const igHost = () => (env("IG_LOGIN") === "facebook" ? "https://graph.facebook.com" : "https://graph.instagram.com");
+
+/** 열쇠 확인(--check): 계정 이름만 읽어 봐요. 아무것도 올리지 않아요. */
+async function checkKeys() {
+  let bad = 0;
+  const t = env("THREADS_ACCESS_TOKEN");
+  if (!t) { bad++; console.log("✗ 스레드: THREADS_ACCESS_TOKEN 이 아직 없어요"); }
+  else try { const me = await call(`https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(t)}`, { method: "GET" }); console.log(`✓ 스레드 열쇠 OK → @${me.username}`); }
+  catch (e) { bad++; console.log("✗ 스레드 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
+  const g = env("IG_ACCESS_TOKEN");
+  if (!g) { bad++; console.log("✗ 인스타: IG_ACCESS_TOKEN 이 아직 없어요"); }
+  else try { const me = await call(`${igHost()}/v21.0/me?fields=id,username&access_token=${encodeURIComponent(g)}`, { method: "GET" }); console.log(`✓ 인스타 열쇠 OK → @${me.username}`); }
+  catch (e) { bad++; console.log("✗ 인스타 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
+  return bad;
+}
+
 async function postThreads(p) {
-  const id = env("THREADS_USER_ID"), token = env("THREADS_ACCESS_TOKEN");
-  if (!id || !token) throw new Error("THREADS_USER_ID / THREADS_ACCESS_TOKEN 이 없어요");
+  const token = env("THREADS_ACCESS_TOKEN");
+  if (!token) throw new Error("THREADS_ACCESS_TOKEN 이 없어요");
+  const id = env("THREADS_USER_ID") || (await call(`https://graph.threads.net/v1.0/me?fields=id&access_token=${encodeURIComponent(token)}`, { method: "GET" })).id;
   const base = `https://graph.threads.net/v1.0/${id}`;
   const media = p.video ? { media_type: "VIDEO", video_url: `${MEDIA_BASE}/${p.video}` }
     : p.image ? { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${p.image}` } : { media_type: "TEXT" };
@@ -109,10 +127,12 @@ async function postThreads(p) {
 }
 
 async function postInstagram(p) {
-  const id = env("IG_USER_ID"), token = env("IG_ACCESS_TOKEN");
-  if (!id || !token) throw new Error("IG_USER_ID / IG_ACCESS_TOKEN 이 없어요");
+  const token = env("IG_ACCESS_TOKEN");
+  if (!token) throw new Error("IG_ACCESS_TOKEN 이 없어요");
   if (!p.image && !p.video) throw new Error("인스타그램은 사진이나 영상이 꼭 필요해요");
-  const host = env("IG_LOGIN") === "instagram" ? "https://graph.instagram.com" : "https://graph.facebook.com";
+  const host = igHost();
+  // 인스타그램 로그인 열쇠: user_id = 게시용 인스타 프로페셔널 계정 번호(id는 앱 전용 번호라 쓰지 않음)
+  const id = env("IG_USER_ID") || await (async () => { const me = await call(`${host}/v21.0/me?fields=user_id,id&access_token=${encodeURIComponent(token)}`, { method: "GET" }); return me.user_id ?? me.id; })();
   const base = `${host}/v21.0/${id}`;
   const media = p.video ? { media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, share_to_feed: "true" } : { image_url: `${MEDIA_BASE}/cards/${p.image}` };
   const c = await call(`${base}/media`, { params: { caption: p.text, access_token: token, ...media } });
@@ -191,7 +211,10 @@ async function postYouTube(p) {
 
 export const POSTERS = { threads: postThreads, instagram: postInstagram, x: postX, youtube: postYouTube };
 
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
+if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && args.includes("--check")) {
+  process.exit((await checkKeys()) ? 1 : 0);
+}
+if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && !args.includes("--check")) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => upgraded(p));
   console.log(`${today} ${SLOT === "evening" ? "저녁" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
