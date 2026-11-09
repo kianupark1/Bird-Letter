@@ -1,0 +1,11 @@
+2026-11-09 14:32:27.931 App[15676:51165] DiskCookieStorage changing policy from 2 to 0, cookie file: file:///Users/runner/Library/Developer/CoreSimulator/Devices/98A0BFA3-CEC3-4FD6-9916-5A2149774DBF/data/Containers/Data/Application/406D0DBD-6D1A-4D2C-A7AE-CFCBC38EEF0C/Library/Cookies/com.saepyeonji.app.binarycookies
+⚡️  Loading app at https://bird-letter.vercel.app...
+[ FirebaseAuthentication ]  <FirebaseAuthenticationPlugin.RuntimeError: 0x60000023ac00>
+⚡️  WebView loaded
+⚡️  To Native ->  FirebaseMessaging checkPermissions 22567013
+⚡️  To Native ->  FirebaseMessaging addListener 22567014
+⚡️  To Native ->  FirebaseMessaging addListener 22567015
+⚡️  To Native ->  App addListener 22567016
+⚡️  To Native ->  App addListener 22567017
+⚡️  TO JS {"receive":"prompt"}
+com.saepyeonji.app: 15676
