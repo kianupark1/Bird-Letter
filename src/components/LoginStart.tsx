@@ -1,4 +1,5 @@
 "use client";
+import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import PhoneLogin from "@/components/PhoneLogin";
@@ -110,7 +111,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         {(canHome || phone) && (
           <div className="start-opts">
             {phone && (store ? (
-              <a className="sopt o-store" href={store.url}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
+              <a className="sopt o-store" href={store.url} onClick={(e) => openAppOrStore(e, store.url)}><span aria-hidden>📲</span> {store.label.replace("에서 앱 받기", "")}에서 받기</a>
             ) : (
               <button type="button" className="sopt o-store" onClick={() => setSoon(true)}>
                 <span aria-hidden>📲</span> {phone === "ios" ? "앱스토어" : "구글 플레이"}에서 받기

@@ -10,6 +10,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return {
     title,
     description,
+    // 사파리 위 "새 편지 앱에서 열기" 띠: 앱이 있으면 [열기]로 이 편지가 바로 열려요
+    itunes: { appId: "6828785320", appArgument: `https://bird-letter.vercel.app/letter/${id}` },
     openGraph: { title, description, images: [{ url: "/og.png", width: 1200, height: 630 }], locale: "ko_KR", type: "website" },
   };
 }

@@ -1,4 +1,5 @@
 "use client";
+import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import JourneyMap from "@/components/JourneyMap";
@@ -257,7 +258,7 @@ export default function LetterView({ id }: { id: string }) {
         <div className="recvcard">
           <b>내 편지함에 받았어요 💌</b>
           <span>앱을 받아 <b>같은 계정</b>으로 시작하면 이 편지가 그대로 있어요. 도착하면 알림도 와요.</span>
-          <a href={store.url} className="cta big">📲 {store.label}</a>
+          <a href={store.url} className="cta big" onClick={(e) => openAppOrStore(e, store.url)}>📲 {store.label}</a>
         </div>
       )}
 

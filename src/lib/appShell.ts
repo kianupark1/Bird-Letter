@@ -9,6 +9,16 @@ const isNative = () => typeof window !== "undefined" && !!(window as any).Capaci
 const TAB_ROOTS = ["/", "/friends", "/pen", "/rank"];
 let started = false;
 
+/** 앱을 연 주소에서 앱 안 화면 주소만 꺼내요(우리 사이트·saepyeonji:// 만, 그 밖은 무시) */
+export function appPathOf(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "saepyeonji:") { const p = u.searchParams.get("path") || "/"; return p.startsWith("/") && !p.startsWith("//") ? p : null; }
+    if (u.protocol === "https:" && u.hostname === "bird-letter.vercel.app") return u.pathname + u.search;
+  } catch {}
+  return null;
+}
+
 export function initAppShell() {
   if (started || !isNative()) return;
   started = true;
@@ -20,6 +30,11 @@ export function initAppShell() {
       if (TAB_ROOTS.includes(location.pathname)) { void App.minimizeApp(); return; }
       if (canGoBack) history.back();
       else location.href = "/";
+    });
+    // 앱이 있는 폰에서 편지·초대 링크를 누르면(유니버설 링크·saepyeonji:// ·사파리 앱 배너) 그 화면으로 바로 가요
+    void App.addListener("appUrlOpen", ({ url }) => {
+      const path = appPathOf(url);
+      if (path && path !== location.pathname + location.search) location.href = path;
     });
   }).catch(() => {});
 }

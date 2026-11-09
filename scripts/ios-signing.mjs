@@ -65,6 +65,12 @@ async function create() {
   const bundle = ids.data.find((b) => b.attributes.identifier === BUNDLE);
   if (!bundle) throw new Error(`${BUNDLE} 번들 ID가 등록돼 있지 않아요`);
 
+  // 유니버설 링크(앱이 있으면 링크를 앱으로 바로) 기능을 번들 ID에 켜요. 이미 켜져 있으면 오류가 나도 그냥 넘어가요
+  try {
+    await api("POST", "/bundleIdCapabilities", { data: { type: "bundleIdCapabilities", attributes: { capabilityType: "ASSOCIATED_DOMAINS" }, relationships: { bundleId: { data: { type: "bundleIds", id: bundle.id } } } } });
+    console.log("유니버설 링크 기능 켬");
+  } catch (e) { console.log(`유니버설 링크 기능: ${String(e?.message ?? e).slice(0, 160)}`); }
+
   const name = `saepyeonji appstore ${process.env.GITHUB_RUN_NUMBER ?? Date.now()}`;
   const prof = await api("POST", "/profiles", {
     data: {

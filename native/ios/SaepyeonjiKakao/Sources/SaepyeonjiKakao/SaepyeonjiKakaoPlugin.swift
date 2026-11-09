@@ -26,12 +26,14 @@ public class SaepyeonjiKakaoPlugin: CAPPlugin, CAPBridgedPlugin {
 
     @objc private func openUrl(_ note: Notification) {
         guard let obj = note.object as? [String: Any], let url = obj["url"] as? URL else { return }
-        if AuthApi.isKakaoTalkLoginUrl(url) { _ = AuthController.handleOpenUrl(url: url) }
+        Task { @MainActor in
+            if AuthApi.isKakaoTalkLoginUrl(url) { _ = AuthController.handleOpenUrl(url: url) }
+        }
     }
 
     @objc func login(_ call: CAPPluginCall) {
         guard ready else { call.reject("not-configured"); return }
-        DispatchQueue.main.async {
+        Task { @MainActor in
             let done: (OAuthToken?, Error?) -> Void = { token, error in
                 if let token = token {
                     call.resolve(["accessToken": token.accessToken])

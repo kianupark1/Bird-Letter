@@ -11,6 +11,7 @@ import type { Profile } from "./settings";
 const signedIn = () => { try { const u = auth().currentUser; return u && !u.isAnonymous ? u : null; } catch { return null; } };
 
 let timer: ReturnType<typeof setTimeout> | null = null;
+let lastSig = "";
 /** 바뀐 프로필을 1.5초 모았다가 한 번에 올려요(글자 하나 칠 때마다 올리지 않게) */
 export function saveProfileRemote(p: Profile) {
   if (!firebaseEnabled) return;
@@ -22,6 +23,15 @@ export function saveProfileRemote(p: Profile) {
     const { fontScale: _f, ...rest } = p; // eslint-disable-line @typescript-eslint/no-unused-vars
     const clean = JSON.parse(JSON.stringify(rest)); // undefined 칸은 빼요(Firestore가 거절)
     void setDoc(doc(db(), "users", u.uid), { profile: clean }, { merge: true }).catch(() => {});
+    // 이름·사진·내 새가 바뀌면 친구들 화면에도 바로(예전엔 홈을 다시 열어야 바뀌었어요, 2026-11-09 대표님)
+    const sig = `${p.nickname}|${p.avatarBird}|${p.photo?.length ?? 0}:${p.photo?.slice(-16) ?? ""}`;
+    if (sig !== lastSig) {
+      lastSig = sig;
+      void import("./firebase/friends").then(async (f) => {
+        const list = await f.listFriends();
+        if (list.length) await f.syncMyName(list, p.nickname, p.avatarBird, p.photo);
+      }).catch(() => {});
+    }
   }, 1500);
 }
 

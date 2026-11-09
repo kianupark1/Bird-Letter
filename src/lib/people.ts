@@ -11,15 +11,15 @@ import { auth, db, firebaseEnabled } from "./firebase/client";
 type Book = Required<PeopleBook>;
 const KEY = "saepyeonji.people.v1";
 const EV = "saepyeonji:people";
-const empty = (): Book => ({ alias: {}, same: {}, nick: {}, hidden: {} });
+const empty = (): Book => ({ alias: {}, same: {}, nick: {}, pin: {}, hidden: {} });
 const clean = (v: unknown): Book => {
   const o = (v ?? {}) as Partial<Book>;
   const map = (m: unknown) => (m && typeof m === "object" ? Object.fromEntries(Object.entries(m as Record<string, unknown>).filter(([, x]) => typeof x === "string").slice(0, 300)) as Record<string, string> : {});
-  return { alias: map(o.alias), same: map(o.same), nick: map(o.nick), hidden: map(o.hidden) };
+  return { alias: map(o.alias), same: map(o.same), nick: map(o.nick), pin: map(o.pin), hidden: map(o.hidden) };
 };
 function readLocal(): Book { try { return clean(JSON.parse(localStorage.getItem(KEY) ?? "{}")); } catch { return empty(); } }
 function writeLocal(b: Book) { try { localStorage.setItem(KEY, JSON.stringify(b)); } catch {} try { window.dispatchEvent(new Event(EV)); } catch {} }
-const mergeBooks = (a: Book, b: Book): Book => ({ alias: { ...b.alias, ...a.alias }, same: { ...b.same, ...a.same }, nick: { ...b.nick, ...a.nick }, hidden: { ...b.hidden, ...a.hidden } });
+const mergeBooks = (a: Book, b: Book): Book => ({ alias: { ...b.alias, ...a.alias }, same: { ...b.same, ...a.same }, nick: { ...b.nick, ...a.nick }, pin: { ...b.pin, ...a.pin }, hidden: { ...b.hidden, ...a.hidden } });
 
 function me() { try { const u = auth().currentUser; return u && !u.isAnonymous ? u : null; } catch { return null; } }
 async function pushServer(b: Book) {
@@ -65,7 +65,7 @@ export function usePeople() {
   /** 친구를 내가 부르는 이름 바꾸기(빈칸이면 친구가 정한 이름으로 돌아가요) */
   const rename = useCallback((uid: string, name: string) => {
     const b = readLocal(); const n = name.trim().slice(0, 12);
-    if (n) b.nick[uid] = n; else delete b.nick[uid];
+    if (n) { b.nick[uid] = n; b.pin[uid] = "1"; } else { delete b.nick[uid]; delete b.pin[uid]; }
     save(b);
   }, []);
   /** 채팅방 나가기·편지 지우기(내 화면에서만): key는 방 key 또는 "l:편지ID". 그 뒤에 새 편지가 오면 방은 다시 보여요 */

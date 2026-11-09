@@ -263,6 +263,11 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
   const t2 = buildThreads([{ id: "n1", to: "가온", sentAt: 10 }, { id: "n2", to: "가온", toUid: "f2", sentAt: 20 }], [], friends);
   eq("이름만 적은 편지도 같은 이름의 친구와 한 방", t2.filter((x) => x.name === "가온").length, 1);
   eq("합쳐진 방에 편지 2통", t2.find((x) => x.key === keyForUid("f2"))!.entries.length, 2);
+  // 2026-11-09: 친구가 바꾼 이름이 저절로 따라와요(합칠 때 적은 이름은 밀림), 내가 ✎로 직접 바꾼 이름만 앞서요
+  const fr = [{ uid: "k1", name: "석영(카톡)" }];
+  const one = [{ id: "m1", to: "석영이", toUid: "k1", sentAt: 5 }];
+  eq("친구가 바꾼 이름이 합칠 때 적은 이름보다 먼저", buildThreads(one, [], fr, { nick: { k1: "석영이" } }).find((x) => x.key === keyForUid("k1"))!.name, "석영(카톡)");
+  eq("내가 직접 바꾼 이름은 그대로", buildThreads(one, [], fr, { nick: { k1: "자기" }, pin: { k1: "1" } }).find((x) => x.key === keyForUid("k1"))!.name, "자기");
   eq("주소 값에서 구분값", keyFromParams("abc", null), "u:abc");
   eq("주소 값(이름)", keyFromParams(null, "엄마"), "n:엄마");
   eq("주소 값 없음", keyFromParams(null, null), null);
