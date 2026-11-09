@@ -1,4 +1,5 @@
 "use client";
+import { quickPosition } from "@/lib/fastGeo";
 import { useEffect, useRef, useState } from "react";
 import Face from "@/components/Face";
 import { compressAvatar } from "@/lib/photo";
@@ -55,10 +56,10 @@ export default function NameStep({ onDone, prefill = "" }: { onDone: (name: stri
   const locateMe = () => {
     if (!navigator.geolocation) return setHomeMsg("이 기기에서는 위치를 알 수 없어요. 아래에서 골라 주세요.");
     setHomeMsg("위치를 찾는 중이에요…");
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const here = locate(pos.coords.latitude, pos.coords.longitude); // 구까지만, 좌표는 저장하지 않아요
+    quickPosition().then((pos) => {
+      const here = locate(pos.lat, pos.lng); // 구까지만, 좌표는 저장하지 않아요
       setHome({ id: here.place.id, label: here.label }); setHomeMsg("");
-    }, () => setHomeMsg("위치를 허용하지 않았어요. 아래에서 골라 주세요."), { timeout: 10000, maximumAge: 600000 });
+    }, () => setHomeMsg("위치를 찾지 못했어요. 아래에서 골라 주세요."));
   };
   const ok = name.trim().length > 0 && bird !== "";
   const save = () => {
