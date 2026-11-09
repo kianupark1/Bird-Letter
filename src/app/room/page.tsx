@@ -154,7 +154,7 @@ function Room() {
       <>
         <div className="ch-mapwrap">
           <button type="button" className="ch-map" aria-label="지도 크게 보기" onClick={() => setBigMap(true)}>
-            {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx ends /> : <div className="map" style={{ height: 150 }} aria-hidden />}
+            {mapOn ? <JourneyMap route={route} p={pr.p} birdId={bird.id} fx ends /> : <div className="map" style={{ height: 108 }} aria-hidden />}
             <span className="eta" role="status" aria-live="polite">도착까지 <em>{formatMinutes(left)}</em></span>
             <span className="zoom" aria-hidden>⤢</span>
           </button>
@@ -205,7 +205,10 @@ function Room() {
   let smsBody = "";
   if (lastSent && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
     const l = asLike(lastSent), r = getRoute(l.routeId);
-    smsBody = `${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 새 편지를 보냈어요 🕊\n${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중이에요.\n링크를 누르면 지금 어디쯤 날고 있는지 보이고, 도착하면 열어 볼 수 있어요:\n${location.origin}${letterHref(lastSent.item.id)}`;
+    // 2026-11-09 대표님: 받는 사람이 "받고 싶게" — 궁금증(내용은 도착해야 열림)과 남은 시간
+    const lp = letterProgress(l, now);
+    const leftTxt = lp.done ? "벌써 도착했어요! 지금 열어 볼 수 있어요" : `도착까지 약 ${formatMinutes(Math.max(1, Math.ceil(lp.total - lp.elapsed)))}`;
+    smsBody = `💌 ${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 편지를 보냈어요\n무슨 내용일까요? 도착해야 열 수 있어요.\n지금 ${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중 · ${leftTxt}\n👉 어디쯤 날고 있는지 보기: ${location.origin}${letterHref(lastSent.item.id)}`;
   }
   const tellId = smsBody && lastSent ? lastSent.item.id : "";
   const tellKakao = async () => {
@@ -221,6 +224,8 @@ function Room() {
 
   return (
     <main className="app room chat">
+      {/* 제목줄 + 날아가는 편지 지도는 함께 위에 붙어 있어요(2026-11-09 대표님: "지도 보려고 다 올려야 해서 불편, 전송 중이면 위에 뜨게, 사이즈 살짝 줄여") */}
+      <div className="roomtop">
       <header className="roomhead">
         <Link href="/" className="roomback" aria-label="뒤로">‹</Link>
         <button type="button" className="facebtn" aria-label={`${name} 프로필 크게 보기`} onClick={() => setZoomFace(true)}>
@@ -234,6 +239,8 @@ function Room() {
           {(subtitle || pen) && <div className="rsub">{pen ? `펜팔 🌏${subtitle ? ` · ${subtitle}` : ""}` : subtitle}</div>}
         </div>
       </header>
+      {map}
+      </div>
       {zoomFace && (
         <ProfileZoom name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined}
           photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined}
@@ -254,7 +261,6 @@ function Room() {
             <button type="submit" className="chip hot" disabled={!nameDraft.trim()}>정하기</button></div>
         </form>
       )}
-      {map}
       {/* 같은 사람일 수 있는 방(이름 없는 친구·친구 목록에 없는 예전 계정)이 있을 때만 물어요. 늘 띄우면 매번 합치라는 것처럼 보여요
           (그 밖에는 이름이 같으면 저절로 합쳐지고, 홈에서 길게 누르기로도 합칠 수 있어요) */}
       {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid && !isPenpalThread(t) && (isUnnamed(t.name) || !friends.some((f) => f.uid === t.uid))) && (
@@ -340,7 +346,7 @@ function TellSheet({ id, sentAt, name, body, tel, onKakao }: { id: string; sentA
       <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setOpen(false)} />
       <div className="ch-sheet tellsheet" role="dialog" aria-label={`${name}님께 알리기`}>
         <h2>{name}님께 편지가 간다고 알려 주세요</h2>
-        <p className="small" style={{ margin: 0, textAlign: "center" }}>{name}님은 아직 새편지 앱이 없어요. 링크 하나면 앱 없이도 날아오는 모습을 보고, 도착하면 열어 봐요.</p>
+        <p className="small" style={{ margin: 0, textAlign: "center" }}>{name}님은 아직 새편지 앱이 없어요. 무슨 내용인지는 도착해야 열려요 — 링크 하나면 앱 없이도 날아오는 모습을 보며 같이 기다릴 수 있어요.</p>
         <div className="tell-preview">{body}</div>
         <button type="button" className="sbtn kakao" onClick={() => { void onKakao(); setOpen(false); }}><span aria-hidden>💬</span> 카카오톡으로 알리기</button>
         <a className="sbtn sms" href={smsHref(tel, body)} onClick={() => setOpen(false)}><span aria-hidden>✉</span> 문자로 알리기</a>

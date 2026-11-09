@@ -1181,8 +1181,13 @@ html.inapp .release-only { display: inline; }
 
 /* 대화방 제목줄(‹ 뒤로·이름)은 편지를 내려 봐도 늘 위에 붙어 있어요(2026-11-01 대표님: "밑으로 내리면 안 보임, 계속 보여야 뒤로 가기 편하니까").
    위쪽 덮개(::before)가 제목줄 위로 올라간 글을 가려서, 시계 줄 쪽으로 글이 비쳐 보이지 않아요 */
-main.app.room.chat .roomhead { position: sticky; top: 0; z-index: 15; background: var(--bg); margin: 0 -16px 12px; padding: 4px 16px 6px; border-bottom: 1px solid var(--line); }
-main.app.room.chat .roomhead::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 160px; background: var(--bg); }
+main.app.room.chat .roomtop { position: sticky; top: 0; z-index: 15; background: var(--bg); margin: 0 -16px 12px; padding: 4px 16px 8px; border-bottom: 1px solid var(--line); }
+main.app.room.chat .roomtop::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 160px; background: var(--bg); }
+main.app.room.chat .roomhead { margin: 0; }
+/* 위에 붙는 지도는 조금 작게(150 → 108px) */
+main.app.room.chat .roomtop .ch-mapwrap { margin-top: 8px; }
+main.app.room.chat .roomtop button.ch-map { height: 108px; max-height: 108px; }
+main.app.room.chat .roomtop .ch-map .eta { font-size: 14px; padding: 3px 10px; }
 
 /* 처음 프로필 화면의 내 동네(2026-11-01) */
 .homepick { width: 100%; max-width: 340px; margin: 14px auto 0; padding: 12px 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); text-align: left; }
@@ -1200,3 +1205,6 @@ main.app.room.chat .roomhead::before { content: ""; position: absolute; left: 0;
   color: var(--dahong); background: var(--bg, #FBF3E4); border: 2px solid var(--dahong); opacity: .35;
   transform: translate(-50%,-50%) scale(.7); transition: background .15s, color .15s; }
 .swipe-arrow.on { background: var(--dahong); color: var(--on-dahong, #fff); }
+
+/* 편지 쓰기 위 위치 줄: 눌러서 정한다는 걸 글로(2026-11-09) */
+.ch-set .ch-setlbl { flex: none; margin-left: auto; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--dahong); background: color-mix(in srgb, var(--dahong) 12%, transparent); white-space: nowrap; }

@@ -75,7 +75,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         <h1>새 편지</h1>
         <div className="saekdong" aria-hidden />
         {inviter ? (
-          <p><b>{inviter}</b>님이 편지 친구로 초대했어요.<br />시작하면 바로 연결돼요</p>
+          <p>💌 <b>{inviter}</b>님이 당신과 편지를 주고받고 싶대요.<br />시작하면 바로 연결돼요</p>
         ) : (
           <p>새가 날아서 전하는<br />천천히 도착하는 편지</p>
         )}

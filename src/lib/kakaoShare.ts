@@ -46,8 +46,8 @@ export async function shareToKakao(letterId: string, birdName: string): Promise<
     k.Share.sendDefault({
       objectType: "feed",
       content: {
-        title: "새가 편지를 물고 날아오고 있어요",
-        description: `${birdName}가 날아오는 중이에요. 같이 기다려 보세요.`,
+        title: "💌 당신에게 편지가 날아오고 있어요",
+        description: `무슨 내용일까요? 도착해야 열 수 있어요. 지금 ${birdName}가 날아오는 중 🕊`,
         imageUrl: `${location.origin}/og.png`,
         link,
       },
@@ -70,8 +70,8 @@ export async function shareInviteToKakao(code: string, inviterName: string): Pro
     k.Share.sendDefault({
       objectType: "feed",
       content: {
-        title: `${inviterName}님이 편지 친구로 초대했어요`,
-        description: "새가 날아서 전하는, 천천히 도착하는 편지",
+        title: `💌 ${inviterName}님이 편지를 주고받고 싶대요`,
+        description: "카톡으로는 어려운 말도, 새가 천천히 전해 주면 한결 부드러워져요 🕊",
         imageUrl: `${location.origin}/og.png`,
         link,
       },

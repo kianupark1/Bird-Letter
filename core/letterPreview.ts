@@ -19,8 +19,9 @@ export function previewText(m: PreviewMeta | null, now: number) {
   const bird = getBird(m.birdId ?? "");
   let where = "";
   try { const r = m.routeId ? getRoute(m.routeId) : null; if (r) where = ` ${r.title} ${r.km}km를`; } catch {}
+  // 2026-11-09 대표님: 초대는 "내가 보낸 걸 상대가 받길 원하는 마음 · 궁금증"이 핵심 → 받는 사람 입장에서, 내용은 도착해야 열림
   return {
-    title: `${name}님이 보낸 편지가 날아오고 있어요 🕊`,
-    description: `${withIGa(bird.name)}${where} 날아가는 중이에요. 눌러서 지금 어디쯤인지 같이 봐요.`,
+    title: `💌 ${name}님이 편지를 보냈어요`,
+    description: `무슨 내용일까요? 도착해야 열 수 있어요. 지금 ${withIGa(bird.name)}${where} 날아가는 중 · 어디쯤인지 같이 봐요`,
   };
 }
