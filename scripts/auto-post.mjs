@@ -46,7 +46,8 @@ export const targetsOf = (p, ch = channels) => (Array.isArray(ch) ? p.to.filter(
 // 글 속 {{받기}} 자리: 나온 스토어 주소만 넣어요(아이폰 먼저 출시). 인스타는 글 속 링크가 눌리지 않아서 프로필 링크로 안내해요.
 export function storeLines(st, to) {
   if (!st.ios && !st.android) throw new Error("schedule.json의 stores에 스토어 주소가 없어요(출시 날 ios 주소를 넣어 주세요)");
-  if (to === "instagram") {
+  // 인스타는 글 속 링크가 안 눌리고, X는 링크 글값이 13배라 링크 대신 "프로필에"로 안내해요
+  if (to === "instagram" || to === "x") {
     const where = [st.ios && "앱스토어", st.android && "구글 플레이"].filter(Boolean).join("·");
     return `${where}에서 ‘새 편지’ 검색 · 링크는 프로필에 🕊`;
   }
