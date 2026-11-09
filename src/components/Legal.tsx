@@ -9,6 +9,7 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
       <h1>{title}</h1>
       <p className="sub">{IS_BETA ? <><span className="beta-only">초안 {LEGAL_DRAFT_DATE} · 정식 출시 전에 전문가 검토를 받아요</span><span className="release-only">시행일 {LEGAL_DRAFT_DATE}</span></> : `시행일 ${LEGAL_DRAFT_DATE}`}</p>
       {children}
+      <BusinessInfo />
       <div className="legal-links">
         <Link href="/privacy">개인정보 처리방침</Link>
         <Link href="/terms">이용약관</Link>
@@ -45,4 +46,14 @@ export function BetaChecklist({ items }: { items: string[] }) {
       </Sec>
     </div>
   );
+}
+
+/** 사업자 정보(전자상거래법 제10조). 채워진 칸만 보여요. */
+export function BusinessInfo() {
+  const rows: [string, string][] = ([
+    ["상호", OPERATOR.name], ["대표자", OPERATOR.owner], ["사업자등록번호", OPERATOR.bizNo],
+    ["통신판매업 신고번호", OPERATOR.mailOrderNo], ["주소", OPERATOR.address], ["전화", OPERATOR.phone], ["이메일", OPERATOR.email],
+  ] as [string, string][]).filter(([, v]) => v);
+  if (!rows.length) return null;
+  return <p className="sub" style={{ marginTop: 20, lineHeight: 1.7 }}>{rows.map(([k, v]) => `${k} ${v}`).join(" · ")}</p>;
 }
