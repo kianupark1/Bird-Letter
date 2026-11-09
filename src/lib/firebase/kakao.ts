@@ -23,14 +23,68 @@ export function kakaoNext(): string {
   return n;
 }
 
-/** refresh: 카카오의 지금 이름·사진으로 다시 맞추기(설정의 "카카오에서 다시 가져오기") */
-export function startKakaoLogin(next?: string, refresh = false) {
+const TOKEN_KEY = "saepyeonji.kakao.token.v1";
+const JS_KEY = (process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "").replace(/^\uFEFF/, "").trim();
+const JS_SDK = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js";
+
+type KakaoNative = { login(): Promise<{ accessToken: string }> };
+/** 스토어 앱(새 앱 파일)에 들어 있는 카카오 공식 로그인 도구: 카카오톡이 있으면 카카오톡이 바로 열려요(아이디·비밀번호 안 침) */
+function nativeKakao(): KakaoNative | null {
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?(): boolean; isPluginAvailable?(n: string): boolean; Plugins?: Record<string, unknown> } }).Capacitor;
+  if (!cap?.isNativePlatform?.() || !cap.isPluginAvailable?.("SaepyeonjiKakao")) return null;
+  return (cap.Plugins?.SaepyeonjiKakao as KakaoNative) ?? null;
+}
+const inApp = () => /SaePyeonjiApp/.test(navigator.userAgent);
+
+type KakaoJs = { isInitialized(): boolean; init(k: string): void; Auth: { authorize(o: { redirectUri: string; state?: string; throughTalk?: boolean }): void } };
+function loadJs(): Promise<KakaoJs> {
+  const w = window as unknown as { Kakao?: KakaoJs };
+  if (w.Kakao?.Auth) return Promise.resolve(w.Kakao);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = JS_SDK; s.async = true;
+    s.onload = () => (w.Kakao?.Auth ? resolve(w.Kakao) : reject(new Error("kakao")));
+    s.onerror = () => reject(new Error("kakao"));
+    document.head.appendChild(s);
+    setTimeout(() => reject(new Error("kakao-timeout")), 4000);
+  });
+}
+
+/**
+ * refresh: 카카오의 지금 이름·사진으로 다시 맞추기(설정의 "카카오에서 다시 가져오기")
+ * 2026-11-09 대표님: "카카오 로그인할 때 안 치고 바로 로그인되게" → 카카오톡 간편 로그인을 먼저 써요.
+ *  ① 스토어 앱(새 앱 파일): 카카오 공식 아이폰 도구 → 카카오톡이 열려 [동의]만 누르면 끝
+ *  ② 웹(사파리·크롬·카카오톡 안): 카카오 공식 웹 도구(throughTalk) → 폰에 카카오톡이 있으면 카카오톡으로 바로
+ *  ③ 그 밖(예전 앱 파일·도구를 못 불러옴): 예전처럼 카카오 로그인 화면
+ */
+export async function startKakaoLogin(next?: string, refresh = false) {
   if (!KAKAO_LOGIN_READY) return;
   try { if (refresh) sessionStorage.setItem(REFRESH_KEY, "1"); } catch {}
   try { if (next) sessionStorage.setItem(NEXT_KEY, next); } catch {}
   const state = crypto.randomUUID();
   try { sessionStorage.setItem(STATE_KEY, state); } catch {}
   const redirect = `${location.origin}/auth/kakao`;
+  const native = nativeKakao();
+  if (native) {
+    try {
+      const { accessToken } = await native.login();
+      if (accessToken) {
+        try { sessionStorage.setItem(TOKEN_KEY, accessToken); } catch {}
+        location.href = `/auth/kakao?nt=1&state=${state}`;
+        return;
+      }
+    } catch (e) {
+      // 사용자가 취소했으면 그대로 멈춰요(다시 누르면 돼요). 그 밖의 오류는 예전 방식으로
+      if (/cancel/i.test(String((e as { message?: string })?.message ?? e))) return;
+    }
+  } else if (JS_KEY && !inApp()) {
+    try {
+      const k = await loadJs();
+      if (!k.isInitialized()) k.init(JS_KEY);
+      k.Auth.authorize({ redirectUri: redirect, state, throughTalk: true });
+      return;
+    } catch { /* 도구를 못 불러오면 아래 예전 방식 */ }
+  }
   location.href = `https://kauth.kakao.com/oauth/authorize?${new URLSearchParams({ client_id: KEY, redirect_uri: redirect, response_type: "code", state })}`;
 }
 
@@ -40,7 +94,12 @@ export type KakaoOutcome = { ok: true; switched: boolean } | { ok: false; messag
 export async function finishKakaoLogin(search: string): Promise<KakaoOutcome> {
   const q = new URLSearchParams(search);
   if (q.get("error")) return { ok: false, message: "카카오 연결을 취소했어요." };
-  const code = q.get("code"), state = q.get("state");
+  let code = q.get("code");
+  const state = q.get("state");
+  // 앱의 카카오톡 간편 로그인: 카카오가 준 열쇠(접근 토큰)를 서버가 카카오에 직접 확인해요
+  if (q.get("nt") === "1") {
+    try { const t = sessionStorage.getItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); code = t ? `token:${t}` : null; } catch { code = null; }
+  }
   let saved: string | null = null;
   try { saved = sessionStorage.getItem(STATE_KEY); sessionStorage.removeItem(STATE_KEY); } catch {}
   if (!code || !state || !saved || state !== saved) return { ok: false, message: "연결 정보가 맞지 않아요. 설정에서 다시 눌러 주세요." };

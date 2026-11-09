@@ -59,6 +59,8 @@ fi
 sed -i '' -e 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' ios/App/App.xcodeproj/project.pbxproj 2>/dev/null || sed -i -e 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' ios/App/App.xcodeproj/project.pbxproj
 grep -n "TARGETED_DEVICE_FAMILY" ios/App/App.xcodeproj/project.pbxproj || true
 npx cap sync ios
+# 카카오톡 간편 로그인(카카오 네이티브 앱 키가 있을 때만, 없으면 건너뜀)
+node scripts/ios-kakao.mjs
 # 앱 알림(APNs 번호 → FCM 토큰)과 어두운 화면 위·아래 여백 색
 if [ "${SKIP_PATCH:-0}" = 1 ]; then echo "AppDelegate 손질 건너뜀(시험)"; else node scripts/ios-appdelegate.mjs ios/App/App/AppDelegate.swift; fi
 BUILD="${VERSION_CODE:-1}"
