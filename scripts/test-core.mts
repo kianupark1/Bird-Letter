@@ -845,5 +845,34 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("환영 편지: 이름·슬로건", welcomeText("성하").startsWith("성하님,") && welcomeText("").includes("기다림도 소통의 일부입니다."), true);
 }
 
+
+// ── 애플 앱 결제 영수증 확인(펜팔 우표, 2026-11-09) ── 시험 전용 인증서 scripts/fixtures/iap
+{
+  const { verifyAppleJws, stampsFor } = await import("../core/appleIap.ts");
+  const { createPrivateKey, sign, X509Certificate, createHash } = await import("node:crypto");
+  const fx = (f: string) => readFileSync(new URL(`./fixtures/iap/${f}`, import.meta.url), "utf8");
+  const der = (pem: string) => new X509Certificate(pem).raw.toString("base64");
+  const x5c = [der(fx("leaf.pem")), der(fx("mid.pem")), der(fx("root.pem"))];
+  const rootFp = createHash("sha256").update(new X509Certificate(fx("root.pem")).raw).digest("hex");
+  const b64u = (b: Buffer | string) => Buffer.from(b).toString("base64url");
+  const mk = (payload: object, chain = x5c) => {
+    const h = b64u(JSON.stringify({ alg: "ES256", x5c: chain })), p = b64u(JSON.stringify(payload));
+    const sig = sign("sha256", Buffer.from(`${h}.${p}`), { key: createPrivateKey(fx("leaf.p8")), dsaEncoding: "ieee-p1363" });
+    return `${h}.${p}.${b64u(sig)}`;
+  };
+  const txn = { transactionId: "100", originalTransactionId: "100", bundleId: "com.saepyeonji.app", productId: "com.saepyeonji.app.stamp1", purchaseDate: 1, quantity: 1, type: "Consumable", environment: "Production" };
+  const ok = verifyAppleJws(mk(txn), { rootSha256: rootFp });
+  eq("애플 결제: 올바른 서명은 통과", ok?.transactionId, "100");
+  eq("애플 결제: 우표 1장", ok ? stampsFor(ok, false) : -1, 1);
+  eq("애플 결제: 진짜 애플 루트가 아니면 거절", verifyAppleJws(mk(txn)), null);
+  const j = mk(txn); const parts = j.split(".");
+  eq("애플 결제: 내용을 고치면 거절", verifyAppleJws(`${parts[0]}.${b64u(JSON.stringify({ ...txn, quantity: 99 }))}.${parts[2]}`, { rootSha256: rootFp }), null);
+  eq("애플 결제: 사슬 순서가 틀리면 거절", verifyAppleJws(mk(txn, [x5c[1], x5c[0], x5c[2]]), { rootSha256: rootFp }), null);
+  const sb = verifyAppleJws(mk({ ...txn, environment: "Sandbox" }), { rootSha256: rootFp })!;
+  eq("애플 결제: 시험 결제는 허용할 때만", [stampsFor(sb, false), stampsFor(sb, true)].join(","), "0,1");
+  eq("애플 결제: 다른 앱 거래는 0장", stampsFor({ ...ok!, bundleId: "com.other" }, true), 0);
+  eq("애플 결제: 환불된 거래는 0장", stampsFor({ ...ok!, revocationDate: 5 }, true), 0);
+  eq("애플 결제: 모르는 상품은 0장", stampsFor({ ...ok!, productId: "x" }, true), 0);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
