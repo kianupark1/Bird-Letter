@@ -124,7 +124,7 @@ try {
   await clickText(B.page, "이 사람 차단");
   ok("차단됨", await waitText(B.page, "차단했어요", 10000));
   await B.page.goto(`${BASE}/`, { waitUntil: "networkidle2" });
-  ok("차단한 사람의 편지는 목록에서 사라짐", await waitText(B.page, "친구를 초대하면", 15000));
+  ok("차단한 사람의 편지는 목록에서 사라짐", await waitText(B.page, "첫 편지를", 15000));
   await shot(B.page, "07-B-home-after-block");
 
   console.log("\n[5] 보내는 사람: 홈과 삭제");
@@ -137,7 +137,7 @@ try {
   await clickText(A.page, "계정 삭제(탈퇴)");
   await A.page.waitForFunction(() => location.pathname === "/", { timeout: 40000 }).catch(() => {});
   ok("탈퇴 삭제 후 홈으로 돌아옴", new URL(A.page.url()).pathname === "/");
-  ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "친구를 초대하면", 20000));
+  ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "첫 편지를", 20000));
 
   console.log("\n[6] 오류 점검");
   ok("A 화면에 서버 연결 실패·스크립트 오류 없음", A.errors.length === 0, A.errors.join(" | "));

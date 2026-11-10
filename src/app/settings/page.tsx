@@ -1,5 +1,6 @@
 "use client";
 import { quickPosition } from "@/lib/fastGeo";
+import { clearFastCache } from "@/lib/fastStart";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -91,6 +92,7 @@ export default function Settings() {
     try {
       if (server && (await remote.deleteMyData()) === "cancelled") { setMsg("애플 확인을 취소해서 계정 삭제를 멈췄어요."); return; }
       localStorage.removeItem(LETTERS_KEY);
+      if (server) clearFastCache(); // 폰에 적어 둔 편지·친구 목록도 같이 지워요(안 지우면 탈퇴 뒤 홈에 예전 편지가 잠깐 보여요)
     } catch {
       setMsg("삭제하지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.");
       return;
