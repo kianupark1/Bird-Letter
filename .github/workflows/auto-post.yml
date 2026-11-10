@@ -1,4 +1,4 @@
-# 매일 아침 8시 30분·저녁 6시(한국 시간, 2026-11-09 대표님)에 promo/schedule.json 에서 "오늘 날짜" 글을 스레드·인스타그램(릴스)·X·유튜브 쇼츠에 올려요.
+# 매일 아침 8시 30분·저녁 6시·밤 10시 30분(한국 시간, 2026-11-09·11-10 대표님)에 promo/schedule.json 에서 "오늘 날짜" 글을 스레드·인스타그램(릴스)·X·유튜브 쇼츠에 올려요.
 # 내 컴퓨터가 꺼져 있어도 GitHub 서버에서 돌아요. 실패하면 GitHub가 이메일로 알려 줘요.
 # 기본은 꺼져 있어요(AUTO_POST_ENABLED 변수를 true로 해야 켜져요). 값 넣는 방법은 docs/자동게시-설정.md 를 보세요.
 name: 홍보 글 자동 게시
@@ -11,13 +11,15 @@ on:
     - cron: "13 1 * * *" # 한국 10:13 아침 글 다시 시도
     - cron: "37 8 * * *" # 한국 17:37 저녁 글
     - cron: "17 10 * * *" # 한국 19:17 저녁 글 다시 시도
+    - cron: "31 13 * * *" # 한국 22:31 밤 글(2026-11-10 대표님)
+    - cron: "57 13 * * *" # 한국 22:57 밤 글 다시 시도
   workflow_dispatch:
     inputs:
       send:
         description: "true 면 실제로 올리고, false 면 미리보기만 해요"
         default: "false"
       slot:
-        description: "noon(아침 8시 30분 글) 또는 evening(저녁 6시 글)"
+        description: "noon(아침 8시 30분 글)·evening(저녁 6시 글)·night(밤 10시 30분 글)"
         default: "noon"
 
 jobs:

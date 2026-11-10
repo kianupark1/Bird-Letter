@@ -23,13 +23,15 @@ const today = dateArg ?? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seou
 let SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
 // 예약 실행이 몇 시간씩 늦게 도는 일이 있어서(2026-11-10: 저녁 6시 글이 새벽 4시 반에 올라감) "auto"는 지금 한국 시각으로 정해요:
 // 8시 이후면 아침 글, 17시 30분 이후면 저녁 글 중 아직 안 올린 것 하나. 0~7시엔 아무것도 안 올려요. 올린 기록은 LOG_FILE(한 줄에 "날짜 slot")
+// 밤 10시 30분 글(2026-11-10 대표님: "밤 10시 30분에도 한 번") = slot "night", 22시 30분 이후
 export function autoSlot(hm, done) {
   if (hm < 800) return null;
+  if (hm >= 2230 && !done.has("night")) return "night";
   if (hm >= 1730 && !done.has("evening")) return "evening";
   if (!done.has("noon")) return hm < 1730 || done.has("evening") ? "noon" : null;
   return null;
 }
-export const slotOf = (p) => (p.slot === "evening" ? "evening" : "noon");
+export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" ? p.slot : "noon");
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
 const promoFile = (rel) => new URL(`../promo/${rel}`, import.meta.url);
@@ -283,7 +285,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
   } else if (SEND && logged.has(SLOT)) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => upgraded(p));
-  console.log(`${today} ${SLOT === "evening" ? "저녁" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
+  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
