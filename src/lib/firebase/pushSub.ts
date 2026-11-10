@@ -40,6 +40,35 @@ async function friendSub(uid: string): Promise<PushSub | null> {
   }
 }
 
+export type FriendPushResult = "ok" | "nosub" | "fail";
+/**
+ * 친구에게 편지를 보냈을 때 친구 폰으로 가는 알림(2026-11-10 대표님: "친구한테 보냈는데 알림이 안 떠, 이러면 못 써"):
+ *  ① 보내자마자 "💌 ○○님이 편지를 보냈어요 · 도착까지 약 N시간"(예약 편지는 출발 시각에)
+ *  ② 1시간 넘게 걸리면 도착 30분 전 "곧 도착해요"
+ *  ③ 도착하면 "짹짹! 도착했어요"
+ * 친구가 알림을 안 켰으면(구독 없음) "nosub" → 보낸 사람 화면이 카카오톡·문자로 알리기를 띄워요.
+ */
+export async function notifyFriendLetter(p: { letterId: string; toUid: string; fromName: string; routeId: string; birdId: string; sentAt: number; arriveAt: number }): Promise<FriendPushResult> {
+  const sub = await friendSub(p.toUid);
+  if (!sub) return "nosub";
+  const route = getRoute(p.routeId), bird = getBird(p.birdId);
+  const who = p.fromName || "누군가";
+  const url = `/letter/${p.letterId}`;
+  const start = Math.max(Date.now() + 5000, p.sentAt);
+  const total = Math.max(1, Math.round((p.arriveAt - p.sentAt) / 60000));
+  const h = Math.floor(total / 60), m = total % 60;
+  const left = h ? `${h}시간${m ? ` ${m}분` : ""}` : `${m}분`;
+  const jobs = [schedulePushTo(sub, {
+    title: `💌 ${who}님이 편지를 보냈어요`,
+    body: `${withIGa(bird.name)} ${route.title}을 날아오는 중 · 도착까지 약 ${left}`,
+    url, tag: `l-${p.letterId}-d`,
+  }, start)];
+  if (total > 60) jobs.push(schedulePushTo(sub, { title: `🕊 ${who}님의 편지가 곧 도착해요`, body: `30분 뒤 ${bird.name}가 도착해요`, url, tag: `l-${p.letterId}-s` }, p.arriveAt - 30 * 60000));
+  jobs.push(schedulePushTo(sub, { title: `짹짹! ${withIGa(who)} 보낸 편지가 도착했어요`, body: `${route.title} · ${bird.name}가 편지를 가져왔어요`, url, tag: `l-${p.letterId}-r` }, p.arriveAt));
+  const res = await Promise.all(jobs);
+  return res[0] ? "ok" : "fail";
+}
+
 /** 친구에게 편지를 보냈을 때: 도착 시각에 친구 폰으로 알림을 예약한다(실패해도 편지 보내기에는 영향 없음). */
 export async function notifyFriendArrival(p: { letterId: string; toUid: string; fromName: string; routeId: string; birdId: string; arriveAt: number }) {
   const sub = await friendSub(p.toUid);

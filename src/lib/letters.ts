@@ -309,9 +309,10 @@ export function useLetters() {
         setLetters((prev) => [letter, ...prev]);
         patchSnap((s) => ({ ...s, letters: [letter, ...s.letters.filter((x) => x.id !== letter.id)] }));
         announce({ type: "sent", letter });
-        if (l.toUid && letter.arriveAt) { // 친구가 앱을 닫고 있어도 도착하면 알림이 가도록 친구 폰에 예약
-          const toUid = l.toUid, arriveAt = letter.arriveAt;
-          import("./firebase/pushSub").then((m) => m.notifyFriendArrival({ letterId: id, toUid, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, arriveAt })).catch(() => {});
+        if (l.toUid && letter.arriveAt) { // 친구가 앱을 닫고 있어도 출발·곧 도착·도착 알림이 가도록 친구 폰에 예약
+          const toUid = l.toUid, arriveAt = letter.arriveAt, sentAt = letter.sentAt;
+          const tell = (status: string) => { try { window.dispatchEvent(new CustomEvent("saepyeonji:friendpush", { detail: { letterId: id, toUid, status } })); } catch {} };
+          import("./firebase/pushSub").then((m) => m.notifyFriendLetter({ letterId: id, toUid, fromName: l.fromName ?? "", routeId: l.routeId, birdId: l.birdId, sentAt, arriveAt })).then(tell).catch(() => tell("fail"));
         }
         return id;
       }
