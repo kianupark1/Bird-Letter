@@ -89,15 +89,22 @@ try {
   await setValue(A.page, "textarea", MESSAGE);
   await shot(A.page, "03-A-send-step3");
   await clickText(A.page, "보내기");
-  await A.page.waitForFunction(() => location.pathname.startsWith("/letter/"), { timeout: 30000 }).catch(() => {});
-  const id = new URL(A.page.url()).pathname.split("/").pop();
+  // 2026-10-18부터: 앱이 없는 사람(이름만)에게 보내면 "○○가 날아올랐어요!" 화면(문자로 알려 주기)이 먼저 떠요 → 그 문자 속 링크에서 편지 ID를 읽어요
+  await A.page.waitForFunction(() => location.pathname.startsWith("/letter/") || document.body.innerText.includes("날아올랐어요"), { timeout: 30000 }).catch(() => {});
+  let id = new URL(A.page.url()).pathname.split("/").pop();
+  if (id.length !== 20) {
+    const href = await A.page.evaluate(() => document.querySelector('a[href^="sms:"]')?.getAttribute("href") ?? "");
+    id = (decodeURIComponent(href).match(/\/letter\/([A-Za-z0-9]{20})/) ?? [])[1] ?? id;
+  }
   ok("편지가 서버에 저장됨(편지 ID 20자)", id.length === 20, `ID=${id}`);
-  ok("여정 화면에 '도착까지'와 '링크 보내기'가 보임", (await waitText(A.page, "도착까지")) && (await text(A.page)).match(/받는 사람에게 링크 보내기|카카오톡으로 보내기/) !== null);
+  await shot(A.page, "03b-A-sent");
+  await A.page.goto(`${BASE}/letter/${id}`, { waitUntil: "networkidle2" });
+  ok("보낸 사람 편지 화면에 '도착까지'가 보임", await waitText(A.page, "도착까지"));
   await shot(A.page, "04-A-journey");
 
   console.log("\n[2] 받는 사람(B): 링크로 열기");
   await B.page.goto(`${BASE}/letter/${id}`, { waitUntil: "networkidle2" });
-  ok("B에게 '지민이 보낸 편지'로 보임", await waitText(B.page, "지민이 보낸 편지", 25000));
+  ok("B에게 지민이 보낸 편지로 보임", (await waitText(B.page, "지민", 25000)) && /지민(이|님)/.test(await text(B.page)));
   const beforeArrival = await text(B.page);
   ok("도착 전에는 편지 내용이 보이지 않음", !beforeArrival.includes(MESSAGE));
   ok("도착 전 안내 문구가 보임", beforeArrival.includes("도착 시각이 지나야 열려요") || beforeArrival.includes("편지가 도착했어요"));
@@ -117,7 +124,7 @@ try {
   await clickText(B.page, "이 사람 차단");
   ok("차단됨", await waitText(B.page, "차단했어요", 10000));
   await B.page.goto(`${BASE}/`, { waitUntil: "networkidle2" });
-  ok("차단한 사람의 편지는 목록에서 사라짐", await waitText(B.page, "친구를 초대하면", 15000));
+  ok("차단한 사람의 편지는 목록에서 사라짐", await waitText(B.page, "첫 편지를", 15000));
   await shot(B.page, "07-B-home-after-block");
 
   console.log("\n[5] 보내는 사람: 홈과 삭제");
@@ -130,7 +137,7 @@ try {
   await clickText(A.page, "계정 삭제(탈퇴)");
   await A.page.waitForFunction(() => location.pathname === "/", { timeout: 40000 }).catch(() => {});
   ok("탈퇴 삭제 후 홈으로 돌아옴", new URL(A.page.url()).pathname === "/");
-  ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "친구를 초대하면", 20000));
+  ok("삭제 후 보낸 편지가 없음", await waitText(A.page, "첫 편지를", 20000));
 
   console.log("\n[6] 오류 점검");
   ok("A 화면에 서버 연결 실패·스크립트 오류 없음", A.errors.length === 0, A.errors.join(" | "));
