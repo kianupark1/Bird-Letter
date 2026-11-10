@@ -49,6 +49,22 @@ export function upgraded(p, exists = (rel) => existsSync(promoFile(rel))) {
 
 // 글마다 날짜(date) 대신 출시일 기준 며칠째(day: -3 = 출시 3일 전, 0 = 출시일)를 쓸 수 있어요.
 // 출시일(launch)이 정해지기 전(null)에는 day 글은 하나도 올라가지 않아요.
+// 안드로이드가 나오기 전에는 첫 장에 "안드로이드는 곧 출시" 띠를 붙인 사본을 써요(2026-11-10 대표님, 사본은 promo/build-soon.mts가 만듦)
+export function soonify(p, android, exists = (rel) => existsSync(promoFile(rel))) {
+  if (android) return p;
+  if (p.carousel?.length) {
+    const first = `soon/${p.carousel[0]}`;
+    return exists(`cards/${first}`) ? { ...p, image: first, carousel: [first, ...p.carousel.slice(1)] } : p;
+  }
+  if (p.image) return exists(`cards/soon/${p.image}`) ? { ...p, image: `soon/${p.image}` } : p;
+  if (p.video) {
+    const v = `video/soon/${p.video.split("/").pop()}`;
+    if (!exists(v)) return p;
+    const cover = v.replace(/\.mp4$/, "-cover.png");
+    return { ...p, video: v, cover: exists(cover) ? cover : p.cover };
+  }
+  return p;
+}
 const { launch, posts, stores = {}, channels, igUserId } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
 // 지금 집중하는 채널만 올림(schedule.json channels, 없으면 글에 적힌 곳 전부). 2026-11-09 대표님: 인스타·스레드·틱톡에 집중.
 export const targetsOf = (p, ch = channels) => (Array.isArray(ch) ? p.to.filter((t) => ch.includes(t)) : p.to);
@@ -284,7 +300,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     SLOT = autoSlot(hm, logged);
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
   } else if (SEND && logged.has(SLOT)) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
-  const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => upgraded(p));
+  const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => soonify(upgraded(p), stores.android));
   console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
