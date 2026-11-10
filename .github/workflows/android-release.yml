@@ -35,7 +35,12 @@ jobs:
           KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            # 붙여 넣을 때 섞인 빈칸·줄바꿈·앞쪽 "="는 걸러요(2026-11-10: base64 invalid input)
+            printf '%s' "$KEYSTORE_B64" | tr -d ' \r\n\t' | sed 's/^=*//' | base64 -d > "$RUNNER_TEMP/upload.jks" || { echo "::error::ANDROID_KEYSTORE_BASE64 값이 잘못 붙여졌어요(처음부터 끝까지 다시 복사)"; exit 1; }
+            trim() { printf '%s' "$1" | sed 's/^[[:space:]=]*//;s/[[:space:]]*$//'; }
+            STORE_PASS=$(trim "$STORE_PASS"); KEY_ALIAS=$(trim "$KEY_ALIAS"); KEY_PASS=$(trim "$KEY_PASS")
+            keytool -list -keystore "$RUNNER_TEMP/upload.jks" -storepass "$STORE_PASS" -alias "$KEY_ALIAS" >/dev/null || { echo "::error::열쇠 파일은 열렸지만 비밀번호나 별칭(ALIAS)이 안 맞아요"; exit 1; }
+            echo "✓ 업로드 열쇠 확인"
             # AAB = 구글 플레이, APK = 갤럭시 스토어·원스토어(같은 열쇠로 서명, 2026-11-10)
             ./gradlew bundleRelease assembleRelease --no-daemon \
               -Pandroid.injected.signing.store.file="$RUNNER_TEMP/upload.jks" \
