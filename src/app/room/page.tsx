@@ -128,6 +128,13 @@ function Room() {
     return () => { cancelAnimationFrame(raf); ts.forEach(clearTimeout); clearTimeout(stop); ro?.disconnect(); };
   }, [last, ready]);
 
+  // 친구 폰 알림 결과(src/lib/letters.ts가 보낸 직후 알려 줘요)
+  const [pushMiss, setPushMiss] = useState<{ id: string; status: string } | null>(null);
+  useEffect(() => {
+    const h = (e: Event) => { const d = (e as CustomEvent).detail; if (d && d.status !== "ok" && (!thread?.uids || thread.uids.includes(d.toUid))) setPushMiss({ id: d.letterId, status: d.status }); };
+    window.addEventListener("saepyeonji:friendpush", h);
+    return () => window.removeEventListener("saepyeonji:friendpush", h);
+  }, [thread]);
   if (state !== "ready" || !ready) return <main className="app" aria-busy="true" />;
   if (!thread && key && backend === "checking") return <main className="app" aria-busy="true" />; // 서버 목록을 받기 전에는 "찾을 수 없어요"를 띄우지 않아요
   if (!thread || !key) {
@@ -202,7 +209,9 @@ function Room() {
   // 바로 보낼 수 없으니 예전처럼 링크 편지로 보내요(로그인하면 자동으로 친구가 돼요)
   const sendUid = thread.uid && (!friendsKnown || friends.some((f) => f.uid === thread.uid) || thread.entries.some((e) => e.dir === "received" && e.item.fromUid === thread.uid)) ? thread.uid : undefined;
   // 앱이 없는 사람(이름만 있는 방): 가장 최근에 보낸 편지 링크를 문자로 알려 줘요(번호는 저장하지 않아요)
-  const lastSent = sendUid ? undefined : thread.entries.find((e) => e.dir === "sent");
+  // 친구에게 보냈는데 친구 폰에 알림이 안 켜져 있으면(구독 없음) 그 편지도 카카오톡·문자로 알리게 해요(2026-11-10 대표님)
+  const missEntry = pushMiss ? thread.entries.find((e) => e.dir === "sent" && e.item.id === pushMiss.id) : undefined;
+  const lastSent = sendUid ? missEntry : thread.entries.find((e) => e.dir === "sent");
   let smsBody = "";
   if (lastSent && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
     const l = asLike(lastSent), r = getRoute(l.routeId);
@@ -277,7 +286,7 @@ function Room() {
           </div>
         </div>
       )}
-      {tellId && lastSent && <TellSheet id={tellId} sentAt={asLike(lastSent).sentAt} name={name} body={smsBody} tel={telFor(name)} onKakao={tellKakao} />}
+      {tellId && lastSent && <TellSheet id={tellId} sentAt={asLike(lastSent).sentAt} name={name} body={smsBody} tel={telFor(name)} onKakao={tellKakao} friend={!!missEntry} reason={pushMiss?.status} />}
       {pickFriend && (
         <>
           <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setPickFriend(false)} />
@@ -330,7 +339,7 @@ function Room() {
 }
 
 /** 방금(2분 안) 앱 없는 사람에게 보낸 편지면, 한 번만 "알려 주세요" 창을 띄워요 */
-function TellSheet({ id, sentAt, name, body, tel, onKakao }: { id: string; sentAt: number; name: string; body: string; tel: string; onKakao: () => Promise<void> }) {
+function TellSheet({ id, sentAt, name, body, tel, onKakao, friend, reason }: { id: string; sentAt: number; name: string; body: string; tel: string; onKakao: () => Promise<void>; friend?: boolean; reason?: string }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (Date.now() - sentAt > 120000) return;
@@ -347,7 +356,8 @@ function TellSheet({ id, sentAt, name, body, tel, onKakao }: { id: string; sentA
       <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setOpen(false)} />
       <div className="ch-sheet tellsheet" role="dialog" aria-label={`${name}님께 알리기`}>
         <h2>{name}님께 편지가 간다고 알려 주세요</h2>
-        <p className="small" style={{ margin: 0, textAlign: "center" }}>{name}님은 아직 새편지 앱이 없어요. 무슨 내용인지는 도착해야 열려요 — 링크 하나면 앱 없이도 날아오는 모습을 보며 같이 기다릴 수 있어요.</p>
+        {friend ? <p className="small" style={{ margin: 0, textAlign: "center" }}>{reason === "fail" ? `알림 서버가 ${name}님께 알림을 보내지 못했어요.` : `${name}님 폰에 새편지 알림이 꺼져 있어서 편지가 온 걸 모를 수 있어요.`} 카카오톡으로 한 번 알려 주세요. ({name}님 앱의 설정 → 알림을 켜면 다음부터는 저절로 가요)</p>
+        : <p className="small" style={{ margin: 0, textAlign: "center" }}>{name}님은 아직 새편지 앱이 없어요. 무슨 내용인지는 도착해야 열려요 — 링크 하나면 앱 없이도 날아오는 모습을 보며 같이 기다릴 수 있어요.</p>}
         <div className="tell-preview">{body}</div>
         <button type="button" className="sbtn kakao" onClick={() => { void onKakao(); setOpen(false); }}><span aria-hidden>💬</span> 카카오톡으로 알리기</button>
         <a className="sbtn sms" href={smsHref(tel, body)} onClick={() => setOpen(false)}><span aria-hidden>✉</span> 문자로 알리기</a>
