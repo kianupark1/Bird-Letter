@@ -749,7 +749,7 @@ import { shareText, shareHere, shareProjector } from "../core/shareCard.ts";
   eq("미리보기: 이름이 비면 기본 문구", previewText({ fromName: " " }, now), PREVIEW_DEFAULT);
 }
 
-import { fillText, storeLines, upgraded, slotOf, autoSlot, soonify, targetsOf, igHostFor, igJpg, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
+import { fillText, storeLines, upgraded, slotOf, autoSlot, soonify, storyfy, targetsOf, igHostFor, igJpg, xText as xPost, ytMeta, SLOGAN as POST_SLOGAN, withSlogan } from "./auto-post.mjs";
 import { SLOGAN } from "../promo/store.mts";
 {
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
@@ -798,6 +798,8 @@ import { SLOGAN } from "../promo/store.mts";
   eq("안드로이드 전: 그림은 곧 출시 사본", soonify({ text: "t", to: ["x"], image: "a.png" }, null, has).image, "soon/a.png");
   eq("안드로이드 전: 넘겨 보는 글은 첫 장만", soonify({ text: "t", to: ["x"], image: "car-01.png", carousel: ["car-01.png", "car-02.png"] }, null, has).carousel.join(), "soon/car-01.png,car-02.png");
   eq("안드로이드 전: 영상도 사본·표지", JSON.stringify(soonify({ text: "t", to: ["x"], video: "video/v2/v.mp4", cover: "video/v2/v-cover.png" }, null, has)), JSON.stringify({ text: "t", to: ["x"], video: "video/soon/v.mp4", cover: "video/soon/v-cover.png" }));
+  eq("영상 글도 여러 장(4:5 영상+설명 3장)", storyfy({ text: "t", to: ["x"], video: "video/soon/v.mp4" }, (r) => r === "video/card/v.mp4").carousel.join(), "video/card/v.mp4,story/how.png,story/easy.png,story/cta.png");
+  eq("4:5 영상이 없으면 그대로 릴스", storyfy({ text: "t", to: ["x"], video: "video/v.mp4" }, () => false).carousel, undefined);
   eq("사본이 없으면 원래 그림", soonify({ text: "t", to: ["x"], image: "b.png" }, null, has).image, "b.png");
   eq("안드로이드 나오면 원래 그림", soonify({ text: "t", to: ["x"], image: "a.png" }, "https://play", has).image, "a.png");
   eq("집중 채널: 인스타·스레드만 남김", targetsOf({ to: ["threads", "instagram", "x", "youtube"] }, ["instagram", "threads"]).join(","), "threads,instagram");
