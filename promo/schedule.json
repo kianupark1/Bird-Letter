@@ -50,7 +50,14 @@
         "x"
       ],
       "image": "06-launch.png",
-      "text": "새 편지가 날아올랐어요! 🕊\n\n바로 도착하지 않아서 더 설레는 편지.\n새를 고르고, 편지를 쓰고, 같이 기다려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #출시 #편지앱"
+      "text": "새 편지가 날아올랐어요! 🕊\n\n바로 도착하지 않아서 더 설레는 편지.\n새를 고르고, 편지를 쓰고, 같이 기다려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #출시 #편지앱",
+      "carousel": [
+        "06-launch.png",
+        "story/d1-am-06-launch-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 1,
@@ -61,7 +68,14 @@
         "x"
       ],
       "image": "app-01-what.png",
-      "text": "진짜 새가 배달하는 메신저가 나왔어요 🕊\n\n편지를 쓰면 까치·비둘기·매가 실제 거리만큼 날아가요.\n서울에서 부산까지 매로 약 3시간 37분.\n보낸 사람도 받는 사람도 지도에서 같이 기다려요.\n\n{{받기}}\n\n#새편지 #메신저앱 #앱추천"
+      "text": "진짜 새가 배달하는 메신저가 나왔어요 🕊\n\n편지를 쓰면 까치·비둘기·매가 실제 거리만큼 날아가요.\n서울에서 부산까지 매로 약 3시간 37분.\n보낸 사람도 받는 사람도 지도에서 같이 기다려요.\n\n{{받기}}\n\n#새편지 #메신저앱 #앱추천",
+      "carousel": [
+        "app-01-what.png",
+        "story/d1-evening-app-01-what-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 2,
@@ -82,7 +96,14 @@
         "x"
       ],
       "image": "app-02-live.png",
-      "text": "내가 보낸 편지가 지금 어디쯤 날고 있는지 보여요 🗺\n\n받는 사람도 초 단위로 줄어드는 시계와 지도를 같이 봐요.\n“대전 근처를 지나요” 알림도 와요.\n\n{{받기}}\n\n#새편지 #앱추천 #편지"
+      "text": "내가 보낸 편지가 지금 어디쯤 날고 있는지 보여요 🗺\n\n받는 사람도 초 단위로 줄어드는 시계와 지도를 같이 봐요.\n“대전 근처를 지나요” 알림도 와요.\n\n{{받기}}\n\n#새편지 #앱추천 #편지",
+      "carousel": [
+        "app-02-live.png",
+        "story/d2-evening-app-02-live-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 3,
@@ -103,7 +124,14 @@
         "x"
       ],
       "image": "app-03-birds.png",
-      "text": "어떤 새로 보낼까요? 🐦\n\n빠른 매, 든든한 비둘기, 느긋한 까치.\n고른 새에 따라 도착 시간이 달라져요.\n서울→부산: 매 약 3시간 37분 · 비둘기 약 5시간 · 까치 약 9시간 17분\n\n{{받기}}\n\n#새편지 #앱추천 #신기한앱"
+      "text": "어떤 새로 보낼까요? 🐦\n\n빠른 매, 든든한 비둘기, 느긋한 까치.\n고른 새에 따라 도착 시간이 달라져요.\n서울→부산: 매 약 3시간 37분 · 비둘기 약 5시간 · 까치 약 9시간 17분\n\n{{받기}}\n\n#새편지 #앱추천 #신기한앱",
+      "carousel": [
+        "app-03-birds.png",
+        "story/d3-evening-app-03-birds-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 4,
@@ -124,7 +152,14 @@
         "x"
       ],
       "image": "app-04-open.png",
-      "text": "도착한 편지는 두루마리처럼 펼쳐져요 📜\n\n같이 보낸 사진은 폴라로이드처럼 천천히 선명해지고, 폰에 저장도 돼요.\n\n{{받기}}\n\n#새편지 #감성앱 #폴라로이드"
+      "text": "도착한 편지는 두루마리처럼 펼쳐져요 📜\n\n같이 보낸 사진은 폴라로이드처럼 천천히 선명해지고, 폰에 저장도 돼요.\n\n{{받기}}\n\n#새편지 #감성앱 #폴라로이드",
+      "carousel": [
+        "app-04-open.png",
+        "story/d4-evening-app-04-open-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 5,
@@ -145,7 +180,14 @@
         "x"
       ],
       "image": "app-05-noread.png",
-      "text": "읽씹 걱정 없는 메신저 💬\n\n새 편지는 답장이 천천히 오는 게 당연해요.\n카톡으로 꺼내기 어려운 말, 새가 천천히 전해 줘요.\n\n{{받기}}\n\n#새편지 #메신저 #앱추천"
+      "text": "읽씹 걱정 없는 메신저 💬\n\n새 편지는 답장이 천천히 오는 게 당연해요.\n카톡으로 꺼내기 어려운 말, 새가 천천히 전해 줘요.\n\n{{받기}}\n\n#새편지 #메신저 #앱추천",
+      "carousel": [
+        "app-05-noread.png",
+        "story/d5-evening-app-05-noread-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 6,
@@ -166,7 +208,14 @@
         "x"
       ],
       "image": "app-06-kakao.png",
-      "text": "가입은 카카오 버튼 한 번, 초대는 카톡 한 번 🕊\n\n아이디·비밀번호 없이 바로 시작해요.\n초대 링크를 누른 친구가 가입하면 저절로 친구가 돼요.\n\n{{받기}}\n\n#새편지 #카카오로그인 #앱추천"
+      "text": "가입은 카카오 버튼 한 번, 초대는 카톡 한 번 🕊\n\n아이디·비밀번호 없이 바로 시작해요.\n초대 링크를 누른 친구가 가입하면 저절로 친구가 돼요.\n\n{{받기}}\n\n#새편지 #카카오로그인 #앱추천",
+      "carousel": [
+        "app-06-kakao.png",
+        "story/d6-evening-app-06-kakao-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 7,
@@ -188,7 +237,14 @@
         "x"
       ],
       "image": "app-07-penpal.png",
-      "text": "모르는 누군가에게 편지를 날려 보내 보세요 🌏\n\n새 편지 펜팔: 이름 대신 펜팔 이름, 위치는 도시까지만.\n받겠다고 한 사람에게만 가요. (만 14세 이상)\n\n{{받기}}\n\n#새편지 #펜팔 #펜팔친구"
+      "text": "모르는 누군가에게 편지를 날려 보내 보세요 🌏\n\n새 편지 펜팔: 이름 대신 펜팔 이름, 위치는 도시까지만.\n받겠다고 한 사람에게만 가요. (만 14세 이상)\n\n{{받기}}\n\n#새편지 #펜팔 #펜팔친구",
+      "carousel": [
+        "app-07-penpal.png",
+        "story/d7-evening-app-07-penpal-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 8,
@@ -210,7 +266,14 @@
         "x"
       ],
       "image": "app-08-free.png",
-      "text": "느려서 더 반가운 메신저, 새 편지 🕊\n\n지금 앱스토어에서 무료로 받을 수 있어요.\n오늘 생각나는 사람에게 첫 편지를 날려 보세요.\n\n{{받기}}\n\n#새편지 #무료앱 #앱추천"
+      "text": "느려서 더 반가운 메신저, 새 편지 🕊\n\n지금 앱스토어에서 무료로 받을 수 있어요.\n오늘 생각나는 사람에게 첫 편지를 날려 보세요.\n\n{{받기}}\n\n#새편지 #무료앱 #앱추천",
+      "carousel": [
+        "app-08-free.png",
+        "story/d8-evening-app-08-free-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 9,
@@ -232,7 +295,14 @@
         "x"
       ],
       "text": "‘읽음’ 표시 대신\n‘지금 대전을 지나는 중’ 🕊\n\n새 편지는 기다리는 과정까지 같이 봐요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-07-readmark.png"
+      "image": "more-07-readmark.png",
+      "carousel": [
+        "more-07-readmark.png",
+        "story/d9-evening-more-07-readmark-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 10,
@@ -242,7 +312,14 @@
         "x"
       ],
       "image": "04-jeju.png",
-      "text": "제주에 사는 친구에게 편지를 보내면 얼마나 걸릴까요?\n\n서울 → 제주 452km.\n매는 5시간 1분, 까치는 12시간 55분.\n어떤 새로 보낼까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #제주 #제주도"
+      "text": "제주에 사는 친구에게 편지를 보내면 얼마나 걸릴까요?\n\n서울 → 제주 452km.\n매는 5시간 1분, 까치는 12시간 55분.\n어떤 새로 보낼까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #제주 #제주도",
+      "carousel": [
+        "04-jeju.png",
+        "story/d10-am-04-jeju-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 10,
@@ -253,7 +330,14 @@
         "x"
       ],
       "text": "군대 간 친구에게 쓰던 편지, 기억나요?\n\n보고 싶은 사람에게 오늘 한 통.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-08-army.png"
+      "image": "more-08-army.png",
+      "carousel": [
+        "more-08-army.png",
+        "story/d10-evening-more-08-army-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 11,
@@ -263,7 +347,14 @@
         "x"
       ],
       "text": "누가누가 멀리 보냈나 🏆\n\n새 편지에는 편지가 날아간 거리로 겨루는 랭킹이 있어요.\n친구끼리, 그리고 새 편지를 쓰는 모두와.\n\n기다림도 소통의 일부입니다.\n\n#새편지",
-      "image": "more-09-ranking.png"
+      "image": "more-09-ranking.png",
+      "carousel": [
+        "more-09-ranking.png",
+        "story/d11-am-more-09-ranking-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 11,
@@ -274,7 +365,14 @@
         "x"
       ],
       "image": "classic-5-bundle.png",
-      "text": "버리지 못한 편지 묶음, 다들 하나쯤 있잖아요.\n\n다시 꺼내 읽으면 그날로 돌아가는 편지.\n새 편지는 받은 편지를 그대로 간직해요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지묶음 #추억상자 #손편지"
+      "text": "버리지 못한 편지 묶음, 다들 하나쯤 있잖아요.\n\n다시 꺼내 읽으면 그날로 돌아가는 편지.\n새 편지는 받은 편지를 그대로 간직해요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지묶음 #추억상자 #손편지",
+      "carousel": [
+        "classic-5-bundle.png",
+        "story/d11-evening-classic-5-bundle-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 12,
@@ -284,7 +382,14 @@
         "x"
       ],
       "image": "08-penpal.png",
-      "text": "펜팔, 아세요? ✉\n\n요즘은 모르는 사람이 많지만, 편지를 기다리던 그 설렘은 그대로예요.\n옛날 그 감성, 핸드폰으로 느껴 봐요.\n(펜팔은 만 14세 이상 · 펜팔 이름과 도시만 보여요)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #펜팔친구 #손편지 #레트로 #감성"
+      "text": "펜팔, 아세요? ✉\n\n요즘은 모르는 사람이 많지만, 편지를 기다리던 그 설렘은 그대로예요.\n옛날 그 감성, 핸드폰으로 느껴 봐요.\n(펜팔은 만 14세 이상 · 펜팔 이름과 도시만 보여요)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #펜팔친구 #손편지 #레트로 #감성",
+      "carousel": [
+        "08-penpal.png",
+        "story/d12-am-08-penpal-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 12,
@@ -295,7 +400,14 @@
         "x"
       ],
       "text": "편지 끝에 꼭 쓰던 말,\n‘답장 기다릴게.’\n\n그 말이 다시 설레는 앱이에요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-10-waitforreply.png"
+      "image": "more-10-waitforreply.png",
+      "carousel": [
+        "more-10-waitforreply.png",
+        "story/d12-evening-more-10-waitforreply-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 13,
@@ -317,7 +429,14 @@
         "x"
       ],
       "text": "엄마가 도시락에 넣어 주던 쪽지 💌\n\n이번엔 내가 먼저 써 볼까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-11-lunchnote.png"
+      "image": "more-11-lunchnote.png",
+      "carousel": [
+        "more-11-lunchnote.png",
+        "story/d13-evening-more-11-lunchnote-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 14,
@@ -327,7 +446,14 @@
         "x"
       ],
       "image": "07-wait.png",
-      "text": "답장이 오길 기다려 본 게 언제였나요?\n\n오늘 한 통, 천천히 보내 보세요. 🕊\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #기다림"
+      "text": "답장이 오길 기다려 본 게 언제였나요?\n\n오늘 한 통, 천천히 보내 보세요. 🕊\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #기다림",
+      "carousel": [
+        "07-wait.png",
+        "story/d14-am-07-wait-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 14,
@@ -338,7 +464,14 @@
         "x"
       ],
       "image": "classic-6-penpal.png",
-      "text": "학창 시절 펜팔 친구, 기억나요? ✉\n\n얼굴도 모르는 누군가의 답장을 일주일 내내 기다리던 그 마음.\n새 편지에서 다시 만나 보세요. (펜팔은 만 14세 이상)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #학창시절 #추억"
+      "text": "학창 시절 펜팔 친구, 기억나요? ✉\n\n얼굴도 모르는 누군가의 답장을 일주일 내내 기다리던 그 마음.\n새 편지에서 다시 만나 보세요. (펜팔은 만 14세 이상)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #학창시절 #추억",
+      "carousel": [
+        "classic-6-penpal.png",
+        "story/d14-evening-classic-6-penpal-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 15,
@@ -360,7 +493,14 @@
         "x"
       ],
       "text": "크리스마스 카드 쓰던 12월이 그리워요 🎄\n\n올해는 새에게 카드를 맡겨 보세요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-12-xmascard.png"
+      "image": "more-12-xmascard.png",
+      "carousel": [
+        "more-12-xmascard.png",
+        "story/d15-evening-more-12-xmascard-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 16,
@@ -370,7 +510,14 @@
         "x"
       ],
       "text": "오늘 보낸 편지, 언제 도착할까요?\n\n새 편지는 새마다 걸리는 시간이 달라요.\n매는 가까우면 30분, 비둘기는 1시간부터, 까치는 반나절이 걸리기도 해요.\n급한 마음은 잠깐 내려놓고, 날아가는 새를 같이 지켜봐요 🕊\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #기다림",
-      "image": "more-14-when.png"
+      "image": "more-14-when.png",
+      "carousel": [
+        "more-14-when.png",
+        "story/d16-am-more-14-when-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 16,
@@ -381,7 +528,14 @@
         "x"
       ],
       "text": "빨리 답하지 않아도 괜찮은 대화.\n천천히 생각하고, 천천히 쓰고, 천천히 기다려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-13-slowtalk.png"
+      "image": "more-13-slowtalk.png",
+      "carousel": [
+        "more-13-slowtalk.png",
+        "story/d16-evening-more-13-slowtalk-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 17,
@@ -403,7 +557,14 @@
         "x"
       ],
       "image": "classic-7-night.png",
-      "text": "밤새 고쳐 쓴 편지, 아침엔 못 부쳤죠 🌙\n\n이번엔 새가 대신 날아가요.\n보내고 나면, 이제 기다리기만 하면 돼요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #새벽감성 #편지 #공감"
+      "text": "밤새 고쳐 쓴 편지, 아침엔 못 부쳤죠 🌙\n\n이번엔 새가 대신 날아가요.\n보내고 나면, 이제 기다리기만 하면 돼요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #새벽감성 #편지 #공감",
+      "carousel": [
+        "classic-7-night.png",
+        "story/d17-evening-classic-7-night-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 18,
@@ -413,7 +574,14 @@
         "x"
       ],
       "image": "07-wait.png",
-      "text": "기다림이 즐거운 편지 🕊\n\n보낸 사람도 받는 사람도, 새가 지금 어디쯤 날고 있는지 같이 봐요.\n‘언제 오지?’ 하는 그 마음이 이 앱의 재미예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #기다림 #감성앱"
+      "text": "기다림이 즐거운 편지 🕊\n\n보낸 사람도 받는 사람도, 새가 지금 어디쯤 날고 있는지 같이 봐요.\n‘언제 오지?’ 하는 그 마음이 이 앱의 재미예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #기다림 #감성앱",
+      "carousel": [
+        "07-wait.png",
+        "story/d18-am-07-wait-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 18,
@@ -424,7 +592,14 @@
         "x"
       ],
       "text": "우체부 아저씨 오토바이 소리에 뛰어나가던 날 🛵\n\n그 소리 대신, 짹짹! 새가 도착했어요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-15-chirp.png"
+      "image": "more-15-chirp.png",
+      "carousel": [
+        "more-15-chirp.png",
+        "story/d18-evening-more-15-chirp-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 19,
@@ -446,7 +621,14 @@
         "x"
       ],
       "text": "좋아하는 사람에게 편지 쓰고\n부칠까 말까 며칠을 고민했던 적, 있죠? 💭\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-16-hesitate.png"
+      "image": "more-16-hesitate.png",
+      "carousel": [
+        "more-16-hesitate.png",
+        "story/d19-evening-more-16-hesitate-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 20,
@@ -456,7 +638,14 @@
         "x"
       ],
       "text": "새 편지에서 보낸 편지는 두루마리처럼 펼쳐져요 📜\n\n사진은 폴라로이드처럼 서서히 선명해지고요.\n도착하는 순간까지 아껴 두는 맛이 있어요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #폴라로이드 #손편지",
-      "image": "more-17-scroll.png"
+      "image": "more-17-scroll.png",
+      "carousel": [
+        "more-17-scroll.png",
+        "story/d20-am-more-17-scroll-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 20,
@@ -467,7 +656,14 @@
         "x"
       ],
       "image": "classic-8-stamps.png",
-      "text": "우표 고르던 재미, 기억나요?\n\n이젠 새를 골라요.\n느긋한 까치, 적당한 비둘기, 빠른 매. 세 마리 모두 무료예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #우표 #까치 #비둘기 #매"
+      "text": "우표 고르던 재미, 기억나요?\n\n이젠 새를 골라요.\n느긋한 까치, 적당한 비둘기, 빠른 매. 세 마리 모두 무료예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #우표 #까치 #비둘기 #매",
+      "carousel": [
+        "classic-8-stamps.png",
+        "story/d20-evening-classic-8-stamps-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 21,
@@ -489,7 +685,14 @@
         "x"
       ],
       "text": "편지 한 통에 마음을 담는 데 걸리는 시간.\n도착하는 데 걸리는 시간.\n둘 다 소중해요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-18-hourglass.png"
+      "image": "more-18-hourglass.png",
+      "carousel": [
+        "more-18-hourglass.png",
+        "story/d21-evening-more-18-hourglass-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 22,
@@ -499,7 +702,14 @@
         "x"
       ],
       "image": "08-penpal.png",
-      "text": "펜팔, 아세요? ✉\n\n모르는 누군가에게 편지를 보내고 답장을 기다리던 그 감성.\n‘펜팔 친구 찾기’로 핸드폰에서 다시 느껴 봐요.\n(펜팔은 만 14세 이상 · 받겠다고 한 사람에게만 가요)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #펜팔친구 #레트로"
+      "text": "펜팔, 아세요? ✉\n\n모르는 누군가에게 편지를 보내고 답장을 기다리던 그 감성.\n‘펜팔 친구 찾기’로 핸드폰에서 다시 느껴 봐요.\n(펜팔은 만 14세 이상 · 받겠다고 한 사람에게만 가요)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #펜팔친구 #레트로",
+      "carousel": [
+        "08-penpal.png",
+        "story/d22-am-08-penpal-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 22,
@@ -510,7 +720,14 @@
         "x"
       ],
       "text": "졸업식 날 롤링페이퍼, 아직 갖고 있어요? 📜\n\n그 마음 그대로, 편지로.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-19-rolling.png"
+      "image": "more-19-rolling.png",
+      "carousel": [
+        "more-19-rolling.png",
+        "story/d22-evening-more-19-rolling-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 23,
@@ -532,7 +749,14 @@
         "x"
       ],
       "image": "classic-9-arrived.png",
-      "text": "“편지 왔어요!” 그 한마디에 뛰어나가던 날 💌\n\n새가 도착하면 알림이 와요.\n편지는 두루마리처럼 천천히 펼쳐져요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지왔어요 #설렘 #추억"
+      "text": "“편지 왔어요!” 그 한마디에 뛰어나가던 날 💌\n\n새가 도착하면 알림이 와요.\n편지는 두루마리처럼 천천히 펼쳐져요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지왔어요 #설렘 #추억",
+      "carousel": [
+        "classic-9-arrived.png",
+        "story/d23-evening-classic-9-arrived-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 24,
@@ -542,7 +766,14 @@
         "x"
       ],
       "image": "02-birds.png",
-      "text": "어떤 새로 보낼까요? 🐦\n\n매·비둘기·까치.\n빠른 새, 중간 새, 느긋한 새, 새마다 걸리는 시간이 달라요.\n실제 새의 비행 속도를 바탕으로 했어요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #새 #편지"
+      "text": "어떤 새로 보낼까요? 🐦\n\n매·비둘기·까치.\n빠른 새, 중간 새, 느긋한 새, 새마다 걸리는 시간이 달라요.\n실제 새의 비행 속도를 바탕으로 했어요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #새 #편지",
+      "carousel": [
+        "02-birds.png",
+        "story/d24-am-02-birds-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 24,
@@ -553,7 +784,14 @@
         "x"
       ],
       "text": "요즘 우리, 너무 빨리 대답하느라\n진짜 하고 싶은 말을 못 하는 건 아닐까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-20-tooquick.png"
+      "image": "more-20-tooquick.png",
+      "carousel": [
+        "more-20-tooquick.png",
+        "story/d24-evening-more-20-tooquick-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 25,
@@ -575,7 +813,14 @@
         "x"
       ],
       "text": "보낸 편지가 지금 어디쯤 날고 있는지\n지도로 볼 수 있어요 🗺\n\n기다림이 이렇게 재밌을 줄이야.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-21-map.png"
+      "image": "more-21-map.png",
+      "carousel": [
+        "more-21-map.png",
+        "story/d25-evening-more-21-map-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 26,
@@ -585,7 +830,14 @@
         "x"
       ],
       "text": "지도 사진으로 공유해 보세요 📸\n\n내 편지가 지금 어디를 날고 있는지, 한 장의 사진으로 친구에게 보낼 수 있어요.\n편지 내용은 들어가지 않아요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #지도",
-      "image": "more-22-sharemap.png"
+      "image": "more-22-sharemap.png",
+      "carousel": [
+        "more-22-sharemap.png",
+        "story/d26-am-more-22-sharemap-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 26,
@@ -596,7 +848,14 @@
         "x"
       ],
       "image": "classic-10-grandma.png",
-      "text": "전화는 쑥스럽고, 문자는 너무 짧을 때.\n\n할머니께 손편지처럼 한 통 어때요?\n까치가 천천히 날아가 전해 드려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #할머니 #가족"
+      "text": "전화는 쑥스럽고, 문자는 너무 짧을 때.\n\n할머니께 손편지처럼 한 통 어때요?\n까치가 천천히 날아가 전해 드려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #할머니 #가족",
+      "carousel": [
+        "classic-10-grandma.png",
+        "story/d26-evening-classic-10-grandma-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 27,
@@ -618,7 +877,14 @@
         "x"
       ],
       "text": "오늘 생각나는 사람이 있다면,\n그게 편지를 쓸 이유예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-23-someone.png"
+      "image": "more-23-someone.png",
+      "carousel": [
+        "more-23-someone.png",
+        "story/d27-evening-more-23-someone-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 28,
@@ -628,7 +894,14 @@
         "x"
       ],
       "image": "01-concept.png",
-      "text": "새 편지, 한 달 동안 고마웠어요 🕊\n\n여러분의 편지가 오늘도 하늘을 날고 있어요.\n아직 안 써 보셨다면, 소중한 사람에게 첫 편지를.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #감성앱"
+      "text": "새 편지, 한 달 동안 고마웠어요 🕊\n\n여러분의 편지가 오늘도 하늘을 날고 있어요.\n아직 안 써 보셨다면, 소중한 사람에게 첫 편지를.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #감성앱",
+      "carousel": [
+        "01-concept.png",
+        "story/d28-am-01-concept-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 28,
@@ -639,7 +912,14 @@
         "x"
       ],
       "text": "한 달 동안 새 편지와 함께 기다려 주셔서 고마워요 🕊\n\n다음 편지는 누구에게 보낼까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-24-thanks.png"
+      "image": "more-24-thanks.png",
+      "carousel": [
+        "more-24-thanks.png",
+        "story/d28-evening-more-24-thanks-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 29,
@@ -671,7 +951,14 @@
         "x"
       ],
       "image": "more-25-login.png",
-      "text": "가입은 버튼 한 번이면 끝이에요 🕊\n\n카카오·구글·애플 계정으로 누르면 바로 시작.\n아이디도 비밀번호도 만들 필요 없어요.\n카카오로 가입하면 카카오 이름과 사진이 그대로 들어가요.\n\n{{받기}}\n\n#새편지 #편지앱 #카카오로그인"
+      "text": "가입은 버튼 한 번이면 끝이에요 🕊\n\n카카오·구글·애플 계정으로 누르면 바로 시작.\n아이디도 비밀번호도 만들 필요 없어요.\n카카오로 가입하면 카카오 이름과 사진이 그대로 들어가요.\n\n{{받기}}\n\n#새편지 #편지앱 #카카오로그인",
+      "carousel": [
+        "more-25-login.png",
+        "story/d31-am-more-25-login-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 31,
@@ -682,7 +969,14 @@
         "x"
       ],
       "text": "마지막으로 손편지 받아 본 게 언제예요? ✉\n\n댓글로 그때 이야기 들려주세요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-01-lastletter.png"
+      "image": "more-01-lastletter.png",
+      "carousel": [
+        "more-01-lastletter.png",
+        "story/d31-evening-more-01-lastletter-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 32,
@@ -693,7 +987,14 @@
         "x"
       ],
       "image": "classic-2-manuscript.png",
-      "text": "빨리 가는 것보다, 마음이 닿는 것.\n\n원고지에 꾹꾹 눌러 쓴 한 줄이 반가웠던 그때처럼.\n오늘 한 통, 천천히 보내 볼까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #원고지 #손편지 #감성글"
+      "text": "빨리 가는 것보다, 마음이 닿는 것.\n\n원고지에 꾹꾹 눌러 쓴 한 줄이 반가웠던 그때처럼.\n오늘 한 통, 천천히 보내 볼까요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #원고지 #손편지 #감성글",
+      "carousel": [
+        "classic-2-manuscript.png",
+        "story/d32-evening-classic-2-manuscript-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 33,
@@ -704,7 +1005,14 @@
         "x"
       ],
       "text": "학교 끝나고 집에 오면 우편함부터 열어 보던 사람, 손! 🙋\n\n그 두근거림, 새 편지에서 다시 느껴 보세요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-03-mailbox.png"
+      "image": "more-03-mailbox.png",
+      "carousel": [
+        "more-03-mailbox.png",
+        "story/d33-evening-more-03-mailbox-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 34,
@@ -715,7 +1023,14 @@
         "x"
       ],
       "text": "답장이 빨리 오면 편하고,\n천천히 오면 설레요.\n\n오늘은 설레는 쪽으로 한 통 어때요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-04-fastslow.png"
+      "image": "more-04-fastslow.png",
+      "carousel": [
+        "more-04-fastslow.png",
+        "story/d34-evening-more-04-fastslow-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 35,
@@ -726,7 +1041,14 @@
         "x"
       ],
       "image": "classic-3-mailbox.png",
-      "text": "요즘은 다 너무 빨라서 설렐 틈이 없잖아요 📮\n\n새가 실제 거리만큼 날아가 전해 주는 편지.\n기다리는 시간도 편지의 일부예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #빨간우체통 #느린편지 #아날로그감성"
+      "text": "요즘은 다 너무 빨라서 설렐 틈이 없잖아요 📮\n\n새가 실제 거리만큼 날아가 전해 주는 편지.\n기다리는 시간도 편지의 일부예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #빨간우체통 #느린편지 #아날로그감성",
+      "carousel": [
+        "classic-3-mailbox.png",
+        "story/d35-evening-classic-3-mailbox-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 36,
@@ -737,7 +1059,14 @@
         "x"
       ],
       "text": "편지지 고르느라 문구점에서 한참 서 있던 기억 🌸\n\n그때 고른 편지지, 아직 서랍에 있나요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-05-stationery.png"
+      "image": "more-05-stationery.png",
+      "carousel": [
+        "more-05-stationery.png",
+        "story/d36-evening-more-05-stationery-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 37,
@@ -748,7 +1077,14 @@
         "x"
       ],
       "text": "쓰다가 틀려서 몇 장이고 다시 쓰던 편지.\n\n그 정성이 그리운 밤이에요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #손편지 #감성 #추억",
-      "image": "more-06-rewrite.png"
+      "image": "more-06-rewrite.png",
+      "carousel": [
+        "more-06-rewrite.png",
+        "story/d37-evening-more-06-rewrite-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 38,
@@ -759,7 +1095,14 @@
         "x"
       ],
       "image": "classic-4-postcard.png",
-      "text": "여행지에서 보내던 엽서 한 장처럼 🌊\n\n“여기 바다가 참 예뻐요.”\n그 한 줄이 며칠 뒤 도착하던 설렘, 기억나요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #엽서 #여행 #추억"
+      "text": "여행지에서 보내던 엽서 한 장처럼 🌊\n\n“여기 바다가 참 예뻐요.”\n그 한 줄이 며칠 뒤 도착하던 설렘, 기억나요?\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #엽서 #여행 #추억",
+      "carousel": [
+        "classic-4-postcard.png",
+        "story/d38-evening-classic-4-postcard-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 39,
@@ -769,7 +1112,14 @@
         "x"
       ],
       "text": "초대는 카톡 한 번이면 끝 💬\n\n친구 탭 오른쪽 위 [친구 초대] → 카카오톡으로 초대하기.\n링크를 누른 친구가 가입하면 저절로 친구가 돼요.\n문자나 링크 복사로도 보낼 수 있어요.\n\n친구도 앱스토어에서 ‘새 편지’ 받고 카카오 버튼 한 번이면 가입 끝.\n아이디·비밀번호 만들 필요 없어요.\n\n{{받기}}\n\n#새편지 #편지앱 #친구초대",
-      "image": "more-26-invite.png"
+      "image": "more-26-invite.png",
+      "carousel": [
+        "more-26-invite.png",
+        "story/d39-am-more-26-invite-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 40,
@@ -790,7 +1140,14 @@
         "x"
       ],
       "image": "03-magpie.png",
-      "text": "아침 까치가 울면 반가운 손님이 온다죠.\n\n까치로 보낸 편지는 도착할 때 금빛 테두리와 반짝이가 내려와요. ✨\n느긋해서 아무리 가까워도 2시간은 걸리지만, 그만큼 반가워요.\n\n기다림도 소통의 일부입니다.\n\n#새편지 #까치"
+      "text": "아침 까치가 울면 반가운 손님이 온다죠.\n\n까치로 보낸 편지는 도착할 때 금빛 테두리와 반짝이가 내려와요. ✨\n느긋해서 아무리 가까워도 2시간은 걸리지만, 그만큼 반가워요.\n\n기다림도 소통의 일부입니다.\n\n#새편지 #까치",
+      "carousel": [
+        "03-magpie.png",
+        "story/d41-am-03-magpie-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 42,
@@ -811,7 +1168,14 @@
         "x"
       ],
       "image": "05-mishap.png",
-      "text": "새도 가끔 길을 잃어요.\n\n나무에 걸리거나 길을 잃으면 조금 늦어져요.\n그래도 편지는 사라지지 않고 꼭 도착해요.\n새마다 얼마나 자주 그러는지는 새 고르기 화면에 적혀 있어요.\n\n기다림도 소통의 일부입니다.\n\n#새편지"
+      "text": "새도 가끔 길을 잃어요.\n\n나무에 걸리거나 길을 잃으면 조금 늦어져요.\n그래도 편지는 사라지지 않고 꼭 도착해요.\n새마다 얼마나 자주 그러는지는 새 고르기 화면에 적혀 있어요.\n\n기다림도 소통의 일부입니다.\n\n#새편지",
+      "carousel": [
+        "05-mishap.png",
+        "story/d43-am-05-mishap-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "date": "2026-12-20",
@@ -855,7 +1219,14 @@
         "x"
       ],
       "image": "more-16-hesitate.png",
-      "text": "카톡으로는 말 못 하겠는 거, 있죠 💭\n\n바로 읽히는 게 부담이라서.\n새편지는 몇 시간 뒤에 도착해요.\n그 사이 마음이 정리되고, 받는 사람도 천천히 읽어요.\n\n{{받기}}\n\n#새편지 #마음전하기 #고백"
+      "text": "카톡으로는 말 못 하겠는 거, 있죠 💭\n\n바로 읽히는 게 부담이라서.\n새편지는 몇 시간 뒤에 도착해요.\n그 사이 마음이 정리되고, 받는 사람도 천천히 읽어요.\n\n{{받기}}\n\n#새편지 #마음전하기 #고백",
+      "carousel": [
+        "more-16-hesitate.png",
+        "story/d2-night-more-16-hesitate-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 3,
@@ -866,7 +1237,14 @@
         "x"
       ],
       "image": "more-23-someone.png",
-      "text": "문득 떠오른 그 사람에게 💌\n\n'잘 지내?' 한마디가 어색하다면\n새한테 맡겨 보세요.\n도착하는 동안 둘이 같이 기다려요.\n\n{{받기}}\n\n#새편지 #안부 #옛친구"
+      "text": "문득 떠오른 그 사람에게 💌\n\n'잘 지내?' 한마디가 어색하다면\n새한테 맡겨 보세요.\n도착하는 동안 둘이 같이 기다려요.\n\n{{받기}}\n\n#새편지 #안부 #옛친구",
+      "carousel": [
+        "more-23-someone.png",
+        "story/d3-night-more-23-someone-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 4,
@@ -888,7 +1266,14 @@
         "x"
       ],
       "image": "more-24-thanks.png",
-      "text": "오늘 고마웠던 사람 한 명만 떠올려 보세요 🌙\n\n'고마워' 세 글자도\n편지로 받으면 오래 남아요.\n\n{{받기}}\n\n#새편지 #고마워 #감사편지"
+      "text": "오늘 고마웠던 사람 한 명만 떠올려 보세요 🌙\n\n'고마워' 세 글자도\n편지로 받으면 오래 남아요.\n\n{{받기}}\n\n#새편지 #고마워 #감사편지",
+      "carousel": [
+        "more-24-thanks.png",
+        "story/d5-night-more-24-thanks-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 6,
@@ -910,7 +1295,14 @@
         "x"
       ],
       "image": "more-10-waitforreply.png",
-      "text": "답장 기다리는 거, 원래 이렇게 설레는 거였어요 💭\n\n지금 어디쯤 날고 있는지 지도로 같이 보면서\n도착을 기다려요.\n\n{{받기}}\n\n#새편지 #기다림 #답장"
+      "text": "답장 기다리는 거, 원래 이렇게 설레는 거였어요 💭\n\n지금 어디쯤 날고 있는지 지도로 같이 보면서\n도착을 기다려요.\n\n{{받기}}\n\n#새편지 #기다림 #답장",
+      "carousel": [
+        "more-10-waitforreply.png",
+        "story/d7-night-more-10-waitforreply-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 8,
@@ -921,7 +1313,14 @@
         "x"
       ],
       "image": "classic-10-grandma.png",
-      "text": "할머니 목소리 들은 지 얼마나 됐어요? 👵\n\n전화가 어색하면 편지로 먼저.\n도착하면 앱이 없어도 링크로 바로 열려요.\n\n{{받기}}\n\n#새편지 #할머니 #손편지"
+      "text": "할머니 목소리 들은 지 얼마나 됐어요? 👵\n\n전화가 어색하면 편지로 먼저.\n도착하면 앱이 없어도 링크로 바로 열려요.\n\n{{받기}}\n\n#새편지 #할머니 #손편지",
+      "carousel": [
+        "classic-10-grandma.png",
+        "story/d8-night-classic-10-grandma-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 9,
@@ -943,7 +1342,14 @@
         "x"
       ],
       "image": "more-13-slowtalk.png",
-      "text": "오늘 하루 어땠어요? 🌙\n\n짧은 메시지 말고,\n오늘 있었던 일을 길게 써서 보내 보세요.\n새가 내일까지 천천히 전해 줘요.\n\n{{받기}}\n\n#새편지 #일기 #편지쓰기"
+      "text": "오늘 하루 어땠어요? 🌙\n\n짧은 메시지 말고,\n오늘 있었던 일을 길게 써서 보내 보세요.\n새가 내일까지 천천히 전해 줘요.\n\n{{받기}}\n\n#새편지 #일기 #편지쓰기",
+      "carousel": [
+        "more-13-slowtalk.png",
+        "story/d10-night-more-13-slowtalk-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 11,
@@ -965,7 +1371,14 @@
         "x"
       ],
       "image": "more-01-lastletter.png",
-      "text": "마지막으로 손편지 받은 게 언제예요? ✉️\n\n기억 안 난다면,\n오늘 밤 내가 먼저 보내 보는 건 어때요.\n\n{{받기}}\n\n#새편지 #손편지 #추억"
+      "text": "마지막으로 손편지 받은 게 언제예요? ✉️\n\n기억 안 난다면,\n오늘 밤 내가 먼저 보내 보는 건 어때요.\n\n{{받기}}\n\n#새편지 #손편지 #추억",
+      "carousel": [
+        "more-01-lastletter.png",
+        "story/d12-night-more-01-lastletter-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 13,
@@ -987,7 +1400,14 @@
         "x"
       ],
       "image": "more-18-hourglass.png",
-      "text": "기다리는 시간도 선물이 돼요 ⏳\n\n보낸 순간부터 도착할 때까지\n둘 다 같은 지도를 보며 기다려요.\n\n{{받기}}\n\n#새편지 #기다림 #설렘"
+      "text": "기다리는 시간도 선물이 돼요 ⏳\n\n보낸 순간부터 도착할 때까지\n둘 다 같은 지도를 보며 기다려요.\n\n{{받기}}\n\n#새편지 #기다림 #설렘",
+      "carousel": [
+        "more-18-hourglass.png",
+        "story/d14-night-more-18-hourglass-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 15,
@@ -998,7 +1418,14 @@
         "x"
       ],
       "image": "more-08-army.png",
-      "text": "군대 간 친구, 멀리 있는 가족에게 🪖\n\n매일 연락은 못 해도\n편지 한 통이면 마음은 전해져요.\n\n{{받기}}\n\n#새편지 #군대편지 #가족"
+      "text": "군대 간 친구, 멀리 있는 가족에게 🪖\n\n매일 연락은 못 해도\n편지 한 통이면 마음은 전해져요.\n\n{{받기}}\n\n#새편지 #군대편지 #가족",
+      "carousel": [
+        "more-08-army.png",
+        "story/d15-night-more-08-army-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 16,
@@ -1020,7 +1447,14 @@
         "x"
       ],
       "image": "more-06-rewrite.png",
-      "text": "썼다 지웠다 하던 그 말 ✍️\n\n편지는 천천히 써도 괜찮아요.\n다 쓰면 새가 대신 날아가 줄게요.\n\n{{받기}}\n\n#새편지 #편지 #진심"
+      "text": "썼다 지웠다 하던 그 말 ✍️\n\n편지는 천천히 써도 괜찮아요.\n다 쓰면 새가 대신 날아가 줄게요.\n\n{{받기}}\n\n#새편지 #편지 #진심",
+      "carousel": [
+        "more-06-rewrite.png",
+        "story/d17-night-more-06-rewrite-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 18,
@@ -1042,7 +1476,14 @@
         "x"
       ],
       "image": "classic-9-arrived.png",
-      "text": "\"편지 왔어요!\" 📬\n\n이 말 들어 본 지 오래됐죠.\n새편지에서는 도착하면 새가 알려 줘요.\n\n{{받기}}\n\n#새편지 #편지왔어요 #감성"
+      "text": "\"편지 왔어요!\" 📬\n\n이 말 들어 본 지 오래됐죠.\n새편지에서는 도착하면 새가 알려 줘요.\n\n{{받기}}\n\n#새편지 #편지왔어요 #감성",
+      "carousel": [
+        "classic-9-arrived.png",
+        "story/d19-night-classic-9-arrived-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     },
     {
       "day": 20,
@@ -1053,7 +1494,14 @@
         "x"
       ],
       "image": "more-25-login.png",
-      "text": "오늘 밤에 시작해도 1분이면 끝 🌙\n\n앱스토어에서 '새 편지' 받고\n카카오 버튼 한 번이면 가입 끝.\n첫 편지는 자는 동안 날아가요.\n\n{{받기}}\n\n#새편지 #앱추천 #간편가입"
+      "text": "오늘 밤에 시작해도 1분이면 끝 🌙\n\n앱스토어에서 '새 편지' 받고\n카카오 버튼 한 번이면 가입 끝.\n첫 편지는 자는 동안 날아가요.\n\n{{받기}}\n\n#새편지 #앱추천 #간편가입",
+      "carousel": [
+        "more-25-login.png",
+        "story/d20-night-more-25-login-2.png",
+        "story/how.png",
+        "story/easy.png",
+        "story/cta.png"
+      ]
     }
   ]
 }
