@@ -12,7 +12,7 @@
 // 열쇠 확인: node scripts/auto-post.mjs --check  (스레드·인스타 열쇠가 맞는지 계정 이름만 확인, 아무것도 안 올림)
 //       MEDIA_BASE_URL       그림·영상이 올라가 있는 공개 주소(기본: 이 레포 main 브랜치의 promo 폴더)
 // 글의 image는 promo/cards 안 파일, video는 promo 아래 경로(예: video/saepyeonji-15s.mp4 → 인스타 릴스·스레드 영상, X는 표지 사진)
-import { existsSync, readFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { createHmac, randomBytes } from "node:crypto";
 
 const args = process.argv.slice(2);
@@ -20,7 +20,15 @@ const SEND = args.includes("--send");
 const dateArg = args.includes("--date") ? args[args.indexOf("--date") + 1] : null;
 const today = dateArg ?? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date()); // YYYY-MM-DD
 // 하루 두 번(2026-11-04 대표님: "매번 똑같이보다 다르게 자주"): 아침 8시 30분(2026-11-09부터, 예전 낮 12시) = slot 없는 글(귀여운 그림), 저녁 6시(예전 8시) = slot "evening" 글(클래식 그림)
-const SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
+let SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
+// 예약 실행이 몇 시간씩 늦게 도는 일이 있어서(2026-11-10: 저녁 6시 글이 새벽 4시 반에 올라감) "auto"는 지금 한국 시각으로 정해요:
+// 8시 이후면 아침 글, 17시 30분 이후면 저녁 글 중 아직 안 올린 것 하나. 0~7시엔 아무것도 안 올려요. 올린 기록은 LOG_FILE(한 줄에 "날짜 slot")
+export function autoSlot(hm, done) {
+  if (hm < 800) return null;
+  if (hm >= 1730 && !done.has("evening")) return "evening";
+  if (!done.has("noon")) return hm < 1730 || done.has("evening") ? "noon" : null;
+  return null;
+}
 export const slotOf = (p) => (p.slot === "evening" ? "evening" : "noon");
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
@@ -237,6 +245,13 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
 }
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && !args.includes("--check")) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
+  const LOG = process.env.LOG_FILE;
+  const logged = new Set(LOG && existsSync(LOG) ? readFileSync(LOG, "utf8").split("\n").filter((l) => l.startsWith(today + " ")).map((l) => l.split(" ")[1]) : []);
+  if (SLOT === "auto") {
+    const hm = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()).replace(":", ""));
+    SLOT = autoSlot(hm, logged);
+    if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
+  } else if (SEND && logged.has(SLOT)) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => upgraded(p));
   console.log(`${today} ${SLOT === "evening" ? "저녁" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
@@ -257,5 +272,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
       }
     }
   }
+  // 하나라도 올라갔으면 기록(같은 글이 두 번 올라가지 않게)
+  if (SEND && LOG && todays.length && failed < todays.reduce((n, p) => n + targetsOf(p).length, 0)) appendFileSync(LOG, `${today} ${SLOT}\n`);
   process.exit(failed ? 1 : 0);
 }

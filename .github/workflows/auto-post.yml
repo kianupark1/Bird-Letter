@@ -4,9 +4,13 @@
 name: 홍보 글 자동 게시
 
 on:
+  # GitHub 예약 실행은 늦거나 빠질 때가 있어서(2026-11-10: 10시간 늦음) 한 번 더 시도하는 시각을 두고,
+  # 무슨 글을 올릴지는 실행된 한국 시각으로 정해요(--slot auto). 이미 올린 글은 autopost-log 브랜치 기록으로 건너뛰어요.
   schedule:
-    - cron: "30 23 * * *" # UTC 23:30 = 한국 시간 다음 날 08:30 (아침 글)
-    - cron: "0 9 * * *" # UTC 09:00 = 한국 시간 18:00 (저녁 글: schedule.json의 slot "evening")
+    - cron: "33 23 * * *" # 한국 08:33 아침 글
+    - cron: "13 1 * * *" # 한국 10:13 아침 글 다시 시도
+    - cron: "37 8 * * *" # 한국 17:37 저녁 글
+    - cron: "17 10 * * *" # 한국 19:17 저녁 글 다시 시도
   workflow_dispatch:
     inputs:
       send:
@@ -23,11 +27,20 @@ jobs:
     if: ${{ vars.AUTO_POST_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
+    concurrency: autopost
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: 올린 기록 가져오기
+        run: |
+          mkdir -p "$RUNNER_TEMP/log"
+          if git fetch -q origin autopost-log 2>/dev/null; then git show origin/autopost-log:posted.txt > "$RUNNER_TEMP/log/posted.txt" 2>/dev/null || true; fi
+          cat promo/posted.txt >> "$RUNNER_TEMP/log/posted.txt" 2>/dev/null || true
+          echo "LOG_FILE=$RUNNER_TEMP/log/posted.txt" >> "$GITHUB_ENV"
       - name: 오늘 글 올리기
         env:
           THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
@@ -44,7 +57,15 @@ jobs:
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
           YT_PRIVACY: ${{ vars.YT_PRIVACY }}
           SEND: ${{ github.event_name == 'schedule' && 'true' || inputs.send }}
-          SLOT: ${{ github.event_name == 'schedule' && (github.event.schedule == '0 9 * * *' && 'evening' || 'noon') || inputs.slot }}
+          SLOT: ${{ github.event_name == 'schedule' && 'auto' || inputs.slot }}
         run: |
           if [ "$SEND" != "true" ]; then echo "── 열쇠 확인 ──"; node scripts/auto-post.mjs --check || echo "(열쇠가 아직 다 들어가지 않았어요 — 위 ✗ 줄을 보세요)"; echo "── 오늘 글 미리보기 ──"; fi
           if [ "$SEND" = "true" ]; then node scripts/auto-post.mjs --send --slot "$SLOT"; else node scripts/auto-post.mjs --slot "$SLOT"; fi
+      - name: 올린 기록 남기기
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/log"
+          [ -s posted.txt ] || exit 0
+          git init -q && git checkout -q -b autopost-log
+          git config user.name "autopost" && git config user.email "autopost@users.noreply.github.com"
+          git add posted.txt && git commit -qm "올린 기록" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" autopost-log || echo "기록 저장 실패(다음 실행에서 다시)"
