@@ -57,7 +57,7 @@ export function storeLines(st, to) {
   // 인스타는 글 속 링크가 안 눌리고, X는 링크 글값이 13배라 링크 대신 "프로필에"로 안내해요
   if (to === "instagram" || to === "x") {
     const where = [st.ios && "앱스토어", st.android && "구글 플레이"].filter(Boolean).join("·");
-    return `${where}에서 ‘새 편지’ 검색 · 링크는 프로필에 🕊`;
+    return `${where}에서 ‘새 편지’ 검색${st.android ? "" : " · 안드로이드는 곧"} · 링크는 프로필에 🕊`;
   }
   const out = [];
   if (st.ios) out.push(`아이폰: 앱스토어에서 ‘새 편지’\n${st.ios}`);

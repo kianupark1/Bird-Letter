@@ -48,7 +48,7 @@ h1 em { font-style: normal; color: ${DAHONG}; }
 .phone img { width: 100%; height: 100%; object-fit: cover; }
 .chip { position: absolute; padding: 18px 26px; border-radius: 26px; background: #fff; color: ${INK}; font-size: 34px; font-weight: 800; box-shadow: 0 14px 30px rgba(40,20,5,.22); }
 `;
-const BAR = `<div class="bar"><div class="store"><i>${bird("magpie", 54, true)}</i><span>앱스토어 ‘새 편지’<small>무료 · 아이폰</small></span></div><div class="slogan">${SLOGAN}</div></div>`;
+const BAR = `<div class="bar"><div class="store"><i>${bird("magpie", 54, true)}</i><span>앱스토어 ‘새 편지’<small>무료 · 안드로이드는 곧</small></span></div><div class="slogan">${SLOGAN}</div></div>`;
 const phone = (f: string, x: number, y: number, w: number, h: number, rot = 0, pos = "top") =>
   `<div class="phone" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;transform:rotate(${rot}deg)"><div><img src="${shot(f)}" style="object-position:${pos}"></div></div>`;
 const top = (tag: string, h1: string, sub = "") => `<div class="top"><span class="tag">${tag}</span><h1>${h1}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div>`;
@@ -74,7 +74,7 @@ const cards: { file: string; hot?: boolean; html: string }[] = [
       ${[["#FEE500", "#191600", "💬 카카오로 가입하기"], ["#fff", "#1F1F1F", "G  구글로 가입하기"], ["#111", "#fff", "  애플로 가입하기"]].map(([bg, fg, t]) => `<div style="height:130px;border-radius:34px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;box-shadow:0 12px 26px rgba(40,20,5,.18);border:2px solid rgba(0,0,0,.06)">${t}</div>`).join("")}</div>${BAR}` },
   { file: "app-07-penpal", hot: true, html: `${top("🌏 펜팔", `모르는 누군가에게<br><em>편지 날려 보내기</em>`, "이름 대신 펜팔 이름, 위치는 도시까지만 · 만 14세 이상")}
     ${phone("ios-4-map.png", 290, 600, 500, 900, -3, "center 45%")}${chip("✉ 부산 사는 비둘기님에게", 470, 680, 4)}${BAR}` },
-  { file: "app-08-free", html: `${top("지금 무료", `느려서 더 반가운<br><em>새 편지</em>`, "앱스토어에서 ‘새 편지’를 검색해 보세요")}
+  { file: "app-08-free", html: `${top("지금 무료", `느려서 더 반가운<br><em>새 편지</em>`, "앱스토어에서 ‘새 편지’를 검색해 보세요 · 안드로이드는 곧")}
     ${phone("ios-1-list.png", 60, 560, 390, 780, -8)}${phone("ios-4-map.png", 630, 560, 390, 780, 8, "center 30%")}${phone("ios-2-room.png", 345, 500, 390, 820, 0, "center 55%")}${BAR}` },
 ];
 

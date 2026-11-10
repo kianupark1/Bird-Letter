@@ -70,7 +70,7 @@ const slides: string[] = [
    ${txt("01 한 장이면 설명 끝", `내 편지가 지금<br><em>어디쯤</em> 날고 있는지`, "편지를 쓰고 새를 고르면, 실제 거리만큼 날아가요.<br>보내는 사람도 <b>받는 사람도 같은 지도</b>를 봐요.")}${swipe(2)}${brand}`,
   // 3 승: 설치가 쉬워요(2026-11-10 대표님: "링크만보다 설치가 쉽다는 게 오히려 좋아")
   `${count(3)}<div style="position:absolute;left:64px;right:64px;top:90px">
-     <div class="row"><b>① 앱스토어에서 ‘새 편지’</b><span>받기</span></div>
+     <div class="row"><b>① 앱스토어에서 ‘새 편지’</b><span>받기 · 안드로이드 곧</span></div>
      <div class="row" style="background:#FEE500;color:#191919"><b>② 카카오로 가입하기</b><span>버튼 한 번</span></div>
      <div class="row"><s>아이디 · 비밀번호 만들기</s><span>없어요</span></div>
      <div class="row" style="background:#FFF1EA;border:3px solid ${DAHONG}"><b style="color:${DAHONG}">③ 첫 편지 날리기</b><span style="color:${DAHONG}">끝!</span></div></div>
@@ -96,6 +96,7 @@ const slides: string[] = [
      <div style="display:flex;justify-content:center">${bird("magpie", 260, true)}</div>
      <h1 style="font-size:84px;margin-top:40px">오늘 생각나는 사람에게<br><span style="color:#F0BC5C">첫 편지</span>를 날려 보세요</h1>
      <div style="margin:60px auto 0;display:inline-flex;align-items:center;gap:18px;background:#fff;color:${INK};padding:28px 44px;border-radius:30px;font-size:44px;font-weight:900">앱스토어에서 ‘새 편지’ · 무료</div>
+     <div style="margin-top:22px;font-size:34px;font-weight:700;opacity:.9">🤖 안드로이드는 곧 출시돼요</div>
      <div style="font-size:34px;color:#F0BC5C;margin-top:70px;font-weight:700">${SLOGAN}</div></div>
    <div style="position:absolute;right:52px;top:52px;padding:10px 22px;border-radius:999px;background:rgba(255,255,255,.18);color:#fff;font-size:28px;font-weight:700">${N}/${N}</div>`,
 ];

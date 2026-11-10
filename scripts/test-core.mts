@@ -760,7 +760,7 @@ import { SLOGAN } from "../promo/store.mts";
   eq("홍보 글: 인스타는 프로필 링크 안내(주소 없음)", fillText(p, "instagram", ios).text.includes("링크는 프로필에") && !fillText(p, "instagram", ios).text.includes("https://"), true);
   eq("홍보 글: X는 주소 줄을 뺌", xPost(fillText(p, "x", ios)).includes("https://"), false);
   let threw = false; try { storeLines({}, "threads"); } catch { threw = true; }
-  eq("X 받기 안내: 링크 대신 프로필", storeLines({ ios: "https://a", android: null }, "x"), "앱스토어에서 ‘새 편지’ 검색 · 링크는 프로필에 🕊");
+  eq("X 받기 안내: 링크 대신 프로필", storeLines({ ios: "https://a", android: null }, "x"), "앱스토어에서 ‘새 편지’ 검색 · 안드로이드는 곧 · 링크는 프로필에 🕊");
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
   eq("슬로건: 그림·영상과 글이 같은 글자", POST_SLOGAN, SLOGAN);
