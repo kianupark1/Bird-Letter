@@ -306,3 +306,4 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   if (SEND && LOG && todays.length && failed < todays.reduce((n, p) => n + targetsOf(p).length, 0)) appendFileSync(LOG, `${today} ${SLOT}\n`);
   process.exit(failed ? 1 : 0);
 }
+export { call, igHost, igAccount, env };
