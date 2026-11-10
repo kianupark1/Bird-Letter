@@ -143,6 +143,15 @@ async function postThreads(p) {
   if (!token) throw new Error("THREADS_ACCESS_TOKEN 이 없어요");
   const id = env("THREADS_USER_ID") || (await call(`https://graph.threads.net/v1.0/me?fields=id&access_token=${encodeURIComponent(token)}`, { method: "GET" })).id;
   const base = `https://graph.threads.net/v1.0/${id}`;
+  // 넘겨 보는 글(carousel: 카드 2~10장): 장마다 먼저 올려 두고 한 글로 묶어요
+  if (p.carousel?.length > 1) {
+    const kids = [];
+    for (const f of p.carousel.slice(0, 10)) kids.push((await call(`${base}/threads`, { params: { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${f}`, is_carousel_item: "true", access_token: token } })).id);
+    await sleep(10000);
+    const c = await call(`${base}/threads`, { params: { media_type: "CAROUSEL", children: kids.join(","), text: p.text, access_token: token } });
+    await sleep(8000);
+    return call(`${base}/threads_publish`, { params: { creation_id: c.id, access_token: token } });
+  }
   const media = p.video ? { media_type: "VIDEO", video_url: `${MEDIA_BASE}/${p.video}` }
     : p.image ? { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${p.image}` } : { media_type: "TEXT" };
   const c = await call(`${base}/threads`, { params: { text: p.text, access_token: token, ...media } });
@@ -161,6 +170,14 @@ async function postInstagram(p) {
   // 인스타그램 로그인 열쇠: user_id = 게시용 인스타 프로페셔널 계정 번호(id는 앱 전용 번호라 쓰지 않음)
   const id = await igAccount(host, token);
   const base = `${host}/v21.0/${id}`;
+  if (p.carousel?.length > 1) {
+    const kids = [];
+    for (const f of p.carousel.slice(0, 10)) kids.push((await call(`${base}/media`, { params: { image_url: `${MEDIA_BASE}/cards/${igJpg(f)}`, is_carousel_item: "true", access_token: token } })).id);
+    await sleep(8000);
+    const c = await call(`${base}/media`, { params: { media_type: "CAROUSEL", children: kids.join(","), caption: p.text, access_token: token } });
+    await sleep(8000);
+    return call(`${base}/media_publish`, { params: { creation_id: c.id, access_token: token } });
+  }
   const media = p.video ? { media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, share_to_feed: "true" } : { image_url: `${MEDIA_BASE}/cards/${igJpg(p.image)}` };
   const c = await call(`${base}/media`, { params: { caption: p.text, access_token: token, ...media } });
   if (p.video) await waitReady(`${host}/v21.0/${c.id}?fields=status_code&access_token=${encodeURIComponent(token)}`, "status_code");
@@ -199,6 +216,19 @@ async function postX(p) {
   if (Object.values(keys).some((v) => !v)) throw new Error("X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET 이 없어요");
   let mediaId;
   const img = imageRel(p);
+  if (p.carousel?.length > 1) { // X는 사진 4장까지
+    const ids = [];
+    for (const f of p.carousel.slice(0, 4)) {
+      const up = "https://api.x.com/2/media/upload";
+      const form = new FormData();
+      form.append("media", new Blob([readFileSync(promoFile(`cards/${f}`))], { type: "image/png" }), "card.png");
+      form.append("media_category", "tweet_image");
+      const r = await call(up, { headers: { Authorization: oauthHeader("POST", up, keys) }, body: form });
+      ids.push(r.data?.id ?? r.media_id_string);
+    }
+    const url = "https://api.x.com/2/tweets";
+    return call(url, { headers: { Authorization: oauthHeader("POST", url, keys), "Content-Type": "application/json" }, body: JSON.stringify({ text: xText(p), media: { media_ids: ids } }) });
+  }
   if (img) {
     const up = "https://api.x.com/2/media/upload";
     const form = new FormData();
@@ -259,7 +289,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     for (const to of targetsOf(p)) {
       let q;
       try { q = fillText(p, to); } catch (e) { failed++; console.log(`  ✗ [${to}] ${e.message}`); continue; }
-      const media = p.video ? ` (+영상 ${p.video})` : p.image ? ` (+${p.image})` : "";
+      const media = p.video ? ` (+영상 ${p.video})` : p.carousel ? ` (+넘겨 보는 ${p.carousel.length}장)` : p.image ? ` (+${p.image})` : "";
       const label = `[${to}] ${q.text.split("\n")[0].slice(0, 30)}…${media}${to === "x" ? ` · X ${xWeight(xText(q))}/280칸` : ""}`;
       if (!SEND) { console.log("  미리보기 " + label); console.log((to === "x" ? xText(q) : q.text).replace(/^/gm, "      │ ")); continue; }
       try {
