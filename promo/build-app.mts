@@ -55,7 +55,7 @@ const top = (tag: string, h1: string, sub = "") => `<div class="top"><span class
 const chip = (t: string, x: number, y: number, rot = 0) => `<div class="chip" style="left:${x}px;top:${y}px;transform:rotate(${rot}deg)">${t}</div>`;
 
 const cards: { file: string; hot?: boolean; html: string }[] = [
-  { file: "app-01-what", hot: true, html: `${top("🕊 새로 나온 메신저 앱", `카톡 말고,<br><em>새가 배달하는</em><br>메신저`, "편지를 쓰면 새가 진짜 거리만큼 날아가요")}
+  { file: "app-01-what", hot: true, html: `${top("🕊 새로 나온 메신저 앱", `진짜 <em>새가<br>배달하는</em><br>메신저`, "편지를 쓰면 새가 진짜 거리만큼 날아가요")}
     ${phone("ios-1-list.png", 290, 600, 500, 900, -4)}${chip("📍 서울 → 부산 · 매 " + mins("hawk", "seoul-busan"), 560, 660, 4)}${BAR}` },
   { file: "app-02-live", html: `${top("실시간 위치", `내 편지, 지금<br><em>대전 하늘</em>을 나는 중`, "보내는 사람도 받는 사람도 지도로 같이 기다려요")}
     ${phone("ios-4-map.png", 290, 480, 500, 940, 3, "center 30%")}${chip("⏱ 도착까지 3:59:57", 70, 640, -5)}${BAR}` },
