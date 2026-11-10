@@ -772,6 +772,7 @@ import { SLOGAN } from "../promo/store.mts";
   eq("슬로건: 한 줄이 아주 길어도 온전히 남음", xPost(fillText({ text: "가".repeat(300), to: ["x"] }, "x", ios)).endsWith(SLOGAN), true);
   { const sch = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8")); const miss = sch.posts.filter((q: any) => q.image && !existsSync(new URL(`../promo/cards/${igJpg(q.image)}`, import.meta.url))).map((q: any) => q.image);
     eq("인스타용 JPG: 일정표 그림마다 있음", miss.join(","), "");
+    eq("일정표: 넘겨 보는 글 카드(JPG 포함)가 다 있음", sch.posts.flatMap((q: any) => q.carousel ?? []).filter((f: string) => !existsSync(new URL(`../promo/cards/${f}`, import.meta.url)) || !existsSync(new URL(`../promo/cards/${igJpg(f)}`, import.meta.url))).length, 0);
     eq("일정표: 글만 있는 글 없음", sch.posts.filter((q: any) => !q.image && !q.video).length, 0); }
   eq("홍보 글: 둘 다 나오면 둘 다", both.includes("https://a") && both.includes("https://g") && !both.includes("곧"), true);
 }
