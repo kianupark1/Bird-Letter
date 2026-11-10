@@ -897,7 +897,15 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("밀기: 갈 곳 없으면(탭 첫 화면) 고무줄처럼 조금만", paneOffset(300, false), 36);
 }
 {
-  const t = dailyText({ users: { members: 45, anonymous: 3, byProvider: { kakao: 40, google: 3, apple: 2, other: 0 }, newToday: 4, new7d: 20, active1d: 12, active7d: 30 }, letters: { all: 210, today: 9 } });
+  // 카카오 가입은 익명 uid 그대로 커스텀 토큰이라 계정 정보에 표시가 없음 → kakaoAccounts 기록으로 셈(2026-11-10 '전체 가입 0명' 고침)
+  const now = Date.UTC(2026, 10, 10, 9, 0);
+  const social = new Map([["a1", { kind: "kakao" as const, at: now - 3600_000 }], ["a2", { kind: "naver" as const, at: now - 30 * 86_400_000 }]]);
+  const c = countUsers([{ localId: "a1", createdAt: String(now - 40 * 86_400_000), lastLoginAt: String(now - 60_000) }, { localId: "a2" }, { localId: "a3" }], now, social);
+  eq("숫자판: 카카오·네이버 가입도 셈", [c.members, c.byProvider.kakao, c.byProvider.naver, c.anonymous].join(), "2,1,1,1");
+  eq("숫자판: 카카오 가입 시각은 연결한 때", c.newToday, 1);
+}
+{
+  const t = dailyText({ users: { members: 45, anonymous: 3, byProvider: { kakao: 40, naver: 0, google: 3, apple: 2, other: 0 }, newToday: 4, new7d: 20, active1d: 12, active7d: 30 }, letters: { all: 210, today: 9 } });
   eq("저녁 7시 알림: 제목에 오늘 새 가입", t.title, "📊 오늘 새편지 · 새 가입 4명");
   eq("저녁 7시 알림: 들어온 사람·편지", t.body, "들어온 사람 12명 · 오늘 편지 9통\n전체 가입 45명 · 전체 편지 210통");
 }
