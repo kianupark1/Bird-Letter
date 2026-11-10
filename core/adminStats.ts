@@ -23,9 +23,13 @@ export type AuthUser = {
   email?: string;
 };
 
-export type Provider = "kakao" | "google" | "apple" | "other" | "anonymous";
+export type Provider = "kakao" | "naver" | "google" | "apple" | "other" | "anonymous";
+/** 카카오·네이버 가입은 계정 정보에 표시가 없어서(커스텀 토큰) 서버 기록 kakaoAccounts·naverAccounts의 uid와 연결 시각으로 알아봐요 */
+export type SocialMap = Map<string, { kind: "kakao" | "naver"; at: number }>;
 
-export function providerOf(u: AuthUser): Provider {
+export function providerOf(u: AuthUser, social?: SocialMap): Provider {
+  const s = social?.get(u.localId);
+  if (s) return s.kind;
   if (u.localId.startsWith("kakao:")) return "kakao";
   const ids = (u.providerUserInfo ?? []).map((p) => p.providerId ?? "");
   if (ids.includes("google.com")) return "google";
@@ -55,15 +59,15 @@ export type UserCounts = {
   active7d: number;
 };
 
-export function countUsers(users: AuthUser[], now: number): UserCounts {
-  const out: UserCounts = { members: 0, anonymous: 0, byProvider: { kakao: 0, google: 0, apple: 0, other: 0 }, newToday: 0, new7d: 0, active1d: 0, active7d: 0 };
+export function countUsers(users: AuthUser[], now: number, social?: SocialMap): UserCounts {
+  const out: UserCounts = { members: 0, anonymous: 0, byProvider: { kakao: 0, naver: 0, google: 0, apple: 0, other: 0 }, newToday: 0, new7d: 0, active1d: 0, active7d: 0 };
   const today = kstMidnight(now);
   for (const u of users) {
-    const p = providerOf(u);
+    const p = providerOf(u, social);
     if (p === "anonymous") { out.anonymous++; continue; }
     out.members++;
     out.byProvider[p]++;
-    const made = Number(u.createdAt ?? 0);
+    const made = social?.get(u.localId)?.at ?? Number(u.createdAt ?? 0); // 카카오·네이버는 연결(가입)한 시각
     if (made >= today) out.newToday++;
     if (made >= now - 7 * DAY) out.new7d++;
     const seen = lastSeen(u);

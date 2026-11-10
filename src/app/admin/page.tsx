@@ -70,7 +70,7 @@ function Board({ s, fresh, onRefresh }: { s: Stats; fresh: boolean; onRefresh: (
     <>
       <h2>사람</h2>
       <div style={grid}>
-        <Num label="가입한 사람" n={u.members} sub={`카카오 ${p.kakao} · 구글 ${p.google} · 애플 ${p.apple}${p.other ? ` · 기타 ${p.other}` : ""}`} />
+        <Num label="가입한 사람" n={u.members} sub={`카카오 ${p.kakao}${p.naver ? ` · 네이버 ${p.naver}` : ""} · 구글 ${p.google} · 애플 ${p.apple}${p.other ? ` · 기타 ${p.other}` : ""}`} />
         <Num label="오늘 새로 가입" n={u.newToday} sub={`최근 7일 ${u.new7d}명`} />
         <Num label="최근 24시간 들어온 사람" n={u.active1d} />
         <Num label="최근 7일 들어온 사람" n={u.active7d} />
