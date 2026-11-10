@@ -1,0 +1,40 @@
+# 홍보 성적표: 매주 월요일 아침(한국 9시쯤)과 손으로 누를 때. GitHub → Actions → "홍보 성적표" → Run workflow
+# 결과는 이 실행 화면 맨 아래 Summary와 autopost-log 브랜치의 promo-report.md
+name: 홍보 성적표
+
+on:
+  schedule:
+    - cron: "41 23 * * 0" # 한국 월요일 08:41
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "최근 며칠"
+        default: "7"
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency: autopost
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 성적표 만들기
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_LOGIN: ${{ vars.IG_LOGIN }}
+        run: |
+          node scripts/promo-report.mjs "${{ inputs.days || '7' }}"
+          cat promo-report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: 기록 브랜치에 남기기
+        run: |
+          D="$RUNNER_TEMP/rep" && mkdir -p "$D" && cp promo-report.md "$D/" && cd "$D"
+          git init -q && git checkout -q -b autopost-log
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" autopost-log && git reset -q --soft FETCH_HEAD && git checkout -q FETCH_HEAD -- posted.txt 2>/dev/null || true
+          git config user.name "autopost" && git config user.email "autopost@users.noreply.github.com"
+          git add -A && git commit -qm "홍보 성적표" && git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:autopost-log || echo "저장 실패"
