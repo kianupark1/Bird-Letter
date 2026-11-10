@@ -1,6 +1,6 @@
 /**
  * 넘겨 보는 글(캐러셀) 7장: npx tsx promo/build-carousel.mts
- * 2026-11-10 대표님: 산사·별꾹 확산 포인트 5가지(링크 하나로 시작·캡처 한 장·부담 빼기·같이 있는 모습·만든 사람 사연)를
+ * 2026-11-10 대표님: 산사·별꾹 확산 포인트 5가지(설치가 쉬움·캡처 한 장·부담 빼기·같이 있는 모습·만든 사람 사연)를
  * "기승전결 있게, 첫 장에 확 끌어당기게". 결과: promo/cards/car-01~07.png·.jpg
  */
 import { createRequire } from "node:module";
@@ -68,9 +68,13 @@ const slides: string[] = [
   // 2 승: 무엇인지 — 캡처 한 장이면 설명 끝
   `${count(2)}${pic("ios-4-map.png", "center 28%", `<div class="chip" style="left:30px;top:470px">📍 지금 낙화암 근처</div>`)}
    ${txt("01 한 장이면 설명 끝", `내 편지가 지금<br><em>어디쯤</em> 날고 있는지`, "편지를 쓰고 새를 고르면, 실제 거리만큼 날아가요.<br>보내는 사람도 <b>받는 사람도 같은 지도</b>를 봐요.")}${swipe(2)}${brand}`,
-  // 3 승: 링크 하나로 시작
-  `${count(3)}${pic("ios-1-list.png", "top")}
-   ${txt("02 링크 하나로 시작", `받는 사람은<br><em>설치 없이</em> 링크만`, "카톡으로 링크 하나 보내면 끝.<br>앱이 없어도 <b>날아오는 편지를 바로</b> 볼 수 있어요.<br>가입은 카카오 버튼 한 번.")}${swipe(3)}${brand}`,
+  // 3 승: 설치가 쉬워요(2026-11-10 대표님: "링크만보다 설치가 쉽다는 게 오히려 좋아")
+  `${count(3)}<div style="position:absolute;left:64px;right:64px;top:90px">
+     <div class="row"><b>① 앱스토어에서 ‘새 편지’</b><span>받기</span></div>
+     <div class="row" style="background:#FEE500;color:#191919"><b>② 카카오로 가입하기</b><span>버튼 한 번</span></div>
+     <div class="row"><s>아이디 · 비밀번호 만들기</s><span>없어요</span></div>
+     <div class="row" style="background:#FFF1EA;border:3px solid ${DAHONG}"><b style="color:${DAHONG}">③ 첫 편지 날리기</b><span style="color:${DAHONG}">끝!</span></div></div>
+   ${txt("02 시작이 쉬워요", `받고, 버튼 <em>한 번</em>이면<br>바로 시작`, "카카오·구글·애플 중 아무거나 한 번 누르면 가입 끝.<br>친구 초대도 <b>카톡 한 번</b>이면 저절로 친구가 돼요.")}${swipe(3)}${brand}`,
   // 4 전: 부담을 뺐어요
   `${count(4)}<div style="position:absolute;left:64px;right:64px;top:90px">
      <div class="row"><s>읽음 1 · 읽씹</s><span>없어요</span></div>
