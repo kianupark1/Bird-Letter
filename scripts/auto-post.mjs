@@ -65,6 +65,15 @@ export function soonify(p, android, exists = (rel) => existsSync(promoFile(rel))
   }
   return p;
 }
+// 영상 글도 넘겨 보는 여러 장으로(2026-11-10 대표님: "광고 여러 카드로, 어디든"): 1장 영상(4:5, promo/video/card/) → 이렇게 써요·시작이 쉬워요·첫 편지
+export const STORY_TAIL = ["story/how.png", "story/easy.png", "story/cta.png"];
+export const isVid = (f) => /\.mp4$/i.test(f);
+export function storyfy(p, exists = (rel) => existsSync(promoFile(rel))) {
+  if (!p.video || p.carousel?.length) return p;
+  const card = `video/card/${p.video.split("/").pop()}`;
+  return exists(card) ? { ...p, carousel: [card, ...STORY_TAIL] } : p;
+}
+const itemUrl = (f, jpg = (x) => x) => (isVid(f) ? `${MEDIA_BASE}/${f}` : `${MEDIA_BASE}/cards/${jpg(f)}`);
 const { launch, posts, stores = {}, channels, igUserId } = JSON.parse(readFileSync(promoFile("schedule.json"), "utf8"));
 // 지금 집중하는 채널만 올림(schedule.json channels, 없으면 글에 적힌 곳 전부). 2026-11-09 대표님: 인스타·스레드·틱톡에 집중.
 export const targetsOf = (p, ch = channels) => (Array.isArray(ch) ? p.to.filter((t) => ch.includes(t)) : p.to);
@@ -162,7 +171,12 @@ async function postThreads(p) {
   // 넘겨 보는 글(carousel: 카드 2~10장): 장마다 먼저 올려 두고 한 글로 묶어요
   if (p.carousel?.length > 1) {
     const kids = [];
-    for (const f of p.carousel.slice(0, 10)) kids.push((await call(`${base}/threads`, { params: { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${f}`, is_carousel_item: "true", access_token: token } })).id);
+    for (const f of p.carousel.slice(0, 10)) {
+      const m = isVid(f) ? { media_type: "VIDEO", video_url: itemUrl(f) } : { media_type: "IMAGE", image_url: itemUrl(f) };
+      const k = (await call(`${base}/threads`, { params: { ...m, is_carousel_item: "true", access_token: token } })).id;
+      if (isVid(f)) await waitReady(`https://graph.threads.net/v1.0/${k}?fields=status&access_token=${encodeURIComponent(token)}`, "status");
+      kids.push(k);
+    }
     await sleep(10000);
     const c = await call(`${base}/threads`, { params: { media_type: "CAROUSEL", children: kids.join(","), text: p.text, access_token: token } });
     await sleep(8000);
@@ -188,7 +202,12 @@ async function postInstagram(p) {
   const base = `${host}/v21.0/${id}`;
   if (p.carousel?.length > 1) {
     const kids = [];
-    for (const f of p.carousel.slice(0, 10)) kids.push((await call(`${base}/media`, { params: { image_url: `${MEDIA_BASE}/cards/${igJpg(f)}`, is_carousel_item: "true", access_token: token } })).id);
+    for (const f of p.carousel.slice(0, 10)) {
+      const m = isVid(f) ? { media_type: "VIDEO", video_url: itemUrl(f) } : { image_url: itemUrl(f, igJpg) };
+      const k = (await call(`${base}/media`, { params: { ...m, is_carousel_item: "true", access_token: token } })).id;
+      if (isVid(f)) await waitReady(`${host}/v21.0/${k}?fields=status_code&access_token=${encodeURIComponent(token)}`, "status_code");
+      kids.push(k);
+    }
     await sleep(8000);
     const c = await call(`${base}/media`, { params: { media_type: "CAROUSEL", children: kids.join(","), caption: p.text, access_token: token } });
     await sleep(8000);
@@ -241,7 +260,8 @@ async function postX(p) {
     for (const f of p.carousel.slice(0, 4)) {
       const up = "https://api.x.com/2/media/upload";
       const form = new FormData();
-      form.append("media", new Blob([readFileSync(promoFile(`cards/${f}`))], { type: "image/png" }), "card.png");
+      const rel = isVid(f) ? (p.cover ?? p.video.replace(/\.mp4$/, "-cover.png")) : `cards/${f}`; // X는 영상 대신 표지
+      form.append("media", new Blob([readFileSync(promoFile(rel))], { type: "image/png" }), "card.png");
       form.append("media_category", "tweet_image");
       const r = await call(up, { headers: { Authorization: oauthHeader("POST", up, keys) }, body: form });
       ids.push(r.data?.id ?? r.media_id_string);
@@ -302,14 +322,14 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     SLOT = autoSlot(hm, logged);
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
   } else if (SEND && logged.has(SLOT)) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
-  const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => soonify(upgraded(p), stores.android));
+  const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => storyfy(soonify(upgraded(p), stores.android)));
   console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
       let q;
       try { q = fillText(p, to); } catch (e) { failed++; console.log(`  ✗ [${to}] ${e.message}`); continue; }
-      const media = p.video ? ` (+영상 ${p.video})` : p.carousel ? ` (+넘겨 보는 ${p.carousel.length}장)` : p.image ? ` (+${p.image})` : "";
+      const media = p.carousel ? ` (+넘겨 보는 ${p.carousel.length}장${p.video ? ", 첫 장 영상" : ""})` : p.video ? ` (+영상 ${p.video})` : p.image ? ` (+${p.image})` : "";
       const label = `[${to}] ${q.text.split("\n")[0].slice(0, 30)}…${media}${to === "x" ? ` · X ${xWeight(xText(q))}/280칸` : ""}`;
       if (!SEND) { console.log("  미리보기 " + label); console.log((to === "x" ? xText(q) : q.text).replace(/^/gm, "      │ ")); continue; }
       try {
