@@ -72,15 +72,13 @@ export const targetsOf = (p, ch = channels) => (Array.isArray(ch) ? p.to.filter(
 // 글 속 {{받기}} 자리: 나온 스토어 주소만 넣어요(아이폰 먼저 출시). 인스타는 글 속 링크가 눌리지 않아서 프로필 링크로 안내해요.
 export function storeLines(st, to) {
   if (!st.ios && !st.android) throw new Error("schedule.json의 stores에 스토어 주소가 없어요(출시 날 ios 주소를 넣어 주세요)");
-  // 인스타는 글 속 링크가 안 눌리고, X는 링크 글값이 13배라 링크 대신 "프로필에"로 안내해요
-  if (to === "instagram" || to === "x") {
-    const where = [st.ios && "앱스토어", st.android && "구글 플레이"].filter(Boolean).join("·");
-    return `${where}에서 ‘새 편지’ 검색${st.android ? "" : " · 안드로이드는 곧"} · 링크는 프로필에 🕊`;
-  }
+  // 모든 채널 글에 스토어 바로 가기 주소(2026-11-10 대표님: "글에 앱스토어 바로 가기 넣어 줘야 함").
+  // 인스타는 글 속 링크가 눌리지 않아서 프로필 링크 안내를 한 줄 더 붙여요(주소는 복사해 쓸 수 있게 그대로 둠).
   const out = [];
-  if (st.ios) out.push(`아이폰: 앱스토어에서 ‘새 편지’\n${st.ios}`);
-  if (st.android) out.push(`안드로이드: 구글 플레이에서 ‘새 편지’\n${st.android}`);
+  if (st.ios) out.push(`👉 앱스토어 바로 가기 ${st.ios}`);
+  if (st.android) out.push(`👉 구글 플레이 바로 가기 ${st.android}`);
   else out.push("안드로이드 앱은 곧 나와요");
+  if (to === "instagram") out.push("(링크가 안 눌리면 프로필 링크로 🕊)");
   return out.join("\n");
 }
 // 슬로건은 모든 글에 꼭 들어가요(promo/store.mts SLOGAN과 같은 글자, 2026-10-26 대표님: "무조건적으로"). 해시태그 줄 바로 위에 넣어요.
@@ -205,14 +203,18 @@ async function postInstagram(p) {
 
 // ── X ──────────────────────────────────────────────────────────────
 // X는 글자 수를 한글·이모지 2칸, 영문·숫자 1칸으로 세서 280칸까지예요. 링크가 있으면 글값이 13배라서 링크 줄은 빼요(앱 주소는 프로필에).
-const xWeight = (s) => [...s].reduce((n, ch) => n + (/[\u0000-ჿ -‍‐-‟′-‷]/.test(ch) ? 1 : 2), 0);
+// X는 주소를 길이와 상관없이 23칸으로 셈
+const xWeight = (s) => [...s.replace(/https?:\/\/\S+/g, "x".repeat(23))].reduce((n, ch) => n + (/[\u0000-ჿ -‍‐-‟′-‷]/.test(ch) ? 1 : 2), 0);
 export function xText(p) {
   if (p.xText) return p.xText.includes(SLOGAN) || xWeight(`${p.xText}\n\n${SLOGAN}`) > 280 ? p.xText : `${p.xText}\n\n${SLOGAN}`;
   // 슬로건은 줄일 때도 남겨요(해시태그처럼 끝에 따로 붙임)
+  // 스토어 바로 가기 줄은 줄일 때도 남겨요(슬로건 바로 위)
+  const links = p.text.split("\n").filter((l) => /https?:\/\//.test(l)).map((l) => l.trim());
   const lines = p.text.split("\n").filter((l) => !/https?:\/\//.test(l) && !/^(안드로이드|아이폰):/.test(l.trim()) && l.trim() !== SLOGAN);
   const tags = lines.length && lines[lines.length - 1].trim().startsWith("#") ? lines.pop() : "";
   let body = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-  const tail = tags ? `${SLOGAN}\n\n${tags}` : SLOGAN;
+  const head = links.length ? `${links.join("\n")}\n\n` : "";
+  const tail = head + (tags ? `${SLOGAN}\n\n${tags}` : SLOGAN);
   const join = () => `${body}\n\n${tail}`;
   while (xWeight(join()) > 280 && body.includes("\n")) body = body.slice(0, body.lastIndexOf("\n")).trim(); // 넘치면 뒤 줄부터 덜어내요
   // 그래도 넘치면 본문만 줄이고 슬로건은 끝까지 온전히 남겨요(2026-11-09 대표님: "완전한 슬로건으로")
