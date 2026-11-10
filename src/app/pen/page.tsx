@@ -53,7 +53,7 @@ function PenList() {
     update(patch);
     void saveMyPenpal(myPenpalDoc({ ...profile, ...patch })).catch(() => {});
   };
-  const toggleRecv = () => change({ penpalRecv: profile.penpalRecv !== true });
+  const toggleRecv = () => change({ penpalRecv: profile.penpalRecv === false });
 
   const editIntro = () => {
     const v = window.prompt(`펜팔 카드에 보일 한 줄 소개 (${INTRO_MAX}자까지 · 연락처는 자동으로 가려져요)`, profile.penpalIntro ?? "");
@@ -71,7 +71,7 @@ function PenList() {
       </header>
 
       <Link href="/penpal" prefetch className="ppcard">
-        <BirdIcon id="crane" size={56} />
+        <BirdIcon id={profile.avatarBird || "pigeon"} size={56} letter />
         <div><b>펜팔 친구 찾기</b><span>어느 누군가에게 새 편지를 날려 보내요</span></div>
       </Link>
       {firebaseEnabled && (
@@ -84,16 +84,16 @@ function PenList() {
         </Link>
       )}
 
-      {firebaseEnabled && profile.penpalAgreed && (
+      {firebaseEnabled && (
           <div className="listrow">
             <div className="grow">
-              <div className="name">나도 랜덤 편지 받기</div>
-              <div className="note">켜면 모르는 누군가의 펜팔 편지가 나에게도 날아와요 · 내 펜팔 이름: {penName}</div>
+              <div className="name">랜덤 펜팔 편지 받기</div>
+              <div className="note">켜 두면 모르는 누군가의 펜팔 편지가 날아와요. 처음 온 편지는 받을지 먼저 물어봐요 · 내 펜팔 이름: {penName}</div>
             </div>
-            <button role="switch" aria-checked={profile.penpalRecv === true} aria-label="랜덤 편지 받기" className="switch" onClick={toggleRecv} />
+            <button role="switch" aria-checked={profile.penpalRecv !== false} aria-label="랜덤 편지 받기" className="switch" onClick={toggleRecv} />
           </div>
       )}
-      {firebaseEnabled && profile.penpalAgreed && profile.penpalRecv === true && (
+      {firebaseEnabled && profile.penpalAgreed && profile.penpalRecv !== false && (
           <div className="listrow">
             <div className="grow">
               <div className="name">펜팔 친구 둘러보기에 나 보이기</div>
@@ -102,7 +102,7 @@ function PenList() {
             <button role="switch" aria-checked={profile.penpalListed === true} aria-label="둘러보기에 나 보이기" className="switch" onClick={() => change({ penpalListed: profile.penpalListed !== true })} />
           </div>
       )}
-      {firebaseEnabled && profile.penpalAgreed && profile.penpalRecv === true && profile.penpalListed === true && (
+      {firebaseEnabled && profile.penpalAgreed && profile.penpalRecv !== false && profile.penpalListed === true && (
           <div className="listrow">
             <div className="grow">
               <div className="name">카드에 내 프로필 사진도 보이기</div>

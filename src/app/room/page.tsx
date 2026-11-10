@@ -36,6 +36,12 @@ import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { telFor } from "@/lib/pendingTel";
 import { euro, withIGa } from "@/lib/korean";
 import ProfileZoom from "@/components/ProfileZoom";
+import { saveMyPenpal } from "@/lib/firebase/penpal";
+import { myPenpalDoc } from "@/lib/penpalSync";
+
+// 받겠다고 한 펜팔(보낸 사람 uid). 2026-11-10 대표님: "누가 쓰면 펜팔 편지를 받을 거냐고 물어봐야"
+const PPOK = "saepyeonji.penpalok.v1";
+const readOk = (): string[] => { try { return JSON.parse(localStorage.getItem(PPOK) || "[]"); } catch { return []; } };
 
 export default function RoomPage() {
   return (
@@ -68,7 +74,9 @@ function Room() {
   const [nameDraft, setNameDraft] = useState("");
   const [pickFriend, setPickFriend] = useState(false);
   const { book, merge, mergeSame, rename, hide } = usePeople();
-  const { profile } = useProfile();
+  const { profile, update } = useProfile();
+  const [okList, setOkList] = useState<string[]>([]);
+  useEffect(() => setOkList(readOk()), []);
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
   // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
@@ -199,6 +207,16 @@ function Room() {
     penpal = { routeId: penpalRoute(myCity, theirCity), fromName: profile.penpalName?.trim() || penpalName(cityLabel(myCity), profile.avatarBird || "magpie"), replyTo: lastRecv?.item.id };
   }
   const skip = () => { hide(thread.key); router.replace("/"); };
+  // 모르는 사람이 먼저 보낸 펜팔: 내가 답장한 적도, 받겠다고 한 적도 없으면 먼저 물어요(받기 전엔 내용·답장 칸을 안 보여 줘요)
+  const askPen = pen && !!thread.uid && !thread.entries.some((e) => e.dir === "sent") && !okList.includes(thread.uid);
+  const acceptPen = () => { const n = Array.from(new Set([...readOk(), thread.uid!])); try { localStorage.setItem(PPOK, JSON.stringify(n)); } catch {} setOkList(n); };
+  const declinePen = () => {
+    if (window.confirm("앞으로 모르는 누군가의 펜팔 편지를 그만 받을까요?\n(취소를 누르면 이 편지만 넘겨요 · 설정에서 언제든 다시 켤 수 있어요)")) {
+      update({ penpalRecv: false });
+      void saveMyPenpal(myPenpalDoc({ ...profile, penpalRecv: false })).catch(() => {});
+    }
+    skip();
+  };
   const reportBlock = async () => {
     if (!thread.uid || !window.confirm(`${name}님을 신고하고 차단할까요?\n차단하면 서로 다시 편지를 주고받을 수 없어요.`)) return;
     try { if (lastRecv) await reportLetter(lastRecv.item.id, "펜팔 신고"); } catch {}
@@ -256,7 +274,17 @@ function Room() {
           photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined}
           penpalUid={pen ? thread.uid : undefined} onClose={() => setZoomFace(false)} />
       )}
-      {pen && (
+      {askPen && (
+        <div className="mergecard ppask">
+          <div><b>💌 {name}님이 펜팔 편지를 보냈어요</b><span>모르는 누군가가 보낸 편지예요. 받으면 열어 보고 답장할 수 있어요. 진짜 이름·사진·연락처는 서로 보이지 않아요.</span></div>
+          <div className="mc-btns">
+            <button type="button" className="chip hot" onClick={acceptPen}>💌 받을게요</button>
+            <button type="button" className="chip" onClick={declinePen}>안 받을래요</button>
+            <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고</button>
+          </div>
+        </div>
+      )}
+      {pen && !askPen && (
         <div className="ppbar" role="note">
           <span>모르는 누군가와의 펜팔이에요. 사진·연락처는 보내지 않아요</span>
           <button type="button" className="chip" onClick={skip}>넘기기</button>
@@ -311,7 +339,7 @@ function Room() {
           </div>
         </>
       )}
-      <div className="ch-feed">
+      {!askPen && <div className="ch-feed">
         {items.length === 0 && (
           <div className="roomempty"><BirdIcon id="magpie" size={120} /><p>{name}님에게 첫 편지를 써 보세요<br /><b>아래 칸에 쓰고 ➤</b></p></div>
         )}
@@ -324,8 +352,8 @@ function Room() {
         )}
         {active && <div className="ch-wait">🕊 {pickLine(WAITING_LINES, active.item.id)}</div>}
         <div ref={endRef} />
-      </div>
-      {thread.uid === WELCOME_FROM ? (
+      </div>}
+      {askPen ? null : thread.uid === WELCOME_FROM ? (
         // 환영 편지 방: 새편지에게는 답장하지 않아요 → 첫 편지 쓰러 가기
         <div className="welcomefoot">
           <p>새편지가 보낸 환영 편지예요. 이제 가장 보고 싶은 사람에게 첫 편지를 보내 보세요 🕊</p>

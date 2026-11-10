@@ -9,7 +9,7 @@ import type { MyPenpal } from "./firebase/penpal";
  */
 export function myPenpalDoc(p: Profile, o: { open?: boolean; region?: string; intro?: string } = {}): MyPenpal {
   const region = o.region ?? cityOf(p.homePlace);
-  const open = o.open ?? p.penpalRecv === true;
+  const open = o.open ?? p.penpalRecv !== false; // 2026-11-10 대표님: 처음부터 모두 받을 수 있게(끈 사람만 빼요), 받을지는 편지가 올 때 물어요
   const listed = open && p.penpalListed === true;
   return {
     name: p.penpalName?.trim() || penpalName(cityLabel(region), p.avatarBird || "magpie"),
