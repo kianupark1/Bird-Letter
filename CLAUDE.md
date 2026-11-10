@@ -271,6 +271,7 @@
 - **친구 이름은 친구가 정한 이름 먼저**(`PeopleBook.pin`: 내가 ✎로 직접 바꾼 이름만 앞섬), 내 프로필 바꾸면 친구들 화면에도 바로(`profileSync` → `syncMyName`).
 - **앱으로 바로 열기**: 유니버설 링크(`/.well-known/apple-app-site-association`, entitlements `applinks:bird-letter.vercel.app`, `ios-signing.mjs`가 ASSOCIATED_DOMAINS 켬), `saepyeonji://open?path=`, 사파리 앱 띠(`itunes` 메타), 카톡 안 '앱 받기'는 앱부터(`src/lib/openApp.ts`), 앱은 `appUrlOpen`으로 이동(`appShell.ts appPathOf`). 새 앱 파일부터.
 - **같은 사람 하나로 5차**(`src/lib/lastLogin.ts`): 카카오 계정 하나 = 새편지 계정 하나(서버 `kakaoAccounts`)라 겹침은 같은 사람이 구글·애플로 또 가입할 때 → 첫 화면에 "지난번에 이걸로 들어왔어요" 표시, 이 폰에서 다른 계정으로 들어오면 "전에 쓰던 ○○ 계정과 같은 사람인가요?" → 네면 예전 친구들과 이어 주고 `prev`로 한 사람. **번호로 같은 사람 찾기는 확인된 번호가 필요**(카카오 동의항목 전화번호 = 비즈 앱·검수, 또는 문자 인증 = Blaze·요금) → 법무·대표님 결정 뒤.
+- **카카오 키 넣음(2026-11-10, PR #200)**: JavaScript 키 `f5aa566d…`(`src/lib/kakaoKeys.ts` 기본값, 공개 값)·네이티브 앱 키(`native/kakao-native-key.txt`). 카카오 콘솔: JS SDK 도메인 bird-letter.vercel.app(원래 있음)·JS 키 리다이렉트 URI `/auth/kakao`·네이티브 키에 Android 패키지 `com.saepyeonji.app`+키 해시(업로드 키 `+x1AXn8HtaktB2DdnI3P+KJREqc=`, 플레이 앱 서명 키 해시는 플레이 등록 뒤 추가)·iOS 번들 ID 저장 완료. 웹은 배포 즉시, 아이폰 앱은 **새 버전 1.2(TestFlight → 심사)**부터. **내일(11/11) 이어서**: ①콘솔 iOS 앱스토어 ID `6828785320` 저장 확인 ②사파리 로그아웃 → 카카오로 가입하기 → 카카오톡 바로 열리는지 ③TestFlight 새 빌드 확인 → `ios-submit.yml`로 1.2 심사 제출. 웹 throughTalk 코드(JS 키로 받은 code를 REST 키로 교환)가 새 콘솔에서 되는지 「미확인」 → 안 되면 웹 간편 로그인만 끄기.
 
 ## 나중에 넣을 것 (2026-10-18 밤, 대표님: "우선 이건 나중에")
 
