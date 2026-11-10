@@ -353,6 +353,7 @@
 
 - `/admin`(화면 `src/app/admin/page.tsx`, **지난번 숫자를 폰에 적어 뒀다가 누르자마자 보여 주고 새 숫자는 뒤에서 받음**·서버는 네 가지를 동시에 묻고 30초 결과·50분 토큰 재사용) → 서버 `POST /api/admin/stats`(Firebase 로그인 토큰 확인 → **운영자 계정만**). 보여 주는 것: 가입자(익명 제외, 카카오·구글·애플별), 오늘·7일 새 가입, 최근 24시간·7일 들어온 사람, 편지 수(오늘·7일·전체), 임시(익명) 계정 수. **이름·편지 내용은 안 읽음**(계정 목록은 Identity Toolkit `accounts:batchGet`, 편지는 Firestore 개수 세기만). 계산 `core/adminStats.ts`(시험 13개, test:core 345).
 - **2026-11-04 대표님 계정 등록 완료**(`7ELiJyz7qPX34kUvZ3JFzKpmi9D2`, 컴퓨터 브라우저 카카오 로그인). 운영자 등록: `core/adminStats.ts ADMIN_UIDS`(또는 Vercel 환경 변수 `ADMIN_UIDS`). ~~처음엔 비어 있음~~ → 대표님이 https://bird-letter.vercel.app/admin 을 열면 "계정 번호"가 나오고, 그 번호를 받아 `ADMIN_UIDS`에 넣으면 됨. 등록되면 설정 맨 아래 "📊 오늘의 숫자(운영자)" 줄이 보임.
+- **매일 저녁 7시 운영자 알림(2026-11-10 대표님)**: QStash 예약(`saepyeonji-daily-stats`, UTC 10:00) → `/api/admin/daily`(QStash 서명 또는 GitHub OIDC aud `bird-letter-daily`) → 숫자(`src/lib/server/stats.ts computeStats`, 문구 `core/adminStats.ts dailyText`)를 운영자 폰 푸시로. 예약 만들기·지금 받기는 Actions "오늘의 숫자 알림"(`daily-stats.yml`) 손 실행. 알림은 운영자 계정의 `users/{uid}/push/sub`(앱 알림 켠 폰)로 감.
 - 서비스 계정(Vercel `FIREBASE_SERVICE_ACCOUNT_JSON`)에 계정 목록 읽기 권한이 있는지 「미확인」 → 오류(`accounts-403`)가 나면 Google Cloud IAM에서 "Firebase Authentication 뷰어" 역할 추가.
 
 ## 초대 링크 → 스토어 앱 받기 (2026-10-19 밤, 대표님: "카카오톡 링크보다 스토어에서 다운받게 하는 링크가 낫겠다")

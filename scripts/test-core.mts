@@ -648,7 +648,7 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
 }
 
 
-import { countUsers, providerOf, kstMidnight, readCount, lettersCountQuery, isAdmin, adminFromEnv } from "../core/adminStats.ts";
+import { countUsers, providerOf, kstMidnight, readCount, lettersCountQuery, isAdmin, adminFromEnv, dailyText } from "../core/adminStats.ts";
 {
   // 운영자 숫자판: 익명은 가입자에서 빼고, 카카오(kakao:)·구글·애플을 나눠 세요
   const now = Date.UTC(2026, 9, 19, 12, 0); // 한국 21시
@@ -895,6 +895,11 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("밀기: 끌다가 되돌리면 취소", shouldGoBack(200, -0.5, W), false);
   eq("밀기: 판은 손가락을 그대로 따라옴", paneOffset(120, true), 120);
   eq("밀기: 갈 곳 없으면(탭 첫 화면) 고무줄처럼 조금만", paneOffset(300, false), 36);
+}
+{
+  const t = dailyText({ users: { members: 45, anonymous: 3, byProvider: { kakao: 40, google: 3, apple: 2, other: 0 }, newToday: 4, new7d: 20, active1d: 12, active7d: 30 }, letters: { all: 210, today: 9 } });
+  eq("저녁 7시 알림: 제목에 오늘 새 가입", t.title, "📊 오늘 새편지 · 새 가입 4명");
+  eq("저녁 7시 알림: 들어온 사람·편지", t.body, "들어온 사람 12명 · 오늘 편지 9통\n전체 가입 45명 · 전체 편지 210통");
 }
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

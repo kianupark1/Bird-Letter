@@ -81,6 +81,8 @@ export function verifyFirebaseIdToken(token: string, projectId: string, keyFor: 
 
 /** GitHub 자동 작업(Actions)이 보낸 신분증(OIDC 토큰)을 확인할 때 따질 것 */
 export const GITHUB_OIDC = { iss: "https://token.actions.githubusercontent.com", aud: "bird-letter-rules", repo: "kianupark1/Bird-Letter", ref: "refs/heads/main" };
+/** 매일 저녁 7시 운영자 숫자 알림(.github/workflows/daily-stats.yml)만 여는 신분증 */
+export const GITHUB_OIDC_DAILY = { ...GITHUB_OIDC, aud: "bird-letter-daily" };
 
 /**
  * GitHub OIDC 토큰 확인: 서명(GitHub 공개 키), 발급처, 대상(aud), 저장소, 브랜치(main), 만료를 모두 본다.

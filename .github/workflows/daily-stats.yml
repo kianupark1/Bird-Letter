@@ -1,0 +1,27 @@
+# 매일 저녁 7시 운영자 숫자 알림(2026-11-10 대표님: "앱으로 매일 7시마다 오늘 얼마나 들어왔는지")
+# 정시 알림은 QStash 예약(한국 19:00)이 보내요. 이 작업은 ①그 예약을 만들고(손으로 한 번 실행) ②지금 숫자를 바로 받아 보는 용도예요.
+# GitHub가 이 작업에 준 신분증(OIDC, aud bird-letter-daily)으로만 사이트 /api/admin/daily 가 열려요.
+name: 오늘의 숫자 알림
+on:
+  workflow_dispatch:
+    inputs:
+      setup:
+        description: "매일 저녁 7시 예약도 만들까요? (yes)"
+        default: "yes"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 오늘 숫자 받기·운영자 폰에 알림
+        env:
+          SETUP: ${{ github.event.inputs.setup }}
+        run: |
+          oidc=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bird-letter-daily" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).value))')
+          q=""; [ "$SETUP" = "yes" ] && q="?setup=1"
+          res=$(curl -sS -X POST -H "Authorization: Bearer $oidc" -H "Content-Type: application/json" -d '{}' "https://bird-letter.vercel.app/api/admin/daily$q")
+          echo "$res" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);if(j.error){console.log("오류: "+s);process.exit(1)}console.log(j.text.title+"\n"+j.text.body);console.log("알림: "+j.pushed.join(", ")+(j.schedule?" · 저녁 7시 예약: "+j.schedule:""));})' | tee -a "$GITHUB_STEP_SUMMARY"
