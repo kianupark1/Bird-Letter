@@ -39,9 +39,8 @@ function Penpal() {
   const { letters, received, add } = useLetters();
   const { book } = usePeople();
   const [age, setAge] = useState(false);
-  const [recv, setRecv] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [bird, setBird] = useState("crane");
+    const [msg, setMsg] = useState("");
+  const [bird, setBird] = useState("pigeon");
   const [pickBird, setPickBird] = useState(false);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
@@ -65,7 +64,7 @@ function Penpal() {
     return (
       <main className="app penpal">
         <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 찾기</h1></header>
-        <div className="ppcard"><BirdIcon id="crane" size={64} letter /><div><b>어느 누군가에게 새 편지 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
+        <div className="ppcard"><BirdIcon id="pigeon" size={64} letter /><div><b>어느 누군가에게 새 편지 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
         <h2 className="friendh">펜팔 약속 (처음 한 번)</h2>
         <ul className="pprules">
           <li><span aria-hidden>🎂</span>만 14세 이상만 쓸 수 있어요</li>
@@ -75,9 +74,8 @@ function Penpal() {
           <li><span aria-hidden>📍</span><span>상대에게는 &quot;{cityLabel(city)}&quot;까지만 보여요<small>펜팔 이름: {myName}</small></span></li>
         </ul>
         <label className="ppage"><input type="checkbox" checked={age} onChange={(e) => setAge(e.target.checked)} /> 저는 만 14세 이상이에요</label>
-        <label className="ppage"><input type="checkbox" checked={recv} onChange={(e) => setRecv(e.target.checked)} /> 나도 모르는 누군가의 편지를 받을래요 <small>(안 해도 보낼 수 있어요 · 설정에서 언제든 바꿔요)</small></label>
         <div className="dock">
-          <button type="button" className="cta big" disabled={!age} onClick={() => update({ penpalAgreed: true, penpalRecv: recv })}>약속하고 시작하기</button>
+          <button type="button" className="cta big" disabled={!age} onClick={() => update({ penpalAgreed: true })}>약속하고 시작하기</button>
         </div>
       </main>
     );

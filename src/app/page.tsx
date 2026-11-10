@@ -182,15 +182,17 @@ function InboxList({ welcome }: { welcome?: string }) {
     void publishStats(st, me.nickname, me.avatarBird, place).then((ok) => { if (ok) try { localStorage.setItem("saepyeonji.stats.sig", sig); } catch {} });
   }, [ready, letters, me.nickname, me.avatarBird, me.homePlace, me.sharePlace, me.homeSet, me.publicRank]);
 
-  // 랜덤(펜팔) 편지는 받겠다고 신청한 사람에게만 가요: 예전에 약속만 하고 신청하지 않은 사람은 받기 명단에서 내려요
+  // 랜덤(펜팔) 편지 받기 명단: 2026-11-10 대표님 "처음부터 모두 펜팔 가능하게, 대신 받을지는 물어보게"
+  // → 로그인하고 이름이 있는 사람은 모두 명단에 올라가요(설정에서 끈 사람만 빼요). 처음 온 펜팔 편지는 대화방에서 받을지 물어요
   useEffect(() => {
-    if (!ready || !firebaseEnabled || !me.penpalAgreed) return;
+    if (!ready || !firebaseEnabled || !me.nickname?.trim()) return;
+    try { const u = auth().currentUser; if (!u || u.isAnonymous) return; } catch { return; }
     const d = myPenpalDoc(me);
     // 사진이 바뀌면 다시 올려요(사진 글자 전체 대신 길이·끝부분만 비교)
     const sig = `recv:${d.open}|list:${d.listed}|ph:${d.photo ? `${d.photo.length}:${d.photo.slice(-24)}` : "-"}`;
     try { if (localStorage.getItem("saepyeonji.penpalsync.v1") === sig) return; } catch {}
     void saveMyPenpal(d).then(() => { try { localStorage.setItem("saepyeonji.penpalsync.v1", sig); } catch {} }).catch(() => {});
-  }, [ready, me.penpalAgreed, me.penpalRecv, me.penpalListed, me.penpalPhoto, me.photo]);
+  }, [ready, me.nickname, me.penpalRecv, me.penpalListed, me.penpalPhoto, me.photo, letters.length]);
 
   const { book, merge, mergeSame, rename, hide } = usePeople();
   const [menu, setMenuRaw] = useState<{ t: Thread<Letter, Meta>; step: "menu" | "merge" } | null>(null);
