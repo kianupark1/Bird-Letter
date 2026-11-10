@@ -1,4 +1,5 @@
 "use client";
+import { KAKAO_JS_KEY } from "@/lib/kakaoKeys";
 import { letterHref } from "./target";
 import { STORE } from "./release";
 
@@ -7,7 +8,7 @@ import { STORE } from "./release";
  * 메시지 버튼에 앱 실행 정보를 담는 카카오링크를 대표 공유 방법으로 쓴다(docs/카톡-앱열기.md).
  * 카카오 개발자 콘솔의 JavaScript 키(공개되는 값)를 NEXT_PUBLIC_KAKAO_JS_KEY 로 넣어야 켜진다.
  */
-const KEY = (process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "").replace(/^﻿/, "").trim();
+const KEY = KAKAO_JS_KEY;
 const SDK = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js";
 
 export const KAKAO_SHARE_READY = Boolean(KEY);

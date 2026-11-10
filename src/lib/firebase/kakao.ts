@@ -1,4 +1,5 @@
 "use client";
+import { KAKAO_JS_KEY } from "@/lib/kakaoKeys";
 import { SESSION_HINT_KEY } from "@/lib/fastStart";
 import { getIdTokenResult, signInWithCustomToken } from "firebase/auth";
 import { auth, ensureUser, firebaseEnabled } from "./client";
@@ -24,7 +25,7 @@ export function kakaoNext(): string {
 }
 
 const TOKEN_KEY = "saepyeonji.kakao.token.v1";
-const JS_KEY = (process.env.NEXT_PUBLIC_KAKAO_JS_KEY ?? "").replace(/^\uFEFF/, "").trim();
+const JS_KEY = KAKAO_JS_KEY;
 const JS_SDK = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js";
 
 type KakaoNative = { login(): Promise<{ accessToken: string }> };
