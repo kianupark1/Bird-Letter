@@ -1,4 +1,5 @@
 "use client";
+import { isWelcome } from "../../../core/welcome";
 import { useEffect, useMemo, useState } from "react";
 import { getRoute } from "@/lib/routes";
 import { useLetters } from "@/lib/letters";
@@ -30,7 +31,7 @@ export default function RankPage() {
 }
 
 function Rank() {
-  const { letters, ready } = useLetters();
+  const { letters, received, ready } = useLetters();
   const { profile } = useProfile();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [stats, setStats] = useState<Record<string, Awaited<ReturnType<typeof readStats>>>>({});
@@ -85,11 +86,15 @@ function Rank() {
     // 같은 사람의 여러 계정은 한 줄로(기록이 큰 계정 기준), 이름은 친구 목록과 같게(내가 부르는 이름 > 진짜 이름 > "이름 없는 친구 N")
     ...buildThreads([], [], friends, book).filter((t) => t.uid).map((t) => {
       const ids = t.uids ?? [t.uid!];
-      const best = ids.map((u) => stats[u]).filter(Boolean).sort((a, b) => (b!.km - a!.km))[0] ?? null;
+      const server = ids.map((u) => stats[u]).filter(Boolean).sort((a, b) => (b!.km - a!.km))[0] ?? null;
+      // 정확하게(2026-11-10 대표님: "왜 친구가 0km로 나와?"): 친구 앱이 올린 기록이 늦거나 0이어도,
+      // 그 친구가 나에게 보낸 편지는 내 폰에서 직접 셀 수 있어요 → 둘 중 큰 값(친구 기록이 더 크면 그대로)
+      const seen = myStatsCapped(received.filter((r) => ids.includes(r.fromUid) && r.sentAt <= Date.now() && !isWelcome(r.id)).map((r) => ({ km: getRoute(r.routeId).km, toKey: "me", at: r.sentAt })));
+      const best = server && server.km >= seen.km ? { ...server, maxKm: Math.max(server.maxKm, seen.maxKm), count: Math.max(server.count, seen.count) } : seen.count ? { ...(server ?? {}), ...seen } : server;
       const f = friends.find((x) => ids.includes(x.uid));
       return { uid: t.key, name: t.name, bird: best?.bird ?? f?.bird, photo: f?.photo, me: false, stats: best };
     }),
-  ], [friends, stats, mine, profile.nickname, profile.avatarBird, profile.photo, book]);
+  ], [friends, stats, mine, received, profile.nickname, profile.avatarBird, profile.photo, book]);
 
   const myUid = (() => { try { return auth().currentUser?.uid; } catch { return undefined; } })();
   const pubEntries: RankEntry[] = useMemo(() => {
