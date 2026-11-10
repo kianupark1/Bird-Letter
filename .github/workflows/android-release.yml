@@ -26,7 +26,7 @@ jobs:
         env:
           VERSION_CODE: ${{ github.run_number }}
         run: bash scripts/android-prepare.sh
-      - name: 출시 파일(AAB) 만들기
+      - name: 출시 파일(AAB·APK) 만들기
         working-directory: android
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -36,7 +36,8 @@ jobs:
         run: |
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
-            ./gradlew bundleRelease --no-daemon \
+            # AAB = 구글 플레이, APK = 갤럭시 스토어·원스토어(같은 열쇠로 서명, 2026-11-10)
+            ./gradlew bundleRelease assembleRelease --no-daemon \
               -Pandroid.injected.signing.store.file="$RUNNER_TEMP/upload.jks" \
               -Pandroid.injected.signing.store.password="$STORE_PASS" \
               -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
@@ -44,11 +45,13 @@ jobs:
             rm -f "$RUNNER_TEMP/upload.jks"
           else
             echo "::warning::업로드 키 비밀 값이 없어 서명 없는 파일을 만들어요(구글 플레이에는 못 올림)."
-            ./gradlew bundleRelease --no-daemon
+            ./gradlew bundleRelease assembleRelease --no-daemon
           fi
-          ls -la app/build/outputs/bundle/release/
+          ls -la app/build/outputs/bundle/release/ app/build/outputs/apk/release/
       - uses: actions/upload-artifact@v4
         with:
           name: saepyeonji-android-${{ github.run_number }}
-          path: android/app/build/outputs/bundle/release/*.aab
+          path: |
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/apk/release/*.apk
           retention-days: 14
