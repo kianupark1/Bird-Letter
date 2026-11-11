@@ -2,12 +2,11 @@
 import { quickPosition } from "@/lib/fastGeo";
 import { clearFastCache } from "@/lib/fastStart";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getPlace, placesByRegion } from "../../../core/places";
 import { locate as findDistrict } from "../../../core/districts";
 import { tryMoveHome } from "@/lib/homePlace";
-import { LETTERS_KEY, ONBOARDED_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
+import { LETTERS_KEY, SAMPLE_INBOX, useLetters } from "@/lib/letters";
 import Face from "@/components/Face";
 import BirdPicker from "@/components/BirdPicker";
 import { compressAvatar } from "@/lib/photo";
@@ -35,7 +34,6 @@ const NOTIFY_ROWS: { key: NotifyKey; title: string; desc: string }[] = [
 ];
 
 export default function Settings() {
-  const router = useRouter();
   const { letters, received, backend } = useLetters();
   const { profile, ready, update } = useProfile();
   const [homeMsg, setHomeMsg] = useState("");
@@ -75,12 +73,6 @@ export default function Settings() {
     if (!window.confirm("로그아웃할까요? 같은 계정으로 다시 로그인하면 편지와 친구는 그대로예요.")) return;
     try { await signOut(auth()); } catch {}
     window.location.assign("/");
-  };
-  const replayOnboarding = () => {
-    try {
-      localStorage.removeItem(ONBOARDED_KEY);
-    } catch {}
-    router.push("/onboarding");
   };
 
   const clearLetters = async () => {
@@ -304,9 +296,6 @@ export default function Settings() {
 
       <h2>계정</h2>
       <div className="list">
-        <button className="listrow action" onClick={replayOnboarding}>
-          <span>온보딩 다시 보기</span><span aria-hidden>›</span>
-        </button>
         {firebaseEnabled && !IS_TOSS && (
           <button className="listrow action" onClick={logout}>
             <span>로그아웃</span><span aria-hidden>›</span>
