@@ -16,9 +16,9 @@ const { chromium } = (() => { try { return req("playwright"); } catch { return r
 const root = resolve(import.meta.dirname, "..");
 const FONT = "data:font/woff2;base64," + readFileSync(resolve(root, "src/app/fonts/PretendardSub.woff2")).toString("base64");
 const DAHONG = "#C1481F";
-const LINE = "안드로이드는 곧 출시돼요 · 지금은 앱스토어에서 ‘새 편지’";
-
-const { posts } = JSON.parse(readFileSync(resolve(root, "promo/schedule.json"), "utf8"));
+const { posts, stores = {} } = JSON.parse(readFileSync(resolve(root, "promo/schedule.json"), "utf8"));
+// 갤럭시 스토어에 나온 뒤(stores.galaxy)에는 띠 글을 바꿔요 → 주소를 넣고 이 스크립트를 다시 돌리면 돼요(2026-11-11 대표님)
+const LINE = stores.galaxy ? "갤럭시 스토어에서 ‘새 편지’ · 구글 플레이는 곧 출시돼요" : "안드로이드는 곧 출시돼요 · 지금은 앱스토어에서 ‘새 편지’";
 const { upgraded } = await import("../scripts/auto-post.mjs");
 
 // 첫 장에 쓰이는 그림·영상(영상은 v2로 바뀐 뒤의 것)

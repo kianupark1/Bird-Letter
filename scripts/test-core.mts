@@ -684,6 +684,10 @@ import { storeFor, playUrl, playIntentUrl } from "../core/storeLinks.ts";
   eq("스토어: 아이폰은 주소가 있을 때만", [storeFor(ios, { android: true, iosUrl: "" }), storeFor(ios, { android: false, iosUrl: "https://apps.apple.com/x" })?.url].join("|"), "|https://apps.apple.com/x");
   eq("스토어: 앱 안에서는 없음", storeFor(and + " SaePyeonjiApp/fcm", { android: true, iosUrl: "" }), null);
   eq("스토어: 컴퓨터는 없음", storeFor("Mozilla/5.0 (Windows NT 10.0)", { android: true, iosUrl: "x" }), null);
+  const sm = "Mozilla/5.0 (Linux; Android 14; SM-S918N) Chrome/120";
+  eq("스토어: 플레이 전 삼성 폰 → 갤럭시 스토어", storeFor(sm, { android: false, galaxy: true, iosUrl: "" })?.url, "https://galaxystore.samsung.com/detail/com.saepyeonji.app");
+  eq("스토어: 플레이 전 다른 안드로이드는 없음", storeFor(and, { android: false, galaxy: true, iosUrl: "" }), null);
+  eq("스토어: 플레이가 나오면 삼성 폰도 플레이", storeFor(sm, { android: true, galaxy: true, iosUrl: "" })?.url, playIntentUrl());
 }
 
 import { PENPAL_CITIES, poolIn } from "../core/penpal.ts";
@@ -764,6 +768,7 @@ import { SLOGAN } from "../promo/store.mts";
   eq("X: 줄여도 바로 가기 주소·슬로건은 남음", lx.includes("https://apps.apple.com/kr/app/id1") && lx.includes(SLOGAN), true);
   let threw = false; try { storeLines({}, "threads"); } catch { threw = true; }
   eq("X 받기 안내: 바로 가기 주소", storeLines({ ios: "https://a", android: null }, "x"), "👉 앱스토어 바로 가기 https://a\n안드로이드 앱은 곧 나와요");
+  eq("받기 안내: 갤럭시 스토어·플레이는 곧", storeLines({ ios: "https://a", android: null, galaxy: "https://g" }, "x"), "👉 앱스토어 바로 가기 https://a\n👉 갤럭시 스토어 바로 가기 https://g\n구글 플레이는 곧 출시돼요");
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = fillText(p, "threads", { ios: "https://a", android: "https://g" }).text;
   eq("슬로건: 그림·영상과 글이 같은 글자", POST_SLOGAN, SLOGAN);

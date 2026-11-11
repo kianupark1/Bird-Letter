@@ -9,7 +9,7 @@ export const inviteLink = (code: string) => `${typeof location !== "undefined" ?
 
 export function inviteText(nickname: string) {
   const who = nickname || "친구";
-  const live = STORE.android || !!STORE.iosUrl;
+  const live = STORE.android || STORE.galaxy || !!STORE.iosUrl;
   // 2026-11-09 대표님: "내가 보낸 걸 상대가 받길 원하는 것 · 카톡으로 힘든 말을 기분 풀리는 시간을 주는 것 · 궁금증"
   const head = `💌 ${who}님이 당신과 편지를 주고받고 싶대요\n카톡으로는 꺼내기 어려운 말도, 새가 천천히 전해 주면 마음이 한결 풀려요 🕊`;
   return live
