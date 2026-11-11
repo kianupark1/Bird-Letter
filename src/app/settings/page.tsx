@@ -335,6 +335,13 @@ export default function Settings() {
           </Link>
         )}
         <div className="listrow"><span>버전</span><span className="note">{IS_TOSS ? "0.1.0" : "0.1.0 (테스트)"}</span></div>
+        {firebaseEnabled && auth().currentUser && (
+          // 문의할 때 알려 주는 계정 번호(2026-11-11: 운영자 폰 알림을 이 앱 계정에 잇느라 필요). 이름·편지 내용은 안 들어 있어요.
+          <div className="listrow">
+            <div className="grow"><div className="name">계정 번호 (문의할 때)</div><div className="note" style={{ wordBreak: "break-all" }}>{auth().currentUser?.uid}</div></div>
+            <button className="chip" onClick={() => { void navigator.clipboard?.writeText(auth().currentUser?.uid ?? "").then(() => setTestMsg("계정 번호를 복사했어요")).catch(() => {}); }}>복사</button>
+          </div>
+        )}
       </div>
     </main>
   );
