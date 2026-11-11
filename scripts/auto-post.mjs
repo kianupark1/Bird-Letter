@@ -23,12 +23,12 @@ const today = dateArg ?? new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seou
 let SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
 // 예약 실행이 몇 시간씩 늦게 도는 일이 있어서(2026-11-10: 저녁 6시 글이 새벽 4시 반에 올라감) "auto"는 지금 한국 시각으로 정해요:
 // 8시 이후면 아침 글, 17시 30분 이후면 저녁 글 중 아직 안 올린 것 하나. 0~7시엔 아무것도 안 올려요. 올린 기록은 LOG_FILE(한 줄에 "날짜 slot")
-// 밤 10시 30분 글(2026-11-10 대표님: "밤 10시 30분에도 한 번") = slot "night", 22시 30분 이후
+// 시각(2026-11-11 대표님: "아침 8:30·오후 5:30·밤 22:00 빼놓지 말고, 인스타·스레드·X 3개"): 아침 8시 30분·저녁 5시 30분·밤 10시(slot "night") 이후, 빠진 글은 다음 다시 시도 때 올림
 export function autoSlot(hm, done) {
-  if (hm < 800) return null;
-  if (hm >= 2230 && !done.has("night")) return "night";
-  if (hm >= 1730 && !done.has("evening")) return "evening";
-  if (!done.has("noon")) return hm < 1730 || done.has("evening") ? "noon" : null;
+  if (hm < 830) return null;
+  if (hm >= 2200 && !done.has("night")) return "night";
+  if (hm >= 1730 && !done.has("evening")) return "evening"; // 늦게라도 빠진 저녁 글은 올림(2026-11-11 대표님: "빼놓지 말고")
+  if (!done.has("noon")) return "noon";
   return null;
 }
 export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" ? p.slot : "noon");
