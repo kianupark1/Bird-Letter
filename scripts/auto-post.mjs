@@ -89,7 +89,8 @@ export function storeLines(st, to) {
   // 플레이 전에는 갤럭시 스토어(삼성 폰)로, 플레이는 곧(2026-11-11 대표님)
   else if (st.galaxy) out.push(`👉 갤럭시 스토어 바로 가기 ${st.galaxy}`, "구글 플레이는 곧 출시돼요");
   else out.push("안드로이드 앱은 곧 나와요");
-  if (to === "instagram") out.push("(링크가 안 눌리면 프로필 링크로 🕊)");
+  // 링크는 프로필에도 있다고 모든 채널에 한 줄(2026-11-11 대표님: "링크는 프로필에 있다는 내용을 넣어줘야 해")
+  out.push(to === "instagram" ? "🔗 링크는 프로필에 있어요 (@saepyeonji) · 글 속 링크가 안 눌리면 프로필로 🕊" : "🔗 링크는 프로필에도 있어요 (@saepyeonji)");
   return out.join("\n");
 }
 // 슬로건은 모든 글에 꼭 들어가요(promo/store.mts SLOGAN과 같은 글자, 2026-10-26 대표님: "무조건적으로"). 해시태그 줄 바로 위에 넣어요.
@@ -230,8 +231,9 @@ export function xText(p) {
   if (p.xText) return p.xText.includes(SLOGAN) || xWeight(`${p.xText}\n\n${SLOGAN}`) > 280 ? p.xText : `${p.xText}\n\n${SLOGAN}`;
   // 슬로건은 줄일 때도 남겨요(해시태그처럼 끝에 따로 붙임)
   // 스토어 바로 가기 줄은 줄일 때도 남겨요(슬로건 바로 위)
-  const links = p.text.split("\n").filter((l) => /https?:\/\//.test(l)).map((l) => l.trim());
-  const lines = p.text.split("\n").filter((l) => !/https?:\/\//.test(l) && !/^(안드로이드|아이폰):/.test(l.trim()) && l.trim() !== SLOGAN);
+  const keep = (l) => /https?:\/\//.test(l) || l.includes("링크는 프로필"); // 바로 가기·"링크는 프로필에" 줄은 줄여도 남김
+  const links = p.text.split("\n").filter(keep).map((l) => l.trim());
+  const lines = p.text.split("\n").filter((l) => !keep(l) && !/^(안드로이드|아이폰):/.test(l.trim()) && l.trim() !== SLOGAN);
   const tags = lines.length && lines[lines.length - 1].trim().startsWith("#") ? lines.pop() : "";
   let body = lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
   const head = links.length ? `${links.join("\n")}\n\n` : "";
