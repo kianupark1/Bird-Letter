@@ -59,6 +59,12 @@ N=0; while /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes:$N" "$INFO" >/dev
 # 편지 쓰기 "연락처에서 찾기"(고른 한 명의 이름·번호만 씀, 저장·서버 전송 안 함)
 /usr/libexec/PlistBuddy -c "Add :NSContactsUsageDescription string 편지를 받을 사람을 연락처에서 고를 때 써요. 고른 사람의 이름과 번호만 쓰고 저장하거나 서버로 보내지 않아요." "$INFO" 2>/dev/null || true
 
+# 사진 고르기(<input type=file accept=image/*>): 아이폰이 "사진 찍기"를 보여 줘서 카메라 안내 글이 없으면 앱이 꺼짐
+# (2026-11-11 애플 1.2 반려 2.1.0 꺼짐 기록 원인: NSCameraUsageDescription 없음). 사진 저장(공유 창 "이미지 저장")도 같이.
+/usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 편지에 넣을 사진이나 프로필 사진을 찍을 때만 써요. 찍은 사진의 위치 같은 숨은 정보는 지워요." "$INFO" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 편지에 넣을 사진이나 프로필 사진을 고를 때만 써요. 고른 사진만 쓰고 숨은 정보는 지워요." "$INFO" 2>/dev/null || true
+/usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryAddUsageDescription string 받은 폴라로이드 사진과 지도 사진을 사진 앱에 저장할 때 써요." "$INFO" 2>/dev/null || true
+
 # "내 위치로"(구까지만 알고 좌표는 저장하지 않음): 앱 안 웹 화면이 위치를 물을 수 있게
 /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 편지를 보내는 동네(구)를 찾을 때만 써요. 좌표는 저장하거나 서버로 보내지 않아요." "$INFO" 2>/dev/null || true
 
