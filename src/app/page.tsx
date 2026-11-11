@@ -24,6 +24,7 @@ import { todayLine } from "../../core/waiting";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
+import { justJoined } from "@/lib/install";
 import NameStep, { needsName } from "@/components/NameStep";
 import { loadAccountName, markNameAsked, nameAskedHere, saveProfileRemote } from "@/lib/profileSync";
 import { BIRDS, getBird, isRetired } from "../../core/birds";
@@ -58,7 +59,10 @@ function Inbox() {
     if (!profileReady || phase !== "idle") return;
     const randomBird = () => profile.avatarBird || BIRDS[Math.floor(Math.random() * BIRDS.length)].id;
     if (!firebaseEnabled || !needsName(profile.nickname)) {
-      if (firebaseEnabled && !profile.avatarBird && profile.nickname.trim()) update({ avatarBird: randomBird() });
+      let bird = profile.avatarBird;
+      if (firebaseEnabled && !bird && profile.nickname.trim()) { bird = randomBird(); update({ avatarBird: bird }); }
+      // 카카오·네이버로 막 가입: 이름은 카카오 이름 그대로(이름 화면 없이), 홈 위에 인사 띠 한 번(바꾸기 ›는 설정으로)
+      if (firebaseEnabled && profile.nickname.trim() && justJoined() && sayHelloOnce()) hello(profile.nickname.trim(), bird || randomBird());
       setPhase("done");
       return;
     }
@@ -81,13 +85,20 @@ function Inbox() {
       const login = knownName();
       if (acc.asked || nameAskedHere(u.uid)) { update({ ...(login ? { nickname: login } : {}), avatarBird: randomBird() }); return finish(); }
       markNameAsked(u.uid);
-      if (login) update({ nickname: login, avatarBird: randomBird() }); // 화면을 그냥 떠나도 카카오 이름은 그대로 남게
+      // 로그인에서 이름을 받았으면(카카오·네이버 별명, 구글·애플 이름) 이름 화면 없이 그 이름으로 바로 시작(2026-11-11 대표님: "카카오 이름 그대로, 처음 쓰는 사람이 편하게")
+      if (login) {
+        const b = randomBird();
+        update({ nickname: login, avatarBird: b });
+        if (sayHelloOnce()) hello(login, b);
+        return finish();
+      }
       clearTimeout(timer);
       setPrefill(login);
       setPhase("ask");
     })();
     return () => { off = true; clearTimeout(timer); };
   }, [profileReady]); // eslint-disable-line react-hooks/exhaustive-deps
+  function hello(name: string, bird: string) { setWelcome(`${name}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`); }
   // 내 새가 빠진 새(제비·두루미·붕붕이)면 남은 3종(까치·비둘기·매) 중 하나로 바꿔요(2026-11-01 새 3종으로 줄임)
   useEffect(() => {
     if (profileReady && profile.avatarBird && isRetired(profile.avatarBird)) update({ avatarBird: BIRDS[Math.floor(Math.random() * BIRDS.length)].id });
@@ -101,6 +112,12 @@ function Inbox() {
   if (phase === "ask") return <NameStep prefill={prefill} onDone={(name, bird) => { if (name) setWelcome(`${name}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`); setPhase("done"); }} />;
   if (phase === "checking" || (phase === "idle" && profileReady && firebaseEnabled && needsName(profile.nickname))) return <main className="app" aria-busy="true" />;
   return <InboxList welcome={welcome} />;
+}
+
+/** 가입 인사 띠는 이 폰에서 한 번만 */
+function sayHelloOnce() {
+  try { if (localStorage.getItem("saepyeonji.hello.v1")) return false; localStorage.setItem("saepyeonji.hello.v1", "1"); } catch {}
+  return true;
 }
 
 /** 로그인할 때 받은 이름(카카오·네이버 별명 > 구글·애플 이름). 없으면 "" */
