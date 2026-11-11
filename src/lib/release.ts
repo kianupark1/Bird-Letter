@@ -30,7 +30,8 @@ export const LEGAL_DRAFT_DATE = "2026-10-19";
  * - android: 구글 플레이에 공개(또는 공개 테스트)되면 true
  * - iosUrl: 앱스토어 주소(예: https://apps.apple.com/kr/app/id0000000000), 없으면 ""
  */
-export const STORE = { android: false, iosUrl: "https://apps.apple.com/kr/app/id6828785320" };
+// galaxy: 갤럭시 스토어에 나오면 true(플레이 전에는 삼성 폰에 갤럭시 스토어 버튼, 2026-11-11 대표님)
+export const STORE = { android: false, galaxy: false, iosUrl: "https://apps.apple.com/kr/app/id6828785320" };
 
 /**
  * 구글 플레이 비공개 테스트(개인 계정은 테스터 12명 × 14일, 2026-10-26 결정).

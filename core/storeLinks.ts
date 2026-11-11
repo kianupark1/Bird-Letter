@@ -18,13 +18,22 @@ export const playIntentUrl = (source = "invite") =>
   `intent://details?id=${APP_ID}&referrer=${encodeURIComponent(`utm_source=${source}&utm_medium=friend`)}` +
   `#Intent;scheme=market;package=com.android.vending;S.browser_fallback_url=${encodeURIComponent(playUrl(source))};end`;
 
-export type StoreCfg = { android: boolean; iosUrl: string };
+/** 갤럭시 스토어 주소(삼성 폰에서 누르면 갤럭시 스토어 앱이 열려요). 2026-11-11 대표님: "플레이 나오기 전엔 갤럭시 스토어로" */
+export const galaxyUrl = () => `https://galaxystore.samsung.com/detail/${APP_ID}`;
+/** 삼성 폰인지(기종 이름 SM-…·삼성 인터넷) */
+export const isSamsung = (ua: string) => /\bSM-[A-Z0-9]|SamsungBrowser|SAMSUNG/i.test(ua);
+
+export type StoreCfg = { android: boolean; iosUrl: string; galaxy?: boolean };
 export type StoreBtn = { url: string; label: string };
 
 /** 이 폰에 맞는 스토어 버튼(없으면 null): 안드로이드 → 구글 플레이, 아이폰 → 앱스토어, 컴퓨터 → 없음 */
 export function storeFor(ua: string, cfg: StoreCfg, source = "invite"): StoreBtn | null {
   if (/SaePyeonjiApp/.test(ua)) return null; // 이미 앱 안
-  if (/android/i.test(ua)) return cfg.android ? { url: playIntentUrl(source), label: "구글 플레이에서 앱 받기" } : null;
+  if (/android/i.test(ua)) {
+    if (cfg.android) return { url: playIntentUrl(source), label: "구글 플레이에서 앱 받기" };
+    // 플레이가 나오기 전: 삼성 폰은 갤럭시 스토어로(다른 안드로이드는 아직 버튼 없음)
+    return cfg.galaxy && isSamsung(ua) ? { url: galaxyUrl(), label: "갤럭시 스토어에서 앱 받기" } : null;
+  }
   if (/iphone|ipad|ipod/i.test(ua)) return cfg.iosUrl ? { url: cfg.iosUrl, label: "앱스토어에서 앱 받기" } : null;
   return null;
 }

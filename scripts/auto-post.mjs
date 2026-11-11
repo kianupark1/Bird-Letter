@@ -86,6 +86,8 @@ export function storeLines(st, to) {
   const out = [];
   if (st.ios) out.push(`👉 앱스토어 바로 가기 ${st.ios}`);
   if (st.android) out.push(`👉 구글 플레이 바로 가기 ${st.android}`);
+  // 플레이 전에는 갤럭시 스토어(삼성 폰)로, 플레이는 곧(2026-11-11 대표님)
+  else if (st.galaxy) out.push(`👉 갤럭시 스토어 바로 가기 ${st.galaxy}`, "구글 플레이는 곧 출시돼요");
   else out.push("안드로이드 앱은 곧 나와요");
   if (to === "instagram") out.push("(링크가 안 눌리면 프로필 링크로 🕊)");
   return out.join("\n");
