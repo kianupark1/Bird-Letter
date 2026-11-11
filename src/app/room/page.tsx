@@ -304,6 +304,14 @@ function Room() {
       {!pen && thread.uid && allThreads.some((t) => t.key !== thread.key && t.uid && !isPenpalThread(t) && (isUnnamed(t.name) || !friends.some((f) => f.uid === t.uid))) && (
         <button type="button" className="linkbtn samebtn" onClick={() => setPickFriend(true)}>같은 사람이 목록에 또 있나요? 합치기</button>
       )}
+      {/* 친구가 아닌 사람(이름만)에게 처음 쓸 때: 앱이 없어도 링크로 전해진다는 걸 먼저 알려 줘요
+          (2026-11-12 대표님: "친구 없이 써지는 게 좀 이상해" → 막지 않고 안내 "가"안) */}
+      {!pen && !sendUid && !lastSent && (
+        <div className="mergecard" role="note">
+          <div><b>💌 {name}님은 아직 새편지 친구가 아니에요</b><span>그래도 보낼 수 있어요. 보내면 카카오톡이나 문자로 링크를 전해 드려요. {name}님은 링크로 새가 날아오는 걸 보고, 도착하면 열어 봐요. 가입하면 저절로 친구가 돼요.</span></div>
+          {friends.length > 0 && <div className="mc-btns"><button type="button" className="chip" onClick={() => setPickFriend(true)}>이미 친구라면 합치기</button></div>}
+        </div>
+      )}
       {!pen && !sendUid && lastSent && (
         <div className="mergecard">
           <div><b>{name}님은 아직 앱이 없나요?</b><span>편지가 간다고 알려 주세요. 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>

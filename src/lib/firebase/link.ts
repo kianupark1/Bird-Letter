@@ -88,7 +88,10 @@ export async function linkAccount(kind: LoginKind): Promise<LinkResult> {
 async function linkNative(kind: LoginKind): Promise<LinkResult> {
   let cred: AuthCredential;
   try { cred = await nativeCredential(kind); }
-  catch (e) { return { ok: false, message: nativeCancelled(e) ? "연결을 취소했어요." : friendlyError((e as { code?: string }).code) }; }
+  catch (e) {
+    const err = e as { code?: string; message?: string };
+    return { ok: false, message: nativeCancelled(e) ? "연결을 취소했어요." : friendlyError(err.code ?? (err.message ? String(err.message).slice(0, 60) : undefined)) };
+  }
   try {
     const user = await ensureUser();
     try {
@@ -167,6 +170,7 @@ function friendlyError(code?: string) {
     case "auth/network-request-failed":
       return "인터넷 연결을 확인해 주세요.";
     default:
-      return "연결하지 못했어요. 잠시 뒤에 다시 해 주세요.";
+      // 원인을 알 수 있게 오류 이름을 작게 덧붙여요(2026-11-12 안드로이드 구글 로그인 실패를 찾느라)
+      return `연결하지 못했어요. 잠시 뒤에 다시 해 주세요.${code ? ` (${code})` : ""}`;
   }
 }

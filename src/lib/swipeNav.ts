@@ -6,7 +6,8 @@
  *  - 놓으면 남은 거리를 손가락 속도 그대로 이어서 쓱 밀려나고, 뒤 화면은 왼쪽에서 조금(25%) 겹쳐 들어오며 자리를 잡아요(아이폰 방식).
  *  - 덜 밀면 같은 곡선으로 제자리, 탭 첫 화면은 고무줄처럼 조금만.
  *  - 아래 시트·크게 보기 지도·얼굴 크게 보기가 열려 있으면 그 창이 손가락을 따라가다 닫혀요.
- * 사파리 브라우저(원래 기능)·안드로이드(폰 자체 몸짓)는 꺼 둠. 계산은 core/swipeNav.ts(시험 있음).
+ * 사파리 브라우저(원래 기능)는 꺼 둠. 안드로이드는 스토어 앱에서 켬(2026-11-12 대표님: "안드로이드는 슬라이드로 뒤로 안 돼",
+ * 갤럭시 세 버튼 메뉴는 화면 밀기 몸짓이 없음 — 폰 몸짓 내비게이션을 쓰면 폰이 가장자리를 먼저 가져가서 겹치지 않음). 계산은 core/swipeNav.ts(시험 있음).
  */
 import { EDGE, lockDirection, shouldGoBack, paneOffset } from "../../core/swipeNav";
 
@@ -21,6 +22,7 @@ function isIOS() {
   const ua = navigator.userAgent;
   return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
+const isNativeAndroid = () => /Android/.test(navigator.userAgent) && !!(window as any).Capacitor?.isNativePlatform?.();
 function isAppLike() {
   const w = window as any;
   return !!w.Capacitor?.isNativePlatform?.() || w.matchMedia?.("(display-mode: standalone)").matches || (navigator as any).standalone === true;
@@ -40,7 +42,7 @@ const EASE = "cubic-bezier(.22,.9,.3,1)";
 type Moving = { els: HTMLElement[]; scale: number; panel: boolean };
 
 export function initSwipeNav() {
-  if (started || typeof window === "undefined" || !isIOS() || !isAppLike()) return;
+  if (started || typeof window === "undefined" || !(isIOS() || isNativeAndroid()) || !isAppLike()) return;
   started = true;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   // 드러난 바탕을 살짝 어둡게(아이폰처럼 뒤 화면이 그늘져 있다가 밝아지는 느낌). <html>에 붙여 글씨 배율과 무관

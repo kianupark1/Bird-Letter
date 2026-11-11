@@ -12,7 +12,20 @@
           "package_name": "com.saepyeonji.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1085063770507-cbr4o3h89cfka2tf491ibhq4lu07l099.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.saepyeonji.app",
+            "certificate_hash": "adaf04cdaa26008f152d7eec86fb1b7af2dfc0a6"
+          }
+        },
+        {
+          "client_id": "1085063770507-bfja4uc23cbeggt54mlcfhuqu2734a7b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyClAByzgh3amOT_lqSvNGP32zVIfZ3XiTA"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1085063770507-bfja4uc23cbeggt54mlcfhuqu2734a7b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1085063770507-3fimpqctrcq21im4cpqol1qeifp658il.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.saepyeonji.app"
+              }
+            }
+          ]
         }
       }
     }
