@@ -63,7 +63,7 @@ const closet = `<div class="ph"><div class="sb"><span>9:41</span><span>●●●
     ${["전체", "모자", "얼굴", "목", "가방"].map((t, i) => `<span style="padding:6px 12px;border-radius:14px;${i === 0 ? "background:#2A2118;color:#fff" : "background:#fff"}">${t}</span>`).join("")}</div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 16px">${grid}</div>
   <div style="padding:10px 16px 0"><div class="note">👗 모습만 바뀌어요 · 도착 시간은 그대로 · 뽑기 없이 고른 걸 그대로 · 사기 전에 입어 보기 무료</div></div>
-  <div style="display:flex;gap:8px;padding:10px 16px 0"><div class="btn" style="flex:1;background:#fff">입어 보기</div><div class="btn" style="flex:1.4;background:#C1481F;color:#fff">우체부 세트 2,500원</div></div>
+  <div style="display:flex;gap:8px;padding:10px 16px 0"><div class="btn" style="flex:1;background:#fff">입어 보기</div><div class="btn" style="flex:1.4;background:#C1481F;color:#fff">우체부 세트 1,500원</div></div>
 </div>`;
 
 /* 2. 귀여움 한눈에(3종 × 옷) */

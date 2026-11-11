@@ -10,19 +10,19 @@ import type { CSSProperties, JSX } from "react";
 export type Slot = "head" | "face" | "neck" | "body";
 export type Outfit = { id: string; name: string; slot: Slot; price: number; tag?: string; season?: string };
 
-/** 가격 「가정」: 한 개 1,200원, 세트 2,500원, 가입 선물 1개 무료 */
+/** 가격(2026-11-11 대표님: "옷은 가격 조금 내려서"): 한 개 900원·왕관 1,100원·우체부 세트 1,500원, 꽃핀은 가입 선물 무료. 실제 값은 App Store Connect 가격대에 맞춤 「미확인」 */
 export const OUTFITS: Outfit[] = [
   { id: "flower", name: "꽃핀", slot: "head", price: 0, tag: "가입 선물" },
-  { id: "ribbon", name: "다홍 리본", slot: "head", price: 1200 },
-  { id: "postman", name: "우체부 모자", slot: "head", price: 1200, tag: "새편지 대표" },
-  { id: "beanie", name: "방울 털모자", slot: "head", price: 1200 },
-  { id: "gat", name: "꼬마 갓", slot: "head", price: 1200 },
-  { id: "crown", name: "작은 왕관", slot: "head", price: 1500 },
-  { id: "santa", name: "산타 모자", slot: "head", price: 1200, season: "12월 한정" },
-  { id: "glasses", name: "동글 안경", slot: "face", price: 1200 },
-  { id: "scarf", name: "줄무늬 목도리", slot: "neck", price: 1200 },
-  { id: "bowtie", name: "나비넥타이", slot: "neck", price: 1200 },
-  { id: "satchel", name: "우체부 가방", slot: "body", price: 1200 },
+  { id: "ribbon", name: "다홍 리본", slot: "head", price: 900 },
+  { id: "postman", name: "우체부 모자", slot: "head", price: 900, tag: "새편지 대표" },
+  { id: "beanie", name: "방울 털모자", slot: "head", price: 900 },
+  { id: "gat", name: "꼬마 갓", slot: "head", price: 900 },
+  { id: "crown", name: "작은 왕관", slot: "head", price: 1100 },
+  { id: "santa", name: "산타 모자", slot: "head", price: 900, season: "12월 한정" },
+  { id: "glasses", name: "동글 안경", slot: "face", price: 900 },
+  { id: "scarf", name: "줄무늬 목도리", slot: "neck", price: 900 },
+  { id: "bowtie", name: "나비넥타이", slot: "neck", price: 900 },
+  { id: "satchel", name: "우체부 가방", slot: "body", price: 900 },
 ];
 
 const RIM: CSSProperties = { stroke: "var(--cb-rim, rgba(42,33,24,.22))", strokeWidth: 2.2, strokeLinejoin: "round" };
@@ -145,3 +145,6 @@ export function OutfitHeadC({ items }: { items: string[] }) {
 }
 
 export const wonText = (n: number) => (n === 0 ? "무료" : `${n.toLocaleString("ko-KR")}원`);
+
+/** 세트(우체부 모자+가방) */
+export const OUTFIT_SETS = [{ id: "postman-set", name: "우체부 세트", items: ["postman", "satchel"], price: 1500 }];

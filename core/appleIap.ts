@@ -10,7 +10,8 @@ import { X509Certificate, createPublicKey, verify as cryptoVerify, createHash } 
 export const APPLE_ROOT_G3_SHA256 = "63343abfb89a6a03ebb57e9b3f5fa7be7c4f5c756f3017b3a8c488c3653e9179";
 export const BUNDLE_ID = "com.saepyeonji.app";
 /** 상품 번호 → 우표 장수(App Store Connect에 같은 번호로 만들어야 함) */
-export const STAMP_PRODUCTS: Record<string, number> = { "com.saepyeonji.app.stamp1": 1 };
+/** 2026-11-11 대표님: 우표 3장 1,300원·5장 1,700원 */
+export const STAMP_PRODUCTS: Record<string, number> = { "com.saepyeonji.app.stamp3": 3, "com.saepyeonji.app.stamp5": 5 };
 
 export type AppleTxn = {
   transactionId: string; originalTransactionId: string; bundleId: string; productId: string;
