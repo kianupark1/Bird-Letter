@@ -1232,3 +1232,10 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .ranklink:active { transform: scale(.94); }
 .rankback { font-size: 30px; font-weight: 700; line-height: 1; }
 .kpen { flex: none; font-size: 13px; font-weight: 700; color: var(--namsaek); border: 1.5px solid var(--namsaek); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+
+/* 펜팔 탭: 펜팔 찾기 | 보내기 두 칸 */
+.pptwo { display: flex; gap: 10px; margin-bottom: 8px; }
+.pptwo .ppcard.pphalf { flex: 1; min-width: 0; margin: 0; flex-direction: column; align-items: flex-start; gap: 6px; padding: 16px; }
+.pptwo .ppcard.pphalf b { font-size: 21px; }
+.pptwo .ppcard.pphalf span { font-size: 14px; }
+.pptwo .ppic { font-size: 36px; line-height: 44px; }
