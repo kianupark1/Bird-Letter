@@ -45,10 +45,10 @@ near("서울→제주 직선거리(km)", dist(jeju), jeju.km, 40);
 near("서울→독도 직선거리(km)", dist(dokdo), dokdo.km, 40);
 
 // 도착 시간: 실제 비행 속도(시속)로 계산한 서울-부산 시간(분), 거리에 비례
-const base: Record<string, number> = { hawk: 217, swallow: 488, pigeon: 300, magpie: 557, bungbungi: 325, crane: 355 };
+const base: Record<string, number> = { hawk: 217, swallow: 488, pigeon: 300, magpie: 557, sparrow: 696, bungbungi: 325, crane: 355 };
 for (const b of BIRDS) eq(`${b.name} 부산 순항 분`, cruiseMinutes(b, 325), base[b.id]);
 for (const b of BIRDS) eq(`${b.name} 부산은 진짜 새 속도 그대로`, travelMinutes(b, 325), Math.round(Math.max(b.realMin, (325 / b.kmh) * 60)));
-eq("고를 수 있는 새는 까치·비둘기·매 3종", BIRDS.map((b) => b.id).sort().join(","), "hawk,magpie,pigeon");
+eq("고를 수 있는 새는 참새·까치·비둘기·매 4종", BIRDS.map((b) => b.id).sort().join(","), "hawk,magpie,pigeon,sparrow");
 {
   const { totalMinutes, REAL_SINCE, TIER_SINCE } = await import("../core/flight.ts");
   const { getBird: gb } = await import("../core/birds.ts");
@@ -62,15 +62,16 @@ eq("고를 수 있는 새는 까치·비둘기·매 3종", BIRDS.map((b) => b.id
   eq("가까운 곳: 매는 30분", travelMinutes(g("hawk"), 4), 30);
   eq("가까운 곳: 비둘기는 1시간", travelMinutes(g("pigeon"), 4), 60);
   eq("가까운 곳: 까치는 2시간", travelMinutes(g("magpie"), 4), 120);
+  eq("가까운 곳: 참새는 3시간", travelMinutes(g("sparrow"), 4), 180);
   eq("가까운 곳은 새마다 모두 다름", new Set(BIRDS.map((b) => travelMinutes(b, 4))).size, BIRDS.length);
-  eq("서울-부산도 매가 가장 빠르고 까치가 가장 느림", [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).map((b) => b.id).join(",").startsWith("hawk") && [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).at(-1)!.id === "magpie", true);
+  eq("서울-부산도 매가 가장 빠르고 참새가 가장 느림", [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).map((b) => b.id).join(","), "hawk,pigeon,magpie,sparrow");
 }
-{ const { BIRDS_SLOW_TO_FAST: SF } = await import("../core/birds.ts"); eq("빠른 순서: 매·비둘기·까치", [...SF].reverse().map((b) => b.id).join(","), "hawk,pigeon,magpie"); }
+{ const { BIRDS_SLOW_TO_FAST: SF } = await import("../core/birds.ts"); eq("빠른 순서: 매·비둘기·까치·참새", [...SF].reverse().map((b) => b.id).join(","), "hawk,pigeon,magpie,sparrow"); }
 eq("하루 넘으면 일로 표시", formatMinutes(1440 + 7 * 60 + 5), "1일 7시간");
 eq("딱 하루", formatMinutes(1440), "1일");
 eq("매 제주(452km) 순항 분", cruiseMinutes(BIRDS[0], 452), 301);
 eq("까치 제주(452km) 순항 분", cruiseMinutes(BIRDS.find((b) => b.id === "magpie")!, 452), 775);
-eq("새 3종", BIRDS.length, 3);
+eq("새 4종", BIRDS.length, 4);
 eq("노선 3개", ROUTES.length, 3);
 
 
