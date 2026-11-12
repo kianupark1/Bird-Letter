@@ -207,8 +207,9 @@ function Room() {
     penpal = { routeId: penpalRoute(myCity, theirCity), fromName: profile.penpalName?.trim() || penpalName(cityLabel(myCity), profile.avatarBird || "magpie"), replyTo: lastRecv?.item.id };
   }
   const skip = () => { hide(thread.key); router.replace("/"); };
-  // 모르는 사람이 먼저 보낸 펜팔: 내가 답장한 적도, 받겠다고 한 적도 없으면 먼저 물어요(받기 전엔 내용·답장 칸을 안 보여 줘요)
-  const askPen = pen && !!thread.uid && !thread.entries.some((e) => e.dir === "sent") && !okList.includes(thread.uid);
+  // 펜팔은 모두 바로 받아요(2026-11-12 대표님: "답장을 안 하면 되니 모두가 자동으로 받게"). 싫으면 넘기기·신고·차단, 설정에서 받기 끄기.
+  // (예전 "받을게요/안 받을래요" 묻는 화면은 끔 — okList는 남겨 둠)
+  const askPen: boolean = false;
   const acceptPen = () => { const n = Array.from(new Set([...readOk(), thread.uid!])); try { localStorage.setItem(PPOK, JSON.stringify(n)); } catch {} setOkList(n); };
   const declinePen = () => {
     if (window.confirm("앞으로 모르는 누군가의 펜팔 편지를 그만 받을까요?\n(취소를 누르면 이 편지만 넘겨요 · 설정에서 언제든 다시 켤 수 있어요)")) {
@@ -231,7 +232,8 @@ function Room() {
   const missEntry = pushMiss ? thread.entries.find((e) => e.dir === "sent" && e.item.id === pushMiss.id) : undefined;
   const lastSent = sendUid ? missEntry : thread.entries.find((e) => e.dir === "sent");
   let smsBody = "";
-  if (lastSent && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
+  // 펜팔은 카카오톡·문자로 알릴 필요가 없어요(모르는 사람이라 연락처도 없고, 알림은 서버가 보내요 — 2026-11-12 대표님)
+  if (lastSent && !pen && firebaseEnabled && !IS_TOSS && typeof location !== "undefined") {
     const l = asLike(lastSent), r = getRoute(l.routeId);
     // 2026-11-09 대표님: 받는 사람이 "받고 싶게" — 궁금증(내용은 도착해야 열림)과 남은 시간
     const lp = letterProgress(l, now);

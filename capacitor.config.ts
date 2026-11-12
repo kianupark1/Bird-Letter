@@ -32,7 +32,8 @@ const config: CapacitorConfig = {
     ios: { spm: { packageOptions: { "@capacitor-firebase/authentication": { symlink: true }, "@capacitor-firebase/messaging": { symlink: true } }, swiftToolsVersion: "6.1", packageTraits: { "@capacitor-firebase/authentication": ["Google"] } } },
   },
   // 웹이 "스토어 앱 안"인지 알 수 있게 브라우저 이름표 끝에 붙여요. FCM 설정이 들어간 빌드만 "/fcm"(src/lib/push.ts isAppPush)
-  appendUserAgent: process.env.FCM_READY === "1" ? "SaePyeonjiApp/fcm" : "SaePyeonjiApp",
+  // "chirp" = 앱 안에 짹짹 알림 소리(res/raw/chirp)가 들어 있는 빌드(2026-11-12부터). 이게 있을 때만 소리 채널을 만들어요
+  appendUserAgent: process.env.FCM_READY === "1" ? "SaePyeonjiApp/fcm chirp" : "SaePyeonjiApp",
   // 위·아래 여백 색은 AppDelegate가 화면 모드(밝음·어두움)에 맞춰 다시 칠해요(scripts/ios-appdelegate.mjs)
   // 시뮬레이터 점검(CAP_LOG=1)일 때만 웹 화면의 console 기록을 앱 기록으로 넘겨요
   ...(process.env.CAP_LOG === "1" ? { loggingBehavior: "production" as const } : {}),

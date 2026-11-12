@@ -49,6 +49,17 @@ export type FriendPushResult = "ok" | "nosub" | "fail";
  * 친구가 알림을 안 켰으면(구독 없음) "nosub" → 보낸 사람 화면이 카카오톡·문자로 알리기를 띄워요.
  */
 export async function notifyFriendLetter(p: { letterId: string; toUid: string; fromName: string; routeId: string; birdId: string; sentAt: number; arriveAt: number }): Promise<FriendPushResult> {
+  // 먼저 서버에 맡겨요: 서버는 받는 사람 알림 주소를 직접 읽을 수 있어서 친구가 아닌 펜팔에게도 알림이 가요(2026-11-12)
+  try {
+    const u = await ensureUser();
+    const res = await fetch("/api/push/letter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: await u.getIdToken(), letterId: p.letterId }) });
+    if (res.ok) {
+      const j = (await res.json()) as { result?: string };
+      if (j.result === "ok") return "ok";
+      if (j.result === "nosub") return "nosub";
+    }
+  } catch {}
+  // 서버가 아직 준비 안 됐으면 예전 방식(친구만 됨)
   const sub = await friendSub(p.toUid);
   if (!sub) return "nosub";
   const route = getRoute(p.routeId), bird = getBird(p.birdId);
