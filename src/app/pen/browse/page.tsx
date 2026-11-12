@@ -42,15 +42,15 @@ function Browse() {
 
   return (
     <main className="app pentab">
-      <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 둘러보기 👀</h1></header>
-      <p className="sub" style={{ margin: "0 4px 8px" }}>마음에 드는 펜팔 카드를 누르면 그 사람에게 편지를 써요</p>
+      <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 찾기 🌏</h1></header>
+      <Link href="/penpal" className="cta" style={{ margin: "0 0 12px" }}>🎲 아무에게나 날려 보내기</Link>
+      <p className="sub" style={{ margin: "0 4px 8px" }}>또는 마음에 드는 카드를 눌러 그 사람에게 편지를 써요</p>
 
       {rows === null && <p className="sub" aria-busy="true">펜팔 카드를 불러오는 중…</p>}
       {err && <p className="sub" role="alert">불러오지 못했어요. 인터넷 연결을 확인해 주세요.</p>}
       {rows && !err && rows.length === 0 && (
         <div className="card" style={{ textAlign: "center" }}>
-          <p className="sub" style={{ marginTop: 0 }}>아직 둘러보기에 카드를 올린 사람이 없어요.</p>
-          <Link href="/penpal" className="cta">🎲 어디든 랜덤으로 보내기</Link>
+          <p className="sub" style={{ margin: 0 }}>아직 보이는 펜팔 카드가 없어요. 위의 🎲로 아무에게나 보내 보세요.</p>
         </div>
       )}
 

@@ -8,7 +8,9 @@ export default function FontScale() {
     const apply = () => {
       let id = "normal";
       let face = "basic";
-      try { const p = JSON.parse(localStorage.getItem(PROFILE_KEY) ?? "{}"); id = p.fontScale ?? "normal"; face = p.fontFace ?? "basic"; } catch {}
+      let theme = "light";
+      try { const p = JSON.parse(localStorage.getItem(PROFILE_KEY) ?? "{}"); id = p.fontScale ?? "normal"; face = p.fontFace ?? "basic"; theme = p.theme ?? "light"; } catch {}
+      document.documentElement.dataset.theme = theme === "dark" || theme === "auto" ? theme : "light";
       // 글씨체(<html data-font>): 기본이면 칸을 지워요
       if (face !== "basic" && FONT_FACES.some((f) => f.id === face)) document.documentElement.dataset.font = face;
       else delete document.documentElement.dataset.font;

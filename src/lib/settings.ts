@@ -14,6 +14,8 @@ export type Profile = {
   fontScale: FontScale;
   /** 글씨체(2026-11-12): 기본(Pretendard) / 새편지체 / 손글씨. 비어 있으면 기본 */
   fontFace?: FontFace;
+  /** 화면 밝기(2026-11-12): 밝게(기본) / 어둡게 / 폰 설정 따라 */
+  theme?: Theme;
   /** 내 새(내 얼굴이 되는 새 그림). 처음 가입할 때 직접 골라요. 비어 있으면 아직 안 고른 것 */
   avatarBird: string;
   /** 마지막으로 "내 위치로" 찾았을 때의 구 이름(예: 부산 해운대구). 표시용이고 좌표는 저장하지 않아요 */
@@ -54,6 +56,12 @@ export const FONT_SCALES: { id: FontScale; label: string }[] = [
   { id: "large", label: "크게" },
 ];
 
+export type Theme = "light" | "dark" | "auto";
+export const THEMES: { id: Theme; label: string }[] = [
+  { id: "light", label: "밝게" },
+  { id: "dark", label: "어둡게" },
+  { id: "auto", label: "폰 따라" },
+];
 export type FontFace = "basic" | "saepyeonji" | "hand";
 export const FONT_FACES: { id: FontFace; label: string; family: string; note: string }[] = [
   { id: "basic", label: "기본", family: "", note: "또렷하고 깔끔한 기본 글씨" },

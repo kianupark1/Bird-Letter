@@ -21,8 +21,8 @@
   /* 지도 */
   --sea: #D5E5EB; --land-dim: #E6DECD; --coast: #B3A27C; --grid: rgba(30, 58, 92, 0.10); --map-text: #3A2F25;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+/* 화면 밝기(2026-11-12 대표님: "너무 어두워, 밝은 게 기본, 어두운 건 설정에서"): <html data-theme="light|dark|auto">, 기본 light */
+:root[data-theme="dark"] {
     --dahong: #E8683F;
     --namsaek: #5C8AB8;
     --hwangto: #F0BC5C;
@@ -41,6 +41,29 @@
     --b-grey: #A9B7C6; --b-grey2: #7F90A3; --b-edge: rgba(243, 233, 216, 0.0); --cb-rim: rgba(243, 233, 216, 0.5);
     --sea: #1C2B34; --land-dim: #2B251E; --coast: #5E5039; --grid: rgba(157, 191, 227, 0.10); --map-text: #E6DAC4;
     --lbl-halo: #1A1613; /* 어두운 모드: 지도 글자 테두리는 어둡게 (밝은 글자가 뭉개지지 않게) */
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --dahong: #E8683F;
+    --namsaek: #5C8AB8;
+    --hwangto: #F0BC5C;
+    --cheongrok: #3EA890;
+    --bg: #1A1613;
+    --text: #F3E9D8;
+    --card: #262019;
+    --line: rgba(243, 233, 216, 0.14);
+    --land: #352C22;
+    --sky: #221C16;
+    --on-dahong: #1A1613;
+    --on-cheong: #10201B;
+    --on-nam: #10161F;
+    --hwangto-text: #F0BC5C;
+    --b-cream: #F3E9D8; --b-ink: #E9DDC8; --b-brown: #B58257; --b-brown2: #8A5A3C;
+    --b-grey: #A9B7C6; --b-grey2: #7F90A3; --b-edge: rgba(243, 233, 216, 0.0); --cb-rim: rgba(243, 233, 216, 0.5);
+    --sea: #1C2B34; --land-dim: #2B251E; --coast: #5E5039; --grid: rgba(157, 191, 227, 0.10); --map-text: #E6DAC4;
+    --lbl-halo: #1A1613; /* 어두운 모드: 지도 글자 테두리는 어둡게 (밝은 글자가 뭉개지지 않게) */
+  color-scheme: dark;
   }
 }
 * { box-sizing: border-box; }
@@ -579,7 +602,10 @@ textarea.letterbox { font-size: 20px; line-height: 1.7; min-height: 220px; }
 /* ═════ 2차 시안(v2): 더 귀엽고 단순하게. 색은 오방색 그대로 ═════ */
 :root { --raise: 0 3px 0 rgba(42,33,24,.08), 0 8px 18px rgba(42,33,24,.07); --tint-hot: rgba(193,72,31,.14); --tint-fly: rgba(224,168,60,.24); }
 body { background: radial-gradient(120px 60px at 12% 40px, #FFFDF6 60%, transparent 62%), radial-gradient(160px 70px at 90% 80px, #FFFDF6 60%, transparent 62%), radial-gradient(90px 44px at 68% 20px, #FFFDF6 60%, transparent 62%), linear-gradient(#FFF7E6 0, var(--bg) 300px); background-repeat: no-repeat; background-color: var(--bg); }
-@media (prefers-color-scheme: dark) { body { background: var(--bg); } :root { --raise: 0 3px 0 rgba(0,0,0,.3), 0 8px 18px rgba(0,0,0,.25); } }
+:root[data-theme="dark"] body { background: var(--bg); }
+@media (prefers-color-scheme: dark) { :root[data-theme="auto"] body { background: var(--bg); } }
+:root[data-theme="dark"] { --raise: 0 3px 0 rgba(0,0,0,.3), 0 8px 18px rgba(0,0,0,.25); }
+@media (prefers-color-scheme: dark) { :root[data-theme="auto"] { --raise: 0 3px 0 rgba(0,0,0,.3), 0 8px 18px rgba(0,0,0,.25); } }
 
 /* 도톰한 버튼 */
 .chunky, .cta.big, .sbtn { box-shadow: 0 5px 0 rgba(0,0,0,.22), 0 10px 18px rgba(0,0,0,.12); transition: transform .08s, box-shadow .08s; }
@@ -932,7 +958,8 @@ html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .map .road { fill: none; stroke: #FFF7E6; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
 .map .road.major { stroke: #F3D79A; }
 .map .road-case { fill: none; stroke: rgba(120, 95, 60, .22); stroke-linecap: round; stroke-linejoin: round; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map .road { stroke: #4A3F33; } :root:not([data-theme="light"]) .map .road.major { stroke: #5E4E36; } :root:not([data-theme="light"]) .map .road-case { stroke: rgba(0,0,0,.25); } }
+:root[data-theme="dark"] .map .road { stroke: #4A3F33; } :root[data-theme="dark"] .map .road.major { stroke: #5E4E36; } :root[data-theme="dark"] .map .road-case { stroke: rgba(0,0,0,.25); }
+@media (prefers-color-scheme: dark) { :root[data-theme="auto"] .map .road { stroke: #4A3F33; } :root[data-theme="auto"] .map .road.major { stroke: #5E4E36; } :root[data-theme="auto"] .map .road-case { stroke: rgba(0,0,0,.25); } }
 :root[data-theme="dark"] .map .road { stroke: #4A3F33; } :root[data-theme="dark"] .map .road.major { stroke: #5E4E36; }
 .map .peak { fill: #8A7A5C; opacity: .55; }
 .map text.lbl.peak { font-size: 9.5px; font-weight: 600; opacity: .55; stroke-width: 2.4px; }
@@ -940,7 +967,8 @@ html { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .map .route-line, .map .route-done { fill: none; }
 .map .fb-shadow { fill: #000; opacity: .16; }
 .map .fx-cloud { fill: #fff; opacity: .5; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .map .fx-cloud { opacity: .1; } :root:not([data-theme="light"]) .map .park { opacity: .2; } :root:not([data-theme="light"]) .map .fb-shadow { opacity: .35; } }
+:root[data-theme="dark"] .map .fx-cloud { opacity: .1; } :root[data-theme="dark"] .map .park { opacity: .2; } :root[data-theme="dark"] .map .fb-shadow { opacity: .35; }
+@media (prefers-color-scheme: dark) { :root[data-theme="auto"] .map .fx-cloud { opacity: .1; } :root[data-theme="auto"] .map .park { opacity: .2; } :root[data-theme="auto"] .map .fb-shadow { opacity: .35; } }
 :root[data-theme="dark"] .map .fx-cloud { opacity: .1; }
 
 /* 편지 쓰기: 전화번호 칸 + 연락처 버튼, 보낸 뒤 문자 알림 화면 */

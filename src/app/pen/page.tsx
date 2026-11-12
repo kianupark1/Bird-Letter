@@ -48,12 +48,6 @@ function PenList() {
     [letters, received, friends, book],
   );
   const penName = profile.penpalName?.trim() || penpalName(cityLabel(cityOf(profile.homePlace)), profile.avatarBird || "magpie");
-  // 바꾼 값으로 내 펜팔 줄을 바로 올려요(목록 보이기·사진은 본인이 켰을 때만)
-  const change = (patch: Partial<typeof profile>) => {
-    update(patch);
-    void saveMyPenpal(myPenpalDoc({ ...profile, ...patch })).catch(() => {});
-  };
-  const toggleRecv = () => change({ penpalRecv: profile.penpalRecv === false });
 
   const editIntro = () => {
     const v = window.prompt(`펜팔 카드에 보일 한 줄 소개 (${INTRO_MAX}자까지 · 연락처는 자동으로 가려져요)`, profile.penpalIntro ?? "");
@@ -70,61 +64,19 @@ function PenList() {
         <GearLink />
       </header>
 
-      {/* 펜팔 찾기 | 보내기 두 칸(2026-11-12 대표님: "펜팔 찾기 | 보내기 이렇게 나와야 함") */}
-      <div className="pptwo">
-        {firebaseEnabled && (
-          <Link href="/pen/browse" prefetch className="ppcard pphalf">
-            <span className="ppic" aria-hidden>👀</span>
-            <div><b>펜팔 찾기</b><span>한 줄 소개 보고 고르기</span></div>
-          </Link>
-        )}
-        <Link href="/penpal" prefetch className="ppcard pphalf">
-          <BirdIcon id={profile.avatarBird || "pigeon"} size={44} letter />
-          <div><b>보내기</b><span>어느 누군가에게 날려 보내요</span></div>
-        </Link>
-      </div>
+      {/* 2026-11-12 대표님: "펜팔 창 너무 복잡해, 찾기·보내기 합치고, 받기·둘러보기에 나 보이기·카드 사진은 다 자동으로, 깔끔하게"
+          → 버튼 하나(펜팔 친구 찾기 → 카드 고르거나 🎲 아무에게나), 스위치는 모두 없앰(myPenpalDoc이 자동으로 켬, 끄기는 설정에만) */}
+      <Link href={firebaseEnabled ? "/pen/browse" : "/penpal"} prefetch className="ppcard">
+        <BirdIcon id={profile.avatarBird || "pigeon"} size={48} letter />
+        <div><b>펜팔 친구 찾기</b><span>카드를 보고 고르거나, 아무에게나 날려 보내요</span></div>
+      </Link>
       {firebaseEnabled && (
-          <div className="listrow">
-            <div className="grow">
-              <div className="name">랜덤 펜팔 편지 받기</div>
-              <div className="note">켜 두면 모르는 누군가의 펜팔 편지가 날아와요. 처음 온 편지는 받을지 먼저 물어봐요 · 내 펜팔 이름: {penName}</div>
-            </div>
-            <button role="switch" aria-checked={profile.penpalRecv !== false} aria-label="랜덤 편지 받기" className="switch" onClick={toggleRecv} />
-          </div>
-      )}
-      {firebaseEnabled && profile.penpalAgreed && profile.penpalRecv !== false && (
-          <div className="listrow">
-            <div className="grow">
-              <div className="name">펜팔 친구 둘러보기에 나 보이기</div>
-              <div className="note">켜면 다른 사람이 내 펜팔 카드(펜팔 이름·도시·한 줄 소개)를 보고 나를 골라 편지를 보낼 수 있어요</div>
-            </div>
-            <button role="switch" aria-checked={profile.penpalListed === true} aria-label="둘러보기에 나 보이기" className="switch" onClick={() => change({ penpalListed: profile.penpalListed !== true })} />
-          </div>
-      )}
-      {firebaseEnabled && profile.penpalAgreed && profile.penpalRecv !== false && profile.penpalListed === true && (
-          <div className="listrow">
-            <div className="grow">
-              <div className="name">카드에 내 프로필 사진도 보이기</div>
-              <div className="note">{profile.photo ? "모르는 사람에게 내 사진이 보여요. 얼굴이 또렷한 사진은 신중하게 골라 주세요 · 끄면 바로 지워져요" : "내 정보(톱니바퀴)에서 프로필 사진을 먼저 넣어 주세요"}</div>
-            </div>
-            <button role="switch" aria-checked={profile.penpalPhoto === true} aria-label="카드에 사진 보이기" className="switch" disabled={!profile.photo} onClick={() => change({ penpalPhoto: profile.penpalPhoto !== true })} />
-          </div>
-      )}
-      {firebaseEnabled && profile.penpalAgreed && (
         <button type="button" className="listrow" onClick={editIntro} style={{ width: "100%", textAlign: "left", font: "inherit", color: "inherit", border: 0, background: "none", cursor: "pointer" }}>
           <div className="grow">
-            <div className="name">내 한 줄 소개 ✎</div>
-            <div className="note">{profile.penpalIntro ? `"${profile.penpalIntro}"` : "펜팔이 내 얼굴을 누르면 보여요. 예: 고양이 두 마리랑 사는 부산 사람이에요"}</div>
+            <div className="name">{penName} · 한 줄 소개 ✎</div>
+            <div className="note">{profile.penpalIntro ? `"${profile.penpalIntro}"` : "펜팔 카드에 보여요. 예: 고양이 두 마리랑 사는 부산 사람이에요"}</div>
           </div>
         </button>
-      )}
-      {firebaseEnabled && !profile.penpalAgreed && (
-          <Link href="/penpal" className="listrow" style={{ textDecoration: "none", color: "inherit" }}>
-            <div className="grow">
-              <div className="name">나도 랜덤 편지 받기</div>
-              <div className="note">처음 한 번 펜팔 약속을 확인하면 켤 수 있어요 ›</div>
-            </div>
-          </Link>
       )}
 
       <div className="pphead">내 펜팔</div>
@@ -147,7 +99,7 @@ function PenList() {
         })}
       </ul>
 
-      <p className="sub" style={{ fontSize: 14, margin: "16px 4px" }}>진짜 이름·동네는 보이지 않고 도시까지만 보여요(사진은 내가 허락했을 때만) · 만 14세 이상 · 이상한 편지는 대화방에서 🚩 신고·차단</p>
+      <p className="sub" style={{ fontSize: 14, margin: "16px 4px" }}>진짜 이름·동네는 보이지 않고 펜팔 이름·도시만 보여요(프로필 사진이 있으면 카드에 보여요 · 펜팔을 안 받으려면 설정에서 끄기) · 만 14세 이상 · 이상한 편지는 대화방에서 🚩 신고·차단</p>
     </main>
   );
 }
