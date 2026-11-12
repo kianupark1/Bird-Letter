@@ -6,7 +6,7 @@
  * ② 별점 요청: 받은 편지를 두 통째 열어 본 뒤 편지 목록으로 돌아왔을 때 한 번만, 폰의 기본 별점 창(구글·애플이 횟수를 알아서 조절)으로.
  */
 const isNative = () => typeof window !== "undefined" && !!(window as any).Capacitor?.isNativePlatform?.();
-const TAB_ROOTS = ["/", "/friends", "/pen", "/rank"];
+const TAB_ROOTS = ["/", "/friends", "/pen"];
 let started = false;
 
 /** 앱을 연 주소에서 앱 안 화면 주소만 꺼내요(우리 사이트·saepyeonji:// 만, 그 밖은 무시) */

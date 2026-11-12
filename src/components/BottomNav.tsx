@@ -12,12 +12,11 @@ const ICONS: Record<string, React.JSX.Element> = {
   rank: <><path {...stroke} d="M8 21h8M12 16v5M7 4h10v5a5 5 0 0 1-10 0V4z" /><path {...stroke} d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" /></>,
   settings: <><circle {...stroke} cx="12" cy="12" r="3" /><path {...stroke} d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8" /></>,
 };
-// 하단 메뉴는 4개(편지·친구·펜팔·랭킹). 펜팔은 중요한 기능이라 따로 탭으로(2026-10-19). 내 정보·설정은 오른쪽 위 톱니바퀴(GearLink).
+// 하단 메뉴는 3개(편지·친구·펜팔), 랭킹은 편지 화면 왼쪽 위 버튼(2026-11-12). 펜팔은 중요한 기능이라 따로 탭으로(2026-10-19). 내 정보·설정은 오른쪽 위 톱니바퀴(GearLink).
 const TABS = [
   { href: "/", label: "편지", icon: "send" },
   { href: "/friends", label: "친구", icon: "friends" },
   { href: "/pen", label: "펜팔", icon: "pen" },
-  { href: "/rank", label: "랭킹", icon: "rank" },
 ];
 
 export default function BottomNav() {
