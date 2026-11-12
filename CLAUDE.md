@@ -782,3 +782,11 @@
 - **함정(실제로 겪음)**: Windows PowerShell 5.1에서 `값 | 명령`으로 파이프하면 값 앞에 보이지 않는 글자(BOM `\uFEFF`)가 붙는다. Vercel 환경 변수를 이렇게 넣었다가 Firebase 요청이 `auth/network-request-failed`로 실패했다. 환경 변수는 `vercel env add 이름 production --value "값" --yes`로 넣고(키처럼 보이는 `NEXT_PUBLIC_` 값은 `--type config`), 코드(`src/lib/firebase/client.ts`)도 값 앞뒤 BOM·공백을 걸러 쓴다. 파일은 BOM 없는 UTF-8로 쓸 것.
 - 크로스체크: 내 컴퓨터(localhost)에서 되는 것과 공개 주소에서 되는 것은 다를 수 있으니, 배포 뒤 공개 주소에서 직접 시험한다(배포된 코드 안의 설정값도 확인).
 - `C:\bl` 안에서는 `Remove-Item`이 차단됨(삭제 보호). 임시 파일은 만들지 말고 처음부터 쓸모 있는 이름으로 만들 것.
+
+## 펜팔 알림·자동 받기·짹짹 소리·펜팔 광고 (2026-11-12, 대표님: "펜팔은 카카오·문자 알리기 필요 없음, 모두 자동으로 받게, 펜팔 왔다는 알림 못 받음, 광고는 새 편지로 새 친구, 처음 뜨는 속도, 앱 닫아도 알림 확실히, 짹짹 소리+진동")
+
+- **펜팔 알림 원인**: 규칙상 친구가 아닌 사람의 알림 주소(`users/{uid}/push/sub`)를 폰이 읽을 수 없어서 펜팔 받는 사람에게 알림 예약이 안 됐음 → 서버 `/api/push/letter`(로그인 토큰 확인 → 내가 보낸 편지인지 확인 → 받는 사람 알림 주소를 서비스 계정으로 읽어 출발·곧 도착(1시간 넘을 때)·도착을 QStash로 예약, 펜팔 문구 "🌏 누군가 나에게 펜팔 편지를 보냈어요"). 폰 `pushSub.ts notifyFriendLetter`가 이걸 먼저 부르고 안 되면 예전 방식. 친구 편지도 같은 길이라 더 확실해짐.
+- **펜팔은 카카오·문자로 알리기 창 없음**, **모두 자동으로 받음**(받을까요 묻기 `askPen=false`, 싫으면 답장 안 하거나 넘기기·신고).
+- **짹짹 소리+진동**: 안드로이드 알림 채널 `letters`(소리 `res/raw/chirp.wav` = `assets/sounds/chirp.wav`, `scripts/make-chirp.py`로 만듦, 진동·다홍 불빛) → **새 앱 파일(빌드 9)부터**, zardu 14일 동안은 트랙에 못 올리니 정식 출시 때. 이름표 `SaePyeonjiApp/fcm chirp`일 때만 채널을 만듦. 아이폰은 `chirp.wav`를 앱 묶음에 넣는 1.3부터(그 전엔 기본음). 웹 푸시는 폰 기본음+진동.
+- 처음 뜨는 속도: layout에 Firebase 서버 미리 연결(preconnect).
+- **펜팔 광고 카드뉴스 8장** `promo/build-carousel4.mts` → `promo/cards/c4-penpal-1~8`("새 편지로 새 친구를 만나요", 펜팔 이름·도시만, 넘기기·신고, 만 14세 이상), 일정 3일째 아침(11/13), 밀린 c2-love 영상은 48일째.

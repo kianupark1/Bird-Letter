@@ -19,6 +19,8 @@ npx cap sync android
 
 # 알림 줄의 작은 흰색 아이콘(서버가 보내는 알림의 icon: "ic_stat_notify")
 cp assets/notify-icon.png android/app/src/main/res/drawable/ic_stat_notify.png
+# 짹짹 알림 소리(앱을 닫았을 때 오는 알림, 알림 채널 "letters"가 씀 · 2026-11-12)
+mkdir -p android/app/src/main/res/raw && cp assets/sounds/chirp.wav android/app/src/main/res/raw/chirp.wav
 sed -i 's#</application>#    <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_notify" />\n    </application>#' android/app/src/main/AndroidManifest.xml
 # 편지 쓰기 "연락처에서 찾기"(폰 기본 연락처 고르기 창, 고른 한 명만 읽음)
 grep -q READ_CONTACTS android/app/src/main/AndroidManifest.xml || sed -i 's#<application#<uses-permission android:name="android.permission.READ_CONTACTS" />\n    <application#' android/app/src/main/AndroidManifest.xml

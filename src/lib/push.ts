@@ -134,6 +134,11 @@ export function initAppPush() {
   if (tapReady || !isAppPush()) return;
   tapReady = true;
   plugin().then(({ P }) => {
+    // 안드로이드: 짹짹 소리·진동 알림 채널(소리 파일이 든 새 빌드에서만, 예전 빌드는 폰 기본 소리 — 2026-11-12 대표님)
+    if (/Android/.test(navigator.userAgent) && /SaePyeonjiApp\/fcm chirp/.test(navigator.userAgent)) {
+      const cc = (P as unknown as { createChannel?: (o: Record<string, unknown>) => Promise<void> }).createChannel;
+      cc?.call(P, { id: "letters", name: "편지 알림", description: "편지가 출발·도착할 때 짹짹", importance: 5, visibility: 1, sound: "chirp.wav", vibration: true, lights: true, lightColor: "#C1481F" }).catch(() => {});
+    }
     P.addListener("notificationActionPerformed", (a) => {
       const url = (a.notification?.data as { url?: unknown } | undefined)?.url;
       if (typeof url === "string" && url.startsWith("/")) window.location.href = url;

@@ -62,6 +62,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: INSTALL_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: UPDATE_SCRIPT }} />
         <style dangerouslySetInnerHTML={{ __html: BOOT_CSS }} />
+        {/* 첫 화면 빨리(2026-11-12 대표님): 로그인 확인·편지 목록 서버에 미리 연결해 둬요(폰에서 연결마다 0.1~0.3초 아낌) */}
+        <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://securetoken.googleapis.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googleapis.com" />
       </head>
       <body>
         <div id="boot" aria-hidden="true">

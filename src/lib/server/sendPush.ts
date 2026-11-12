@@ -18,9 +18,10 @@ export async function sendFcm(token: string, p: PushPayload): Promise<SendResult
         token,
         notification: { title: p.title, body: p.body },
         data: { url: p.url, tag: p.tag },
-        android: { priority: "HIGH", ttl: "86400s", notification: { tag: p.tag, icon: "ic_stat_notify", color: "#C1481F" } },
-        // 아이폰(APNs): 소리와 같은 편지끼리 묶기
-        apns: { payload: { aps: { sound: "default", "thread-id": p.tag } } },
+        // 안드로이드: 짹짹 채널(letters, 새 빌드가 만듦 — 없으면 폰 기본 채널로) + 진동 (2026-11-12 대표님: "짹짹 소리, 진동과 함께")
+        android: { priority: "HIGH", ttl: "86400s", notification: { tag: p.tag, icon: "ic_stat_notify", color: "#C1481F", channel_id: "letters", sound: "chirp", default_vibrate_timings: true, notification_priority: "PRIORITY_MAX" } },
+        // 아이폰(APNs): 짹짹 소리(앱 안에 chirp.wav가 없으면 아이폰이 기본 소리로) + 같은 편지끼리 묶기
+        apns: { payload: { aps: { sound: "chirp.wav", "thread-id": p.tag } } },
       },
     }),
   });
