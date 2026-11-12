@@ -49,6 +49,7 @@ export default function LetterView({ id }: { id: string }) {
   const [phoneOn, setPhoneOn] = useState(false); // 문자로 받기(휴대폰 번호 인증) 시트
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [store, setStore] = useState<StoreBtn | null>(null);
+  const [webRead, setWebRead] = useState(false); // 받은 뒤 "앱 없이 여기서 읽기"를 눌렀는지
   useEffect(() => { if (!IS_TOSS) setStore(storeFor(navigator.userAgent, STORE, "letter")); }, []);
   const mine = letters.find((l) => l.id === id);
 
@@ -100,6 +101,10 @@ export default function LetterView({ id }: { id: string }) {
   const guest = incoming.state === "ok" && incoming.guest;
   const mineNow = isRecipient && !guest && !!meta?.recipientUid; // 로그인해서 내 편지함으로 받은 편지
   const arrivedNow = view ? letterProgress(view, now).done : false;
+  // 앱이 없는 사람이 링크로 받은 편지는 내용을 "새편지 앱에서" 열게 해요(2026-11-12 대표님: "궁금하면 깔아서 보게끔").
+  // 날아오는 모습·도착은 누구나 보고, 내용은 ①로그인(카카오로 받기 = 내 편지함에 들어감) ②앱 받기 순서. 어르신용으로 "앱 없이 여기서 읽기"도 남겨 둠.
+  // 앱 안·컴퓨터(스토어 버튼 없음)에서는 로그인만 하면 바로 열려요
+  const lockForApp = isRecipient && !IS_TOSS && (guest || (!!store && !webRead));
 
   // 받는 사람은 도착 시각이 지난 뒤에만 서버가 내용을 줌
   useEffect(() => {
@@ -240,10 +245,10 @@ export default function LetterView({ id }: { id: string }) {
 
       {isRecipient && guest && !IS_TOSS && (
         <div className="recvcard">
-          <b>{withIGa(view.fromName || "누군가")} 보낸 편지를 내 편지함에 받을까요?</b>
-          <span>{pr.done ? "받아 두면 언제든 다시 열어 보고 답장할 수 있어요." : "받아 두면 도착할 때 알려 드리고, 답장도 할 수 있어요."}</span>
+          <b>{pr.done ? `🔒 ${withIGa(view.fromName || "누군가")} 보낸 편지가 도착했어요` : `💌 ${withIGa(view.fromName || "누군가")} 보낸 편지가 날아오고 있어요`}</b>
+          <span>편지는 <b>새편지 앱</b>에서 열어 볼 수 있어요. 카카오로 받기 한 번이면 내 편지함에 들어가고, 앱을 받아 같은 카카오로 시작하면 바로 열려요.{pr.done ? "" : " 도착하면 알림도 와요."}</span>
           <button type="button" className="sbtn kakao" onClick={() => void receive("kakao")} disabled={busy !== null || !KAKAO_LOGIN_READY}>
-            <span aria-hidden>💬</span> 카카오로 받기
+            <span aria-hidden>💬</span> 카카오로 받고 열기
           </button>
           <div className="recv-more">
             {NAVER_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => void receive("naver")} disabled={busy !== null}>네이버로 받기</button>}
@@ -254,11 +259,12 @@ export default function LetterView({ id }: { id: string }) {
           {phoneOn && <PhoneLogin title="문자로 받기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); setLoginTick((t) => t + 1); }} />}
         </div>
       )}
-      {mineNow && store && (
+      {mineNow && store && !webRead && (
         <div className="recvcard">
           <b>내 편지함에 받았어요 💌</b>
-          <span>앱을 받아 <b>같은 계정</b>으로 시작하면 이 편지가 그대로 있어요. 도착하면 알림도 와요.</span>
-          <a href={store.url} className="cta big" onClick={(e) => openAppOrStore(e, store.url)}>📲 {store.label}</a>
+          <span>{pr.done ? "이제 새편지 앱에서 열어 보세요. " : ""}앱을 받아 <b>같은 계정(카카오)</b>으로 시작하면 이 편지가 그대로 있어요.{pr.done ? "" : " 도착하면 알림도 와요."}</span>
+          <a href={store.url} className="cta big" onClick={(e) => openAppOrStore(e, store.url)}>📲 앱에서 편지 열기</a>
+          {pr.done && <button type="button" className="linkbtn" onClick={() => setWebRead(true)}>앱 없이 여기서 읽기</button>}
         </div>
       )}
 
@@ -309,6 +315,13 @@ export default function LetterView({ id }: { id: string }) {
                 : `${bird.name}가 ${dest}에 내려앉았어요.`}
             </div>
           </div>
+          {lockForApp ? (
+            <div className="applock" role="note">
+              <div className="applock-env" aria-hidden>💌</div>
+              <b>편지가 봉투 안에 있어요</b>
+              <span>{guest ? "위의 ‘카카오로 받고 열기’를 누르면 내 편지함에 들어가요" : "새편지 앱에서 열어 보세요"}</span>
+            </div>
+          ) : (
           <LetterReveal
             message={view.message}
             photos={photos}
@@ -322,6 +335,7 @@ export default function LetterView({ id }: { id: string }) {
               } catch { setNotice("저장하지 못했어요. 잠시 후 다시 시도해 주세요."); }
             }}
           />
+          )}
         </>
       ) : (
         <>
