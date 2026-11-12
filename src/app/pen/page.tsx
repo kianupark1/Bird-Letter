@@ -70,20 +70,19 @@ function PenList() {
         <GearLink />
       </header>
 
-      <Link href="/penpal" prefetch className="ppcard">
-        <BirdIcon id={profile.avatarBird || "pigeon"} size={56} letter />
-        <div><b>펜팔 친구 찾기</b><span>어느 누군가에게 새 편지를 날려 보내요</span></div>
-      </Link>
-      {firebaseEnabled && (
-        <Link href="/pen/browse" prefetch className="listrow" style={{ textDecoration: "none", color: "inherit" }}>
-          <div className="grow">
-            <div className="name">👀 펜팔 친구 둘러보기</div>
-            <div className="note">한 줄 소개를 보고 편지 보낼 사람을 직접 골라요(목록에 보이기를 허락한 사람만)</div>
-          </div>
-          <span aria-hidden>›</span>
+      {/* 펜팔 찾기 | 보내기 두 칸(2026-11-12 대표님: "펜팔 찾기 | 보내기 이렇게 나와야 함") */}
+      <div className="pptwo">
+        {firebaseEnabled && (
+          <Link href="/pen/browse" prefetch className="ppcard pphalf">
+            <span className="ppic" aria-hidden>👀</span>
+            <div><b>펜팔 찾기</b><span>한 줄 소개 보고 고르기</span></div>
+          </Link>
+        )}
+        <Link href="/penpal" prefetch className="ppcard pphalf">
+          <BirdIcon id={profile.avatarBird || "pigeon"} size={44} letter />
+          <div><b>보내기</b><span>어느 누군가에게 날려 보내요</span></div>
         </Link>
-      )}
-
+      </div>
       {firebaseEnabled && (
           <div className="listrow">
             <div className="grow">
