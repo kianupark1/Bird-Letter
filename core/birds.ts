@@ -41,13 +41,15 @@ export const ALL_BIRDS: Bird[] = [
   make({ id: "pigeon", name: "비둘기", emoji: "🕊️", badge: "기본", kmh: 65, rest: 3, minMin: 60, realMin: 60, mishapOneIn: 80, note: "믿음직한 기본 배달", speedNote: "집 찾는 본능이 뛰어나요" }),
   make({ id: "magpie", name: "까치", emoji: "🐦‍⬛", badge: "특별", kmh: 35, rest: 6, minMin: 1440, realMin: 120, mishapOneIn: 50, note: "도착 연출이 특별해요", speedNote: "나무를 좋아해서 자주 들러요" }),
   make({ id: "bungbungi", name: "붕붕이", emoji: "🚁", badge: "재미", kmh: 60, rest: 2, minMin: 30, realMin: 30, retired: true, mishapOneIn: 50, note: "드론 새 마스코트", speedNote: "소형 드론 속도예요" }),
+  // 2026-11-12 대표님: "제일 느린 새 하나 추가, 참새라던지" — 참새 순항 약 시속 30km 안팎(대략값), 가까워도 3시간
+  make({ id: "sparrow", name: "참새", emoji: "🐤", badge: "제일 느림", kmh: 28, rest: 6, minMin: 1440, realMin: 180, mishapOneIn: 60, note: "가장 천천히, 가장 설레게", speedNote: "작은 날개로 쉬엄쉬엄 날아요" }),
   make({ id: "crane", name: "두루미", emoji: "🦢", badge: "귀한 소식", kmh: 55, rest: 5, minMin: 360, realMin: 360, retired: true, mishapOneIn: 100, note: "가장 귀한 소식용", speedNote: "느긋하지만 길을 잃지 않아요" }),
 ];
 
-/** 지금 고를 수 있는 새: 까치(느림)·비둘기(중간)·매(빠름) */
+/** 지금 고를 수 있는 새: 참새(제일 느림)·까치(느림)·비둘기(중간)·매(빠름) */
 export const BIRDS: Bird[] = ALL_BIRDS.filter((b) => !b.retired);
 
-/** 느린 새부터(까치 → 비둘기 → 매). 가까운 곳·먼 곳 모두 같은 순서예요 */
+/** 느린 새부터(참새 → 까치 → 비둘기 → 매). 가까운 곳·먼 곳 모두 같은 순서예요 */
 export const BIRDS_SLOW_TO_FAST: Bird[] = [...BIRDS].sort((a, b) => b.minutesSeoulBusan - a.minutesSeoulBusan || a.kmh - b.kmh);
 
 export const isRetired = (id: string) => !!ALL_BIRDS.find((b) => b.id === id)?.retired;

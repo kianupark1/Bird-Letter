@@ -11,6 +11,7 @@ type Pal = { body: string; belly: string; wing: string; tail: string; beak: stri
 const PAL: Record<string, Pal> = {
   magpie: { body: "#2A2118", belly: "#FBF3E4", wing: "#1E3A5C", tail: "#1E3A5C", beak: "#E0A83C", feet: "#E0A83C" },
   pigeon: { body: "#9AA8B8", belly: "#C9D3DE", wing: "#B5C1CE", tail: "#6F8094", beak: "#3A2E26", feet: "#E8683F" },
+  sparrow: { body: "#C9844E", belly: "#ECE4D6", wing: "#8E5A35", tail: "#7A4C2E", beak: "#3A2E26", feet: "#D9A07E" },
   hawk: { body: "#8A5A3C", belly: "#FBF3E4", wing: "#5B3A29", tail: "#5B3A29", beak: "#E0A83C", feet: "#E0A83C" },
 };
 
@@ -32,6 +33,14 @@ const Blush = ({ x, y, s = 1 }: { x: number; y: number; s?: number }) => <ellips
 
 /** 매는 크림색 얼굴과 눈썹 */
 function HeadMark({ id, hx, hy, r }: { id: string; hx: number; hy: number; r: number }) {
+  // 참새: 흰 볼에 까만 점, 까만 턱
+  if (id === "sparrow") return (
+    <>
+      <ellipse cx={hx + r * 0.05} cy={hy + r * 0.38} rx={r * 0.6} ry={r * 0.42} fill="#FBF6EC" />
+      <circle cx={hx - r * 0.05} cy={hy + r * 0.42} r={r * 0.17} fill="#2A2118" />
+      <path d={`M${hx + r * 0.55} ${hy + r * 0.72} Q${hx + r * 0.8} ${hy + r * 0.95} ${hx + r * 0.45} ${hy + r * 1.05}`} style={ln("#2A2118", r * 0.22)} />
+    </>
+  );
   if (id !== "hawk") return null;
   return (
     <>
