@@ -518,6 +518,9 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
   eq("석영 방 이름은 진짜 이름", sy.name, "석영");
   const vis = vt([{ key: "a", lastAt: 100 }, { key: "b", lastAt: 300 }], { a: "150", b: "150" });
   eq("나간 방은 숨김, 그 뒤 새 편지가 오면 다시 보임", vis.map((x) => x.key).join(), "b");
+  const pp = (dirs: string[]) => ({ key: "p", lastAt: 100, entries: dirs.map((d) => ({ dir: d, item: { penpal: true } })) });
+  eq("주고받은 펜팔은 넘기기를 눌렀어도 보임", vt([pp(["sent", "received"])], { p: "150" }).length, 1);
+  eq("답장 안 한 펜팔은 넘기기로 숨김", vt([pp(["received"])], { p: "150" }).length, 0);
 }
 
 

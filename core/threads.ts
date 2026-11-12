@@ -52,8 +52,10 @@ export function nameKey(name: string): string {
 }
 
 /** 채팅 목록에서 나간 방은 빼요(나간 뒤에 새 편지가 오면 다시 보여요) */
-export function visibleThreads<T extends { key: string; lastAt: number }>(list: T[], hidden: Record<string, string> = {}): T[] {
-  return list.filter((t) => { const h = Number(hidden[t.key]); return !h || t.lastAt > h; });
+export function visibleThreads<T extends { key: string; lastAt: number; entries?: { dir: string; item: unknown }[] }>(list: T[], hidden: Record<string, string> = {}): T[] {
+  // 서로 주고받은 펜팔은 숨기지 않아요(2026-11-12 대표님: "펜팔이 왜 없어짐, 펜팔 들어가면 서로 보낸 게 있어야지").
+  // 예전에 "넘기기·안 받을래요"를 눌렀어도, 내가 답장한 펜팔이면 다시 보여요
+  return list.filter((t) => { const h = Number(hidden[t.key]); return !h || t.lastAt > h || isPenpalExchange(t); });
 }
 export const PLACEHOLDER_NAMES = new Set(["", "새 친구", "누군가", "보낸 사람"]);
 
@@ -207,4 +209,9 @@ export function avatarBirdFor(name: string, chosen?: string | null): string {
 /** 펜팔(모르는 누군가와 주고받는) 방인지: 편지 중 하나라도 펜팔 편지면 */
 export function isPenpalThread(t: { entries: { item: unknown }[] }): boolean {
   return t.entries.some((e) => (e.item as { penpal?: boolean }).penpal === true);
+}
+/** 펜팔을 서로 주고받았는지(내가 보낸 편지와 받은 편지가 다 있음) — 이런 방은 숨기지 않아요 */
+export function isPenpalExchange(t: { entries?: { dir: string; item: unknown }[] }): boolean {
+  const e = t.entries ?? [];
+  return isPenpalThread({ entries: e }) && e.some((x) => x.dir === "sent") && e.some((x) => x.dir === "received");
 }
