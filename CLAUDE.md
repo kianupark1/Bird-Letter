@@ -790,3 +790,8 @@
 - **짹짹 소리+진동**: 안드로이드 알림 채널 `letters`(소리 `res/raw/chirp.wav` = `assets/sounds/chirp.wav`, `scripts/make-chirp.py`로 만듦, 진동·다홍 불빛) → **새 앱 파일(빌드 9)부터**, zardu 14일 동안은 트랙에 못 올리니 정식 출시 때. 이름표 `SaePyeonjiApp/fcm chirp`일 때만 채널을 만듦. 아이폰은 `chirp.wav`를 앱 묶음에 넣는 1.3부터(그 전엔 기본음). 웹 푸시는 폰 기본음+진동.
 - 처음 뜨는 속도: layout에 Firebase 서버 미리 연결(preconnect).
 - **펜팔 광고 카드뉴스 8장** `promo/build-carousel4.mts` → `promo/cards/c4-penpal-1~8`("새 편지로 새 친구를 만나요", 펜팔 이름·도시만, 넘기기·신고, 만 14세 이상), 일정 3일째 아침(11/13), 밀린 c2-love 영상은 48일째.
+
+## 글씨체 고르기: 기본·새편지체·손글씨 (2026-11-12, 대표님: "알아보기 쉬운 필기체와 새편지만의 폰트, 설정에서 고를 수 있게")
+
+- 설정 "글씨 크기" 아래 **글씨체 [기본][새편지체][손글씨]**(`profile.fontFace`, `<html data-font>`, 그리기 전 head 스크립트·`FontScale.tsx`). 고른 사람만 글씨 파일을 받음, 없는 글자는 Pretendard로 이어서.
+- **새편지체** = 주아(Jua, OFL·예약 이름 없음)를 바탕으로 글자 사이 +4%·이름 `SaePyeonji`로 바꿈(352KB). **손글씨** = 개구 굵게(Gaegu Bold, OFL) 글자 사이 20% 좁힘·`SaePyeonji Hand`(크기 115%). 만들기 `python3.13 scripts/build-fonts.py <Gaegu-Bold.ttf> <Jua-Regular.ttf>`(Google Fonts 원본, 자주 쓰는 2,350자만) → `public/fonts/`, 라이선스 `public/fonts/OFL-*.txt`. 완전히 새로 그린 한글 글꼴(11,172자)은 디자이너·몇 달 필요 → 나중에 검토.

@@ -39,7 +39,7 @@ const pretendard = localFont({
 });
 
 // 스토어 앱 안이면 <html class="inapp">: 심사·정식 앱에서는 "체험판·초안" 표시를 숨겨요(.beta-only, 웹은 출시 날 IS_BETA=false까지 그대로)
-const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontScale)||"normal";if(s==="xlarge")s="large";if(s==="small"||s==="normal"||s==="large")document.documentElement.dataset.scale=s}catch(e){}try{if(/SaePyeonjiApp/.test(navigator.userAgent))document.documentElement.classList.add("inapp")}catch(e){}`;
+const SCALE_SCRIPT = `try{var s=(JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontScale)||"normal";if(s==="xlarge")s="large";if(s==="small"||s==="normal"||s==="large")document.documentElement.dataset.scale=s;var f=JSON.parse(localStorage.getItem("saepyeonji.profile.v1")||"{}").fontFace;if(f==="hand"||f==="saepyeonji")document.documentElement.dataset.font=f}catch(e){}try{if(/SaePyeonjiApp/.test(navigator.userAgent))document.documentElement.classList.add("inapp")}catch(e){}`;
 
 // 서비스 워커가 폰에 담아 둔 화면을 바로 띄운 뒤 새 버전을 받아 오면 알려 줘요(public/sw.js).
 // 열자마자(6초 안, 아직 안 눌렀으면) 바로 새 버전으로 바꾸고, 그 뒤면 쓰던 글이 날아가지 않게 그대로 두고 다음에 열 때 새 버전이에요. 30초에 한 번까지만(되풀이 방지)
@@ -53,6 +53,10 @@ const BOOT_CSS = `#boot{position:fixed;inset:0;z-index:2147483600;display:flex;f
 
 const UPDATE_SCRIPT = `try{var t0=Date.now(),hit=false;addEventListener("pointerdown",function(){hit=true},true);var go=function(){try{var k="saepyeonji.swreload",l=+sessionStorage.getItem(k)||0;if(Date.now()-l<30000)return;sessionStorage.setItem(k,String(Date.now()))}catch(e){}location.reload()};navigator.serviceWorker&&navigator.serviceWorker.addEventListener("message",function(e){if(!e.data||e.data.type!=="new-version")return;if(!hit&&Date.now()-t0<6000)go()})}catch(e){}`;
 
+// 설정에서 고르는 글씨체(2026-11-12 대표님: "알아보기 쉬운 필기체와 새편지만의 폰트"). 파일은 public/fonts(scripts/build-fonts.py),
+// 고른 사람만 받아요(<html data-font>일 때만 쓰여서 기본 글씨인 사람은 받지 않음). 없는 글자는 Pretendard로 이어서 보여 줘요.
+// 글씨체마다 굵기가 하나라서 가짜 굵게(font-synthesis)는 끔(번져 보여서)
+const FACE_CSS = `@font-face{font-family:"SaePyeonji";src:url(/fonts/SaePyeonji.woff2) format("woff2");font-display:swap;size-adjust:96%}@font-face{font-family:"SaePyeonji Hand";src:url(/fonts/SaePyeonjiHand.woff2) format("woff2");font-display:swap;size-adjust:115%}html[data-font="saepyeonji"]{--font-main:"SaePyeonji",${pretendard.style.fontFamily}}html[data-font="hand"]{--font-main:"SaePyeonji Hand",${pretendard.style.fontFamily}}html[data-font] body{font-synthesis-weight:none}`;
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // 글씨 크기는 그리기 전에 정해요(열 때 화면이 커졌다 작아지며 들썩이지 않게). 기본은 "보통"
@@ -62,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: INSTALL_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: UPDATE_SCRIPT }} />
         <style dangerouslySetInnerHTML={{ __html: BOOT_CSS }} />
+        <style dangerouslySetInnerHTML={{ __html: FACE_CSS }} />
         {/* 첫 화면 빨리(2026-11-12 대표님): 로그인 확인·편지 목록 서버에 미리 연결해 둬요(폰에서 연결마다 0.1~0.3초 아낌) */}
         <link rel="preconnect" href="https://firestore.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossOrigin="anonymous" />

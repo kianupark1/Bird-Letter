@@ -12,6 +12,8 @@ export type Profile = {
   homePlace: string;
   /** 글씨 크기(어르신용): 보통 / 크게 / 아주 크게. 모든 화면에 적용돼요 */
   fontScale: FontScale;
+  /** 글씨체(2026-11-12): 기본(Pretendard) / 새편지체 / 손글씨. 비어 있으면 기본 */
+  fontFace?: FontFace;
   /** 내 새(내 얼굴이 되는 새 그림). 처음 가입할 때 직접 골라요. 비어 있으면 아직 안 고른 것 */
   avatarBird: string;
   /** 마지막으로 "내 위치로" 찾았을 때의 구 이름(예: 부산 해운대구). 표시용이고 좌표는 저장하지 않아요 */
@@ -50,6 +52,13 @@ export const FONT_SCALES: { id: FontScale; label: string }[] = [
   { id: "small", label: "작게" },
   { id: "normal", label: "보통" },
   { id: "large", label: "크게" },
+];
+
+export type FontFace = "basic" | "saepyeonji" | "hand";
+export const FONT_FACES: { id: FontFace; label: string; family: string; note: string }[] = [
+  { id: "basic", label: "기본", family: "", note: "또렷하고 깔끔한 기본 글씨" },
+  { id: "saepyeonji", label: "새편지체", family: "SaePyeonji", note: "둥글고 도톰한 새편지만의 글씨" },
+  { id: "hand", label: "손글씨", family: "SaePyeonji Hand", note: "편지 쓰듯 알아보기 쉬운 손글씨" },
 ];
 
 export const PROFILE_KEY = "saepyeonji.profile.v1";
