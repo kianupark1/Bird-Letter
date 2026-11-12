@@ -269,6 +269,15 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
   const one = [{ id: "m1", to: "석영이", toUid: "k1", sentAt: 5 }];
   eq("친구가 바꾼 이름이 합칠 때 적은 이름보다 먼저", buildThreads(one, [], fr, { nick: { k1: "석영이" } }).find((x) => x.key === keyForUid("k1"))!.name, "석영(카톡)");
   eq("내가 직접 바꾼 이름은 그대로", buildThreads(one, [], fr, { nick: { k1: "자기" }, pin: { k1: "1" } }).find((x) => x.key === keyForUid("k1"))!.name, "자기");
+  {
+    // 펜팔 이름이 같아도(서울 사는 까치) 다른 사람이면 방을 합치지 않아요 — 보낸 펜팔·받은 펜팔이 각자 방에 그대로
+    const pf = [{ uid: "fr", name: "서울 사는 까치" }];
+    const ps = [{ id: "ps1", to: "서울 사는 까치", toUid: "pp1", sentAt: 30, penpal: true }];
+    const pr = [{ id: "pr1", fromUid: "pp2", fromName: "서울 사는 까치", sentAt: 40, penpal: true }];
+    const pt = buildThreads(ps, pr, pf);
+    eq("보낸 펜팔은 받는 사람 방에", pt.find((x) => x.key === keyForUid("pp1"))?.entries.length, 1);
+    eq("받은 펜팔은 보낸 사람 방에", pt.find((x) => x.key === keyForUid("pp2"))?.entries.length, 1);
+  }
   eq("주소 값에서 구분값", keyFromParams("abc", null), "u:abc");
   eq("주소 값(이름)", keyFromParams(null, "엄마"), "n:엄마");
   eq("주소 값 없음", keyFromParams(null, null), null);

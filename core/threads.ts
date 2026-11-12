@@ -159,6 +159,9 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   const keep = new Map<string, T>(), gone = new Set<T>();
   for (const t of order) {
     if (!t.name || isUnnamed(t.name)) continue;
+    // 펜팔 방은 이름으로 합치지 않아요: "서울 사는 까치" 같은 펜팔 이름은 여러 사람이 같을 수 있어서,
+    // 합치면 내가 보낸 펜팔이 다른 사람(친구) 방으로 들어가 안 보이거나 떴다 안 떴다 했어요(2026-11-12 대표님)
+    if (t.uids.size && isPenpalThread(t)) continue;
     const k = nameKey(t.name), first = keep.get(k);
     if (!first) { keep.set(k, t); continue; }
     first.entries.push(...t.entries);
