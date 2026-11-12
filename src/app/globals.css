@@ -1226,3 +1226,9 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 /* 첫 화면: 지난번에 들어온 방법 */
 .sbtn { position: relative; }
 .sbtn .lastbadge { position: absolute; top: -9px; right: 12px; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--dahong); color: var(--on-dahong, #fff); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+
+/* 편지 화면 왼쪽 위 랭킹 버튼 · 펜팔 표시(2026-11-12) */
+.ranklink { width: 52px; height: 52px; flex: none; border-radius: 16px; display: grid; place-items: center; align-content: center; gap: 1px; color: var(--text); background: var(--card); box-shadow: var(--raise); text-decoration: none; font-size: 11px; font-weight: 700; transition: transform .08s ease-out; }
+.ranklink:active { transform: scale(.94); }
+.rankback { font-size: 30px; font-weight: 700; line-height: 1; }
+.kpen { flex: none; font-size: 13px; font-weight: 700; color: var(--namsaek); border: 1.5px solid var(--namsaek); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }

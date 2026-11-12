@@ -114,6 +114,7 @@ function Rank() {
   return (
     <main className="app rankpage">
       <header className="tabhead">
+        <Link href="/" className="gearlink rankback" aria-label="편지로 돌아가기" style={{ marginLeft: 0 }}>‹</Link>
         <div><h1 className="pagetitle">누가누가 멀리 보냈나 🏆</h1><div className="greet">{global ? "새 편지를 쓰는 모든 사람" : "친구와 나"}, 편지가 날아간 거리</div></div>
         <GearLink />
       </header>
