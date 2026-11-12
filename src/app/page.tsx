@@ -327,7 +327,20 @@ function InboxList({ welcome }: { welcome?: string }) {
             </li>
           );
         };
-        return <ul className="klist">{threads.map(row)}</ul>;
+        // 펜팔은 친구 편지 밑에 따로 모아요(2026-11-12 대표님: "펜팔은 별도로 밑으로, 처음 했던 것처럼")
+        const pen = threads.filter((t) => isPenpalThread(t)), mine = threads.filter((t) => !isPenpalThread(t));
+        return (
+          <>
+            {pen.length > 0 && mine.length > 0 && <div className="pphead">친구</div>}
+            <ul className="klist">{mine.map(row)}</ul>
+            {pen.length > 0 && (
+              <>
+                <div className="pphead">펜팔 🌏</div>
+                <ul className="klist">{pen.map(row)}</ul>
+              </>
+            )}
+          </>
+        );
       })()}
 
       {threads.some((t) => isUnnamed(t.name)) && (

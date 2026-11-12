@@ -46,7 +46,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
   resend?: Resend | null; onResendDone?: () => void; cancel?: (id: string) => Promise<void>;
   /** 받는 친구 이름이 아직 없으면 보내기 전에 이름부터 정하게 해요 */
   needName?: boolean;
-  /** 펜팔 방: 노선은 도시끼리 정해져 있고(바꿀 수 없음), 펜팔 이름으로 보내요. 사진·예약은 안 돼요 */
+  /** 펜팔 방: 노선은 도시끼리 정해져 있고(바꿀 수 없음), 펜팔 이름으로 보내요. 사진은 돼요(2026-11-12 대표님), 예약은 안 돼요 */
   penpal?: { routeId: string; fromName: string; replyTo?: string };
   /** 받는 사람이 보낸 편지 ID(친구 연결이 끊겼을 때 답장으로 보내기) */
   replyTo?: string;
@@ -146,7 +146,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     try {
       const normal = (replyTo?: string) => add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined, replyTo });
       const sending = penpal
-        ? add({ to: name, toUid, routeId: routeIdOf(fromId, toPick), birdId, message: message.trim(), fromName: penpal.fromName, speed: speed.current, replyTo: penpal.replyTo, penpal: true })
+        ? add({ to: name, toUid, routeId: routeIdOf(fromId, toPick), birdId, message: message.trim(), fromName: penpal.fromName, speed: speed.current, photos: photos.length ? photos : undefined, replyTo: penpal.replyTo, penpal: true })
         // 친구 연결이 끊긴 계정이라 서버가 막으면, 그 사람이 보낸 편지에 "답장"으로 한 번 더 보내 봐요
         : normal().catch((e) => { if (isDenied(e) && replyTo) return normal(replyTo); throw e; });
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
@@ -263,12 +263,12 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <div className="ch-menu">
             <button type="button" onClick={() => setSheet("bird")}><BirdIcon id={bird.id} size={44} /><b>새 바꾸기</b><small>{bird.name}</small></button>
             {!penpal && <button type="button" onClick={() => setSheet("place")}><span className="mi">📍</span><b>어디서 어디로</b><small>{ok ? `${route?.km}km` : "골라 주세요"}</small></button>}
-            {!penpal && <label style={{ cursor: photos.length >= MAX_PHOTOS || photoBusy ? "default" : "pointer" }}>
+            {<label style={{ cursor: photos.length >= MAX_PHOTOS || photoBusy ? "default" : "pointer" }}>
               <span className="mi">📷</span><b>사진 담기</b><small>{photoBusy ? "줄이는 중..." : `${photos.length}/${MAX_PHOTOS}장`}</small>
               <input id="photo-input" className="sr-file" type="file" accept="image/*" multiple disabled={photos.length >= MAX_PHOTOS || photoBusy} onChange={(e) => { void addPhotos(e.target.files); e.target.value = ""; setSheet(""); }} />
             </label>}
             {!penpal && <button type="button" onClick={toggleLater}><span className="mi">⏰</span><b>나중에 보내기</b><small>{later && departMs ? dateTimeText(departMs) : "정한 때 출발"}</small></button>}
-            {penpal && <p className="small" style={{ gridColumn: "1 / -1", textAlign: "center" }}>펜팔 편지는 사진·예약 없이 글로만 보내요. 연락처처럼 보이는 글은 가려져요.</p>}
+            {penpal && <p className="small" style={{ gridColumn: "1 / -1", textAlign: "center" }}>펜팔 편지는 글과 사진을 보낼 수 있어요(예약은 안 돼요). 연락처처럼 보이는 글은 가려져요.</p>}
           </div>
         </div>
       )}
