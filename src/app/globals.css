@@ -1239,3 +1239,10 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .pptwo .ppcard.pphalf b { font-size: 21px; }
 .pptwo .ppcard.pphalf span { font-size: 14px; }
 .pptwo .ppic { font-size: 36px; line-height: 44px; }
+/* 링크로 받은 편지: 내용은 새편지 앱에서(2026-11-12) */
+.applock { margin: 14px 0; padding: 26px 18px; border-radius: 20px; background: var(--card); border: 2px dashed var(--hwangto); text-align: center; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.applock-env { font-size: 56px; line-height: 1; animation: applock 1.6s ease-in-out infinite; }
+.applock b { font-size: 18px; }
+.applock span { font-size: 15px; color: var(--text); opacity: .75; }
+@keyframes applock { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
+@media (prefers-reduced-motion: reduce) { .applock-env { animation: none; } }

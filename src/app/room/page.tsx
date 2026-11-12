@@ -238,13 +238,16 @@ function Room() {
     // 2026-11-09 대표님: 받는 사람이 "받고 싶게" — 궁금증(내용은 도착해야 열림)과 남은 시간
     const lp = letterProgress(l, now);
     const leftTxt = lp.done ? "벌써 도착했어요! 지금 열어 볼 수 있어요" : `도착까지 약 ${formatMinutes(Math.max(1, Math.ceil(lp.total - lp.elapsed)))}`;
-    smsBody = `💌 ${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 편지를 보냈어요\n무슨 내용일까요? 도착해야 열 수 있어요.\n지금 ${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중 · ${leftTxt}\n👉 어디쯤 날고 있는지 보기: ${location.origin}${letterHref(lastSent.item.id)}`;
+    // 2026-11-12 대표님: "앱 안 깐 사람에게 카톡으로 알림이 가서, 궁금하면 깔아서 보게" → 내용은 새편지 앱에서 열린다는 걸 분명히
+    smsBody = `💌 ${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 편지를 보냈어요\n지금 ${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중 · ${leftTxt}\n무슨 내용일까요? 새편지 앱에서 열어 볼 수 있어요 🔒\n👉 편지 받기: ${location.origin}${letterHref(lastSent.item.id)}`;
   }
   const tellId = smsBody && lastSent ? lastSent.item.id : "";
   const tellKakao = async () => {
     if (!lastSent) return;
     const l = asLike(lastSent);
-    if (KAKAO_SHARE_READY && (await shareToKakao(lastSent.item.id, getBird(l.birdId).name))) return;
+    const lp = letterProgress(l, now);
+    const left = lp.done ? "벌써 도착했어요" : `도착까지 약 ${formatMinutes(Math.max(1, Math.ceil(lp.total - lp.elapsed)))}`;
+    if (KAKAO_SHARE_READY && (await shareToKakao(lastSent.item.id, getBird(l.birdId).name, profile.nickname || undefined, left))) return;
     try {
       if (navigator.share) await navigator.share({ text: smsBody }); // 공유 창에서 카카오톡을 고르면 돼요
       else { await navigator.clipboard.writeText(smsBody); window.alert("알림 글을 복사했어요. 카카오톡에 붙여 넣어 보내 주세요."); }
