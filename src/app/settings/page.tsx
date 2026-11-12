@@ -14,7 +14,7 @@ import { saveMyPenpal } from "@/lib/firebase/penpal";
 import { myPenpalDoc } from "@/lib/penpalSync";
 import { cityLabel, cityOf, penpalName } from "../../../core/penpal";
 import { KAKAO_LOGIN_READY, isKakaoLinked, startKakaoLogin } from "@/lib/firebase/kakao";
-import { FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
+import { FONT_FACES, FONT_SCALES, useProfile, type FontScale, type Profile } from "@/lib/settings";
 import * as remote from "@/lib/firebase/remote";
 import { isAppPush, PUSH_CONFIGURED, sendTestPush, showLocalTest, usePushState } from "@/lib/push";
 import { addToHome } from "@/lib/install";
@@ -133,6 +133,21 @@ export default function Settings() {
           ))}
         </div>
         <div className="note">모든 화면의 글씨와 버튼이 커져요</div>
+      </div>
+
+      <div className="scalebox">
+        <div className="name">글씨체</div>
+        <div className="seg facepick" role="radiogroup" aria-label="글씨체">
+          {FONT_FACES.map((f) => {
+            const on = (profile.fontFace ?? "basic") === f.id;
+            return (
+              <button key={f.id} type="button" role="radio" aria-checked={on} className={on ? "on" : ""}
+                style={f.family ? { fontFamily: `"${f.family}", inherit` } : undefined}
+                onClick={() => { update({ fontFace: f.id }); setTimeout(() => window.dispatchEvent(new Event("saepyeonji:scale")), 0); }}>{f.label}</button>
+            );
+          })}
+        </div>
+        <div className="note">{FONT_FACES.find((f) => f.id === (profile.fontFace ?? "basic"))?.note} · 모든 화면에 바로 바뀌어요</div>
       </div>
 
       <div className="stats">
