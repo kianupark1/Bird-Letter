@@ -264,7 +264,11 @@ function InboxList({ welcome }: { welcome?: string }) {
   return (
     <main className="app inbox">
       <header className="inboxhead">
-        <BirdIcon id="magpie" size={52} />
+        {/* 랭킹은 왼쪽 위 버튼으로(2026-11-12 대표님: "랭킹을 왼쪽 위로") */}
+        <Link href="/rank" prefetch className="ranklink" aria-label="랭킹">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8M12 16v5M7 4h10v5a5 5 0 0 1-10 0V4z" /><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4" /></svg>
+          <span>랭킹</span>
+        </Link>
         <div>
           <h1>새 편지</h1>
           <div className="greet">{todayLine(now)}</div>
@@ -304,7 +308,7 @@ function InboxList({ welcome }: { welcome?: string }) {
       )}
 
       {(() => {
-        // 친구 편지와 펜팔(모르는 누군가) 편지는 따로 모아요(시안 v5-4)
+        // 친구 편지와 펜팔 편지를 한 목록에 시간순으로(2026-11-12 대표님: "펜팔도 메시지에, 펜팔이라고 따로 표시")
         const row = (t: Thread<Letter, Meta>) => {
           const info = rowInfo(t, now, opened);
           return (
@@ -314,7 +318,7 @@ function InboxList({ welcome }: { welcome?: string }) {
               <Link href={roomHref(t)} prefetch className={`krow ${isPenpalThread(t) ? "pen" : ""}`}>
                 <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} size={58} />
                 <span className="kmid">
-                  <span className="kline"><b className="kname">{t.name}</b><span className="ktime">{info.time}</span></span>
+                  <span className="kline"><b className="kname">{t.name}</b>{isPenpalThread(t) && <span className="kpen">🌏 펜팔</span>}<span className="ktime">{info.time}</span></span>
                   <span className="kline"><span className={`kprev ${info.hot ? "hot" : ""}`}>{info.preview}</span>{info.badge ? <span className="kbadge" aria-label={`안 읽은 편지 ${info.badge}통`}>{info.badge}</span> : null}</span>
                   {info.progress !== undefined && <span className="kbar"><i style={{ width: `${Math.round(info.progress * 100)}%` }} /></span>}
                 </span>
@@ -323,19 +327,7 @@ function InboxList({ welcome }: { welcome?: string }) {
             </li>
           );
         };
-        const pen = threads.filter((t) => isPenpalThread(t)), mine = threads.filter((t) => !isPenpalThread(t));
-        return (
-          <>
-            {pen.length > 0 && mine.length > 0 && <div className="pphead">친구</div>}
-            <ul className="klist">{mine.map(row)}</ul>
-            {pen.length > 0 && (
-              <>
-                <div className="pphead">펜팔 🌏</div>
-                <ul className="klist">{pen.map(row)}</ul>
-              </>
-            )}
-          </>
-        );
+        return <ul className="klist">{threads.map(row)}</ul>;
       })()}
 
       {threads.some((t) => isUnnamed(t.name)) && (

@@ -11,7 +11,7 @@
  */
 import { EDGE, lockDirection, shouldGoBack, paneOffset } from "../../core/swipeNav";
 
-const TAB_ROOTS = ["/", "/friends", "/pen", "/rank"];
+const TAB_ROOTS = ["/", "/friends", "/pen"];
 const SKIP = "[data-noswipe], input, textarea, select, .ch-birds";
 const CLOSERS = ".pz-x, .ch-dim, .mf-close, .whobtn";
 /** 열린 창이면 움직일 판(창 자체) */
