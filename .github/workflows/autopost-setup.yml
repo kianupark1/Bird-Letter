@@ -1,0 +1,20 @@
+# 홍보 글을 정확한 시각에 올리는 예약(QStash) 만들기 — 손으로 한 번 실행(2026-11-12).
+# GitHub 예약 실행은 몇 시간씩 늦어서, 시각은 QStash가 지키고 사이트(/api/autopost/tick)가 "홍보 글 자동 게시" 작업을 바로 실행시켜요.
+# 사이트에는 Vercel 환경 변수 GH_DISPATCH_TOKEN(이 저장소 Actions 읽기·쓰기만 준 토큰)이 있어야 해요.
+name: 홍보 글 정시 예약 만들기
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 예약 만들기·토큰 확인
+        run: |
+          oidc=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bird-letter-autopost" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).value))')
+          res=$(curl -sS -X POST -H "Authorization: Bearer $oidc" -H "Content-Type: application/json" -d '{}' "https://bird-letter.vercel.app/api/autopost/tick?setup=1")
+          echo "$res" | tee -a "$GITHUB_STEP_SUMMARY"
