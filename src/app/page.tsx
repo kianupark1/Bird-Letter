@@ -241,7 +241,7 @@ function InboxList({ welcome }: { welcome?: string }) {
     if (!window.confirm(`${t.name} 채팅방을 목록에서 지울까요?\n내 화면에서만 지워지고, 새 편지가 오면 다시 나타나요.`)) return;
     hide(t.key); setMenu(null);
   };
-  const others = (t: Thread<Letter, Meta>) => allThreads.filter((x) => x.key !== t.key && x.uid && !isUnnamed(x.name));
+  const others = (t: Thread<Letter, Meta>) => (t.pen ? [] : allThreads.filter((x) => x.key !== t.key && x.uid && !x.pen && !isUnnamed(x.name)));
   const joinInto = (t: Thread<Letter, Meta>, to: Thread<Letter, Meta>) => {
     const toUid = to.key.slice(2);
     if (t.uid) for (const u of t.uids ?? [t.uid]) mergeSame(u, toUid, to.name);
@@ -316,7 +316,7 @@ function InboxList({ welcome }: { welcome?: string }) {
               <SwipeRow label={`${t.name} 채팅방`} onLongPress={() => setMenu({ t, step: "menu" })}
                 actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), { label: "나가기", tone: "danger" as const, onClick: () => leave(t) }]}>
               <Link href={roomHref(t)} prefetch className={`krow ${isPenpalThread(t) ? "pen" : ""}`}>
-                <Face name={t.name} bird={t.uid ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid ? friendBird.get(t.uid)?.photo : undefined} size={58} />
+                <Face name={t.name} bird={t.uid && !t.pen ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid && !t.pen ? friendBird.get(t.uid)?.photo : undefined} size={58} />
                 <span className="kmid">
                   <span className="kline"><b className="kname">{t.name}</b>{isPenpalThread(t) && <span className="kpen">🌏 펜팔</span>}<span className="ktime">{info.time}</span></span>
                   <span className="kline"><span className={`kprev ${info.hot ? "hot" : ""}`}>{info.preview}</span>{info.badge ? <span className="kbadge" aria-label={`안 읽은 편지 ${info.badge}통`}>{info.badge}</span> : null}</span>
@@ -355,7 +355,7 @@ function InboxList({ welcome }: { welcome?: string }) {
             {menu.step === "menu" ? (
               <>
                 <h2>{menu.t.name}</h2>
-                {menu.t.uid && (
+                {menu.t.uid && !menu.t.pen && (
                   <button type="button" className="sheetbtn" onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (나에게만 보여요)", isUnnamed(menu.t.name) ? "" : menu.t.name); if (v !== null) rename(menu.t.key.slice(2), v); setMenu(null); }}>✎ 이름 정하기</button>
                 )}
                 {others(menu.t).length > 0 && <button type="button" className="sheetbtn" onClick={() => setMenu({ t: menu.t, step: "merge" })}>👥 이미 있는 친구와 합치기</button>}

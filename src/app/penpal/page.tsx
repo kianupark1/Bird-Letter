@@ -89,7 +89,7 @@ function Penpal() {
       const [pool, blocked] = await Promise.all([chosen && chosen !== "no" ? Promise.resolve([]) : listPool(), listBlocked(me.uid).catch(() => new Set<string>())]);
       // 처음 보는 사람 먼저, 없으면 이미 주고받은 사람(친구 포함)도. 넘긴 사람·차단한 사람은 끝까지 빼요
       const hard = new Set<string>([...blocked]);
-      for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) hard.add(k.slice(2));
+      for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:") || k.startsWith("p:")) hard.add(k.slice(2));
       const soft = new Set<string>();
       const last = new Map<string, number>();
       for (const l of letters) if (l.toUid) { soft.add(l.toUid); last.set(l.toUid, Math.max(last.get(l.toUid) ?? 0, l.sentAt)); }
@@ -103,7 +103,7 @@ function Penpal() {
       const toName = (picked?.name ?? pool.find((p) => p.uid === target.uid)?.name ?? "어딘가의 새").slice(0, 20);
       await add({ to: toName, toUid: target.uid, routeId: penpalRoute(city, target.region), birdId: bird, message: masked.text.trim(), fromName: myName, penpal: true });
       birdFx("depart", profile.chirp !== false);
-      router.push(`/room?u=${encodeURIComponent(target.uid)}`);
+      router.push(`/room?p=${encodeURIComponent(target.uid)}`);
     } catch {
       setNote("보내지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.");
       setBusy(false);

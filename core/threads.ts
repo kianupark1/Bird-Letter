@@ -19,13 +19,17 @@ export type Thread<S, R> = {
   lastAt: number;
   /** 이 사람의 계정들(같은 사람으로 합친 계정 포함). uid는 그중 편지를 보낼 계정 */
   uids?: string[];
+  /** 펜팔 방(같은 사람이라도 친구 방과 따로, 2026-11-13 대표님: "펜팔이랑 친구가 겹치면 하나로 합쳐지던데, 따로 나뉘어야 함") */
+  pen?: boolean;
 };
 
 export const keyForUid = (uid: string) => `u:${uid}`;
 export const keyForName = (name: string) => `n:${name}`;
+export const keyForPen = (uid: string) => `p:${uid}`;
 
 /** 주소의 ?u=<uid> 또는 ?n=<이름> 값을 구분값으로 */
-export function keyFromParams(u: string | null, n: string | null): string | null {
+export function keyFromParams(u: string | null, n: string | null, p?: string | null): string | null {
+  if (p) return keyForPen(p);
   if (u) return keyForUid(u);
   if (n) return keyForName(n);
   return null;
@@ -90,7 +94,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   // 이름 없는 친구에게 내가 이름을 직접 적어 보낸 적이 있으면(예: 받는 사람 "석영이") 그 이름이 단서예요
   const sentName = new Map<string, { name: string; at: number }>();
   for (const s of sent) {
-    if (!s.toUid || isUnnamed(s.to)) continue;
+    if (!s.toUid || isUnnamed(s.to) || (s as { penpal?: boolean }).penpal) continue; // 펜팔 이름은 친구 이름 단서가 아니에요
     const cur = sentName.get(s.toUid);
     if (!cur || s.sentAt > cur.at) sentName.set(s.toUid, { name: s.to.trim(), at: s.sentAt });
   }
@@ -117,6 +121,15 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
     return t;
   };
   const forUid = (uid: string) => { const r = root(uid); const t = get(keyForUid(r), ""); t.uids.add(uid); t.uids.add(r); return t; };
+  // 펜팔 편지는 같은 사람이어도 친구 방과 따로 모아요(이름도 펜팔 이름으로)
+  const isPen = (x: unknown) => (x as { penpal?: boolean }).penpal === true;
+  const penName = new Map<string, { name: string; at: number }>();
+  const forPen = (uid: string, name: string, at: number) => {
+    const r = root(uid); const t = get(keyForPen(r), ""); t.pen = true; t.uids.add(uid); t.uids.add(r);
+    const cur = penName.get(t.key);
+    if (name && !isUnnamed(name) && (!cur || at > cur.at)) penName.set(t.key, { name, at });
+    return t;
+  };
   for (const f of friends) forUid(f.uid);
   // 이름만 적어 보낸 편지도, 같은 이름(친구가 정한 이름이나 내가 부르는 이름)의 친구가 있으면 그 친구 한 명으로 합쳐요
   const friendByName = new Map<string, string>();
@@ -126,8 +139,9 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   const acct = new Map<string, number>(); // 계정마다 마지막으로 편지가 오간 시각
   // 같은 이름으로 계정에 직접 보낸 적이 있으면(예: "엄마" → 링크를 연 엄마 계정), 이름만 적은 편지도 그 계정의 사람이에요
   const sentAlias = new Map<string, string>();
-  for (const s of [...sent].sort((a, b) => a.sentAt - b.sentAt)) if (s.toUid && !isUnnamed(s.to)) sentAlias.set(nameKey(s.to), s.toUid);
+  for (const s of [...sent].sort((a, b) => a.sentAt - b.sentAt)) if (s.toUid && !isUnnamed(s.to) && !(s as { penpal?: boolean }).penpal) sentAlias.set(nameKey(s.to), s.toUid);
   for (const s of sent) {
+    if (isPen(s) && s.toUid) { const t = forPen(s.toUid, s.to, s.sentAt); note(t, s.toUid, s.sentAt); t.entries.push({ dir: "sent", item: s, at: s.sentAt }); continue; }
     const uid = s.toUid ?? alias[s.to] ?? friendByName.get(nameKey(s.to)) ?? sentAlias.get(nameKey(s.to));
     const t = uid ? forUid(uid) : get(keyForName(s.to), s.to);
     if (uid && s.toUid) note(t, s.toUid, s.sentAt);
@@ -135,6 +149,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   }
   const recvName = new Map<string, string>();
   for (const r of received) {
+    if (isPen(r)) { const t = forPen(r.fromUid, r.fromName, r.sentAt + 1); note(t, r.fromUid, r.sentAt + 1); t.entries.push({ dir: "received", item: r, at: r.sentAt }); continue; }
     const t = forUid(r.fromUid);
     note(t, r.fromUid, r.sentAt + 1); // 받은 편지가 있으면 그 계정이 지금 쓰는 계정일 가능성이 커요
     if (r.fromName) recvName.set(r.fromUid, r.fromName);
@@ -144,6 +159,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   for (const t of list) {
     t.entries.sort((a, b) => b.at - a.at);
     t.lastAt = t.entries[0]?.at ?? 0;
+    if (t.pen) { t.name = penName.get(t.key)?.name ?? "펜팔 친구"; continue; }
     if (t.uids.size) {
       const ids = [...t.uids];
       const r = root(ids[0]);
@@ -161,7 +177,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
     if (!t.name || isUnnamed(t.name)) continue;
     // 펜팔 방은 이름으로 합치지 않아요: "서울 사는 까치" 같은 펜팔 이름은 여러 사람이 같을 수 있어서,
     // 합치면 내가 보낸 펜팔이 다른 사람(친구) 방으로 들어가 안 보이거나 떴다 안 떴다 했어요(2026-11-12 대표님)
-    if (t.uids.size && isPenpalThread(t)) continue;
+    if (t.pen || (t.uids.size && isPenpalThread(t))) continue;
     const k = nameKey(t.name), first = keep.get(k);
     if (!first) { keep.set(k, t); continue; }
     first.entries.push(...t.entries);
@@ -180,7 +196,7 @@ export function buildThreads<S extends SentLike, R extends ReceivedLike>(sent: S
   }
   for (let i = list.length - 1; i >= 0; i--) if (gone.has(list[i])) list.splice(i, 1);
   // 이름이 없는 사람은 계정 순서대로 "이름 없는 친구 1, 2…"(늘 같은 번호, 대화방에서 이름을 정하면 그 이름으로)
-  list.filter((t) => t.uids.size && !t.name).sort((a, b) => a.key.localeCompare(b.key)).forEach((t, i) => { t.name = unnamedLabel(i + 1); });
+  list.filter((t) => t.uids.size && !t.name && !t.pen).sort((a, b) => a.key.localeCompare(b.key)).forEach((t, i) => { t.name = unnamedLabel(i + 1); });
   return list.map(({ uids, ...t }): Thread<S, R> => ({ ...t, uids: [...uids] })).sort((a, b) => (b.lastAt - a.lastAt) || a.name.localeCompare(b.name, "ko"));
 }
 

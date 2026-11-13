@@ -88,14 +88,15 @@ function Room() {
     listFriends().then((f) => { setFriends(f); setFriendsKnown(true); }).catch(() => {}); // 서버를 쓰지 않거나 규칙 전이면 친구 없이 보여요
   }, []);
 
-  const key = keyFromParams(params.get("u"), params.get("n"));
-  const uParam = params.get("u");
+  const pParam = params.get("p");
+  const key = keyFromParams(params.get("u"), params.get("n"), pParam);
+  const uParam = pParam ? null : params.get("u");
   const allThreads = useMemo(() => buildThreads(letters, received, friends, book), [letters, received, friends, book]);
   // 같은 사람으로 합친 계정 주소(?u=다른 계정)로 들어와도 그 사람의 방을 찾아요
   const nParam = params.get("n")?.trim() || null;
   // 처음 쓰는 이름(?n=이름)이면 빈 대화방을 열어 바로 쓰게 해요(같은 이름의 방이 있으면 그 방으로)
   const thread: Thread<Letter, Meta> | undefined = useMemo(() => {
-    const hit = allThreads.find((t) => t.key === key || (!!uParam && !!t.uids?.includes(uParam)));
+    const hit = allThreads.find((t) => t.key === key || (!!uParam && !t.pen && !!t.uids?.includes(uParam)) || (!!pParam && !!t.pen && !!t.uids?.includes(pParam)));
     if (hit || !nParam) return hit;
     return allThreads.find((t) => nameKey(t.name) === nameKey(nParam)) ?? { key: `n:${nParam}`, name: nParam, entries: [], lastAt: 0 };
   }, [allThreads, key, uParam, nParam]);
@@ -197,7 +198,7 @@ function Room() {
     if (getPlace(g)) guess = g;
   }
   // 펜팔 방(시안 v5-3): 도시끼리 노선, 펜팔 이름으로 답장, 넘기기·신고·차단
-  const pen = isPenpalThread(thread);
+  const pen = !!thread.pen || isPenpalThread(thread);
   let penpal: { routeId: string; fromName: string; replyTo?: string } | undefined;
   const lastRecv = thread.entries.find((e) => e.dir === "received");
   if (pen) {
@@ -262,10 +263,10 @@ function Room() {
       <header className="roomhead">
         <Link href="/" className="roomback" aria-label="뒤로">‹</Link>
         <button type="button" className="facebtn" aria-label={`${name} 프로필 크게 보기`} onClick={() => setZoomFace(true)}>
-          <Face name={name} bird={thread.uid ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} photo={thread.uid ? friends.find((f) => f.uid === thread.uid)?.photo : undefined} size={52} />
+          <Face name={name} bird={thread.uid && !pen ? friends.find((f) => f.uid === thread.uid)?.bird : undefined} photo={thread.uid && !pen ? friends.find((f) => f.uid === thread.uid)?.photo : undefined} size={52} />
         </button>
         <div style={{ minWidth: 0 }}>
-          {thread.uid && thread.uid !== WELCOME_FROM ? (
+          {thread.uid && thread.uid !== WELCOME_FROM && !pen ? (
             <button type="button" className="rname rname-btn" aria-label={`${name} 이름 바꾸기`}
               onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (내 폰에만 저장돼요)", name); if (v !== null) rename(thread.uid!, v); }}>{name} <span aria-hidden>✎</span></button>
           ) : <div className="rname">{name}</div>}
