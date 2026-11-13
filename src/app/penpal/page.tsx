@@ -16,7 +16,7 @@ import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
 import { listBlocked } from "@/lib/firebase/remote";
 import { listPool, readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
 import { myPenpalDoc } from "@/lib/penpalSync";
-import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpal, poolIn } from "../../../core/penpal";
+import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpalFallback, poolIn } from "../../../core/penpal";
 
 /** 펜팔: 모르는 누군가에게 새 날려 보내기 (시안 v5-1·v5-2) */
 export default function PenpalPage() {
@@ -87,13 +87,14 @@ function Penpal() {
     try {
       const me = await ensureUser();
       const [pool, blocked] = await Promise.all([chosen && chosen !== "no" ? Promise.resolve([]) : listPool(), listBlocked(me.uid).catch(() => new Set<string>())]);
-      // 이미 편지를 주고받은 사람, 나간 방(넘긴 사람), 차단한 사람은 빼요
-      const exclude = new Set<string>([...blocked]);
-      for (const l of letters) if (l.toUid) exclude.add(l.toUid);
-      for (const r of received) exclude.add(r.fromUid);
-      for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) exclude.add(k.slice(2));
+      // 처음 보는 사람 먼저, 없으면 이미 주고받은 사람(친구 포함)도. 넘긴 사람·차단한 사람은 끝까지 빼요
+      const hard = new Set<string>([...blocked]);
+      for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) hard.add(k.slice(2));
+      const soft = new Set<string>();
+      for (const l of letters) if (l.toUid) soft.add(l.toUid);
+      for (const r of received) soft.add(r.fromUid);
       const picked = chosen && chosen !== "no" && chosen.uid !== me.uid ? chosen : null;
-      const target = picked ?? pickPenpal(poolIn(pool, where || null), me.uid, exclude, tags);
+      const target = picked ?? pickPenpalFallback(poolIn(pool, where || null), me.uid, soft, hard, tags);
       if (!target) {
         setNote(where ? `지금 ${cityLabel(where)}에는 펜팔 편지를 기다리는 사람이 없어요. "어디든"으로 바꿔 보세요 🕊` : "지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊");
         setBusy(false); return;
