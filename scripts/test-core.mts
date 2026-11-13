@@ -264,6 +264,18 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
   const t2 = buildThreads([{ id: "n1", to: "가온", sentAt: 10 }, { id: "n2", to: "가온", toUid: "f2", sentAt: 20 }], [], friends);
   eq("이름만 적은 편지도 같은 이름의 친구와 한 방", t2.filter((x) => x.name === "가온").length, 1);
   eq("합쳐진 방에 편지 2통", t2.find((x) => x.key === keyForUid("f2"))!.entries.length, 2);
+  { // 2026-11-13 대표님: "펜팔이랑 친구가 겹치면 하나로 합쳐지던데, 따로 나뉘어야 함"
+    const pf = [{ uid: "so", name: "Sono" }];
+    const ps = [{ id: "a", to: "Sono", toUid: "so", sentAt: 10 }, { id: "b", to: "부산 사는 매", toUid: "so", sentAt: 20, penpal: true }];
+    const pr = [{ id: "c", fromUid: "so", fromName: "서울 사는 까치", sentAt: 30, penpal: true }];
+    const tt = buildThreads(ps, pr, pf);
+    eq("친구 방엔 친구 편지만", tt.find((x) => x.key === keyForUid("so"))!.entries.map((e) => e.item.id).join(), "a");
+    const pp = tt.find((x) => x.key === "p:so")!;
+    eq("펜팔 방은 따로", pp.entries.map((e) => e.item.id).join(), "c,b");
+    eq("펜팔 방 이름은 펜팔 이름", pp.name, "서울 사는 까치");
+    eq("친구 방 이름은 친구 이름 그대로", tt.find((x) => x.key === keyForUid("so"))!.name, "Sono");
+    eq("펜팔 방 주소", keyFromParams(null, null, "so"), "p:so");
+  }
   // 2026-11-09: 친구가 바꾼 이름이 저절로 따라와요(합칠 때 적은 이름은 밀림), 내가 ✎로 직접 바꾼 이름만 앞서요
   const fr = [{ uid: "k1", name: "석영(카톡)" }];
   const one = [{ id: "m1", to: "석영이", toUid: "k1", sentAt: 5 }];
@@ -275,8 +287,8 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
     const ps = [{ id: "ps1", to: "서울 사는 까치", toUid: "pp1", sentAt: 30, penpal: true }];
     const pr = [{ id: "pr1", fromUid: "pp2", fromName: "서울 사는 까치", sentAt: 40, penpal: true }];
     const pt = buildThreads(ps, pr, pf);
-    eq("보낸 펜팔은 받는 사람 방에", pt.find((x) => x.key === keyForUid("pp1"))?.entries.length, 1);
-    eq("받은 펜팔은 보낸 사람 방에", pt.find((x) => x.key === keyForUid("pp2"))?.entries.length, 1);
+    eq("보낸 펜팔은 받는 사람 방에", pt.find((x) => x.key === "p:pp1")?.entries.length, 1);
+    eq("받은 펜팔은 보낸 사람 방에", pt.find((x) => x.key === "p:pp2")?.entries.length, 1);
   }
   eq("주소 값에서 구분값", keyFromParams("abc", null), "u:abc");
   eq("주소 값(이름)", keyFromParams(null, "엄마"), "n:엄마");
