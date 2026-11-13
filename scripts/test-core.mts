@@ -542,6 +542,10 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
     const pool = [{ uid: "fr", region: "seoul", tags: [] }, { uid: "bad", region: "busan", tags: [] }];
     eq("새 사람이 없으면 이미 주고받은 친구에게도 감", pickFb(pool, "me", new Set(["fr", "bad"]), new Set(["bad"]), [])?.uid, "fr");
     eq("차단·넘긴 사람은 끝까지 빼요", pickFb(pool, "me", new Set(), new Set(["fr", "bad"]), []), null);
+    { const p3 = [{ uid: "a", region: "seoul", tags: [] }, { uid: "b", region: "seoul", tags: [] }, { uid: "c", region: "seoul", tags: [] }];
+      const last = new Map([["a", 300], ["b", 100], ["c", 200]]);
+      eq("아는 사람만 있으면 가장 오래전에 보낸 사람에게", pickFb(p3, "me", new Set(["a", "b", "c"]), new Set(), [], () => 0, last)?.uid, "b");
+      eq("안 보낸 사람이 있으면 그 사람 먼저", pickFb(p3, "me", new Set(["a", "b", "c"]), new Set(), [], () => 0, new Map([["a", 1], ["b", 2]]))?.uid, "c"); }
   }
   eq("서울의 구는 서울로", co("gangnam"), "seoul");
   eq("도시는 그대로", co("suwon"), "suwon");

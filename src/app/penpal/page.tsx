@@ -91,10 +91,11 @@ function Penpal() {
       const hard = new Set<string>([...blocked]);
       for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) hard.add(k.slice(2));
       const soft = new Set<string>();
-      for (const l of letters) if (l.toUid) soft.add(l.toUid);
+      const last = new Map<string, number>();
+      for (const l of letters) if (l.toUid) { soft.add(l.toUid); last.set(l.toUid, Math.max(last.get(l.toUid) ?? 0, l.sentAt)); }
       for (const r of received) soft.add(r.fromUid);
       const picked = chosen && chosen !== "no" && chosen.uid !== me.uid ? chosen : null;
-      const target = picked ?? pickPenpalFallback(poolIn(pool, where || null), me.uid, soft, hard, tags);
+      const target = picked ?? pickPenpalFallback(poolIn(pool, where || null), me.uid, soft, hard, tags, Math.random, last);
       if (!target) {
         setNote(where ? `지금 ${cityLabel(where)}에는 펜팔 편지를 기다리는 사람이 없어요. "어디든"으로 바꿔 보세요 🕊` : "지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊");
         setBusy(false); return;
