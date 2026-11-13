@@ -536,8 +536,13 @@ const jwtParts = (t: string) => t.split(".").map((x, i) => (i < 2 ? JSON.parse(B
 
 // 펜팔: 이름·연락처 가리기·상대 고르기
 {
-  const { penpalName: pn, maskContacts: mk, pickPenpal: pick, cityOf: co, cityLabel: cl } = await import("../core/penpal.ts");
+  const { pickPenpalFallback: pickFb, penpalName: pn, maskContacts: mk, pickPenpal: pick, cityOf: co, cityLabel: cl } = await import("../core/penpal.ts");
   eq("펜팔 이름", pn("부산", "crane"), "부산 사는 두루미");
+  {
+    const pool = [{ uid: "fr", region: "seoul", tags: [] }, { uid: "bad", region: "busan", tags: [] }];
+    eq("새 사람이 없으면 이미 주고받은 친구에게도 감", pickFb(pool, "me", new Set(["fr", "bad"]), new Set(["bad"]), [])?.uid, "fr");
+    eq("차단·넘긴 사람은 끝까지 빼요", pickFb(pool, "me", new Set(), new Set(["fr", "bad"]), []), null);
+  }
   eq("서울의 구는 서울로", co("gangnam"), "seoul");
   eq("도시는 그대로", co("suwon"), "suwon");
   eq("도시 이름", cl("seoul") + "," + cl("busan"), "서울,부산");

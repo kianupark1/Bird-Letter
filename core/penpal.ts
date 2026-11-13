@@ -74,6 +74,15 @@ export function pickPenpal(pool: PoolRow[], me: string, exclude: Set<string>, ta
   return from[Math.floor(rand() * from.length) % from.length];
 }
 
+/**
+ * 처음 보는 사람을 먼저 고르고, 없으면 이미 편지를 주고받은 사람(친구 포함)도 골라요.
+ * 2026-11-13 대표님: "친구가 해 놓은 게 있는데 왜 없다고 뜸" — 사용자가 적을 때는 펜팔 명단 대부분이 이미 아는 사람이라
+ * "주고받은 사람 빼기"만으로 아무도 안 남았어요. 차단·넘긴 사람(hard)은 끝까지 빼요.
+ */
+export function pickPenpalFallback(pool: PoolRow[], me: string, soft: Set<string>, hard: Set<string>, tags: string[], rand: () => number = Math.random): PoolRow | null {
+  return pickPenpal(pool, me, new Set([...soft, ...hard]), tags, rand) ?? pickPenpal(pool, me, hard, tags, rand);
+}
+
 /** 펜팔 노선: 도시끼리(같은 도시면 가까운 다른 지역으로). 정확한 동네는 쓰지 않아요 */
 export function penpalRoute(fromCity: string, toCity: string): string {
   const from = getPlace(fromCity) ? fromCity : "seoul";
