@@ -85,6 +85,11 @@ export function readCount(res: unknown): number {
 }
 
 /** letters를 보낸 시각(sentAt) 기준으로 세는 요청서. since가 없으면 전체 */
+/** 펜팔 편지를 받는 사람 수(penpals 중 open=true) */
+export function penpalsOpenQuery() {
+  return { structuredAggregationQuery: { structuredQuery: { from: [{ collectionId: "penpals" }], where: { fieldFilter: { field: { fieldPath: "open" }, op: "EQUAL", value: { booleanValue: true } } } }, aggregations: [{ alias: "n", count: {} }] } };
+}
+
 export function lettersCountQuery(since?: number) {
   const structuredQuery: Record<string, unknown> = { from: [{ collectionId: "letters" }] };
   if (since !== undefined) {
@@ -94,10 +99,10 @@ export function lettersCountQuery(since?: number) {
 }
 
 /** 매일 저녁 7시 운영자 알림 글(2026-11-10 대표님: "앱으로 매일 7시마다 오늘 얼마나 들어왔는지") */
-export function dailyText(s: { users: UserCounts; letters: { all: number; today: number } }) {
+export function dailyText(s: { users: UserCounts; letters: { all: number; today: number }; penpals?: number }) {
   const u = s.users;
   return {
     title: `📊 오늘 새편지 · 새 가입 ${u.newToday}명`,
-    body: `들어온 사람 ${u.active1d}명 · 오늘 편지 ${s.letters.today}통\n전체 가입 ${u.members}명 · 전체 편지 ${s.letters.all}통`,
+    body: `들어온 사람 ${u.active1d}명 · 오늘 편지 ${s.letters.today}통\n전체 가입 ${u.members}명 · 전체 편지 ${s.letters.all}통${s.penpals !== undefined ? ` · 펜팔 받는 사람 ${s.penpals}명` : ""}`,
   };
 }

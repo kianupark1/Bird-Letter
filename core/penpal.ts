@@ -79,8 +79,16 @@ export function pickPenpal(pool: PoolRow[], me: string, exclude: Set<string>, ta
  * 2026-11-13 대표님: "친구가 해 놓은 게 있는데 왜 없다고 뜸" — 사용자가 적을 때는 펜팔 명단 대부분이 이미 아는 사람이라
  * "주고받은 사람 빼기"만으로 아무도 안 남았어요. 차단·넘긴 사람(hard)은 끝까지 빼요.
  */
-export function pickPenpalFallback(pool: PoolRow[], me: string, soft: Set<string>, hard: Set<string>, tags: string[], rand: () => number = Math.random): PoolRow | null {
-  return pickPenpal(pool, me, new Set([...soft, ...hard]), tags, rand) ?? pickPenpal(pool, me, hard, tags, rand);
+export function pickPenpalFallback(pool: PoolRow[], me: string, soft: Set<string>, hard: Set<string>, tags: string[], rand: () => number = Math.random, last: Map<string, number> = new Map()): PoolRow | null {
+  const fresh = pickPenpal(pool, me, new Set([...soft, ...hard]), tags, rand);
+  if (fresh) return fresh;
+  // 2026-11-13 대표님: "펜팔 한 명한테만 가네" — 아는 사람 중에서 고를 때는 무작위가 아니라
+  // 내가 가장 오래전에 보낸 사람(안 보낸 사람 먼저)부터 차례로 가게 해요
+  const ok = pool.filter((p) => p.uid !== me && !hard.has(p.uid));
+  if (!ok.length) return null;
+  const at = (p: PoolRow) => last.get(p.uid) ?? 0;
+  const oldest = Math.min(...ok.map(at));
+  return pickPenpal(ok.filter((p) => at(p) === oldest), me, new Set(), tags, rand);
 }
 
 /** 펜팔 노선: 도시끼리(같은 도시면 가까운 다른 지역으로). 정확한 동네는 쓰지 않아요 */
