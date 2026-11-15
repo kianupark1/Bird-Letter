@@ -133,6 +133,14 @@ async function waitReady(url, field, ok = "FINISHED") {
   }
   throw new Error("영상 처리가 5분 넘게 안 끝났어요");
 }
+/** 게시하기: "아직 준비 안 됨"(인스타 9007·2207027, 스레드 4279009·24)이면 20초씩 기다렸다 다시(최대 약 3분) */
+export const notReady = (m) => /9007|2207027|4279009|"code":24|not available|not ready|준비가 완료되지/i.test(m);
+async function publishRetry(url, params) {
+  for (let i = 0; ; i++) {
+    try { return await call(url, { params }); }
+    catch (e) { if (i >= 8 || !notReady(String(e.message))) throw e; await sleep(20000); }
+  }
+}
 
 // 열쇠 종류: "EAA…"로 시작하면 페이스북식(통합 로그인·시스템 사용자 열쇠, 만료 없음) → graph.facebook.com
 export const igHostFor = (token, login) => (login === "facebook" || /^EAA/.test(token || "") ? "https://graph.facebook.com" : "https://graph.instagram.com");
@@ -182,15 +190,15 @@ async function postThreads(p) {
     }
     await sleep(10000);
     const c = await call(`${base}/threads`, { params: { media_type: "CAROUSEL", children: kids.join(","), text: p.text, access_token: token } });
-    await sleep(8000);
-    return call(`${base}/threads_publish`, { params: { creation_id: c.id, access_token: token } });
+    await waitReady(`https://graph.threads.net/v1.0/${c.id}?fields=status&access_token=${encodeURIComponent(token)}`, "status").catch(() => sleep(15000));
+    return publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
   }
   const media = p.video ? { media_type: "VIDEO", video_url: `${MEDIA_BASE}/${p.video}` }
     : p.image ? { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${p.image}` } : { media_type: "TEXT" };
   const c = await call(`${base}/threads`, { params: { text: p.text, access_token: token, ...media } });
   if (p.video) await waitReady(`https://graph.threads.net/v1.0/${c.id}?fields=status&access_token=${encodeURIComponent(token)}`, "status");
   else await sleep(p.image ? 8000 : 2000); // 이미지는 처리 시간이 필요해요
-  return call(`${base}/threads_publish`, { params: { creation_id: c.id, access_token: token } });
+  return publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
 }
 
 // 인스타 자동 게시는 JPG 사진만 받아요 → 카드마다 같은 이름의 .jpg를 같이 둠(promo/cards/*.jpg)
@@ -213,14 +221,14 @@ async function postInstagram(p) {
     }
     await sleep(8000);
     const c = await call(`${base}/media`, { params: { media_type: "CAROUSEL", children: kids.join(","), caption: p.text, access_token: token } });
-    await sleep(8000);
-    return call(`${base}/media_publish`, { params: { creation_id: c.id, access_token: token } });
+    await waitReady(`${host}/v21.0/${c.id}?fields=status_code&access_token=${encodeURIComponent(token)}`, "status_code").catch(() => sleep(15000));
+    return publishRetry(`${base}/media_publish`, { creation_id: c.id, access_token: token });
   }
   const media = p.video ? { media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, share_to_feed: "true" } : { image_url: `${MEDIA_BASE}/cards/${igJpg(p.image)}` };
   const c = await call(`${base}/media`, { params: { caption: p.text, access_token: token, ...media } });
   if (p.video) await waitReady(`${host}/v21.0/${c.id}?fields=status_code&access_token=${encodeURIComponent(token)}`, "status_code");
   else await sleep(8000);
-  return call(`${base}/media_publish`, { params: { creation_id: c.id, access_token: token } });
+  return publishRetry(`${base}/media_publish`, { creation_id: c.id, access_token: token });
 }
 
 // ── X ──────────────────────────────────────────────────────────────
@@ -320,17 +328,24 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && !args.includes("--check")) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
   const LOG = process.env.LOG_FILE;
-  const logged = new Set(LOG && existsSync(LOG) ? readFileSync(LOG, "utf8").split("\n").filter((l) => l.startsWith(today + " ")).map((l) => l.split(" ")[1]) : []);
+  // 기록: "날짜 slot"(그 글은 다 올림) 또는 "날짜 slot 채널"(그 채널만 올림). 실패한 채널만 다음 시도 때 다시 올려요
+  const lines = LOG && existsSync(LOG) ? readFileSync(LOG, "utf8").split("\n").filter((l) => l.startsWith(today + " ")).map((l) => l.trim().split(" ")) : [];
+  const doneCh = new Set(lines.filter((x) => x.length === 3).map((x) => `${x[1]} ${x[2]}`));
+  const fullDone = (slot) => lines.some((x) => x.length === 2 && x[1] === slot)
+    || (() => { const ps = posts.filter((p) => dateOf(p) === today && slotOf(p) === slot); return ps.length > 0 && ps.every((p) => targetsOf(p).every((t) => doneCh.has(`${slot} ${t}`))); })();
+  const ONLY = env("ONLY").split(",").map((x) => x.trim()).filter(Boolean);
+  const logged = new Set(["noon", "evening", "night"].filter(fullDone));
   if (SLOT === "auto") {
     const hm = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()).replace(":", ""));
     SLOT = autoSlot(hm, logged);
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
-  } else if (SEND && logged.has(SLOT)) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
+  } else if (SEND && logged.has(SLOT) && !ONLY.length) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => storyfy(soonify(upgraded(p), stores.android)));
   console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
+      if (ONLY.length ? !ONLY.includes(to) : doneCh.has(`${SLOT} ${to}`)) continue;
       let q;
       try { q = fillText(p, to); } catch (e) { failed++; console.log(`  ✗ [${to}] ${e.message}`); continue; }
       const media = p.carousel ? ` (+넘겨 보는 ${p.carousel.length}장${p.video ? ", 첫 장 영상" : ""})` : p.video ? ` (+영상 ${p.video})` : p.image ? ` (+${p.image})` : "";
@@ -340,14 +355,15 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
         if (!POSTERS[to]) throw new Error(`모르는 곳: ${to}`);
         await POSTERS[to](q);
         console.log("  ✓ 올림 " + label);
+        if (LOG) appendFileSync(LOG, `${today} ${SLOT} ${to}\n`);
       } catch (e) {
         failed++;
         console.log("  ✗ 실패 " + label + " → " + e.message);
       }
     }
   }
-  // 하나라도 올라갔으면 기록(같은 글이 두 번 올라가지 않게)
-  if (SEND && LOG && todays.length && failed < todays.reduce((n, p) => n + targetsOf(p).length, 0)) appendFileSync(LOG, `${today} ${SLOT}\n`);
+  // 모두 올라갔으면 글 전체 기록(채널별 기록은 올릴 때마다 남김)
+  if (SEND && LOG && todays.length && !failed && !ONLY.length) appendFileSync(LOG, `${today} ${SLOT}\n`);
   process.exit(failed ? 1 : 0);
 }
 export { call, igHost, igAccount, env };

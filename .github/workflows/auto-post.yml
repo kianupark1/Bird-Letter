@@ -28,6 +28,9 @@ on:
       slot:
         description: "noon(아침 8시 30분 글)·evening(저녁 5시 30분 글)·night(밤 10시 글)"
         default: "noon"
+      only:
+        description: "이 채널에만 다시 올리기(예: instagram,threads). 비우면 전부"
+        default: ""
 
 jobs:
   post:
@@ -67,6 +70,7 @@ jobs:
           YT_PRIVACY: ${{ vars.YT_PRIVACY }}
           SEND: ${{ github.event_name == 'schedule' && 'true' || inputs.send }}
           SLOT: ${{ github.event_name == 'schedule' && 'auto' || inputs.slot }}
+          ONLY: ${{ inputs.only }}
         run: |
           if [ "$SEND" != "true" ]; then echo "── 열쇠 확인 ──"; node scripts/auto-post.mjs --check || echo "(열쇠가 아직 다 들어가지 않았어요 — 위 ✗ 줄을 보세요)"; echo "── 오늘 글 미리보기 ──"; fi
           if [ "$SEND" = "true" ]; then node scripts/auto-post.mjs --send --slot "$SLOT"; else node scripts/auto-post.mjs --slot "$SLOT"; fi
