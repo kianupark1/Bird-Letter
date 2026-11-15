@@ -6,6 +6,7 @@ import { ADMIN_UIDS, adminFromEnv, dailyText } from "../../../../../core/adminSt
 import type { PushSub } from "../../../../../core/pushPayload";
 import { googleToken, serviceAccount } from "@/lib/server/google";
 import { computeStats } from "@/lib/server/stats";
+import { backfillPenpals } from "@/lib/server/penpalBackfill";
 import { sendPush } from "@/lib/server/sendPush";
 
 // 매일 저녁 7시 운영자 숫자 알림(2026-11-10 대표님: "앱으로 매일 7시마다 오늘 얼마나 들어왔는지").
@@ -80,6 +81,8 @@ export async function POST(req: Request) {
   const sa = serviceAccount();
   if (!sa) return NextResponse.json({ error: "not-configured" }, { status: 503 });
   try {
+    // 펜팔 명단에 아직 없는 가입자를 먼저 채워요(2026-11-15 대표님: "가입하면 다 펜팔 받을 수 있게")
+    const penpalFill = await backfillPenpals(sa).catch((e) => ({ error: e instanceof Error ? e.message : "fail" }));
     const stats = await computeStats(sa);
     const text = dailyText(stats);
     const access = await googleToken(sa);
@@ -89,7 +92,7 @@ export async function POST(req: Request) {
       const sub = await readSub(sa.project_id, uid, access);
       pushed.push(sub ? await sendPush(sub, { ...text, url: "/admin", tag: "daily-stats" }).catch(() => "fail") : "no-sub");
     }
-    return NextResponse.json({ stats, text, pushed, schedule });
+    return NextResponse.json({ stats, text, pushed, schedule, penpalFill });
   } catch (e) {
     return NextResponse.json({ error: "server-error", detail: e instanceof Error ? e.message : "" }, { status: 502 });
   }
