@@ -278,7 +278,8 @@ import { buildThreads, keyForName, keyForUid, keyFromParams, initialOf, avatarTo
     const { backfillPenpal: bf } = await import("../core/penpal.ts");
     eq("가입자는 펜팔 명단에(받기 켬)", bf({ avatarBird: "sparrow", homePlace: "busan" })?.open, true);
     eq("펜팔 이름 자동", bf({ avatarBird: "sparrow", homePlace: "busan" })?.name, "부산 사는 참새");
-    eq("받기를 끈 사람은 안 넣음", bf({ penpalRecv: false }), null);
+    eq("받기를 끈 사람은 안 넣음", bf({ penpalOff: true }), null);
+    eq("예전 꺼짐 값(penpalRecv=false)은 무시하고 넣음", bf({ penpalRecv: false } as never)?.open, true);
     eq("정보가 없으면 서울 까치", bf(null)?.name, "서울 사는 까치");
   }
   // 2026-11-09: 친구가 바꾼 이름이 저절로 따라와요(합칠 때 적은 이름은 밀림), 내가 ✎로 직접 바꾼 이름만 앞서요

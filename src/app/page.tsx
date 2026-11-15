@@ -211,7 +211,7 @@ function InboxList({ welcome }: { welcome?: string }) {
     const sig = `u:${uid}|recv:${d.open}|list:${d.listed}|n:${d.name}|r:${d.region}|ph:${d.photo ? `${d.photo.length}:${d.photo.slice(-24)}` : "-"}`;
     try { if (localStorage.getItem("saepyeonji.penpalsync.v1") === sig) return; } catch {}
     void saveMyPenpal(d).then(() => { try { localStorage.setItem("saepyeonji.penpalsync.v1", sig); } catch {} }).catch(() => {});
-  }, [ready, me.nickname, me.penpalRecv, me.penpalListed, me.penpalPhoto, me.photo, me.homePlace, me.avatarBird, me.penpalName, letters.length]);
+  }, [ready, me.nickname, me.penpalOff, me.penpalListed, me.penpalPhoto, me.photo, me.homePlace, me.avatarBird, me.penpalName, letters.length]);
 
   const { book, merge, mergeSame, rename, hide } = usePeople();
   const [menu, setMenuRaw] = useState<{ t: Thread<Letter, Meta>; step: "menu" | "merge" } | null>(null);
