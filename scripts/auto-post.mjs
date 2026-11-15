@@ -31,7 +31,7 @@ export function autoSlot(hm, done) {
   if (!done.has("noon")) return "noon";
   return null;
 }
-export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" || p.slot === "special" ? p.slot : "noon"); // special = 손으로만 올리는 특별 글(자동 예약은 안 고름)
+export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" || /^special\d*$/.test(p.slot ?? "") ? p.slot : "noon"); // special = 손으로만 올리는 특별 글(자동 예약은 안 고름)
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
 const promoFile = (rel) => new URL(`../promo/${rel}`, import.meta.url);
@@ -339,7 +339,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     const hm = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()).replace(":", ""));
     SLOT = autoSlot(hm, logged);
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
-  } else if (SEND && logged.has(SLOT) && !ONLY.length) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
+  } else if (SEND && fullDone(SLOT) && !ONLY.length) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => storyfy(soonify(upgraded(p), stores.android)));
   console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
