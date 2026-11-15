@@ -90,6 +90,13 @@ export function penpalsOpenQuery() {
   return { structuredAggregationQuery: { structuredQuery: { from: [{ collectionId: "penpals" }], where: { fieldFilter: { field: { fieldPath: "open" }, op: "EQUAL", value: { booleanValue: true } } } }, aggregations: [{ alias: "n", count: {} }] } };
 }
 
+/** 알림을 켠 사람 수(users/{uid}/push/sub 문서 수). fcm=true면 앱 알림(FCM)만 */
+export function pushSubsQuery(fcm = false) {
+  const structuredQuery: Record<string, unknown> = { from: [{ collectionId: "push", allDescendants: true }] };
+  if (fcm) structuredQuery.where = { fieldFilter: { field: { fieldPath: "fcm" }, op: "GREATER_THAN", value: { stringValue: "" } } };
+  return { structuredAggregationQuery: { structuredQuery, aggregations: [{ alias: "n", count: {} }] } };
+}
+
 export function lettersCountQuery(since?: number) {
   const structuredQuery: Record<string, unknown> = { from: [{ collectionId: "letters" }] };
   if (since !== undefined) {
@@ -99,10 +106,10 @@ export function lettersCountQuery(since?: number) {
 }
 
 /** 매일 저녁 7시 운영자 알림 글(2026-11-10 대표님: "앱으로 매일 7시마다 오늘 얼마나 들어왔는지") */
-export function dailyText(s: { users: UserCounts; letters: { all: number; today: number }; penpals?: number }) {
+export function dailyText(s: { users: UserCounts; letters: { all: number; today: number }; penpals?: number; push?: { all: number; app?: number } }) {
   const u = s.users;
   return {
     title: `📊 오늘 새편지 · 새 가입 ${u.newToday}명`,
-    body: `들어온 사람 ${u.active1d}명 · 오늘 편지 ${s.letters.today}통\n전체 가입 ${u.members}명 · 전체 편지 ${s.letters.all}통${s.penpals !== undefined ? ` · 펜팔 받는 사람 ${s.penpals}명` : ""}`,
+    body: `들어온 사람 ${u.active1d}명 · 오늘 편지 ${s.letters.today}통\n전체 가입 ${u.members}명 · 전체 편지 ${s.letters.all}통${s.penpals !== undefined ? ` · 펜팔 받는 사람 ${s.penpals}명` : ""}${s.push ? `\n알림 켠 사람 ${s.push.all}명${s.push.app !== undefined ? `(앱 ${s.push.app}·웹 ${s.push.all - s.push.app})` : ""}` : ""}`,
   };
 }

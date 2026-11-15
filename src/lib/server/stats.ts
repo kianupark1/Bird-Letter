@@ -1,7 +1,7 @@
-import { countUsers, kstMidnight, lettersCountQuery, penpalsOpenQuery, readCount, type AuthUser, type SocialMap } from "../../../core/adminStats";
+import { countUsers, kstMidnight, lettersCountQuery, penpalsOpenQuery, pushSubsQuery, readCount, type AuthUser, type SocialMap } from "../../../core/adminStats";
 import { googleToken, type ServiceAccount } from "./google";
 
-export type Stats = { at: number; users: ReturnType<typeof countUsers>; letters: { all: number; today: number; week: number }; penpals?: number };
+export type Stats = { at: number; users: ReturnType<typeof countUsers>; letters: { all: number; today: number; week: number }; penpals?: number; push?: { all: number; app?: number } };
 
 /** 가입자·편지 "숫자"만 셈(이름·편지 내용은 읽지 않음). 운영자 숫자판과 매일 저녁 알림이 같이 씀 */
 export async function computeStats(sa: ServiceAccount): Promise<Stats> {
@@ -20,7 +20,9 @@ export async function computeStats(sa: ServiceAccount): Promise<Stats> {
   };
   // 네 가지를 동시에 물어봐서 기다리는 시간을 한 번으로 줄여요
   const [users, all, today, week, penpals, social] = await Promise.all([listAuthUsers(sa), count(), count(kstMidnight(now)), count(now - 7 * 86_400_000), count(undefined, penpalsOpenQuery()).catch(() => undefined), socialMap(sa)]);
-  return { at: now, users: countUsers(users, now, social), letters: { all, today, week }, penpals };
+  const [pushAll, pushApp] = await Promise.all([count(undefined, pushSubsQuery()).catch(() => undefined), count(undefined, pushSubsQuery(true)).catch(() => undefined)]);
+  const push = pushAll !== undefined ? { all: pushAll, ...(pushApp !== undefined ? { app: pushApp } : {}) } : undefined;
+  return { at: now, users: countUsers(users, now, social), letters: { all, today, week }, penpals, push };
 }
 
 /** 계정 목록을 1,000명씩 받음(최대 20,000명) */
