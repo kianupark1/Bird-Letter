@@ -59,6 +59,8 @@ export function readSeen(): Set<string> {
 }
 export function markSeen(ids: string[]) {
   if (!ids.length) return;
+  // 2026-11-15 대표님: "1 왜 안 사라지지?" — 카카오톡처럼 방에 들어와 본 도착한 편지는 보낸 사람 화면의 1도 지워요(서버 "읽음")
+  for (const id of ids) sendRead(id);
   try {
     const s = readSeen();
     const before = s.size;
@@ -77,7 +79,7 @@ function sendRead(id: string) {
 }
 /** 예전에 열어 봤지만 아직 서버에 "읽음"이 없는 받은 편지는 지금 남겨요 */
 export function syncReadMarks(received: remote.Meta[], now: number) {
-  const opened = readOpened();
+  const opened = readChecked(); // 펼친 편지 + 대화방에서 본 편지
   for (const m of received) if (!m.readAt && m.arriveAt <= now && opened.has(m.id)) sendRead(m.id);
 }
 export function markOpened(id: string) {

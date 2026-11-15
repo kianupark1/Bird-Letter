@@ -839,3 +839,7 @@
 - 원인: 펜팔 명단(`penpals/{uid}`)에는 **업데이트 뒤 홈을 연, 이름이 있는** 사람만 올라갔음(가입 10명 중 4명) + 폰 기록(`saepyeonji.penpalsync.v1`)이 계정과 상관없이 남아 다른 계정·지워진 줄을 다시 안 올림.
 - 고침 ①홈: 이름 없어도 로그인한 사람은 올림(펜팔 이름 자동), 기록에 계정·이름·동네 포함 ②**서버가 매일 저녁 7시 숫자 알림 때 명단에 없는 가입자를 채움**(`src/lib/server/penpalBackfill.ts`, 계산 `core/penpal.ts backfillPenpal`): 익명 제외, 이미 있는 줄(본인이 끈 것 포함)은 안 건드림, 설정에서 받기 끈 사람(`profile.penpalRecv=false`) 제외, 사진은 안 넣음(앱을 열면 본인 설정대로), 동네는 프로필 → `stats.place` → 서울. Actions "오늘의 숫자 알림" 로그에 "펜팔 명단 채우기: {members, had, added}". `listAuthUsers`·`socialMap`을 `stats.ts`에서 꺼냄. test:core 518.
 - **2차(같은 날, 대표님: "처음에 다 펜팔 받게, 자꾸 한 명한테만 가")**: 진짜 원인 = 예전 기본값 시절(10-17 "기본 꺼짐")·"안 받을래요"로 프로필에 남은 `penpalRecv=false` → 홈을 열 때마다 앱이 명단 줄을 `open=false`로 내림, 서버 채우기도 그 사람을 건너뜀. 고침: 예전 `penpalRecv`는 무시하고 새 칸 **`profile.penpalOff`**(설정 스위치를 직접 끄거나 "앞으로 안 받을래요"를 누른 사람만 true)로만 뺌(`penpalSync`·설정·대화방·`backfillPenpal`). 서버 채우기는 꺼진 줄도 다시 켬(`reopened`). test:core 519.
+
+## 안 읽음 1은 방에 들어오면 꺼짐·초록 (2026-11-15, 대표님: "1 왜 안 사라지지? 1 글자색 오방색 초록으로")
+- 원인: 서버 "읽음"(`readAt`)은 받는 사람이 그 편지를 **펼쳐야만** 남았음 → 뒤 편지만 열면 앞 편지의 1이 계속 남음. 고침: 카카오톡처럼 받는 사람이 **대화방에 들어와 본 도착한 편지는 모두 읽음**(`letters.ts markSeen`이 `sendRead`), 홈의 `syncReadMarks`도 방에서 본 편지까지. 상대 앱이 새 버전으로 그 방을 한 번 열어야 예전 1이 꺼짐.
+- 색: 1 = 청록(`.ch-unread`), "읽음" = 흐린 글씨(`.ch-read`, 1과 헷갈리지 않게).
