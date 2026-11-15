@@ -31,7 +31,7 @@ export function autoSlot(hm, done) {
   if (!done.has("noon")) return "noon";
   return null;
 }
-export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" ? p.slot : "noon");
+export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" || p.slot === "special" ? p.slot : "noon"); // special = 손으로만 올리는 특별 글(자동 예약은 안 고름)
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
 const promoFile = (rel) => new URL(`../promo/${rel}`, import.meta.url);
@@ -334,7 +334,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   const fullDone = (slot) => lines.some((x) => x.length === 2 && x[1] === slot)
     || (() => { const ps = posts.filter((p) => dateOf(p) === today && slotOf(p) === slot); return ps.length > 0 && ps.every((p) => targetsOf(p).every((t) => doneCh.has(`${slot} ${t}`))); })();
   const ONLY = env("ONLY").split(",").map((x) => x.trim()).filter(Boolean);
-  const logged = new Set(["noon", "evening", "night"].filter(fullDone));
+  const logged = new Set(["noon", "evening", "night", "special"].filter(fullDone));
   if (SLOT === "auto") {
     const hm = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()).replace(":", ""));
     SLOT = autoSlot(hm, logged);
