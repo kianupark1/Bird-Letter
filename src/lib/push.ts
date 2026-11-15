@@ -110,22 +110,34 @@ async function nativeEnable(): Promise<PushState> {
 }
 
 const AUTO_KEY = "saepyeonji.autopush.v1";
+let synced = false;
 /**
- * 카카오톡처럼 설정에 들어가지 않아도 알림이 켜지게(2026-11-02 대표님: "별도로 설정 안 해도 되게").
- * 스토어 앱에서 로그인하고 홈을 처음 열 때 폰이 "알림을 허용할까요?"를 한 번 묻고, 허용하면 바로 켜져요.
- * 이미 허용돼 있으면 묻지 않고 조용히 켜요. 거절했으면 다시 묻지 않아요(설정 스위치로는 언제든 켤 수 있어요).
+ * 알림은 저절로 켜져요(2026-11-02 대표님: "별도로 설정 안 해도 되게", 2026-11-15: "알림은 저절로 켜지게" — 가입자 10명 중 2명만 켜져 있었음).
+ * - 이미 켜 둔 폰: 열 때마다 한 번 서버에 다시 맡겨요(계정을 바꿨거나 예전에 저장이 실패한 경우를 바로잡음).
+ * - 스토어 앱: 허용돼 있으면 조용히 켜고, 아직 안 물었으면 열 때마다 폰의 "알림 허용" 창을 띄워요(폰은 한 번만 보여 줌). 거절했으면 묻지 않아요.
+ * - 웹(안드로이드 크롬·아이폰 홈 화면 앱): 이미 허용돼 있으면 조용히 켜고, 아직이면 화면을 처음 누를 때 한 번 물어요(브라우저가 누른 순간에만 물을 수 있게 막아 둠). 사흘에 한 번까지.
  */
 export async function autoEnableAppPush() {
-  if (!isAppPush() || getStoredSub()) return;
-  try {
-    const p = await (await plugin()).P.checkPermissions();
-    if (p.receive === "denied") return;
-    if (p.receive !== "granted") {
-      if (localStorage.getItem(AUTO_KEY)) return; // 한 번만 물어요
-      localStorage.setItem(AUTO_KEY, "1");
-    }
-    await nativeEnable();
-  } catch {}
+  if (IS_TOSS || typeof window === "undefined") return;
+  if (getStoredSub() && !synced) { synced = true; syncSubToServer(); }
+  if (isAppPush()) {
+    try {
+      const p = await (await plugin()).P.checkPermissions();
+      if (p.receive === "denied") return;
+      await nativeEnable(); // 허용돼 있으면 토큰을 새로 받아 맡기고, 아니면 폰이 허용 창을 띄워요
+    } catch {}
+    return;
+  }
+  if (!PUBLIC_KEY || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
+  if (Notification.permission === "denied") return;
+  if (Notification.permission === "granted") { if (!getStoredSub()) void enablePush().catch(() => {}); return; }
+  try { const last = Number(localStorage.getItem(AUTO_KEY) || 0); if (last && Date.now() - last < 3 * 86_400_000) return; } catch {}
+  const ask = () => {
+    window.removeEventListener("pointerup", ask, true);
+    try { localStorage.setItem(AUTO_KEY, String(Date.now())); } catch {}
+    void enablePush().then((st) => { if (st === "enabled") notify(); }).catch(() => {});
+  };
+  window.addEventListener("pointerup", ask, true);
 }
 
 let tapReady = false;
