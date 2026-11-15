@@ -214,8 +214,8 @@ function Room() {
   const acceptPen = () => { const n = Array.from(new Set([...readOk(), thread.uid!])); try { localStorage.setItem(PPOK, JSON.stringify(n)); } catch {} setOkList(n); };
   const declinePen = () => {
     if (window.confirm("앞으로 모르는 누군가의 펜팔 편지를 그만 받을까요?\n(취소를 누르면 이 편지만 넘겨요 · 설정에서 언제든 다시 켤 수 있어요)")) {
-      update({ penpalRecv: false });
-      void saveMyPenpal(myPenpalDoc({ ...profile, penpalRecv: false })).catch(() => {});
+      update({ penpalOff: true });
+      void saveMyPenpal(myPenpalDoc({ ...profile, penpalOff: true })).catch(() => {});
     }
     skip();
   };

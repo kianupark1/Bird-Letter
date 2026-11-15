@@ -104,10 +104,10 @@ export function penpalRoute(fromCity: string, toCity: string): string {
 
 /**
  * 서버가 펜팔 명단에 없는 가입자를 채워 넣을 때 쓰는 줄(2026-11-15 대표님: "가입하면 다 펜팔 받을 수 있게").
- * 본인이 설정에서 받기를 끈 사람(penpalRecv=false)은 null(넣지 않음). 사진은 넣지 않아요(앱을 열면 앱이 본인 설정대로 올려요).
+ * 본인이 설정에서 받기를 끈 사람(penpalOff=true, 예전 penpalRecv는 무시)은 null(넣지 않음). 사진은 넣지 않아요(앱을 열면 앱이 본인 설정대로 올려요).
  */
-export function backfillPenpal(profile: { avatarBird?: string; homePlace?: string; penpalRecv?: boolean; penpalName?: string } | null, statsPlace?: string) {
-  if (profile?.penpalRecv === false) return null;
+export function backfillPenpal(profile: { avatarBird?: string; homePlace?: string; penpalOff?: boolean; penpalName?: string } | null, statsPlace?: string) {
+  if (profile?.penpalOff === true) return null;
   const region = cityOf(profile?.homePlace || statsPlace);
   const bird = profile?.avatarBird && BIRD_NAME[profile.avatarBird] ? profile.avatarBird : "magpie";
   return { name: (profile?.penpalName?.trim() || penpalName(cityLabel(region), bird)).slice(0, 12), bird, region, tags: [] as string[], open: true, listed: true };

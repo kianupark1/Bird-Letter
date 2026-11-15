@@ -212,8 +212,8 @@ export default function Settings() {
                 <div className="name">모르는 누군가의 랜덤 편지 받기</div>
                 <div className="note">켜 두면 모르는 누군가의 펜팔 편지가 올 수 있어요. 처음 온 편지는 받을지 먼저 물어봐요(이미 주고받는 펜팔은 그대로). 펜팔 이름: {penName}</div>
               </div>
-              <button role="switch" aria-checked={profile.penpalRecv !== false} aria-label="랜덤 편지 받기" className="switch" onClick={() => {
-                const open = profile.penpalRecv === false; update({ penpalRecv: open });
+              <button role="switch" aria-checked={profile.penpalOff !== true} aria-label="랜덤 편지 받기" className="switch" onClick={() => {
+                const open = profile.penpalOff === true; update({ penpalOff: !open });
                 void saveMyPenpal(myPenpalDoc(profile, { open })).catch(() => {});
               }} />
             </div>

@@ -56,7 +56,7 @@ function Penpal() {
   useEffect(() => {
     if (!ready || !profile.penpalAgreed || !firebaseEnabled) return;
     void saveMyPenpal(myPenpalDoc(profile, { region: city })).catch(() => {});
-  }, [ready, profile.penpalAgreed, profile.penpalRecv, profile.penpalListed, profile.penpalPhoto, myName, city, tags.join(","), profile.avatarBird]);
+  }, [ready, profile.penpalAgreed, profile.penpalOff, profile.penpalListed, profile.penpalPhoto, myName, city, tags.join(","), profile.avatarBird]);
 
   if (!ready) return <main className="app" aria-busy="true" />;
 
