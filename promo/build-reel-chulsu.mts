@@ -142,7 +142,7 @@ const ease = (x) => 1 - Math.pow(1 - clamp(x), 3);
 window.at = (t) => {
   S.forEach(([a, b], i) => {
     const el = $("s" + (i + 1));
-    const o = Math.min(clamp((t - a) / 0.25), i === S.length - 1 ? 1 : clamp((b - t) / 0.2));
+    const o = Math.min(i === 0 ? 1 : clamp((t - a) / 0.25), i === S.length - 1 ? 1 : clamp((b - t) / 0.2));
     el.style.opacity = o;
     el.style.transform = "translateY(" + (1 - ease((t - a) / 0.35)) * 60 + "px)";
   });
