@@ -36,7 +36,7 @@ function load(): Promise<KakaoSdk> {
  * 앱이 없는 사람에게 "편지가 날아오고 있다"고 카카오톡으로 알려요(2026-11-12 대표님: "앱 안 깐 사람에게 보내고 카톡으로 알림, 궁금하면 깔아서 보게").
  * 궁금증(누가·지금 날아오는 중·내용은 앱에서) + 버튼 한 개(편지 받기 → 카카오로 받기 → 앱 받기)
  */
-export async function shareToKakao(letterId: string, birdName: string, fromName?: string, leftText?: string): Promise<boolean> {
+export async function shareToKakao(letterId: string, birdName: string, fromName?: string, leftText?: string, arrived?: boolean): Promise<boolean> {
   if (!KEY) return false;
   try {
     const k = await load();
@@ -51,12 +51,13 @@ export async function shareToKakao(letterId: string, birdName: string, fromName?
     k.Share.sendDefault({
       objectType: "feed",
       content: {
-        title: fromName ? `💌 ${fromName}님이 당신에게 편지를 보냈어요` : "💌 당신에게 편지가 날아오고 있어요",
-        description: `지금 ${birdName}가 날아오는 중 🕊${leftText ? ` · ${leftText}` : ""}\n무슨 내용일까요? 새편지 앱에서 열어 볼 수 있어요`,
+        // 도착한 뒤 한 번 더 알릴 때(2026-11-16 성장 ②: 받는 사람이 링크를 잊지 않게)
+        title: arrived ? (fromName ? `💌 ${fromName}님이 보낸 편지가 도착했어요` : "💌 당신에게 편지가 도착했어요") : fromName ? `💌 ${fromName}님이 당신에게 편지를 보냈어요` : "💌 당신에게 편지가 날아오고 있어요",
+        description: arrived ? `${birdName}가 먼 길을 날아와 편지를 내려놓았어요 🕊\n지금 열어 볼 수 있어요` : `지금 ${birdName}가 날아오는 중 🕊${leftText ? ` · ${leftText}` : ""}\n무슨 내용일까요? 도착하면 바로 열어 볼 수 있어요`,
         imageUrl: `${location.origin}/og.png`,
         link,
       },
-      buttons: [{ title: "💌 편지 받기", link }],
+      buttons: [{ title: arrived ? "💌 편지 열기" : "💌 편지 받기", link }],
     });
     return true;
   } catch {
