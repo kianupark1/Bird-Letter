@@ -118,15 +118,15 @@ def lines_in(canvas, lines, x, y0, t, start, lh, gap=0.12, anchor="lt"):
 
 # ---------- scenes ----------
 def scene_hook(t):
+    # 첫 프레임이 썸네일이 돼요 → 글씨·참새가 처음부터 다 보이게(2026-11-17 대표님: "썸네일이 빈칸")
     c = Image.new("RGBA", (W, H), ORANGE + (255,))
-    lines_in(c, [("카톡보다 느린", 128, WHITE), ("메신저를", 128, WHITE), ("만들었어요.", 128, WHITE)], 90, 330, t, 0.1, 158, 0.14)
-    p = eo(prog(t, 1.15, 0.4))
-    paste(c, text_sprite("네, 일부러요.", 60, WHITE, FBO, -0.02), 92, 840 + (1 - p) * 30, alpha=p)
-    paste(c, emoji_sprite("🐤", 62), 100 + text_sprite("네, 일부러요.", 60, WHITE, FBO, -0.02).width, 848 + (1 - p) * 30, alpha=p)
-    # bird flies in slowly from the left and hovers
+    for i, txt in enumerate(["카톡보다 느린", "메신저를", "만들었어요."]):
+        paste(c, text_sprite(txt, 128, WHITE), 90, 330 + i * 158)
+    paste(c, text_sprite("네, 일부러요.", 60, WHITE, FBO, -0.02), 92, 840)
+    paste(c, emoji_sprite("🐤", 62), 100 + text_sprite("네, 일부러요.", 60, WHITE, FBO, -0.02).width, 848)
+    # 참새는 처음부터 화면 가운데에서 천천히(정말 느리게) 오른쪽으로
     b = bird_sprite()
-    px = eo(prog(t, 0.3, 2.6))
-    x = -500 + px * 1020
+    x = 420 + t * 70
     y = 1200 + math.sin(t * 6) * 18
     paste(c, b, x, y, scale=560 / b.width, rot=math.sin(t * 6 + 1) * 4, anchor="c")
     logo(c, 90, 1560, light=True)
