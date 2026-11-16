@@ -10,7 +10,7 @@ import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends"
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
-import { buildThreads, isPenpalExchange, isPenpalThread, isUnnamed, keyFromParams, nameKey, type Thread } from "../../../core/threads";
+import { buildThreads, isPenpalThread, isUnnamed, keyFromParams, nameKey, type Thread } from "../../../core/threads";
 import { cityLabel, cityOf, penpalName, penpalRoute } from "../../../core/penpal";
 import { useProfile } from "@/lib/settings";
 import { blockSender, reportLetter } from "@/lib/firebase/remote";
@@ -296,9 +296,8 @@ function Room() {
       )}
       {pen && !askPen && (
         <div className="ppbar" role="note">
-          <span>모르는 누군가와의 펜팔이에요. 사진·연락처는 보내지 않아요</span>
-          {/* 넘기기는 아직 답장하지 않았을 때만(주고받은 펜팔은 숨기지 않아요) */}
-          {!isPenpalExchange(thread) && <button type="button" className="chip" onClick={skip}>넘기기</button>}
+          {/* 넘기기는 없앰(2026-11-17 대표님: 누르면 펜팔 방이 사라짐). 사진은 펜팔도 보낼 수 있어요 */}
+          <span>모르는 누군가와의 펜팔이에요. 연락처는 적지 않아요</span>
           <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고·차단</button>
         </div>
       )}

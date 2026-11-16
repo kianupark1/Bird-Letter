@@ -316,7 +316,7 @@ function InboxList({ welcome }: { welcome?: string }) {
           return (
             <li key={t.key}>
               <SwipeRow label={`${t.name} 채팅방`} onLongPress={() => setMenu({ t, step: "menu" })}
-                actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), { label: "나가기", tone: "danger" as const, onClick: () => leave(t) }]}>
+                actions={[...(others(t).length ? [{ label: "합치기", onClick: () => setMenu({ t, step: "merge" }) }] : []), ...(isPenpalThread(t) ? [] : [{ label: "나가기", tone: "danger" as const, onClick: () => leave(t) }])]}>
               <Link href={roomHref(t)} prefetch className={`krow ${isPenpalThread(t) ? "pen" : ""}`}>
                 <Face name={t.name} bird={t.uid && !t.pen ? friendBird.get(t.uid)?.bird : undefined} photo={t.uid && !t.pen ? friendBird.get(t.uid)?.photo : undefined} size={58} />
                 <span className="kmid">
@@ -361,7 +361,7 @@ function InboxList({ welcome }: { welcome?: string }) {
                   <button type="button" className="sheetbtn" onClick={() => { const v = window.prompt("이 친구를 뭐라고 부를까요? (나에게만 보여요)", isUnnamed(menu.t.name) ? "" : menu.t.name); if (v !== null) rename(menu.t.key.slice(2), v); setMenu(null); }}>✎ 이름 정하기</button>
                 )}
                 {others(menu.t).length > 0 && <button type="button" className="sheetbtn" onClick={() => setMenu({ t: menu.t, step: "merge" })}>👥 이미 있는 친구와 합치기</button>}
-                <button type="button" className="sheetbtn danger" onClick={() => leave(menu.t)}>🗑 채팅방 나가기</button>
+                {!isPenpalThread(menu.t) && <button type="button" className="sheetbtn danger" onClick={() => leave(menu.t)}>🗑 채팅방 나가기</button>}
                 <button type="button" className="sheetbtn plain" onClick={() => setMenu(null)}>취소</button>
               </>
             ) : (
