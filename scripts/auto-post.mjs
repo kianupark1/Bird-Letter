@@ -88,7 +88,8 @@ export function storeLines(st, to) {
   if (st.android) out.push(`👉 구글 플레이 바로 가기 ${st.android}`);
   // 플레이 전에는 갤럭시 스토어(삼성 폰)로, 플레이는 곧(2026-11-11 대표님)
   else if (st.galaxy) out.push(`👉 갤럭시 스토어 바로 가기 ${st.galaxy}`, "구글 플레이는 곧 출시돼요");
-  else out.push("안드로이드 앱은 곧 나와요");
+  // 2026-11-16 대표님: 플레이 출시(11/27 신청) 전까지 안드로이드는 웹으로 바로(크롬 설치 버튼 한 번·앱 꺼도 알림)
+  else out.push("📱 안드로이드는 지금 바로 웹으로 https://bird-letter.vercel.app (크롬에서 열고 '앱 설치' 한 번)");
   // 링크는 프로필에도 있다고 모든 채널에 한 줄(2026-11-11 대표님: "링크는 프로필에 있다는 내용을 넣어줘야 해")
   out.push(to === "instagram" ? "🔗 링크는 프로필에 있어요 (@saepyeonji) · 글 속 링크가 안 눌리면 프로필로 🕊" : "🔗 링크는 프로필에도 있어요 (@saepyeonji)");
   return out.join("\n");
