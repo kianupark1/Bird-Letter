@@ -60,7 +60,10 @@ export function maskContacts(text: string): { text: string; masked: number } {
   return { text: t, masked };
 }
 
-export type PoolRow = { uid: string; tags: string[]; region: string };
+export type PoolRow = { uid: string; tags: string[]; region: string; /** 마지막으로 앱을 연 때(ms, 서버가 매일 채움). 없으면 모름 */ at?: number };
+
+/** 최근에 앱을 연 사람으로 보는 기간(이 안에 연 사람에게 먼저 보내요) */
+export const ACTIVE_MS = 7 * 86_400_000;
 
 /**
  * 펜팔 상대 고르기: 나·이미 편지를 주고받은 사람·넘긴 사람·차단한 사람은 빼고,
@@ -79,7 +82,14 @@ export function pickPenpal(pool: PoolRow[], me: string, exclude: Set<string>, ta
  * 2026-11-13 대표님: "친구가 해 놓은 게 있는데 왜 없다고 뜸" — 사용자가 적을 때는 펜팔 명단 대부분이 이미 아는 사람이라
  * "주고받은 사람 빼기"만으로 아무도 안 남았어요. 차단·넘긴 사람(hard)은 끝까지 빼요.
  */
-export function pickPenpalFallback(pool: PoolRow[], me: string, soft: Set<string>, hard: Set<string>, tags: string[], rand: () => number = Math.random, last: Map<string, number> = new Map()): PoolRow | null {
+export function pickPenpalFallback(pool: PoolRow[], me: string, soft: Set<string>, hard: Set<string>, tags: string[], rand: () => number = Math.random, last: Map<string, number> = new Map(), now = Date.now()): PoolRow | null {
+  // 2026-11-16 대표님: "왜 펜팔 아무도 안 읽지?" — 가입만 하고 안 오는 사람에게 가면 아무도 못 읽어요 → 최근 7일 안에 앱을 연 사람 먼저
+  const recent = pool.filter((p) => p.at && now - p.at < ACTIVE_MS);
+  if (recent.length && recent.length < pool.length) { const r = pickAmong(recent, me, soft, hard, tags, rand, last); if (r) return r; }
+  return pickAmong(pool, me, soft, hard, tags, rand, last);
+}
+
+function pickAmong(pool: PoolRow[], me: string, soft: Set<string>, hard: Set<string>, tags: string[], rand: () => number, last: Map<string, number>): PoolRow | null {
   const fresh = pickPenpal(pool, me, new Set([...soft, ...hard]), tags, rand);
   if (fresh) return fresh;
   // 2026-11-13 대표님: "펜팔 한 명한테만 가네" — 아는 사람 중에서 고를 때는 무작위가 아니라

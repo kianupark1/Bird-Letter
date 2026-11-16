@@ -38,7 +38,7 @@ export async function readPenpal(uid: string): Promise<(MyPenpal & { uid: string
 /** 펜팔 받기를 켠 사람들(최대 50명). 이 중에서 core/penpal.ts pickPenpal로 한 명을 골라요 */
 export async function listPool(): Promise<(PoolRow & { name: string })[]> {
   const s = await getDocs(query(collection(db(), "penpals"), where("open", "==", true), limit(50)));
-  return s.docs.map((d) => ({ uid: d.id, name: String(d.data().name ?? ""), region: String(d.data().region ?? ""), tags: Array.isArray(d.data().tags) ? d.data().tags : [] }));
+  return s.docs.map((d) => ({ uid: d.id, name: String(d.data().name ?? ""), region: String(d.data().region ?? ""), tags: Array.isArray(d.data().tags) ? d.data().tags : [], at: (d.data().at as { toMillis?: () => number } | undefined)?.toMillis?.() }));
 }
 
 /** 펜팔 친구 찾기: 받기를 켜고 "목록에 보이기"도 켠 사람들(최대 50명). 사진은 본인이 허락한 사람만 들어 있어요 */
