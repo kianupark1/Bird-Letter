@@ -212,6 +212,12 @@ async function postInstagram(p) {
   // 인스타그램 로그인 열쇠: user_id = 게시용 인스타 프로페셔널 계정 번호(id는 앱 전용 번호라 쓰지 않음)
   const id = await igAccount(host, token);
   const base = `${host}/v21.0/${id}`;
+  // 썸네일을 직접 정한 영상 글은 넘겨 보기 대신 릴스 + 표지 사진(2026-11-17 대표님: "썸네일이 빈칸" — 넘겨 보기 영상은 인스타가 표지를 고를 수 없음)
+  if (p.video && p.igCover) {
+    const c = await call(`${base}/media`, { params: { caption: p.text, access_token: token, media_type: "REELS", video_url: `${MEDIA_BASE}/${p.video}`, cover_url: `${MEDIA_BASE}/${p.igCover}`, share_to_feed: "true" } });
+    await waitReady(`${host}/v21.0/${c.id}?fields=status_code&access_token=${encodeURIComponent(token)}`, "status_code");
+    return publishRetry(`${base}/media_publish`, { creation_id: c.id, access_token: token });
+  }
   if (p.carousel?.length > 1) {
     const kids = [];
     for (const f of p.carousel.slice(0, 10)) {
