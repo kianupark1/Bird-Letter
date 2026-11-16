@@ -57,9 +57,9 @@ export function nameKey(name: string): string {
 
 /** 채팅 목록에서 나간 방은 빼요(나간 뒤에 새 편지가 오면 다시 보여요) */
 export function visibleThreads<T extends { key: string; lastAt: number; entries?: { dir: string; item: unknown }[] }>(list: T[], hidden: Record<string, string> = {}): T[] {
-  // 서로 주고받은 펜팔은 숨기지 않아요(2026-11-12 대표님: "펜팔이 왜 없어짐, 펜팔 들어가면 서로 보낸 게 있어야지").
-  // 예전에 "넘기기·안 받을래요"를 눌렀어도, 내가 답장한 펜팔이면 다시 보여요
-  return list.filter((t) => { const h = Number(hidden[t.key]); return !h || t.lastAt > h || isPenpalExchange(t); });
+  // 펜팔 방은 숨기지 않아요(2026-11-17 대표님: "넘기기 누르니까 펜팔이 없어지더라, 없애 줘").
+  // 예전에 "넘기기·안 받을래요"를 눌러 숨겨진 펜팔 방도 다시 보여요. 싫으면 신고·차단
+  return list.filter((t) => { const h = Number(hidden[t.key]); return !h || t.lastAt > h || isPenpalThread({ entries: t.entries ?? [] }); });
 }
 export const PLACEHOLDER_NAMES = new Set(["", "새 친구", "누군가", "보낸 사람"]);
 

@@ -87,9 +87,9 @@ function Penpal() {
     try {
       const me = await ensureUser();
       const [pool, blocked] = await Promise.all([chosen && chosen !== "no" ? Promise.resolve([]) : listPool(), listBlocked(me.uid).catch(() => new Set<string>())]);
-      // 처음 보는 사람 먼저, 없으면 이미 주고받은 사람(친구 포함)도. 넘긴 사람·차단한 사람은 끝까지 빼요
+      // 처음 보는 사람 먼저, 없으면 이미 주고받은 사람(친구 포함)도. 차단한 사람·나간 친구 방은 끝까지 빼요(펜팔 넘기기는 없앰)
       const hard = new Set<string>([...blocked]);
-      for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:") || k.startsWith("p:")) hard.add(k.slice(2));
+      for (const k of Object.keys(book.hidden ?? {})) if (k.startsWith("u:")) hard.add(k.slice(2));
       const soft = new Set<string>();
       const last = new Map<string, number>();
       for (const l of letters) if (l.toUid) { soft.add(l.toUid); last.set(l.toUid, Math.max(last.get(l.toUid) ?? 0, l.sentAt)); }

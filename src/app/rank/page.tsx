@@ -205,7 +205,7 @@ function Rank() {
             ) : sel.open ? (
               <>
                 <Link href={`/penpal?to=${encodeURIComponent(sel.uid)}`} className="cta big" style={{ textDecoration: "none" }}>💌 펜팔 편지 보내기</Link>
-                <div className="small" style={{ textAlign: "center" }}>펜팔 편지는 도시까지만 보이고, 사진·연락처는 보내지 않아요</div>
+                <div className="small" style={{ textAlign: "center" }}>펜팔 편지는 도시까지만 보이고, 연락처는 적지 않아요 · 사진은 보낼 수 있어요</div>
               </>
             ) : (
               <div className="small" style={{ textAlign: "center", fontSize: 16 }}>이 분은 아직 모르는 사람의 편지를 받지 않아요.<br />대신 <Link href="/penpal">랜덤 편지</Link>를 보내 보세요 🕊</div>
