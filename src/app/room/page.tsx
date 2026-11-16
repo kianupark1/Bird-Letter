@@ -240,15 +240,19 @@ function Room() {
     const lp = letterProgress(l, now);
     const leftTxt = lp.done ? "벌써 도착했어요! 지금 열어 볼 수 있어요" : `도착까지 약 ${formatMinutes(Math.max(1, Math.ceil(lp.total - lp.elapsed)))}`;
     // 2026-11-12 대표님: "앱 안 깐 사람에게 카톡으로 알림이 가서, 궁금하면 깔아서 보게" → 내용은 새편지 앱에서 열린다는 걸 분명히
-    smsBody = `💌 ${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 편지를 보냈어요\n지금 ${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중 · ${leftTxt}\n무슨 내용일까요? 새편지 앱에서 열어 볼 수 있어요 🔒\n👉 편지 받기: ${location.origin}${letterHref(lastSent.item.id)}`;
+    smsBody = lp.done
+      // 도착한 뒤 한 번 더(2026-11-16 성장 ②): 링크를 받고 잊은 사람이 다시 열어 보게
+      ? `💌 ${profile.nickname ? `${profile.nickname}님이` : "누군가"} 보낸 편지가 도착했어요!\n${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아와 편지를 내려놓았어요 🕊\n지금 열어 볼 수 있어요\n👉 편지 열기: ${location.origin}${letterHref(lastSent.item.id)}`
+      : `💌 ${profile.nickname ? `${profile.nickname}님이` : "누군가"} ${name}에게 편지를 보냈어요\n지금 ${withIGa(getBird(l.birdId).name)} ${r.title} ${r.km}km를 날아가는 중 · ${leftTxt}\n무슨 내용일까요? 도착하면 링크에서 바로 열어 볼 수 있어요 🔒\n👉 날아오는 모습 보기: ${location.origin}${letterHref(lastSent.item.id)}`;
   }
+  const lastArrived = !!lastSent && letterProgress(asLike(lastSent), now).done;
   const tellId = smsBody && lastSent ? lastSent.item.id : "";
   const tellKakao = async () => {
     if (!lastSent) return;
     const l = asLike(lastSent);
     const lp = letterProgress(l, now);
     const left = lp.done ? "벌써 도착했어요" : `도착까지 약 ${formatMinutes(Math.max(1, Math.ceil(lp.total - lp.elapsed)))}`;
-    if (KAKAO_SHARE_READY && (await shareToKakao(lastSent.item.id, getBird(l.birdId).name, profile.nickname || undefined, left))) return;
+    if (KAKAO_SHARE_READY && (await shareToKakao(lastSent.item.id, getBird(l.birdId).name, profile.nickname || undefined, left, lp.done))) return;
     try {
       if (navigator.share) await navigator.share({ text: smsBody }); // 공유 창에서 카카오톡을 고르면 돼요
       else { await navigator.clipboard.writeText(smsBody); window.alert("알림 글을 복사했어요. 카카오톡에 붙여 넣어 보내 주세요."); }
@@ -321,7 +325,9 @@ function Room() {
       )}
       {!pen && !sendUid && lastSent && (
         <div className="mergecard">
-          <div><b>{name}님은 아직 앱이 없나요?</b><span>편지가 간다고 알려 주세요. 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>
+          {lastArrived
+            ? <div><b>💌 {name}님께 편지가 도착했어요!</b><span>열어 보라고 한 번 더 알려 주세요. 링크를 누르면 바로 열어 볼 수 있어요.</span></div>
+            : <div><b>{name}님은 아직 앱이 없나요?</b><span>편지가 간다고 알려 주세요. 링크로 날아오는 모습을 보고, 도착하면 열어 봐요.</span></div>}
           <div className="mc-btns">
             {smsBody && <button type="button" className="chip hot" onClick={() => void tellKakao()}>💬 카카오톡으로</button>}
             {smsBody && <a className="chip" href={smsHref(telFor(name), smsBody)}>✉ 문자로</a>}
@@ -329,7 +335,7 @@ function Room() {
           </div>
         </div>
       )}
-      {tellId && lastSent && <TellSheet id={tellId} sentAt={asLike(lastSent).sentAt} name={name} body={smsBody} tel={telFor(name)} onKakao={tellKakao} friend={!!missEntry} reason={pushMiss?.status} />}
+      {tellId && lastSent && <TellSheet id={tellId} sentAt={asLike(lastSent).sentAt} name={name} body={smsBody} tel={telFor(name)} onKakao={tellKakao} friend={!!missEntry} reason={pushMiss?.status} arrived={lastArrived && params.get("tell") === "1"} />}
       {pickFriend && (
         <>
           <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setPickFriend(false)} />
@@ -382,9 +388,10 @@ function Room() {
 }
 
 /** 방금(2분 안) 앱 없는 사람에게 보낸 편지면, 한 번만 "알려 주세요" 창을 띄워요 */
-function TellSheet({ id, sentAt, name, body, tel, onKakao, friend, reason }: { id: string; sentAt: number; name: string; body: string; tel: string; onKakao: () => Promise<void>; friend?: boolean; reason?: string }) {
+function TellSheet({ id, sentAt, name, body, tel, onKakao, friend, reason, arrived }: { id: string; sentAt: number; name: string; body: string; tel: string; onKakao: () => Promise<void>; friend?: boolean; reason?: string; arrived?: boolean }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
+    if (arrived) { setOpen(true); return; } // 도착 알림(?tell=1)을 누르고 들어오면 다시 알릴 창을 바로 띄워요
     if (Date.now() - sentAt > 120000) return;
     const k = "saepyeonji.told.v1";
     let told: string[] = [];
@@ -392,14 +399,15 @@ function TellSheet({ id, sentAt, name, body, tel, onKakao, friend, reason }: { i
     if (told.includes(id)) return;
     try { localStorage.setItem(k, JSON.stringify([...told, id].slice(-100))); } catch {}
     setOpen(true);
-  }, [id, sentAt]);
+  }, [id, sentAt, arrived]);
   if (!open) return null;
   return (
     <>
       <button type="button" className="ch-dim" aria-label="닫기" onClick={() => setOpen(false)} />
       <div className="ch-sheet tellsheet" role="dialog" aria-label={`${name}님께 알리기`}>
-        <h2>{name}님께 편지가 간다고 알려 주세요</h2>
-        {friend ? <p className="small" style={{ margin: 0, textAlign: "center" }}>{reason === "fail" ? `알림 서버가 ${name}님께 알림을 보내지 못했어요.` : `${name}님 폰에 새편지 알림이 꺼져 있어서 편지가 온 걸 모를 수 있어요.`} 카카오톡으로 한 번 알려 주세요. ({name}님 앱의 설정 → 알림을 켜면 다음부터는 저절로 가요)</p>
+        <h2>{arrived ? `💌 ${name}님께 편지가 도착했어요!` : `${name}님께 편지가 간다고 알려 주세요`}</h2>
+        {arrived ? <p className="small" style={{ margin: 0, textAlign: "center" }}>열어 보라고 한 번 더 알려 주세요. 링크를 누르면 바로 열어 볼 수 있어요.</p>
+        : friend ? <p className="small" style={{ margin: 0, textAlign: "center" }}>{reason === "fail" ? `알림 서버가 ${name}님께 알림을 보내지 못했어요.` : `${name}님 폰에 새편지 알림이 꺼져 있어서 편지가 온 걸 모를 수 있어요.`} 카카오톡으로 한 번 알려 주세요. ({name}님 앱의 설정 → 알림을 켜면 다음부터는 저절로 가요)</p>
         : <p className="small" style={{ margin: 0, textAlign: "center" }}>{name}님은 아직 새편지 앱이 없어요. 무슨 내용인지는 도착해야 열려요 — 링크 하나면 앱 없이도 날아오는 모습을 보며 같이 기다릴 수 있어요.</p>}
         <div className="tell-preview">{body}</div>
         <button type="button" className="sbtn kakao" onClick={() => { void onKakao(); setOpen(false); }}><span aria-hidden>💬</span> 카카오톡으로 알리기</button>

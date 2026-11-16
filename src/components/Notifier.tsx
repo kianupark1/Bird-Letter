@@ -127,8 +127,8 @@ export default function Notifier() {
     let off = false;
     (async () => {
       const items = [
-        ...letters.map((l) => ({ id: l.id, kind: "sent" as const, who: l.to, routeId: l.routeId, birdId: l.birdId, sentAt: l.sentAt, arriveAt: l.arriveAt })),
-        ...received.map((m) => ({ id: m.id, kind: "received" as const, who: m.fromName || "누군가", routeId: m.routeId, birdId: m.birdId, sentAt: m.sentAt, arriveAt: m.arriveAt })),
+        ...letters.map((l) => ({ id: l.id, kind: "sent" as const, who: l.to, routeId: l.routeId, birdId: l.birdId, sentAt: l.sentAt, arriveAt: l.arriveAt, toUid: l.toUid })),
+        ...received.map((m) => ({ id: m.id, kind: "received" as const, who: m.fromName || "누군가", routeId: m.routeId, birdId: m.birdId, sentAt: m.sentAt, arriveAt: m.arriveAt, toUid: undefined as string | undefined })),
       ];
       for (const it of items) {
         if (off) return;
@@ -139,7 +139,11 @@ export default function Notifier() {
         const url = letterHref(it.id);
         if (it.kind === "sent" ? profile.notify.arrival : profile.notify.reply) {
           const t = arrivalText(it.kind, it.who, route, it.birdId);
-          await schedulePush(`${it.id}:a`, { title: t.title, body: t.body, url, tag: `l-${it.id}-${it.kind === "sent" ? "a" : "r"}` }, arriveMs);
+          // 앱이 없는 사람(이름만)에게 보낸 편지: 도착하면 "열어 보라고 알려 줄까요?" → 누르면 대화방에서 카톡으로 다시 알리기(2026-11-16 성장 ②)
+          const nudge = it.kind === "sent" && !it.toUid;
+          await schedulePush(`${it.id}:a`, nudge
+            ? { title: `짹짹! ${it.who}에게 편지가 도착했어요`, body: "열어 보라고 카톡으로 한 번 알려 줄까요? 💌", url: `/room?n=${encodeURIComponent(it.who)}&tell=1`, tag: `l-${it.id}-a` }
+            : { title: t.title, body: t.body, url, tag: `l-${it.id}-${it.kind === "sent" ? "a" : "r"}` }, arriveMs);
         }
         if (profile.notify.passing) {
           const plan = pr.plan;

@@ -104,7 +104,8 @@ export default function LetterView({ id }: { id: string }) {
   // 앱이 없는 사람이 링크로 받은 편지는 내용을 "새편지 앱에서" 열게 해요(2026-11-12 대표님: "궁금하면 깔아서 보게끔").
   // 날아오는 모습·도착은 누구나 보고, 내용은 ①로그인(카카오로 받기 = 내 편지함에 들어감) ②앱 받기 순서. 어르신용으로 "앱 없이 여기서 읽기"도 남겨 둠.
   // 앱 안·컴퓨터(스토어 버튼 없음)에서는 로그인만 하면 바로 열려요
-  const lockForApp = isRecipient && !IS_TOSS && (guest || (!!store && !webRead));
+  // 2026-11-16 성장 ③(대표님 "가자"): 도착한 편지는 가입 없이 바로 읽고, 답장할 때 카카오로 가입해요(가입부터 하라고 하면 많이 떠나요)
+  const lockForApp = isRecipient && !IS_TOSS && ((guest && !arrivedNow) || (!guest && !!store && !webRead));
 
   // 받는 사람은 도착 시각이 지난 뒤에만 서버가 내용을 줌
   useEffect(() => {
@@ -236,19 +237,12 @@ export default function LetterView({ id }: { id: string }) {
     }
   };
 
-  return (
-    <main className="app">
-      <h1>{isRecipient ? `${withIGa(view.fromName || "누군가")} 보낸 편지` : `${view.to}에게 가는 편지`}</h1>
-      <p className="sub"><BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {route.title} · {route.km}km</p>
-
-      <JourneyMap route={route} p={pr.p} birdId={bird.id} fx />
-
-      {isRecipient && guest && !IS_TOSS && (
+  const recvCard = isRecipient && guest && !IS_TOSS ? (
         <div className="recvcard">
-          <b>{pr.done ? `🔒 ${withIGa(view.fromName || "누군가")} 보낸 편지가 도착했어요` : `💌 ${withIGa(view.fromName || "누군가")} 보낸 편지가 날아오고 있어요`}</b>
-          <span>편지는 <b>새편지 앱</b>에서 열어 볼 수 있어요. 카카오로 받기 한 번이면 내 편지함에 들어가고, 앱을 받아 같은 카카오로 시작하면 바로 열려요.{pr.done ? "" : " 도착하면 알림도 와요."}</span>
+          <b>{pr.done ? `💌 ${view.fromName || "보낸 사람"}님에게 답장하고 싶다면` : `💌 ${withIGa(view.fromName || "누군가")} 보낸 편지가 날아오고 있어요`}</b>
+          <span>{pr.done ? "카카오 버튼 한 번이면 가입 끝이에요. 이 편지가 내 편지함에 들어가고, 나도 새에게 답장을 맡길 수 있어요." : "도착하면 여기서 바로 열어 볼 수 있어요. 카카오로 받아 두면 내 편지함에 들어가고, 도착할 때 알림도 와요."}</span>
           <button type="button" className="sbtn kakao" onClick={() => void receive("kakao")} disabled={busy !== null || !KAKAO_LOGIN_READY}>
-            <span aria-hidden>💬</span> 카카오로 받고 열기
+            <span aria-hidden>💬</span> {pr.done ? "카카오로 가입하고 답장하기" : "카카오로 받아 두기"}
           </button>
           <div className="recv-more">
             {NAVER_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => void receive("naver")} disabled={busy !== null}>네이버로 받기</button>}
@@ -258,7 +252,16 @@ export default function LetterView({ id }: { id: string }) {
           </div>
           {phoneOn && <PhoneLogin title="문자로 받기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); setLoginTick((t) => t + 1); }} />}
         </div>
-      )}
+  ) : null;
+
+  return (
+    <main className="app">
+      <h1>{isRecipient ? `${withIGa(view.fromName || "누군가")} 보낸 편지` : `${view.to}에게 가는 편지`}</h1>
+      <p className="sub"><BirdIcon id={bird.id} size={24} className="inline" /> {bird.name} · {route.title} · {route.km}km</p>
+
+      <JourneyMap route={route} p={pr.p} birdId={bird.id} fx />
+
+      {!pr.done && recvCard}
       {mineNow && store && !webRead && (
         <div className="recvcard">
           <b>내 편지함에 받았어요 💌</b>
@@ -372,6 +375,7 @@ export default function LetterView({ id }: { id: string }) {
         </>
       )}
 
+      {pr.done && recvCard}
       {/* 스토어에 앱이 나오면 "앱 받기" 하나만(홈 화면 추가와 둘이면 헷갈려요). 그 전에는 홈 화면 추가가 앱 대신이에요 */}
       {!store && <InstallCard />}
 
