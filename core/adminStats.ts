@@ -47,7 +47,7 @@ export function kstMidnight(now: number) {
 }
 
 /** 마지막으로 앱을 연 시각: 로그인 토큰을 새로 받은 때(lastRefreshAt)가 더 정확하고, 없으면 마지막 로그인 */
-const lastSeen = (u: AuthUser) => Math.max(Number(u.lastLoginAt ?? 0), u.lastRefreshAt ? Date.parse(u.lastRefreshAt) || 0 : 0);
+export const lastSeen = (u: AuthUser) => Math.max(Number(u.lastLoginAt ?? 0), u.lastRefreshAt ? Date.parse(u.lastRefreshAt) || 0 : 0);
 
 export type UserCounts = {
   members: number; // 로그인한 진짜 사용자(익명 제외)

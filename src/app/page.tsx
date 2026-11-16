@@ -207,8 +207,8 @@ function InboxList({ welcome }: { welcome?: string }) {
     let uid = "";
     try { const u = auth().currentUser; if (!u || u.isAnonymous) return; uid = u.uid; } catch { return; }
     const d = myPenpalDoc(me);
-    // 계정·이름·동네·사진이 바뀌면 다시 올려요(사진 글자 전체 대신 길이·끝부분만 비교)
-    const sig = `u:${uid}|recv:${d.open}|list:${d.listed}|n:${d.name}|r:${d.region}|ph:${d.photo ? `${d.photo.length}:${d.photo.slice(-24)}` : "-"}`;
+    // 하루 한 번(마지막으로 연 날 = 펜팔 받을 사람 고를 때 씀), 계정·이름·동네·사진이 바뀌면 다시 올려요(사진 글자 전체 대신 길이·끝부분만 비교)
+    const sig = `d:${new Date().toDateString()}|u:${uid}|recv:${d.open}|list:${d.listed}|n:${d.name}|r:${d.region}|ph:${d.photo ? `${d.photo.length}:${d.photo.slice(-24)}` : "-"}`;
     try { if (localStorage.getItem("saepyeonji.penpalsync.v1") === sig) return; } catch {}
     void saveMyPenpal(d).then(() => { try { localStorage.setItem("saepyeonji.penpalsync.v1", sig); } catch {} }).catch(() => {});
   }, [ready, me.nickname, me.penpalOff, me.penpalListed, me.penpalPhoto, me.photo, me.homePlace, me.avatarBird, me.penpalName, letters.length]);

@@ -1,4 +1,4 @@
-import { providerOf, type AuthUser, type SocialMap } from "../../../core/adminStats";
+import { lastSeen, providerOf, type AuthUser, type SocialMap } from "../../../core/adminStats";
 import { backfillPenpal } from "../../../core/penpal";
 import { googleToken, type ServiceAccount } from "./google";
 import { listAuthUsers, socialMap } from "./stats";
@@ -26,6 +26,15 @@ export async function backfillPenpals(sa: ServiceAccount, given?: { users: AuthU
     if (!page) break;
   }
 
+  // 펜팔 줄의 at = 그 사람이 마지막으로 앱을 연 때(펜팔 받을 사람을 고를 때 최근에 온 사람 먼저)
+  let touched = 0;
+  for (const u of users) {
+    if (!have.has(u.localId)) continue;
+    const t = lastSeen(u);
+    if (!t) continue;
+    const r = await fetch(`${db}/penpals/${encodeURIComponent(u.localId)}?updateMask.fieldPaths=at&currentDocument.exists=true`, { method: "PATCH", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify({ fields: { at: { timestampValue: new Date(t).toISOString() } } }) });
+    if (r.ok) touched++;
+  }
   let added = 0, skipped = 0, reopened = 0;
   for (const uid of members.filter((u) => !have.has(u) || closed.has(u))) {
     const read = async (path: string) => { const r = await fetch(`${db}/${path}`, { headers: auth }); return r.ok ? r.json() : null; };
@@ -45,10 +54,10 @@ export async function backfillPenpals(sa: ServiceAccount, given?: { users: AuthU
     }
     const body = { fields: {
       name: { stringValue: doc.name }, bird: { stringValue: doc.bird }, region: { stringValue: doc.region },
-      tags: { arrayValue: {} }, open: { booleanValue: true }, listed: { booleanValue: true }, at: { timestampValue: new Date().toISOString() },
+      tags: { arrayValue: {} }, open: { booleanValue: true }, listed: { booleanValue: true }, at: { timestampValue: new Date(lastSeen(users.find((x) => x.localId === uid)!) || Date.now()).toISOString() },
     } };
     const r = await fetch(`${db}/penpals/${encodeURIComponent(uid)}?currentDocument.exists=false`, { method: "PATCH", headers: { ...auth, "Content-Type": "application/json" }, body: JSON.stringify(body) });
     if (r.ok) added++; else skipped++;
   }
-  return { members: members.length, had: members.filter((u) => have.has(u)).length, added, reopened, skipped };
+  return { members: members.length, had: members.filter((u) => have.has(u)).length, added, reopened, skipped, touched };
 }
