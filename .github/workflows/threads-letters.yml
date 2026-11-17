@@ -1,0 +1,46 @@
+name: 스레드 댓글 편지 배달
+# 스레드 우리 글("🕊 댓글 편지 배달"이 들어간 글)의 댓글마다 비둘기 편지를 보내고 댓글에 링크를 달아요.
+# 사이트 /api/campaign/letter 는 이 작업의 GitHub 신분증(OIDC, aud bird-letter-campaign, main)으로만 열려요.
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "true 면 실제로 보내고, false 면 미리보기만"
+        default: "true"
+jobs:
+  deliver:
+    if: ${{ vars.AUTO_POST_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      id-token: write
+    concurrency: threads-letters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 보낸 기록 가져오기
+        run: |
+          mkdir -p "$RUNNER_TEMP/c"
+          if git fetch -q origin campaign-log 2>/dev/null; then git show origin/campaign-log:sent.txt > "$RUNNER_TEMP/c/sent.txt" 2>/dev/null || true; fi
+          touch "$RUNNER_TEMP/c/sent.txt"
+          echo "STATE_FILE=$RUNNER_TEMP/c/sent.txt" >> "$GITHUB_ENV"
+      - name: 댓글마다 편지 보내기
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          SEND: ${{ github.event_name == 'schedule' && 'true' || inputs.send }}
+        run: |
+          export CAMPAIGN_OIDC=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bird-letter-campaign" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).value))')
+          npx -y tsx scripts/threads-letters.mjs
+      - name: 보낸 기록 남기기
+        if: always()
+        run: |
+          cd "$RUNNER_TEMP/c"
+          [ -s sent.txt ] || exit 0
+          git init -q && git checkout -q -b campaign-log
+          git config user.name "autopost" && git config user.email "autopost@users.noreply.github.com"
+          git add sent.txt && git commit -qm "보낸 기록" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" campaign-log || echo "기록 저장 실패"

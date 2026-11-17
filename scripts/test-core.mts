@@ -991,5 +991,17 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("저녁 7시 알림: 제목에 오늘 새 가입", t.title, "📊 오늘 새편지 · 새 가입 4명");
   eq("저녁 7시 알림: 들어온 사람·편지", t.body, "들어온 사람 12명 · 오늘 편지 9통\n전체 가입 45명 · 전체 편지 210통");
 }
+{
+  const { toNameOf, campaignMessage, campaignReplyText, shouldSend, CAMPAIGN_ROUTE } = await import("../core/campaign.ts");
+  eq("댓글 편지: 받는 이름은 @아이디", toNameOf("abc_1"), "@abc_1");
+  eq("댓글 편지: 내용에 슬로건", campaignMessage("abc", "r1").includes(SLOGAN), true);
+  eq("댓글 편지: 답글에 링크", campaignReplyText("abc", "https://x/letter/1", 60).includes("https://x/letter/1"), true);
+  eq("댓글 편지: 1시간 표시", campaignReplyText("abc", "l", 60).includes("약 1시간"), true);
+  const done = new Set(["u:old"]);
+  eq("댓글 편지: 처음 댓글이면 보냄", shouldSend({ username: "new", id: "1" }, "saepyeonji", done), true);
+  eq("댓글 편지: 이미 보낸 사람은 안 보냄", shouldSend({ username: "OLD", id: "2" }, "saepyeonji", done), false);
+  eq("댓글 편지: 우리 계정 댓글은 안 보냄", shouldSend({ username: "saepyeonji", id: "3" }, "saepyeonji", done), false);
+  eq("댓글 편지: 노선이 있음", getRoute(CAMPAIGN_ROUTE).km > 0, true);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
