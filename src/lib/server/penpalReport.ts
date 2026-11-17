@@ -62,3 +62,17 @@ export async function pushSubList(sa: ServiceAccount, admins: string[]): Promise
     return { type: f.fcm?.stringValue ? "앱" : "웹", at, admin: admins.includes(uid) };
   }).sort((a, b) => b.at - a.at).slice(0, 15).map(({ type, at, admin }) => ({ type, admin, savedKst: at ? new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " ") : "?" }));
 }
+
+/** 마지막 앱 알림 성공·실패 기록(sendPush.ts note) */
+export async function pushOps(sa: ServiceAccount) {
+  const token = await googleToken(sa);
+  const base = `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents/ops`;
+  const get = async (n: string) => {
+    const r = await fetch(`${base}/${n}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return null;
+    const f = ((await r.json()).fields ?? {}) as Record<string, { integerValue?: string; stringValue?: string }>;
+    const at = Number(f.at?.integerValue ?? 0);
+    return { kst: at ? new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " ") : "?", status: f.status?.integerValue, detail: f.detail?.stringValue, tag: f.tag?.stringValue };
+  };
+  return { lastOk: await get("pushOk"), lastFail: await get("pushFail") };
+}
