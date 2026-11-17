@@ -29,7 +29,7 @@ export const DAY_COLORS = [
   { name: "다홍", bg: "#E2512A", fg: "#FFFFFF", accent: "#FFE7A8" },
 ];
 const BIRDS = ["pigeon", "magpie", "hawk", "sparrow"];
-const AUTO = new Set(["noon", "evening", "night", undefined]);
+const AUTO = new Set(["noon", "evening", "night", "talk1", "talk2", undefined]);
 
 const sched = JSON.parse(readFileSync(resolve(root, "promo/schedule.json"), "utf8"));
 const L = new Date(sched.launch + "T00:00:00Z");
@@ -40,7 +40,7 @@ const hook = (t: string) => t.split("\n").map((s) => s.trim()).find((s) => s && 
 const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
 const size = (s: string) => (s.length <= 14 ? 112 : s.length <= 22 ? 96 : s.length <= 32 ? 82 : 70);
 
-function html(text: string, c: (typeof DAY_COLORS)[number], bird: string, w: number, h: number, reel = false) {
+function html(text: string, c: (typeof DAY_COLORS)[number], bird: string, w: number, h: number, reel = false, single = false) {
   const top = (h - 1350) / 2; // 릴스(9:16)는 가운데 4:5 칸에 담아요(격자에서 잘리지 않게)
   const b = renderToStaticMarkup(React.createElement(CuteBird as any, { id: bird, variant: "C", size: 470, letter: true }));
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
@@ -59,7 +59,7 @@ body { font-family: P, sans-serif; background: ${c.bg}; color: ${c.fg}; position
 <div class="t">${esc(text)}</div>
 <div class="b">${b}</div>
 <div class="tag"><img src="${icon}">새 편지</div>
-<div class="sw">${reel ? "▶ 영상" : "넘겨 보기 →"}</div>
+${single ? "" : `<div class="sw">${reel ? "▶ 영상" : "넘겨 보기 →"}</div>`}
 </div></body></html>`;
 }
 
@@ -87,12 +87,12 @@ for (const p of sched.posts) {
   const name = `cv-${d}-${slot}`;
   const text = hook(p.text);
   const pool = c.fg === "#FFFFFF" ? BIRDS.filter((b) => b !== "magpie") : BIRDS; // 어두운 바탕에선 까만 까치가 묻혀요
-  const bird = pool[(i * 3 + ["noon", "evening", "night"].indexOf(slot)) % pool.length];
+  const bird = pool[(i * 3 + ["noon", "evening", "night", "talk1", "talk2"].indexOf(slot)) % pool.length];
   if (p.video && !p.carousel) {
     await shoot(resolve(outDir, `${name}-reel.png`), html(text, c, bird, 1080, 1920, true), 1080, 1920);
     p.igCover = `cards/cv/${name}-reel.jpg`;
   } else {
-    await shoot(resolve(outDir, `${name}.png`), html(text, c, bird, 1080, 1350), 1080, 1350);
+    await shoot(resolve(outDir, `${name}.png`), html(text, c, bird, 1080, 1350, false, String(p.slot).startsWith("talk")), 1080, 1350);
     const first = `cv/${name}.png`;
     const rest = (p.carousel ?? [p.image]).filter((f: string) => f && !f.startsWith("cv/"));
     p.carousel = [first, ...rest].slice(0, 10);
