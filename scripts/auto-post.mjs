@@ -24,14 +24,18 @@ let SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
 // 예약 실행이 몇 시간씩 늦게 도는 일이 있어서(2026-11-10: 저녁 6시 글이 새벽 4시 반에 올라감) "auto"는 지금 한국 시각으로 정해요:
 // 8시 이후면 아침 글, 17시 30분 이후면 저녁 글 중 아직 안 올린 것 하나. 0~7시엔 아무것도 안 올려요. 올린 기록은 LOG_FILE(한 줄에 "날짜 slot")
 // 시각(2026-11-11 대표님: "아침 8:30·오후 5:30·밤 22:00 빼놓지 말고, 인스타·스레드·X 3개"): 아침 8시 30분·저녁 5시 30분·밤 10시(slot "night") 이후, 빠진 글은 다음 다시 시도 때 올림
-export function autoSlot(hm, done) {
+// talk1·talk2 = 스레드에만 올리는 대화형 글(낮 12:30·밤 8:30, 2026-11-17 대표님: "스레드가 반응이 와, 스레드 더 신경 쓰자"). 그날 글이 있을 때만(has).
+export const TALK = ["talk1", "talk2"];
+export function autoSlot(hm, done, has = new Set()) {
   if (hm < 830) return null;
   if (hm >= 2200 && !done.has("night")) return "night";
   if (hm >= 1730 && !done.has("evening")) return "evening"; // 늦게라도 빠진 저녁 글은 올림(2026-11-11 대표님: "빼놓지 말고")
   if (!done.has("noon")) return "noon";
+  if (hm >= 2030 && has.has("talk2") && !done.has("talk2")) return "talk2";
+  if (hm >= 1230 && has.has("talk1") && !done.has("talk1")) return "talk1";
   return null;
 }
-export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" || /^special\d*$/.test(p.slot ?? "") ? p.slot : "noon"); // special = 손으로만 올리는 특별 글(자동 예약은 안 고름)
+export const slotOf = (p) => (p.slot === "evening" || p.slot === "night" || TALK.includes(p.slot) || /^special\d*$/.test(p.slot ?? "") ? p.slot : "noon"); // special = 손으로만 올리는 특별 글(자동 예약은 안 고름)
 const MEDIA_BASE = (process.env.MEDIA_BASE_URL ?? "https://raw.githubusercontent.com/kianupark1/Bird-Letter/main/promo").replace(/\/$/, "");
 const env = (k) => (process.env[k] ?? "").trim().replace(/^﻿/, "");
 const promoFile = (rel) => new URL(`../promo/${rel}`, import.meta.url);
@@ -341,14 +345,15 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
   const fullDone = (slot) => lines.some((x) => x.length === 2 && x[1] === slot)
     || (() => { const ps = posts.filter((p) => dateOf(p) === today && slotOf(p) === slot); return ps.length > 0 && ps.every((p) => targetsOf(p).every((t) => doneCh.has(`${slot} ${t}`))); })();
   const ONLY = env("ONLY").split(",").map((x) => x.trim()).filter(Boolean);
-  const logged = new Set(["noon", "evening", "night", "special"].filter(fullDone));
+  const logged = new Set(["noon", "evening", "night", "special", ...TALK].filter(fullDone));
+  const hasToday = new Set(posts.filter((p) => dateOf(p) === today).map(slotOf));
   if (SLOT === "auto") {
     const hm = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date()).replace(":", ""));
-    SLOT = autoSlot(hm, logged);
+    SLOT = autoSlot(hm, logged, hasToday);
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
   } else if (SEND && fullDone(SLOT) && !ONLY.length) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => storyfy(soonify(upgraded(p), stores.android)));
-  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
+  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : SLOT === "talk1" ? "스레드 낮" : SLOT === "talk2" ? "스레드 밤" : SLOT.startsWith("special") ? SLOT : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
