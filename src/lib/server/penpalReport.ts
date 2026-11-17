@@ -1,0 +1,46 @@
+import { googleToken, type ServiceAccount } from "./google";
+import { listAuthUsers } from "./stats";
+import { lastSeen } from "../../../core/adminStats";
+
+// 펜팔 편지가 왜 안 읽히는지 숫자로(2026-11-17 대표님: "펜팔 도통 안 읽지? 보낼 때·중간·받을 때 알림 잘 가고 있는 거 맞음?")
+// 최근 14일 펜팔 편지만, 이름·내용은 안 읽고 개수만: 받는 사람에게 알림 주소가 있었는지, 최근에 앱을 열었는지, 읽었는지.
+export type PenpalReport = { letters: number; arrived: number; read: number; recipients: number; toWithPush: number; toNoPush: number; toActive7d: number; noPushLetters: number };
+
+export async function penpalReport(sa: ServiceAccount): Promise<PenpalReport> {
+  const token = await googleToken(sa);
+  const auth = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const base = `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents`;
+  const r = await fetch(`${base}:runQuery`, {
+    method: "POST", headers: auth,
+    body: JSON.stringify({ structuredQuery: {
+      from: [{ collectionId: "letters" }],
+      select: { fields: [{ fieldPath: "recipientUid" }, { fieldPath: "sentAt" }, { fieldPath: "arriveAt" }, { fieldPath: "readAt" }] },
+      where: { fieldFilter: { field: { fieldPath: "penpal" }, op: "EQUAL", value: { booleanValue: true } } },
+      limit: 500,
+    } }),
+  });
+  if (!r.ok) throw new Error(`penpal-${r.status}`);
+  const rows = ((await r.json()) as { document?: { fields?: Record<string, { stringValue?: string; timestampValue?: string }> } }[]).filter((x) => x.document);
+  const now = Date.now(), since = now - 14 * 86_400_000;
+  const ts = (v?: { timestampValue?: string }) => (v?.timestampValue ? Date.parse(v.timestampValue) : NaN);
+  const list = rows.map((x) => x.document!.fields ?? {}).filter((f) => ts(f.sentAt) >= since);
+  const tos = [...new Set(list.map((f) => f.recipientUid?.stringValue).filter((u): u is string => !!u))];
+  const hasPush = new Map<string, boolean>();
+  await Promise.all(tos.map(async (u) => {
+    const s = await fetch(`${base}/users/${encodeURIComponent(u)}/push/sub`, { headers: auth });
+    hasPush.set(u, s.ok);
+  }));
+  const users = await listAuthUsers(sa).catch(() => []);
+  const seen = new Map(users.map((u) => [u.localId, lastSeen(u)]));
+  const active = (u: string) => { const t = seen.get(u); return typeof t === "number" && now - t < 7 * 86_400_000; };
+  return {
+    letters: list.length,
+    arrived: list.filter((f) => ts(f.arriveAt) <= now).length,
+    read: list.filter((f) => Number.isFinite(ts(f.readAt))).length,
+    recipients: tos.length,
+    toWithPush: tos.filter((u) => hasPush.get(u)).length,
+    toNoPush: tos.filter((u) => !hasPush.get(u)).length,
+    toActive7d: tos.filter(active).length,
+    noPushLetters: list.filter((f) => { const u = f.recipientUid?.stringValue; return !!u && !hasPush.get(u); }).length,
+  };
+}
