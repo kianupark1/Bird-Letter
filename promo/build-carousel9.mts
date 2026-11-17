@@ -30,7 +30,7 @@ const bird = (id: string, s: number, variant = "C") => renderToStaticMarkup(Reac
 const sparrow = BIRDS.find((b: any) => b.id === "sparrow")!;
 const SLOW = formatMinutes(sparrow.minutesSeoulBusan); // 앱 계산식 그대로(예: 11시간 36분)
 
-const C = { dahong: "#E2512A", ink: "#16110E", hanji: "#FBF3E4", cream: "#FFF8EC", gold: "#F0BC5C" };
+const C = { navy: "#1E3A5C", dahong: "#E2512A", ink: "#16110E", hanji: "#FBF3E4", cream: "#FFF8EC", gold: "#F0BC5C" };
 const CSS = `@font-face { font-family: P; src: url(${FONT}); font-weight: 100 900; }
 * { box-sizing: border-box; margin: 0; } html, body { width: 1080px; height: 1350px; }
 body { font-family: P, sans-serif; position: relative; overflow: hidden; letter-spacing: -2px; word-break: keep-all; }
@@ -67,7 +67,7 @@ const end = (line: string) => `<body style="background:${C.dahong};color:#fff;te
 
 
 const N = 5;
-const endCard = `<body style="background:${C.dahong};color:#fff;text-align:center">
+const endCard = `<body style="background:${C.navy};color:#fff;text-align:center">
      <div style="position:absolute;left:80px;right:80px;top:150px;font-size:76px;font-weight:900;line-height:1.25;letter-spacing:-3px">여러분은 누구에게<br>편지를 보내고 싶나요?</div>
      <img src="${icon}" style="position:absolute;left:420px;top:470px;width:240px;height:240px;border-radius:56px;box-shadow:0 30px 60px rgba(0,0,0,.25)">
      <div style="position:absolute;left:0;right:0;top:750px;font-size:100px;font-weight:900;letter-spacing:-4px">새 편지</div>
@@ -76,7 +76,7 @@ const endCard = `<body style="background:${C.dahong};color:#fff;text-align:cente
      <div style="position:absolute;left:0;right:0;top:1140px;font-size:30px;font-weight:700;letter-spacing:-.5px">안드로이드는 지금 웹으로 · bird-letter.vercel.app</div>
      <div style="position:absolute;left:0;right:0;top:1196px;font-size:28px;font-weight:600;opacity:.85;letter-spacing:-.5px">링크는 프로필에 @saepyeonji</div></body>`;
 const slides = [
-  `<body style="background:${C.dahong};color:#fff">
+  `<body style="background:${C.navy};color:#fff">
      <div style="position:absolute;left:80px;top:150px" class="big">답장,<br>천천히 와도<br>괜찮은 대화.</div>
      <div style="position:absolute;left:84px;top:560px;font-size:46px;font-weight:700;letter-spacing:-1.2px;opacity:.95">그런 메신저가 있었으면 했어요.</div>
      <div style="position:absolute;right:20px;top:720px;transform:rotate(-6deg)">${bird("pigeon", 580)}</div>
@@ -108,7 +108,7 @@ const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 });
 for (let i = 0; i < slides.length; i++) {
   const html = resolve(tmp, `slow-${i + 1}.html`);
-  const dark = /^\s*<body style="background:(#E2512A|#16110E)/.test(slides[i]);
+  const dark = /^\s*<body style="background:(#E2512A|#16110E|#1E3A5C)/.test(slides[i]);
   writeFileSync(html, `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${CSS}</style></head>${slides[i].replace("</body>", `${i > 0 && i < N - 1 ? `<div class="cnt" style="color:${dark ? "#fff" : C.ink}">${i + 1}/${N}</div>` : ""}</body>`)}</html>`);
   const p = await ctx.newPage();
   await p.goto("file://" + html);
