@@ -40,12 +40,23 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
   const myText = mine ? (entry.item as { message: string }).message : "";
   const ownPhotos = mine ? (entry.item as { photos?: string[] }).photos ?? [] : [];
 
+  // 받은 편지 글 받기: 막 도착한 편지는 서버 시계가 조금 늦어 잠깐 못 읽을 수 있어서 몇 번 더 시도해요(2026-11-17 "편지 눌러도 아무것도 안 떠")
+  const [bodyFail, setBodyFail] = useState(false);
+  const loadBody = (n = 0) => {
+    setBodyFail(false);
+    remote.getBody(entry.item.id).then((m) => {
+      if (m !== null) { setBody(m); return; }
+      if (n < 3) setTimeout(() => loadBody(n + 1), [1500, 3000, 6000][n]);
+      else setBodyFail(true);
+    }).catch(() => (n < 3 ? setTimeout(() => loadBody(n + 1), 2000) : setBodyFail(true)));
+  };
+
   // 펼쳤을 때: 받는 사람은 도착한 뒤에만 서버에서 내용·사진을 받아요(보낸 사람은 내 글을 언제든 봐요)
   useEffect(() => {
     if (!open || (!done && !mine)) return; // 내 편지는 날아가는 중에도 펼쳐 봐요
     if (!mine) {
       markOpened(entry.item.id); onOpened(entry.item.id);
-      if (body === null) remote.getBody(entry.item.id).then((m) => m !== null && setBody(m)).catch(() => {});
+      if (body === null) loadBody();
     }
     const own = mine ? (entry.item as { photos?: string[] }).photos : undefined;
     if (own?.length) return; // 내 폰에 있는 사진은 말풍선에 바로 보여요
@@ -146,6 +157,9 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
               }}
             />
           ) : null}
+          {done && !mine && bodyFail && body === null && (
+            <div className="small" role="alert" style={{ textAlign: "center" }}>편지를 받아 오지 못했어요. 인터넷을 확인해 주세요. <button type="button" className="chip" onClick={() => loadBody()}>다시 받기</button></div>
+          )}
           {mine && !done && <div className="small" style={{ textAlign: "center" }}>{name}님은 편지가 도착한 뒤에 읽을 수 있어요</div>}
           {notice && <div className="small" role="status">{notice}</div>}
           {!mine && done && !isWelcome(entry.item.id) && <Link href={letterHref(entry.item.id)} className="ch-more">신고·차단</Link>}

@@ -1274,3 +1274,12 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .applock span { font-size: 15px; color: var(--text); opacity: .75; }
 @keyframes applock { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-6px) rotate(4deg); } }
 @media (prefers-reduced-motion: reduce) { .applock-env { animation: none; } }
+
+/* 불러오는 중·오류 화면(src/components/Busy.tsx, src/app/error.tsx) */
+.busy { min-height: 60dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; color: var(--ink-soft, inherit); font-size: 17px; animation: busyIn .3s ease both; }
+.busy small { font-size: 14px; opacity: .75; }
+.busy .cta { width: auto; min-width: 200px; padding: 14px 28px; }
+.busy-dot { font-size: 40px; animation: busyBob 1.4s ease-in-out infinite; }
+@keyframes busyIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes busyBob { 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .busy, .busy-dot { animation: none; } }

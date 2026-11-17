@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -6,5 +7,5 @@ import { useEffect } from "react";
 export default function WritePage() {
   const router = useRouter();
   useEffect(() => { router.replace("/?write=1"); }, [router]);
-  return <main className="app" aria-busy="true" />;
+  return <Busy />;
 }

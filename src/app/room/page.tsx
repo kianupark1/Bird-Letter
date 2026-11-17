@@ -1,11 +1,12 @@
 "use client";
+import Busy from "@/components/Busy";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { getBird } from "@/lib/birds";
 import { getRoute } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
-import { letterProgress, markSeen, readOpened, useLetters, useNow, type Letter } from "@/lib/letters";
+import { letterProgress, markSeen, readOpened, refreshLetters, useLetters, useNow, type Letter } from "@/lib/letters";
 import { cachedFriends, listFriends, type Friend } from "@/lib/firebase/friends";
 import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
@@ -45,7 +46,7 @@ const readOk = (): string[] => { try { return JSON.parse(localStorage.getItem(PP
 
 export default function RoomPage() {
   return (
-    <Suspense fallback={<main className="app" aria-busy="true" />}>
+    <Suspense fallback={<Busy />}>
       <Room />
     </Suspense>
   );
@@ -137,6 +138,16 @@ function Room() {
     return () => { cancelAnimationFrame(raf); ts.forEach(clearTimeout); clearTimeout(stop); ro?.disconnect(); };
   }, [last, ready]);
 
+  // 알림을 눌러 들어왔는데 지난번 목록에 그 사람이 없으면(새 펜팔 등) 서버 목록을 한 번 새로 받아요(빈 화면·"찾을 수 없어요" 대신)
+  const [refetch, setRefetch] = useState<"idle" | "busy" | "done">("idle");
+  const missing = ready && backend === "firebase" && !!key && !thread;
+  useEffect(() => {
+    if (!missing || refetch !== "idle") return;
+    setRefetch("busy");
+    const stop = setTimeout(() => setRefetch("done"), 10000);
+    refreshLetters().catch(() => {}).finally(() => { clearTimeout(stop); setRefetch("done"); });
+  }, [missing, refetch]);
+
   // 친구 폰 알림 결과(src/lib/letters.ts가 보낸 직후 알려 줘요)
   const [pushMiss, setPushMiss] = useState<{ id: string; status: string } | null>(null);
   useEffect(() => {
@@ -144,8 +155,9 @@ function Room() {
     window.addEventListener("saepyeonji:friendpush", h);
     return () => window.removeEventListener("saepyeonji:friendpush", h);
   }, [thread]);
-  if (state !== "ready" || !ready) return <main className="app" aria-busy="true" />;
-  if (!thread && key && backend === "checking") return <main className="app" aria-busy="true" />; // 서버 목록을 받기 전에는 "찾을 수 없어요"를 띄우지 않아요
+  if (state !== "ready" || !ready) return <Busy />;
+  if (!thread && key && backend === "firebase" && refetch !== "done") return <Busy />; // 방금 온 사람의 편지일 수 있어요 → 서버에서 한 번 새로 받아 봐요
+  if (!thread && key && backend === "checking") return <Busy />; // 서버 목록을 받기 전에는 "찾을 수 없어요"를 띄우지 않아요
   if (!thread || !key) {
     return (
       <main className="app">

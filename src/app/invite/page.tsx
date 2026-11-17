@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -22,7 +23,7 @@ import { storeFor, type StoreBtn } from "../../../core/storeLinks";
  */
 export default function InvitePage() {
   return (
-    <Suspense fallback={<main className="app" aria-busy="true" />}>
+    <Suspense fallback={<Busy />}>
       <Invite />
     </Suspense>
   );
@@ -54,7 +55,7 @@ function Invite() {
     addFriend(code, profile.nickname, profile.avatarBird, profile.photo).then(() => setResult("done")).catch((e) => setResult((e as Error).message === "self" ? "self" : "error"));
   }, [state, inviter, profileReady, profile, code]);
 
-  if (state === "checking" || inviter === undefined) return <main className="app" aria-busy="true" />;
+  if (state === "checking" || inviter === undefined) return <Busy />;
   if (inviter === null)
     return (
       <main className="app">

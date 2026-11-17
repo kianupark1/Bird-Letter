@@ -62,3 +62,32 @@ export async function pushSubList(sa: ServiceAccount, admins: string[]): Promise
     return { type: f.fcm?.stringValue ? "앱" : "웹", at, admin: admins.includes(uid) };
   }).sort((a, b) => b.at - a.at).slice(0, 15).map(({ type, at, admin }) => ({ type, admin, savedKst: at ? new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " ") : "?" }));
 }
+
+/** 마지막 앱 알림 성공·실패 기록(sendPush.ts note) */
+export async function pushOps(sa: ServiceAccount) {
+  const token = await googleToken(sa);
+  const base = `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents/ops`;
+  const get = async (n: string) => {
+    const r = await fetch(`${base}/${n}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!r.ok) return null;
+    const f = ((await r.json()).fields ?? {}) as Record<string, { integerValue?: string; stringValue?: string }>;
+    const at = Number(f.at?.integerValue ?? 0);
+    return { kst: at ? new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " ") : "?", status: f.status?.integerValue, detail: f.detail?.stringValue, tag: f.tag?.stringValue };
+  };
+  return { lastOk: await get("pushOk"), lastFail: await get("pushFail") };
+}
+
+/** 최근 화면 오류 10개(src/app/api/client-error) */
+export async function clientErrors(sa: ServiceAccount) {
+  const token = await googleToken(sa);
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents:runQuery`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "clientErrors" }], orderBy: [{ field: { fieldPath: "at" }, direction: "DESCENDING" }], limit: 10 } }),
+  });
+  if (!r.ok) return [];
+  const rows = (await r.json()) as { document?: { fields: Record<string, { integerValue?: string; stringValue?: string }> } }[];
+  return rows.filter((x) => x.document).map(({ document: d }) => {
+    const f = d!.fields, at = Number(f.at?.integerValue ?? 0);
+    return { kst: new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " "), where: f.where?.stringValue, path: f.path?.stringValue, ua: f.ua?.stringValue, msg: f.msg?.stringValue, stack: f.stack?.stringValue };
+  });
+}

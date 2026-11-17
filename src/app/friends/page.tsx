@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import { inviteLink, inviteText } from "@/lib/inviteMsg";
 import Link from "next/link";
 import { usePeople } from "@/lib/people";
@@ -22,7 +23,7 @@ import { STORE } from "@/lib/release";
 
 export default function FriendsPage() {
   return (
-    <Suspense fallback={<main className="app" aria-busy="true" />}>
+    <Suspense fallback={<Busy />}>
       <Friends />
     </Suspense>
   );
@@ -96,7 +97,7 @@ function Friends() {
   };
 
   if (!firebaseEnabled) return <main className="app"><h1>친구</h1><div className="empty">서버에 연결된 뒤에 쓸 수 있어요.</div></main>;
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} next="/friends" />;
 
   // 카카오톡 친구 목록처럼: 맨 위에 나, 그 아래 친구들(같은 사람의 여러 계정은 한 줄로), 그다음 초대
