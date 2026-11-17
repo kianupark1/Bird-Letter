@@ -80,6 +80,11 @@ export async function POST(req: Request) {
           : { title: `💌 ${who}님이 편지를 보냈어요`, body: `${withIGa(bird.name)} ${route.title}을 날아오는 중 · 도착까지 약 ${left}`, url, tag: `l-${id}-d` },
         at: Math.max(Date.now() + 3000, sentAt) },
     ];
+    // 중간 알림(2026-11-17 대표님: "보낼 때·중간·받을 때"): 2시간 넘게 걸리면 절반쯤 왔을 때 한 번
+    if (total > 120) {
+      const half = Math.round(total / 2), hh = Math.floor(half / 60), mm = half % 60;
+      jobs.push({ p: { title: penpal ? "🌏 펜팔 편지가 절반쯤 왔어요" : `🕊 ${withIGa(who)} 보낸 편지가 절반쯤 왔어요`, body: `${bird.name}가 열심히 날아오는 중 · 도착까지 약 ${hh ? `${hh}시간${mm ? ` ${mm}분` : ""}` : `${mm}분`}`, url, tag: `l-${id}-h` }, at: sentAt + half * 60000 });
+    }
     if (total > 60) jobs.push({ p: { title: penpal ? "🌏 펜팔 편지가 곧 도착해요" : `🕊 ${who}님의 편지가 곧 도착해요`, body: `30분 뒤 ${bird.name}가 도착해요`, url, tag: `l-${id}-s` }, at: arriveAt - 30 * 60000 });
     jobs.push({ p: { title: penpal ? "짹짹! 펜팔 편지가 도착했어요" : `짹짹! ${withIGa(who)} 보낸 편지가 도착했어요`, body: penpal ? `${who}의 ${bird.name}가 편지를 가져왔어요` : `${route.title} · ${bird.name}가 편지를 가져왔어요`, url, tag: `l-${id}-r` }, at: arriveAt });
 
