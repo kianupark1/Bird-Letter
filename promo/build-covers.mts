@@ -1,7 +1,7 @@
 /**
  * 하루 3개 같은 색 표지(2026-11-17 대표님: "3개씩 같은 색이어야 인스타 페이지가 예뻐져, 오방색에 맞춰 하루 3개씩"):
  *   npx tsx promo/build-covers.mts
- * 2026-11-18부터 날마다 색이 돌아가요: 남색 → 황토 → 한지 → 먹 → 다홍 → (다시 남색).
+ * 2026-11-17부터 날마다 색이 돌아가요: 남색 → 황토 → 한지 → 먹 → 다홍 → (다시 남색).
  * 자동 글(아침·저녁·밤)마다 그날 색의 표지를 만들어 넘겨 보기 첫 장으로 끼우고(promo/cards/cv/), 영상 글은 같은 색 릴스 표지(igCover)로.
  * 표지 글 = 글의 첫 줄. 이미 표지를 넣은 글은 다시 끼우지 않고 그림만 새로 그려요.
  */
@@ -20,7 +20,7 @@ const { chromium } = (() => { try { return req("playwright"); } catch { return r
 const root = resolve(import.meta.dirname, "..");
 const FONT = "file://" + resolve(root, "src/app/fonts/PretendardSub.woff2");
 const icon = "file://" + resolve(root, "promo/store/play-icon-512.png");
-const START = "2026-11-18";
+const START = "2026-11-17"; // 11/17 남색(대표님: "오늘색 남색으로") → 11/18 황토
 export const DAY_COLORS = [
   { name: "남색", bg: "#1E3A5C", fg: "#FFFFFF", accent: "#F0BC5C" },
   { name: "황토", bg: "#E0A83C", fg: "#16110E", accent: "#FFFFFF" },
@@ -81,13 +81,13 @@ const shoot = async (file: string, markup: string, w: number, h: number) => {
 let n = 0;
 for (const p of sched.posts) {
   const d = dateOf(p);
-  if (!d || d < START || !AUTO.has(p.slot)) continue;
+  if (!d || d < START || !(AUTO.has(p.slot) || p.cover)) continue;
   const i = dayIdx(d), c = DAY_COLORS[((i % 5) + 5) % 5];
   const slot = p.slot ?? "noon";
   const name = `cv-${d}-${slot}`;
   const text = hook(p.text);
   const pool = c.fg === "#FFFFFF" ? BIRDS.filter((b) => b !== "magpie") : BIRDS; // 어두운 바탕에선 까만 까치가 묻혀요
-  const bird = pool[(i * 3 + ["noon", "evening", "night", "talk1", "talk2"].indexOf(slot)) % pool.length];
+  const bird = pool[(i * 3 + Math.max(0, ["noon", "evening", "night", "talk1", "talk2"].indexOf(slot))) % pool.length];
   if (p.video && !p.carousel) {
     await shoot(resolve(outDir, `${name}-reel.png`), html(text, c, bird, 1080, 1920, true), 1080, 1920);
     p.igCover = `cards/cv/${name}-reel.jpg`;

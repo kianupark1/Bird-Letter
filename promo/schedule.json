@@ -133,7 +133,7 @@
       "video": "video/c2-mom.mp4",
       "text": "엄마한테 '사랑해', 카톡으론 어색할 때 🕊\n\n비둘기가 대신 전해 줘요. 둘 다 지도로 같이 기다리고, 도착하면 편지지로 펼쳐져요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #릴스 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-12-27-noon-reel.jpg",
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 2,
@@ -204,7 +204,7 @@
       "video": "video/c2-love.mp4",
       "text": "'보고 싶어'를 1초 만에 보내기 아까울 때 💌\n\n새가 실제 거리만큼 날아가서 전해 줘요. 기다리는 시간까지 선물이 돼요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #릴스 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-12-28-noon-reel.jpg",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 3,
@@ -378,7 +378,9 @@
         "youtube"
       ],
       "video": "video/saepyeonji-15s-dad.mp4",
-      "text": "보낸 지 5시간째, 아직 날아가는 중 🕊\n\n어디쯤 왔을까 자꾸 지도를 보게 돼요.\n기다리는 시간도 편지의 일부예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #아빠 #편지 #기다림 #감성"
+      "text": "보낸 지 5시간째, 아직 날아가는 중 🕊\n\n어디쯤 왔을까 자꾸 지도를 보게 돼요.\n기다리는 시간도 편지의 일부예요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #아빠 #편지 #기다림 #감성",
+      "igCover": "cards/cv/cv-2026-11-17-noon-reel.jpg",
+      "color": "남색"
     },
     {
       "day": 7,
@@ -388,15 +390,17 @@
         "threads",
         "x"
       ],
-      "image": "app-07-penpal.png",
+      "image": "cv/cv-2026-11-17-evening.png",
       "text": "모르는 누군가에게 편지를 날려 보내 보세요 🌏\n\n새 편지 펜팔: 이름 대신 펜팔 이름, 위치는 도시까지만.\n받겠다고 한 사람에게만 가요. (만 14세 이상)\n\n{{받기}}\n\n#새편지 #펜팔 #펜팔친구",
       "carousel": [
+        "cv/cv-2026-11-17-evening.png",
         "app-07-penpal.png",
         "story/d7-evening-app-07-penpal-2.png",
         "story/how.png",
         "story/easy.png",
         "story/cta.png"
-      ]
+      ],
+      "color": "남색"
     },
     {
       "day": 7,
@@ -406,15 +410,17 @@
         "threads",
         "x"
       ],
-      "image": "more-10-waitforreply.png",
+      "image": "cv/cv-2026-11-17-night.png",
       "text": "답장 기다리는 거, 원래 이렇게 설레는 거였어요 💭\n\n지금 어디쯤 날고 있는지 지도로 같이 보면서\n도착을 기다려요.\n\n{{받기}}\n\n#새편지 #기다림 #답장",
       "carousel": [
+        "cv/cv-2026-11-17-night.png",
         "more-10-waitforreply.png",
         "story/d7-night-more-10-waitforreply-2.png",
         "story/how.png",
         "story/easy.png",
         "story/cta.png"
-      ]
+      ],
+      "color": "남색"
     },
     {
       "day": 8,
@@ -427,7 +433,7 @@
       "text": "펜팔, 아세요? 💌\n\n모르는 누군가에게 편지를 쓰고, 답장을 며칠씩 기다리던 그 감성.\n이제 핸드폰으로 느껴 봐요.\n‘펜팔 친구 찾기’는 펜팔 편지를 받겠다고 한 사람에게만 새를 날려 보내고, 진짜 이름·사진·동네 대신 펜팔 이름과 도시만 보여요.\n(펜팔은 만 14세 이상 · 신고·차단 기능이 있어요)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #펜팔친구 #편지 #손편지 #감성",
       "video": "video/saepyeonji-15s-penpal.mp4",
       "igCover": "cards/cv/cv-2026-11-18-noon-reel.jpg",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 8,
@@ -447,7 +453,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 8,
@@ -467,7 +473,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 9,
@@ -480,7 +486,7 @@
       "video": "video/saepyeonji-15s-friend.mp4",
       "text": "바로 안 가서 더 설레는 편지 💌\n\n부산까지 비둘기로 5시간쯤.\n기다린 만큼 더 반가워요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #부산 #친구 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-11-19-noon-reel.jpg",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 9,
@@ -500,7 +506,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 9,
@@ -513,7 +519,7 @@
       "video": "video/hook/hook-5.mp4",
       "text": "이 메신저는 일부러 느려요 🐢\n\n빠른 게 다가 아니잖아요.\n기다리는 동안 더 보고 싶어지는 편지.\n\n{{받기}}\n\n#새편지 #슬로우라이프 #앱추천",
       "igCover": "cards/cv/cv-2026-11-19-night-reel.jpg",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 10,
@@ -532,7 +538,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 10,
@@ -552,7 +558,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 10,
@@ -572,7 +578,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 11,
@@ -591,7 +597,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 11,
@@ -611,7 +617,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 11,
@@ -624,7 +630,7 @@
       "video": "video/v2/saepyeonji-15s-friend.mp4",
       "text": "부산 사는 친구한테 💌\n\n서울에서 부산까지 매는 약 3시간 반,\n까치는 9시간쯤 걸려요.\n자기 전에 까치로 보내면 아침에 도착해요.\n\n{{받기}}\n\n#새편지 #친구 #부산",
       "igCover": "cards/cv/cv-2026-11-21-night-reel.jpg",
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 12,
@@ -643,7 +649,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 12,
@@ -663,7 +669,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 12,
@@ -683,7 +689,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 13,
@@ -696,7 +702,7 @@
       "video": "video/saepyeonji-15s.mp4",
       "text": "답장, 너무 빨라서 설레지 않죠? 🕊\n\n엄마에게 보낸 편지가 지금 대전을 지나는 중.\n도착하면 두루마리처럼 펼쳐져요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #엄마 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-11-23-noon-reel.jpg",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 13,
@@ -716,7 +722,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 13,
@@ -729,7 +735,7 @@
       "video": "video/v2/saepyeonji-15s-penpal.mp4",
       "text": "펜팔, 아세요? 🌏\n\n이름 대신 펜팔 이름과 도시만.\n모르는 누군가와 편지를 주고받던 그 감성 그대로.\n(펜팔은 만 14세 이상)\n\n{{받기}}\n\n#새편지 #펜팔 #편지친구",
       "igCover": "cards/cv/cv-2026-11-23-night-reel.jpg",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 14,
@@ -748,7 +754,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 14,
@@ -768,7 +774,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 14,
@@ -788,7 +794,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 15,
@@ -801,7 +807,7 @@
       "video": "video/saepyeonji-15s-penpal.mp4",
       "text": "펜팔, 아세요? 🕊\n\n편지 한 통 쓰고 답장을 며칠씩 기다리던 시절이 있었어요.\n그 두근거림, 다시 느껴 볼래요?\n(펜팔은 만 14세 이상 · 펜팔 이름과 도시만 보여요)\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #펜팔 #레트로 #손편지 #감성",
       "igCover": "cards/cv/cv-2026-11-25-noon-reel.jpg",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 15,
@@ -821,7 +827,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 15,
@@ -841,7 +847,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 16,
@@ -860,7 +866,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 16,
@@ -880,7 +886,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 16,
@@ -893,7 +899,7 @@
       "video": "video/hook/hook-1.mp4",
       "text": "보낸 메시지가 9시간 뒤에 도착해요 🕊\n\n까치가 서울에서 부산까지 날아가거든요.\n오늘 밤 보내면, 내일 아침 도착.\n\n{{받기}}\n\n#새편지 #메신저앱 #앱추천",
       "igCover": "cards/cv/cv-2026-11-26-night-reel.jpg",
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 17,
@@ -906,7 +912,7 @@
       "video": "video/saepyeonji-15s-love.mp4",
       "text": "읽씹이 무서울 땐, 편지로 💌\n\n바로 안 가니까 바로 답할 필요도 없어요.\n천천히 쓰고, 천천히 기다려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #장거리연애 #편지 #설렘",
       "igCover": "cards/cv/cv-2026-11-27-noon-reel.jpg",
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 17,
@@ -926,7 +932,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 17,
@@ -946,7 +952,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 18,
@@ -965,7 +971,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 18,
@@ -985,7 +991,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 18,
@@ -998,7 +1004,7 @@
       "video": "video/v2/saepyeonji-15s-grandma.mp4",
       "text": "강릉 할머니께 💌\n\n까치가 천천히 날아가서\n내일 할머니 폰에 도착해요.\n\n{{받기}}\n\n#새편지 #할머니 #가족편지",
       "igCover": "cards/cv/cv-2026-11-28-night-reel.jpg",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 19,
@@ -1011,7 +1017,7 @@
       "video": "video/saepyeonji-15s-grandma.mp4",
       "text": "전화는 쑥스럽고, 문자는 너무 짧을 때 🐦\n\n할머니께 편지 한 통 어때요?\n까치가 천천히 날아가 전해 드려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #할머니 #가족 #편지",
       "igCover": "cards/cv/cv-2026-11-29-noon-reel.jpg",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 19,
@@ -1031,7 +1037,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 19,
@@ -1051,7 +1057,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 20,
@@ -1070,7 +1076,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 20,
@@ -1090,7 +1096,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 20,
@@ -1110,7 +1116,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 21,
@@ -1123,7 +1129,7 @@
       "video": "video/saepyeonji-15s-friend.mp4",
       "text": "멀리 사는 친구에게 💌\n\n이번엔 편지로 안부를 물어봐요.\n기다린 만큼 더 반가워요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #친구 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-12-01-noon-reel.jpg",
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 21,
@@ -1143,7 +1149,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 22,
@@ -1162,7 +1168,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 22,
@@ -1182,7 +1188,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 23,
@@ -1195,7 +1201,7 @@
       "video": "video/saepyeonji-15s-dad.mp4",
       "text": "말로는 쑥스러운 고마움 🕊\n\n아빠에게 편지로 전해 보세요.\n도착 알림이 울리는 순간을 같이 기다려요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #아빠 #가족 #편지",
       "igCover": "cards/cv/cv-2026-12-03-noon-reel.jpg",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 23,
@@ -1215,7 +1221,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 24,
@@ -1234,7 +1240,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 24,
@@ -1254,7 +1260,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 25,
@@ -1267,7 +1273,7 @@
       "video": "video/saepyeonji-15s-sister.mp4",
       "text": "생일 축하, 편지로 🎂\n\n생일 아침에 딱 도착하게 미리 보내 둘 수도 있어요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #생일 #언니 #편지",
       "igCover": "cards/cv/cv-2026-12-05-noon-reel.jpg",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 25,
@@ -1287,7 +1293,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 26,
@@ -1306,7 +1312,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 26,
@@ -1326,7 +1332,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 27,
@@ -1339,7 +1345,7 @@
       "video": "video/saepyeonji-15s.mp4",
       "text": "답장, 너무 빨라서 설레지 않죠? 🕊\n\n가끔은 천천히 오는 소식이 더 반가워요.\n오늘 한 통, 새에게 맡겨 보세요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #기다림 #감성",
       "igCover": "cards/cv/cv-2026-12-07-noon-reel.jpg",
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 27,
@@ -1359,7 +1365,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 28,
@@ -1378,7 +1384,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 28,
@@ -1398,7 +1404,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 29,
@@ -1411,7 +1417,7 @@
       "video": "video/saepyeonji-15s-love.mp4",
       "text": "보고 싶은 마음, 3시간 12분 동안 날아가는 중 💌\n\n도착하기 전엔 열어 볼 수 없어서 더 설레요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #장거리연애 #편지 #설렘 #기다림",
       "igCover": "cards/cv/cv-2026-12-09-noon-reel.jpg",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 30,
@@ -1424,7 +1430,7 @@
       "video": "video/saepyeonji-15s-sister.mp4",
       "text": "도착 알림이 이렇게 설렐 줄이야 🎂\n\n언니 생일에 맞춰 매로 날려 보낸 편지.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #생일 #언니 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-12-10-noon-reel.jpg",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 31,
@@ -1443,7 +1449,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 31,
@@ -1463,7 +1469,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 32,
@@ -1483,7 +1489,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 33,
@@ -1503,7 +1509,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 34,
@@ -1523,7 +1529,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 35,
@@ -1543,7 +1549,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 36,
@@ -1563,7 +1569,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 37,
@@ -1583,7 +1589,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 38,
@@ -1603,7 +1609,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 39,
@@ -1622,7 +1628,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 39,
@@ -1642,7 +1648,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 40,
@@ -1655,7 +1661,7 @@
       "video": "video/saepyeonji-15s.mp4",
       "text": "답장, 너무 빨라서 설레지 않죠? 🕊\n\n새가 실제 거리만큼 날아서 전해 주는 느린 편지.\n도착하면 두루마리처럼 펼쳐져요.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-12-20-noon-reel.jpg",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 40,
@@ -1675,7 +1681,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 41,
@@ -1694,7 +1700,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 41,
@@ -1714,7 +1720,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "day": 42,
@@ -1727,7 +1733,7 @@
       "video": "video/saepyeonji-15s-grandma.mp4",
       "text": "할머니께 까치로 편지 보냈어요 🐦\n\n몇 시간 걸리지만, 도착하면 두루마리처럼 펼쳐져요.\n아침 까치가 울면 반가운 소식이 온다죠.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #할머니 #까치 #편지 #기다림",
       "igCover": "cards/cv/cv-2026-12-22-noon-reel.jpg",
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "day": 43,
@@ -1746,7 +1752,7 @@
         "story/easy.png",
         "story/cta.png"
       ],
-      "color": "남색"
+      "color": "황토"
     },
     {
       "day": 44,
@@ -1758,7 +1764,7 @@
       "video": "video/hook/hook-1.mp4",
       "text": "보낸 메시지가 9시간 뒤에 도착해요 🕊\n\n까치가 서울에서 부산까지 진짜 날아가거든요.\n받는 사람도 지도에서 같이 기다려요.\n\n{{받기}}\n\n#새편지 #앱추천 #메신저앱",
       "igCover": "cards/cv/cv-2026-12-24-noon-reel.jpg",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "day": 45,
@@ -1770,7 +1776,7 @@
       "video": "video/hook/hook-2.mp4",
       "text": "엄마한테 편지 보내면 몇 시간 걸릴까요? 🤔\n\n댓글로 맞혀 보세요. 정답은 영상 끝에 있어요.\n(서울 → 부산, 까치로 보냈어요)\n\n{{받기}}\n\n#새편지 #앱추천 #메신저앱",
       "igCover": "cards/cv/cv-2026-12-25-noon-reel.jpg",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "day": 46,
@@ -1782,7 +1788,7 @@
       "video": "video/hook/hook-3.mp4",
       "text": "진짜 새가 배달해요 🕊\n\n편지를 쓰고 새를 고르면 실제 거리만큼 날아가요.\n지금 어디쯤 날고 있는지 지도로 보여요.\n\n{{받기}}\n\n#새편지 #앱추천 #메신저앱",
       "igCover": "cards/cv/cv-2026-12-26-noon-reel.jpg",
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "date": "2026-12-20",
@@ -1795,7 +1801,7 @@
       "video": "video/saepyeonji-15s-xmas.mp4",
       "text": "크리스마스 아침에 도착하는 편지 🎄\n\n지금 보내면 딱 맞춰 날아가요. 열어 보기 전까지 두근두근.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #크리스마스 #편지 #기다림 #크리스마스선물",
       "igCover": "cards/cv/cv-2026-12-20-noon-reel.jpg",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "date": "2026-11-15",
@@ -1898,9 +1904,11 @@
         "x"
       ],
       "video": "video/reel-suneung.mp4",
-      "igCover": "video/reel-suneung-cover.jpg",
       "text": "수능 보는 너에게, 카톡 말고 편지 ✏️💌\n\n이틀 뒤면 수능이에요.\n오늘 밤, 시험 끝난 날 도착할 편지 한 통 써 두는 건 어때요?\n\n\"오늘 어땠든 상관없어. 진짜 고생 많았어.\" (예시예요)\n\n도착 전엔 못 열어서, 기다리는 동안 더 설레요 🕊\n\n{{받기}}\n\n#수능 #수능응원 #수험생 #새편지 #응원편지",
-      "xText": "수능 보는 너에게, 카톡 말고 편지 ✏️\n오늘 밤 써 두면 시험 끝난 날 도착해요 💌\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n📱 안드로이드는 웹으로 https://bird-letter.vercel.app\n🔗 링크는 프로필에도 있어요 (@saepyeonji)\n\n#수능응원 #새편지"
+      "xText": "수능 보는 너에게, 카톡 말고 편지 ✏️\n오늘 밤 써 두면 시험 끝난 날 도착해요 💌\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n📱 안드로이드는 웹으로 https://bird-letter.vercel.app\n🔗 링크는 프로필에도 있어요 (@saepyeonji)\n\n#수능응원 #새편지",
+      "cover": true,
+      "igCover": "cards/cv/cv-2026-11-17-special8-reel.jpg",
+      "color": "남색"
     },
     {
       "date": "2026-11-18",
@@ -1913,7 +1921,7 @@
         "cv/cv-2026-11-18-talk1.png"
       ],
       "image": "cv/cv-2026-11-18-talk1.png",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "date": "2026-11-18",
@@ -1926,7 +1934,7 @@
         "cv/cv-2026-11-18-talk2.png"
       ],
       "image": "cv/cv-2026-11-18-talk2.png",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "date": "2026-11-19",
@@ -1939,7 +1947,7 @@
         "cv/cv-2026-11-19-talk1.png"
       ],
       "image": "cv/cv-2026-11-19-talk1.png",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "date": "2026-11-19",
@@ -1952,7 +1960,7 @@
         "cv/cv-2026-11-19-talk2.png"
       ],
       "image": "cv/cv-2026-11-19-talk2.png",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "date": "2026-11-20",
@@ -1965,7 +1973,7 @@
         "cv/cv-2026-11-20-talk1.png"
       ],
       "image": "cv/cv-2026-11-20-talk1.png",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "date": "2026-11-20",
@@ -1978,7 +1986,7 @@
         "cv/cv-2026-11-20-talk2.png"
       ],
       "image": "cv/cv-2026-11-20-talk2.png",
-      "color": "한지"
+      "color": "먹"
     },
     {
       "date": "2026-11-21",
@@ -1991,7 +1999,7 @@
         "cv/cv-2026-11-21-talk1.png"
       ],
       "image": "cv/cv-2026-11-21-talk1.png",
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "date": "2026-11-21",
@@ -2004,7 +2012,7 @@
         "cv/cv-2026-11-21-talk2.png"
       ],
       "image": "cv/cv-2026-11-21-talk2.png",
-      "color": "먹"
+      "color": "다홍"
     },
     {
       "date": "2026-11-22",
@@ -2017,7 +2025,7 @@
         "cv/cv-2026-11-22-talk1.png"
       ],
       "image": "cv/cv-2026-11-22-talk1.png",
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "date": "2026-11-22",
@@ -2030,7 +2038,7 @@
         "cv/cv-2026-11-22-talk2.png"
       ],
       "image": "cv/cv-2026-11-22-talk2.png",
-      "color": "다홍"
+      "color": "남색"
     },
     {
       "date": "2026-11-23",
@@ -2043,7 +2051,7 @@
         "cv/cv-2026-11-23-talk1.png"
       ],
       "image": "cv/cv-2026-11-23-talk1.png",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "date": "2026-11-23",
@@ -2056,7 +2064,7 @@
         "cv/cv-2026-11-23-talk2.png"
       ],
       "image": "cv/cv-2026-11-23-talk2.png",
-      "color": "남색"
+      "color": "황토"
     },
     {
       "date": "2026-11-24",
@@ -2069,7 +2077,7 @@
         "cv/cv-2026-11-24-talk1.png"
       ],
       "image": "cv/cv-2026-11-24-talk1.png",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "date": "2026-11-24",
@@ -2082,7 +2090,7 @@
         "cv/cv-2026-11-24-talk2.png"
       ],
       "image": "cv/cv-2026-11-24-talk2.png",
-      "color": "황토"
+      "color": "한지"
     },
     {
       "date": "2026-11-17",
