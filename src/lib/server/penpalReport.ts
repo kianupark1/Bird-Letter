@@ -44,3 +44,21 @@ export async function penpalReport(sa: ServiceAccount): Promise<PenpalReport> {
     noPushLetters: list.filter((f) => { const u = f.recipientUid?.stringValue; return !!u && !hasPush.get(u); }).length,
   };
 }
+
+/** 알림 주소 목록(2026-11-17 점검): 종류·저장 시각·운영자 계정인지만(uid·토큰은 공개 저장소 로그에 남지 않게 빼요) */
+export async function pushSubList(sa: ServiceAccount, admins: string[]): Promise<{ type: string; savedKst: string; admin: boolean }[]> {
+  const token = await googleToken(sa);
+  const base = `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents`;
+  const r = await fetch(`${base}:runQuery`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "push", allDescendants: true }], select: { fields: [{ fieldPath: "at" }, { fieldPath: "fcm" }] }, limit: 100 } }),
+  });
+  if (!r.ok) throw new Error(`subs-${r.status}`);
+  const rows = ((await r.json()) as { document?: { name: string; fields?: Record<string, { integerValue?: string; doubleValue?: number; stringValue?: string }> } }[]).filter((x) => x.document);
+  return rows.map((x) => {
+    const f = x.document!.fields ?? {};
+    const uid = decodeURIComponent(x.document!.name.split("/users/")[1]?.split("/")[0] ?? "");
+    const at = Number(f.at?.integerValue ?? f.at?.doubleValue ?? 0);
+    return { type: f.fcm?.stringValue ? "앱" : "웹", at, admin: admins.includes(uid) };
+  }).sort((a, b) => b.at - a.at).slice(0, 15).map(({ type, at, admin }) => ({ type, admin, savedKst: at ? new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " ") : "?" }));
+}
