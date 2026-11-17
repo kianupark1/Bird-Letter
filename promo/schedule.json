@@ -1891,25 +1891,6 @@
     },
     {
       "date": "2026-11-17",
-      "slot": "special7",
-      "to": [
-        "instagram",
-        "threads",
-        "x"
-      ],
-      "image": "c8-mom-1.png",
-      "carousel": [
-        "c8-mom-1.png",
-        "c8-mom-2.png",
-        "c8-mom-3.png",
-        "c8-mom-4.png",
-        "c8-mom-5.png"
-      ],
-      "text": "수험생 엄마·아빠, 말로는 쑥스러워서 못 한 말 있죠? ✏️\n\n도시락 옆에 못 넣은 편지,\n새가 대신 전해 줄게요 🕊\n\n도착 전엔 열어 볼 수 없어서\n아이도 지도 위로 날아오는 새를 보며 기다려요.\n기다리는 시간도 응원이니까요 💌\n\n시험 끝난 날 저녁, 편지 한 통 어떠세요?\n\n{{받기}}\n\n#수능 #수험생엄마 #수능응원 #수험생 #새편지",
-      "xText": "수험생 엄마·아빠, 말로는 쑥스러워 못 한 말 ✏️\n도시락 옆에 못 넣은 편지, 시험 끝난 날 새가 대신 전해요 🕊\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n📱 안드로이드는 웹으로 https://bird-letter.vercel.app\n🔗 링크는 프로필에도 있어요 (@saepyeonji)\n\n#수능응원 #새편지"
-    },
-    {
-      "date": "2026-11-17",
       "slot": "special8",
       "to": [
         "instagram",
@@ -2102,6 +2083,55 @@
       ],
       "image": "cv/cv-2026-11-24-talk2.png",
       "color": "황토"
+    },
+    {
+      "date": "2026-11-17",
+      "slot": "special7",
+      "to": [
+        "threads"
+      ],
+      "image": "c9-slow-1.png",
+      "carousel": [
+        "c9-slow-1.png",
+        "c9-slow-2.png",
+        "c9-slow-3.png",
+        "c9-slow-4.png",
+        "c9-slow-5.png"
+      ],
+      "text": "답장이 빨리 오면 반갑지만, 천천히 와도 괜찮은 대화가 있었으면 했어요.\n그래서 느린 메신저 ‘새편지’를 만들고 있습니다.\n\n여러분은 누구에게 편지를 보내고 싶나요? 🕊️\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지"
+    },
+    {
+      "date": "2026-11-17",
+      "slot": "special7",
+      "to": [
+        "instagram"
+      ],
+      "image": "c9-slow-1.png",
+      "carousel": [
+        "c9-slow-1.png",
+        "c9-slow-2.png",
+        "c9-slow-3.png",
+        "c9-slow-4.png",
+        "c9-slow-5.png"
+      ],
+      "text": "마음을 적고, 새에게 맡기는 시간. 🕊️\n\n실제 거리와 실제 새의 비행 속도를 바탕으로\n편지가 천천히 도착하는 메신저, 새편지.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.\n\n#새편지 #느린메신저 #편지 #기다림"
+    },
+    {
+      "date": "2026-11-17",
+      "slot": "special7",
+      "to": [
+        "x"
+      ],
+      "image": "c9-slow-1.png",
+      "carousel": [
+        "c9-slow-1.png",
+        "c9-slow-2.png",
+        "c9-slow-3.png",
+        "c9-slow-4.png",
+        "c9-slow-5.png"
+      ],
+      "text": "빨리 답해야 한다는 부담 대신, 편지가 오는 설렘을. 🕊️\n느린 메신저 새편지.\n\n{{받기}}\n\n기다림도 소통의 일부입니다.",
+      "xText": "빨리 답해야 한다는 부담 대신, 편지가 오는 설렘을. 🕊️\n느린 메신저 새편지.\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n📱 안드로이드는 웹으로 https://bird-letter.vercel.app\n🔗 링크는 프로필에도 있어요 (@saepyeonji)\n\n기다림도 소통의 일부입니다."
     }
   ]
 }
