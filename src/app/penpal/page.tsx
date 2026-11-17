@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -21,9 +22,9 @@ import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName
 /** 펜팔: 모르는 누군가에게 새 날려 보내기 (시안 v5-1·v5-2) */
 export default function PenpalPage() {
   const { state, recheck } = useSession();
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} next="/penpal" />;
-  return <Suspense fallback={<main className="app" aria-busy="true" />}><Penpal /></Suspense>;
+  return <Suspense fallback={<Busy />}><Penpal /></Suspense>;
 }
 
 function Penpal() {
@@ -58,7 +59,7 @@ function Penpal() {
     void saveMyPenpal(myPenpalDoc(profile, { region: city })).catch(() => {});
   }, [ready, profile.penpalAgreed, profile.penpalOff, profile.penpalListed, profile.penpalPhoto, myName, city, tags.join(","), profile.avatarBird]);
 
-  if (!ready) return <main className="app" aria-busy="true" />;
+  if (!ready) return <Busy />;
 
   if (!profile.penpalAgreed) {
     return (

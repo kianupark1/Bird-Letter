@@ -80,7 +80,17 @@ export function initSwipeNav() {
   };
   const clear = (mv: Moving) => { for (const el of mv.els) { el.style.transition = ""; el.style.transform = ""; el.style.willChange = ""; el.style.boxShadow = ""; } shade.style.visibility = "hidden"; };
 
+  // 안전장치(2026-11-17 "편지 누르면 아무것도 안 떠"): 밀기가 끝난 뒤 화면이 옆으로 밀리거나 숨겨진 채 남지 않게, 손을 댈 때마다 남은 흔적을 지워요
+  const heal = () => {
+    document.querySelectorAll(".swipe-ghost").forEach((g) => g.remove());
+    for (const el of Array.from(document.body.children)) if (el instanceof HTMLElement && el.id !== "boot" && (el.style.transform || el.style.visibility === "hidden")) {
+      el.style.transition = ""; el.style.transform = ""; el.style.willChange = ""; el.style.boxShadow = ""; el.style.visibility = "";
+    }
+    shade.style.visibility = "hidden";
+  };
+  let lastEnd = 0;
   document.addEventListener("touchstart", (e) => {
+    if (!busy && performance.now() - lastEnd > 400) heal();
     if (busy || e.touches.length !== 1) { s = null; return; }
     const t = e.touches[0];
     if (t.clientX > EDGE || (e.target as Element | null)?.closest?.(SKIP)) { s = null; return; }
@@ -168,7 +178,8 @@ export function initSwipeNav() {
       }));
     };
     slideIn();
-    setTimeout(() => { ghost.remove(); shade.style.visibility = "hidden"; busy = false; }, ms + 120);
+    setTimeout(() => { ghost.remove(); shade.style.visibility = "hidden"; busy = false; lastEnd = performance.now(); }, ms + 120);
+    setTimeout(() => { if (!busy) heal(); }, 1500); // 뒤 화면이 늦게 떠도 1.5초 뒤엔 꼭 제자리
   };
   document.addEventListener("touchend", () => finish(false), { passive: true, capture: true });
   document.addEventListener("touchcancel", () => finish(true), { passive: true, capture: true });

@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
@@ -16,7 +17,7 @@ import Face from "@/components/Face";
  */
 export default function PenBrowse() {
   const { state, recheck } = useSession();
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} next="/pen/browse" />;
   return <Browse />;
 }

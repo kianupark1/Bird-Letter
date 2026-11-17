@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import { isWelcome } from "../../../core/welcome";
 import { useEffect, useMemo, useState } from "react";
 import { getRoute } from "@/lib/routes";
@@ -25,7 +26,7 @@ const km = (n: number) => `${n.toLocaleString("ko-KR")}km`;
 /** 우리 랭킹: 친구와 나 중 누가 제일 멀리 보냈을까 (시안 v2-7) */
 export default function RankPage() {
   const { state, recheck } = useSession();
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} next="/rank" />;
   return <Rank />;
 }

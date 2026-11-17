@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import Link from "next/link";
 import { useMemo } from "react";
 import { getRoute } from "@/lib/routes";
@@ -15,7 +16,7 @@ import PostcardView from "@/components/Postcard";
 /** 스탬프 도감: 편지가 지나간 명소와 날아가며 주운 물건을 모아요(시안 v4-4) */
 export default function StampsPage() {
   const { state, recheck } = useSession();
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} next="/stamps" />;
   return <Stamps />;
 }

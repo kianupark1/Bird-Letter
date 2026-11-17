@@ -76,3 +76,18 @@ export async function pushOps(sa: ServiceAccount) {
   };
   return { lastOk: await get("pushOk"), lastFail: await get("pushFail") };
 }
+
+/** 최근 화면 오류 10개(src/app/api/client-error) */
+export async function clientErrors(sa: ServiceAccount) {
+  const token = await googleToken(sa);
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents:runQuery`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "clientErrors" }], orderBy: [{ field: { fieldPath: "at" }, direction: "DESCENDING" }], limit: 10 } }),
+  });
+  if (!r.ok) return [];
+  const rows = (await r.json()) as { document?: { fields: Record<string, { integerValue?: string; stringValue?: string }> } }[];
+  return rows.filter((x) => x.document).map(({ document: d }) => {
+    const f = d!.fields, at = Number(f.at?.integerValue ?? 0);
+    return { kst: new Date(at + 9 * 3600_000).toISOString().slice(5, 16).replace("T", " "), where: f.where?.stringValue, path: f.path?.stringValue, ua: f.ua?.stringValue, msg: f.msg?.stringValue, stack: f.stack?.stringValue };
+  });
+}

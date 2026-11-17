@@ -6,7 +6,7 @@ import { ADMIN_UIDS, adminFromEnv, dailyText } from "../../../../../core/adminSt
 import type { PushSub } from "../../../../../core/pushPayload";
 import { googleToken, serviceAccount } from "@/lib/server/google";
 import { computeStats } from "@/lib/server/stats";
-import { penpalReport, pushOps, pushSubList } from "@/lib/server/penpalReport";
+import { clientErrors, penpalReport, pushOps, pushSubList } from "@/lib/server/penpalReport";
 import { backfillPenpals } from "@/lib/server/penpalBackfill";
 import { sendPush } from "@/lib/server/sendPush";
 
@@ -96,7 +96,8 @@ export async function POST(req: Request) {
     }
     const subs = await pushSubList(sa, admins).catch((e) => ({ error: e instanceof Error ? e.message : "fail" }));
     const ops = await pushOps(sa).catch(() => null);
-    return NextResponse.json({ stats, text, pushed, schedule, penpalFill, penpal, subs, ops });
+    const errors = await clientErrors(sa).catch(() => []);
+    return NextResponse.json({ stats, text, pushed, schedule, penpalFill, penpal, subs, ops, errors });
   } catch (e) {
     return NextResponse.json({ error: "server-error", detail: e instanceof Error ? e.message : "" }, { status: 502 });
   }

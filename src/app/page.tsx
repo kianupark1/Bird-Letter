@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getRoute } from "@/lib/routes";
@@ -41,7 +42,7 @@ import { KIND_LABEL, loginKind, markSameAsked, otherAccountHere, saveLastLogin, 
 
 export default function Home() {
   const { state, recheck } = useSession();
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} />;
   return <Inbox />;
 }
@@ -110,7 +111,7 @@ function Inbox() {
     saveProfileRemote(profile);
   }, [profileReady, profile.nickname]); // eslint-disable-line react-hooks/exhaustive-deps
   if (phase === "ask") return <NameStep prefill={prefill} onDone={(name, bird) => { if (name) setWelcome(`${name}님, 반가워요! 내 새는 ${getBird(bird).name}예요 🐦`); setPhase("done"); }} />;
-  if (phase === "checking" || (phase === "idle" && profileReady && firebaseEnabled && needsName(profile.nickname))) return <main className="app" aria-busy="true" />;
+  if (phase === "checking" || (phase === "idle" && profileReady && firebaseEnabled && needsName(profile.nickname))) return <Busy />;
   return <InboxList welcome={welcome} />;
 }
 

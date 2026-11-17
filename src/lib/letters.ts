@@ -148,6 +148,18 @@ function patchSnap(f: (s: Snap) => Snap) {
   if (mem && memFromServer) writeSnap(f(mem));
 }
 
+/** 늦으면 null(한 통의 글이 늦어도 목록·대화방이 빈 화면으로 멈추지 않게, 2026-11-17) */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+}
+
+/** 다른 화면이 받아 둔 목록을 무시하고 서버에서 새로 받아요(대화방에서 새 사람의 편지를 못 찾았을 때) */
+export function refreshLetters() {
+  memFromServer = false;
+  return loadServer().then((snap) => { window.dispatchEvent(new CustomEvent(REFRESH, { detail: snap })); return snap; });
+}
+const REFRESH = "saepyeonji:letters-refresh";
+
 function loadServer(): Promise<Snap> {
   if (inflight) return inflight;
   inflight = (async () => {
@@ -162,7 +174,7 @@ function loadServer(): Promise<Snap> {
         to: m.toName,
         routeId: m.routeId,
         birdId: m.birdId,
-        message: known.get(m.id)?.message || ((await remote.getBody(m.id)) ?? ""),
+        message: known.get(m.id)?.message || ((await withTimeout(remote.getBody(m.id), 6000)) ?? ""), // 한 통이 늦어도 목록 전체가 멈추지 않게
         sentAt: m.sentAt,
         arriveAt: m.arriveAt,
         toUid: m.recipientUid ?? undefined,
@@ -220,7 +232,9 @@ export function useLetters() {
       else setReceived((prev) => (prev.some((x) => x.id === d.meta.id) ? prev : [d.meta, ...prev]));
     };
     window.addEventListener(BUS, h);
-    return () => window.removeEventListener(BUS, h);
+    const r = (e: Event) => { const snap = (e as CustomEvent<Snap>).detail; setLetters(snap.letters); setReceived(snap.received); };
+    window.addEventListener(REFRESH, r);
+    return () => { window.removeEventListener(BUS, h); window.removeEventListener(REFRESH, r); };
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 "use client";
+import Busy from "@/components/Busy";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { readChecked, useLetters, useNow } from "@/lib/letters";
@@ -25,7 +26,7 @@ import GearLink from "@/components/GearLink";
  */
 export default function PenTab() {
   const { state, recheck } = useSession();
-  if (state === "checking") return <main className="app" aria-busy="true" />;
+  if (state === "checking") return <Busy />;
   if (state === "login") return <LoginStart onDone={recheck} next="/pen" />;
   return <PenList />;
 }

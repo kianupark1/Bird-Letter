@@ -1,4 +1,5 @@
 "use client";
+import { reportError } from "@/lib/reportError";
 import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -65,10 +66,15 @@ export default function LetterView({ id }: { id: string }) {
     if (!ready || backend !== "firebase" || mine) return;
     let off = false;
     (async () => {
-      const meta = await remote.getMeta(id);
+      // 서버가 늦거나 잠깐 끊기면 "불러오는 중"에서 멈추지 않게 몇 번 더 시도해요(2026-11-17)
+      let meta: remote.Meta | null = null;
+      for (let n = 0; ; n++) {
+        try { meta = await remote.getMeta(id); break; } catch (e) { if (off) return; if (n >= 3) { reportError(e, "letter-meta"); return setIncoming({ state: "missing" }); } await new Promise((r) => setTimeout(r, [1000, 2500, 5000][n])); }
+      }
       if (off) return;
       if (!meta) return setIncoming({ state: "missing" });
-      const user = await ensureUser();
+      let user: Awaited<ReturnType<typeof ensureUser>>;
+      try { user = await ensureUser(); } catch { if (!off) setIncoming({ state: "ok", meta, guest: true }); return; }
       const guest = user.isAnonymous;
       if (meta.fromUid !== user.uid && !meta.recipientUid) {
         const sender = { uid: meta.fromUid, name: meta.fromName };
@@ -110,7 +116,14 @@ export default function LetterView({ id }: { id: string }) {
   // 받는 사람은 도착 시각이 지난 뒤에만 서버가 내용을 줌
   useEffect(() => {
     if (!isRecipient || !arrivedNow || body !== null) return;
-    remote.getBody(id).then((m) => m !== null && setBody(m));
+    let off = false;
+    const get = (n: number) => remote.getBody(id).then((m) => {
+      if (off) return;
+      if (m !== null) setBody(m);
+      else if (n < 3) setTimeout(() => get(n + 1), [1500, 3000, 6000][n]); // 막 도착한 편지는 서버 시계가 조금 늦을 수 있어요
+    }).catch(() => { if (!off && n < 3) setTimeout(() => get(n + 1), 2000); });
+    get(0);
+    return () => { off = true; };
   }, [isRecipient, arrivedNow, body, id]);
 
   // 받는 사람이 도착한 편지를 열어 보면 목록의 "새 편지" 표시를 꺼요
