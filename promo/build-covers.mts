@@ -81,7 +81,7 @@ const shoot = async (file: string, markup: string, w: number, h: number) => {
 let n = 0;
 for (const p of sched.posts) {
   const d = dateOf(p);
-  if (!d || d < START || !(AUTO.has(p.slot) || p.cover)) continue;
+  if (!d || d < START || !(AUTO.has(p.slot) || p.colorCover)) continue;
   const i = dayIdx(d), c = DAY_COLORS[((i % 5) + 5) % 5];
   const slot = p.slot ?? "noon";
   const name = `cv-${d}-${slot}`;
