@@ -163,7 +163,7 @@ async function checkKeys() {
   catch (e) { bad++; console.log("✗ 스레드 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
   const g = env("IG_ACCESS_TOKEN");
   if (!g) { bad++; console.log("✗ 인스타: IG_ACCESS_TOKEN 이 아직 없어요"); }
-  else try { const h = igHost(); const id = await igAccount(h, g); const me = await call(`${h}/v21.0/${id}?fields=id,username&access_token=${encodeURIComponent(g)}`, { method: "GET" }); console.log(`✓ 인스타 열쇠 OK → @${me.username} (${h.includes("facebook") ? "통합 로그인 열쇠" : "인스타 로그인 열쇠"})`); }
+  else try { const h = igHost(); const id = await igAccount(h, g); const me = await call(`${h}/v21.0/${id}?fields=id,username,media_count&access_token=${encodeURIComponent(g)}`, { method: "GET" }); console.log(`✓ 인스타 열쇠 OK → @${me.username} · 게시물 ${me.media_count}개(3으로 나눈 나머지 ${me.media_count % 3}) (${h.includes("facebook") ? "통합 로그인 열쇠" : "인스타 로그인 열쇠"})`); }
   catch (e) { bad++; console.log("✗ 인스타 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
   if (!Array.isArray(channels) || channels.includes("x")) {
     const k = { key: env("X_API_KEY"), secret: env("X_API_SECRET"), token: env("X_ACCESS_TOKEN"), tokenSecret: env("X_ACCESS_SECRET") };
