@@ -171,7 +171,11 @@ async function checkKeys() {
   let bad = 0;
   const t = env("THREADS_ACCESS_TOKEN");
   if (!t) { bad++; console.log("✗ 스레드: THREADS_ACCESS_TOKEN 이 아직 없어요"); }
-  else try { const me = await call(`https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(t)}`, { method: "GET" }); console.log(`✓ 스레드 열쇠 OK → @${me.username}`); }
+  else try { const me = await call(`https://graph.threads.net/v1.0/me?fields=id,username&access_token=${encodeURIComponent(t)}`, { method: "GET" }); console.log(`✓ 스레드 열쇠 OK → @${me.username}`);
+      // 댓글 읽기·답글 권한 확인(댓글 → 편지 배달 이벤트용)
+      try { const l = await call(`https://graph.threads.net/v1.0/me/threads?fields=id&limit=1&access_token=${encodeURIComponent(t)}`, { method: "GET" }); const mid = l.data?.[0]?.id;
+        const r = await call(`https://graph.threads.net/v1.0/${mid}/replies?fields=id,username,text&access_token=${encodeURIComponent(t)}`, { method: "GET" }); console.log(`✓ 스레드 댓글 읽기 OK (최근 글 댓글 ${r.data?.length ?? 0}개)`); }
+      catch (e) { console.log("✗ 스레드 댓글 읽기 안 됨(권한 threads_read_replies 필요?) → " + String(e.message).slice(0, 200)); } }
   catch (e) { bad++; console.log("✗ 스레드 열쇠가 맞지 않아요 → " + e.message.slice(0, 200)); }
   const g = env("IG_ACCESS_TOKEN");
   if (!g) { bad++; console.log("✗ 인스타: IG_ACCESS_TOKEN 이 아직 없어요"); }
