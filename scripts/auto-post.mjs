@@ -25,13 +25,14 @@ let SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
 // 8시 이후면 아침 글, 17시 30분 이후면 저녁 글 중 아직 안 올린 것 하나. 0~7시엔 아무것도 안 올려요. 올린 기록은 LOG_FILE(한 줄에 "날짜 slot")
 // 시각(2026-11-11 대표님: "아침 8:30·오후 5:30·밤 22:00 빼놓지 말고, 인스타·스레드·X 3개"): 아침 8시 30분·저녁 5시 30분·밤 10시(slot "night") 이후, 빠진 글은 다음 다시 시도 때 올림
 // talk1·talk2 = 스레드에만 올리는 대화형 글(낮 12:30·밤 8:30, 2026-11-17 대표님: "스레드가 반응이 와, 스레드 더 신경 쓰자"). 그날 글이 있을 때만(has).
-export const TALK = ["talk1", "talk2"];
+export const TALK = ["talk1", "talk2", "talk3"];
 export function autoSlot(hm, done, has = new Set()) {
   if (hm < 830) return null;
   if (hm >= 2200 && !done.has("night")) return "night";
   if (hm >= 1730 && !done.has("evening")) return "evening"; // 늦게라도 빠진 저녁 글은 올림(2026-11-11 대표님: "빼놓지 말고")
   if (!done.has("noon")) return "noon";
   if (hm >= 2030 && has.has("talk2") && !done.has("talk2")) return "talk2";
+  if (hm >= 1530 && has.has("talk3") && !done.has("talk3")) return "talk3";
   if (hm >= 1230 && has.has("talk1") && !done.has("talk1")) return "talk1";
   return null;
 }
@@ -110,9 +111,16 @@ export function withSlogan(text) {
   return `${lines.join("\n")}\n\n${SLOGAN}`;
 }
 export const fillText = (p, to, st = stores) => {
+  // 스레드는 본문에 링크가 있으면 덜 퍼진다고 알려져 있어서(「미확인」) 바로 가기 줄을 내 첫 댓글로 달아요(2026-11-17 스레드 집중).
+  if (to === "threads" && p.text.includes("{{받기}}")) {
+    const text = p.text.replaceAll("{{받기}}", "").replace(/\n{3,}/g, "\n\n").trim();
+    return { ...p, text: withSlogan(text), reply: `${p.replyText ?? "새편지 받기 👇"}\n${storeLines(st, to)}` };
+  }
   const text = p.text.includes("{{받기}}") ? p.text.replaceAll("{{받기}}", storeLines(st, to)) : p.text;
   return { ...p, text: withSlogan(text) };
 };
+// 스레드 투표(poll: ["보기1","보기2",…최대 4개]) → API poll_attachment
+export const pollParams = (poll) => (Array.isArray(poll) && poll.length >= 2 ? { poll_attachment: JSON.stringify(Object.fromEntries(poll.slice(0, 4).map((o, i) => [`option_${"abcd"[i]}`, o.slice(0, 25)]))) } : {});
 const dateOf = (p) => {
   if (p.date) return p.date;
   if (typeof p.day !== "number" || !/^\d{4}-\d{2}-\d{2}$/.test(launch ?? "")) return null;
@@ -196,14 +204,34 @@ async function postThreads(p) {
     await sleep(10000);
     const c = await call(`${base}/threads`, { params: { media_type: "CAROUSEL", children: kids.join(","), text: p.text, access_token: token } });
     await waitReady(`https://graph.threads.net/v1.0/${c.id}?fields=status&access_token=${encodeURIComponent(token)}`, "status").catch(() => sleep(15000));
-    return publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
+    const pub = await publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
+    await threadsReply(base, token, pub?.id, p.reply);
+    return pub;
   }
   const media = p.video ? { media_type: "VIDEO", video_url: `${MEDIA_BASE}/${p.video}` }
     : p.image ? { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${p.image}` } : { media_type: "TEXT" };
-  const c = await call(`${base}/threads`, { params: { text: p.text, access_token: token, ...media } });
+  const params = { text: p.text, access_token: token, ...media };
+  // 투표는 새 기능이라 안 되면(「미확인」) 투표 없이 그대로 올려요
+  // 투표가 그림과 같이 안 되면 글+투표로, 그것도 안 되면 투표 없이(「미확인」 API 기능이라 단계별로 물러나요)
+  const c = await call(`${base}/threads`, { params: { ...params, ...pollParams(p.poll) } })
+    .catch((e) => { if (!p.poll || !p.image) throw e; console.log("  (그림+투표 안 됨 → 글+투표로: " + String(e.message).slice(0, 120) + ")"); return call(`${base}/threads`, { params: { text: p.text, access_token: token, media_type: "TEXT", ...pollParams(p.poll) } }); })
+    .catch((e) => { if (!p.poll) throw e; console.log("  (투표 없이 올림: " + String(e.message).slice(0, 120) + ")"); return call(`${base}/threads`, { params }); });
   if (p.video) await waitReady(`https://graph.threads.net/v1.0/${c.id}?fields=status&access_token=${encodeURIComponent(token)}`, "status");
   else await sleep(p.image ? 8000 : 2000); // 이미지는 처리 시간이 필요해요
-  return publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
+  const pub = await publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
+  await threadsReply(base, token, pub?.id, p.reply);
+  return pub;
+}
+/** 내 글에 첫 댓글(바로 가기 줄). 실패해도 본 글은 그대로 둬요. */
+async function threadsReply(base, token, parent, text) {
+  if (!parent || !text) return;
+  try {
+    await sleep(5000);
+    const r = await call(`${base}/threads`, { params: { media_type: "TEXT", text, reply_to_id: parent, access_token: token } });
+    await sleep(3000);
+    await publishRetry(`${base}/threads_publish`, { creation_id: r.id, access_token: token });
+    console.log("  ↳ 첫 댓글(바로 가기) 달았어요");
+  } catch (e) { console.log("  ↳ 첫 댓글 실패(본 글은 올라감): " + String(e.message).slice(0, 160)); }
 }
 
 // 인스타 자동 게시는 JPG 사진만 받아요 → 카드마다 같은 이름의 .jpg를 같이 둠(promo/cards/*.jpg)
@@ -353,7 +381,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
   } else if (SEND && fullDone(SLOT) && !ONLY.length) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => storyfy(soonify(upgraded(p), stores.android)));
-  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : SLOT === "talk1" ? "스레드 낮" : SLOT === "talk2" ? "스레드 밤" : SLOT.startsWith("special") ? SLOT : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
+  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : SLOT === "talk1" ? "스레드 낮" : SLOT === "talk2" ? "스레드 밤" : SLOT === "talk3" ? "스레드 오후" : SLOT.startsWith("special") ? SLOT : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
@@ -362,7 +390,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
       try { q = fillText(p, to); } catch (e) { failed++; console.log(`  ✗ [${to}] ${e.message}`); continue; }
       const media = p.carousel ? ` (+넘겨 보는 ${p.carousel.length}장${p.video ? ", 첫 장 영상" : ""})` : p.video ? ` (+영상 ${p.video})` : p.image ? ` (+${p.image})` : "";
       const label = `[${to}] ${q.text.split("\n")[0].slice(0, 30)}…${media}${to === "x" ? ` · X ${xWeight(xText(q))}/280칸` : ""}`;
-      if (!SEND) { console.log("  미리보기 " + label); console.log((to === "x" ? xText(q) : q.text).replace(/^/gm, "      │ ")); continue; }
+      if (!SEND) { console.log("  미리보기 " + label); console.log((to === "x" ? xText(q) : q.text).replace(/^/gm, "      │ ")); if (q.poll && to === "threads") console.log("      │ [투표] " + q.poll.join(" / ")); if (q.reply) console.log(q.reply.replace(/^/gm, "      ↳ ")); continue; }
       try {
         if (!POSTERS[to]) throw new Error(`모르는 곳: ${to}`);
         await POSTERS[to](q);
