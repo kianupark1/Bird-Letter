@@ -803,7 +803,7 @@ import { SLOGAN } from "../promo/store.mts";
   const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
   const th = ((q) => q.text + "\n" + (q.reply ?? ""))(fillText(p, "threads", ios));
   eq("홍보 글: 아이폰 먼저면 앱스토어 바로 가기 주소", th.includes("👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id1"), true);
-  eq("홍보 글: 안드로이드는 지금 웹으로", th.includes("안드로이드 바로 가기 https://bird-letter.vercel.app") && !th.includes("play.google"), true);
+  eq("홍보 글: 안드로이드는 지금 웹으로", th.includes("안드로이드 바로 가기 https://bird-letter.vercel.app/welcome") && !th.includes("play.google"), true);
   eq("홍보 글: 인스타도 바로 가기 주소 + 프로필 링크 안내", fillText(p, "instagram", ios).text.includes("https://apps.apple.com/kr/app/id1") && fillText(p, "instagram", ios).text.includes("링크는 프로필에"), true);
   eq("홍보 글: 스레드·X에도 '링크는 프로필에'", ["threads", "x"].every((t) => ((q) => q.text + (q.reply ?? ""))(fillText(p, t, ios)).includes("링크는 프로필에")), true);
   eq("X 줄여도 '링크는 프로필에' 남음", xPost({ text: fillText(p, "x", ios).text }).includes("링크는 프로필에"), true);
@@ -812,7 +812,7 @@ import { SLOGAN } from "../promo/store.mts";
   const lx = xPost(fillText(longP, "x", ios));
   eq("X: 줄여도 바로 가기 주소·슬로건은 남음", lx.includes("https://apps.apple.com/kr/app/id1") && lx.includes(SLOGAN), true);
   let threw = false; try { storeLines({}, "threads"); } catch { threw = true; }
-  eq("X 받기 안내: 바로 가기 주소", storeLines({ ios: "https://a", android: null }, "x"), "👉 앱스토어 바로 가기 https://a\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app (크롬에서 열고 '앱 설치' 한 번)\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
+  eq("X 받기 안내: 바로 가기 주소", storeLines({ ios: "https://a", android: null }, "x"), "👉 앱스토어 바로 가기 https://a\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
   eq("받기 안내: 갤럭시 스토어·플레이는 곧", storeLines({ ios: "https://a", android: null, galaxy: "https://g" }, "x"), "👉 앱스토어 바로 가기 https://a\n👉 갤럭시 스토어 바로 가기 https://g\n구글 플레이는 곧 출시돼요\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = ((q) => q.text + (q.reply ?? ""))(fillText(p, "threads", { ios: "https://a", android: "https://g" }));

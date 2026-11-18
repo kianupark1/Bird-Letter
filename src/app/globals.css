@@ -175,6 +175,12 @@ textarea.field { min-height: 140px; resize: vertical; }
 .welcome { text-align: center; padding-bottom: 48px; }
 .welcome h1 { font-size: 26px; margin: 12px 0 8px; }
 .welcome h2 { text-align: left; }
+.wl-cta { display: grid; gap: 10px; margin: 18px 0 8px; }
+.wl-cta .cta { margin: 0; }
+.wl-cta .wl-android { background: var(--namsaek, #1E3A5C); color: #fff; }
+.wl-feat { list-style: none; padding: 0; margin: 0; text-align: left; display: grid; gap: 12px; }
+.wl-feat li { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--card, rgba(255,255,255,.6)); }
+.wl-feat span { font-size: 15px; opacity: .85; }
 .welcome .sub { line-height: 1.6; }
 .beta { display: inline-block; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--hwangto); color: var(--hwangto-text); font-weight: 600; margin-bottom: 4px; }
 .steplist { list-style: none; margin: 0; padding: 0; text-align: left; display: grid; gap: 10px; }
