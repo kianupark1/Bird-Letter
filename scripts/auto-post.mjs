@@ -371,7 +371,21 @@ export const POSTERS = { threads: postThreads, instagram: postInstagram, x: post
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && args.includes("--check")) {
   process.exit((await checkKeys()) ? 1 : 0);
 }
-if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && !args.includes("--check")) {
+// 스레드 글 지우기(--delete-threads, DELETE_MATCH = 지울 글 첫머리). 2026-11-18 대표님: "그거 지우고 다시 해줘"
+if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && args.includes("--delete-threads")) {
+  const t = env("THREADS_ACCESS_TOKEN"), m = env("DELETE_MATCH");
+  if (!t || !m) { console.log("THREADS_ACCESS_TOKEN 또는 DELETE_MATCH 가 없어요"); process.exit(1); }
+  const list = (await call(`https://graph.threads.net/v1.0/me/threads?fields=id,text,timestamp&limit=50&access_token=${encodeURIComponent(t)}`, { method: "GET" })).data ?? [];
+  const hit = list.filter((x) => (x.text ?? "").startsWith(m));
+  console.log(`지울 글 ${hit.length}개`);
+  let bad = 0;
+  for (const x of hit) {
+    try { await call(`https://graph.threads.net/v1.0/${x.id}?access_token=${encodeURIComponent(t)}`, { method: "DELETE" }); console.log(`  ✓ 지움 ${x.timestamp} ${(x.text ?? "").split("\n")[0]}`); }
+    catch (e) { bad++; console.log(`  ✗ 못 지움 ${x.id} → ${String(e.message).slice(0, 200)}`); }
+  }
+  process.exit(bad ? 1 : 0);
+}
+if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href && !args.includes("--check") && !args.includes("--delete-threads")) {
   if (!launch) console.log("출시일(launch)이 아직 비어 있어서 출시 일정 글은 쉬어요");
   const LOG = process.env.LOG_FILE;
   // 기록: "날짜 slot"(그 글은 다 올림) 또는 "날짜 slot 채널"(그 채널만 올림). 실패한 채널만 다음 시도 때 다시 올려요
