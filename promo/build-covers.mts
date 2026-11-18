@@ -29,7 +29,7 @@ export const DAY_COLORS = [
   { name: "다홍", bg: "#E2512A", fg: "#FFFFFF", accent: "#FFE7A8" },
 ];
 const BIRDS = ["pigeon", "magpie", "hawk", "sparrow"];
-const AUTO = new Set(["noon", "evening", "night", "talk1", "talk2", "talk3", undefined]);
+const AUTO = new Set(["noon", "evening", "night", "talk1", "talk2", "talk3", "dev", undefined]);
 
 const sched = JSON.parse(readFileSync(resolve(root, "promo/schedule.json"), "utf8"));
 const L = new Date(sched.launch + "T00:00:00Z");
@@ -87,12 +87,12 @@ for (const p of sched.posts) {
   const name = `cv-${d}-${slot}`;
   const text = hook(p.text);
   const pool = c.fg === "#FFFFFF" ? BIRDS.filter((b) => b !== "magpie") : BIRDS; // 어두운 바탕에선 까만 까치가 묻혀요
-  const bird = pool[(i * 3 + Math.max(0, ["noon", "evening", "night", "talk1", "talk2", "talk3"].indexOf(slot))) % pool.length];
+  const bird = pool[(i * 3 + Math.max(0, ["noon", "evening", "night", "talk1", "talk2", "talk3", "dev"].indexOf(slot))) % pool.length];
   if (p.video && !p.carousel) {
     await shoot(resolve(outDir, `${name}-reel.png`), html(text, c, bird, 1080, 1920, true), 1080, 1920);
     p.igCover = `cards/cv/${name}-reel.jpg`;
   } else {
-    await shoot(resolve(outDir, `${name}.png`), html(text, c, bird, 1080, 1350, false, String(p.slot).startsWith("talk")), 1080, 1350);
+    await shoot(resolve(outDir, `${name}.png`), html(text, c, bird, 1080, 1350, false, (String(p.slot).startsWith("talk") || p.slot === "dev")), 1080, 1350);
     const first = `cv/${name}.png`;
     const rest = (p.carousel ?? [p.image]).filter((f: string) => f && !f.startsWith("cv/"));
     p.carousel = [first, ...rest].slice(0, 10);
