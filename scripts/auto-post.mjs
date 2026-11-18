@@ -112,10 +112,12 @@ export function withSlogan(text) {
   return `${lines.join("\n")}\n\n${SLOGAN}`;
 }
 export const fillText = (p, to, st = stores) => {
-  // 스레드는 본문에 링크가 있으면 덜 퍼진다고 알려져 있어서(「미확인」) 바로 가기 줄을 내 첫 댓글로 달아요(2026-11-17 스레드 집중).
+  // 모든 채널 본문에 앱스토어·안드로이드 링크(2026-11-18 대표님: "링크를 필히 넣어줘야 광고가 되지" → 스레드 첫 댓글 방식 취소)
+  // 스레드는 긴 글이 "더 보기"로 접혀서, 링크를 첫 문단 바로 아래(접히기 전)에 둬요(같은 날 대표님: "더 좋은 곳에")
   if (to === "threads" && p.text.includes("{{받기}}")) {
-    const text = p.text.replaceAll("{{받기}}", "").replace(/\n{3,}/g, "\n\n").trim();
-    return { ...p, text: withSlogan(text), reply: `${p.replyText ?? "새편지 받기 👇"}\n${storeLines(st, to)}` };
+    const parts = p.text.replaceAll("{{받기}}", "").replace(/\n{3,}/g, "\n\n").trim().split("\n\n");
+    const text = [parts[0], storeLines(st, to), ...parts.slice(1)].join("\n\n");
+    return { ...p, text: withSlogan(text) };
   }
   const text = p.text.includes("{{받기}}") ? p.text.replaceAll("{{받기}}", storeLines(st, to)) : p.text;
   return { ...p, text: withSlogan(text) };

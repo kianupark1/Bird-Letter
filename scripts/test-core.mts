@@ -856,7 +856,7 @@ import { SLOGAN } from "../promo/store.mts";
   eq("스레드 대화 글 slot", slotOf({ slot: "talk2" }), "talk2");
   eq("스레드 오후 글은 3시 30분 뒤", autoSlot(1531, new Set(["noon", "talk1"]), new Set(["talk3"])), "talk3");
   { const st = { ios: "https://apps.apple.com/kr/app/id1" }; const q = fillText({ text: "안녕\n\n{{받기}}\n\n#새편지" }, "threads", st);
-    eq("스레드 본문엔 링크 없음", q.text.includes("apps.apple.com"), false); eq("스레드 링크는 첫 댓글로", q.reply.includes("apps.apple.com"), true);
+    eq("스레드 본문에 앱스토어 링크", q.text.includes("apps.apple.com"), true); eq("스레드 본문에 안드로이드 링크", q.text.includes("bird-letter.vercel.app"), true); eq("스레드 링크는 첫 문단 바로 아래", q.text.split("\n\n")[1].startsWith("👉"), true);
     eq("스레드 본문에도 슬로건", q.text.includes(POST_SLOGAN), true);
     eq("인스타는 본문에 링크 그대로", fillText({ text: "안녕\n{{받기}}" }, "instagram", st).text.includes("apps.apple.com"), true);
     eq("투표 보기 2개", JSON.parse(pollParams(["가", "나"]).poll_attachment).option_b, "나"); eq("투표 1개면 없음", pollParams(["가"]).poll_attachment, undefined); }
