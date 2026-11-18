@@ -1,9 +1,10 @@
 name: 스레드 댓글 편지 배달
 # 스레드 우리 글("🕊 댓글 편지 배달"이 들어간 글)의 댓글마다 비둘기 편지를 보내고 댓글에 링크를 달아요.
+# GitHub 예약은 자주 빠져서(11/18: 10시간에 1번) 한 번 돌면 5시간 40분 동안 5분마다 확인해요(공개 저장소라 Actions 시간 무료).
 # 사이트 /api/campaign/letter 는 이 작업의 GitHub 신분증(OIDC, aud bird-letter-campaign, main)으로만 열려요.
 on:
   schedule:
-    - cron: "*/20 * * * *"
+    - cron: "7 */2 * * *"
   workflow_dispatch:
     inputs:
       send:
@@ -13,11 +14,13 @@ jobs:
   deliver:
     if: ${{ vars.AUTO_POST_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 350
     permissions:
       contents: write
       id-token: write
-    concurrency: threads-letters
+    concurrency:
+      group: threads-letters
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,18 +32,25 @@ jobs:
           if git fetch -q origin campaign-log 2>/dev/null; then git show origin/campaign-log:sent.txt > "$RUNNER_TEMP/c/sent.txt" 2>/dev/null || true; fi
           touch "$RUNNER_TEMP/c/sent.txt"
           echo "STATE_FILE=$RUNNER_TEMP/c/sent.txt" >> "$GITHUB_ENV"
-      - name: 댓글마다 편지 보내기
+      - name: 댓글마다 편지 보내기(5분마다)
         env:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           SEND: ${{ github.event_name == 'schedule' && 'true' || inputs.send }}
+          ROUNDS: ${{ (github.event_name == 'schedule' || inputs.send == 'true') && '68' || '1' }}
+          REPO_URL: https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
         run: |
-          export CAMPAIGN_OIDC=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bird-letter-campaign" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).value))')
-          npx -y tsx scripts/threads-letters.mjs
-      - name: 보낸 기록 남기기
-        if: always()
-        run: |
-          cd "$RUNNER_TEMP/c"
-          [ -s sent.txt ] || exit 0
-          git init -q && git checkout -q -b campaign-log
-          git config user.name "autopost" && git config user.email "autopost@users.noreply.github.com"
-          git add sent.txt && git commit -qm "보낸 기록" && git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" campaign-log || echo "기록 저장 실패"
+          save() {
+            [ -s "$STATE_FILE" ] || return 0
+            ( cd "$RUNNER_TEMP/c" && rm -rf .git && git init -q && git checkout -q -b campaign-log \
+              && git config user.name autopost && git config user.email autopost@users.noreply.github.com \
+              && git add sent.txt && git commit -qm "보낸 기록" && git push -q -f "$REPO_URL" campaign-log ) || echo "기록 저장 실패"
+          }
+          for i in $(seq 1 "$ROUNDS"); do
+            before=$(wc -l < "$STATE_FILE")
+            export CAMPAIGN_OIDC=$(curl -fsS -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=bird-letter-campaign" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).value))')
+            echo "── $(TZ=Asia/Seoul date +%H:%M) 확인 $i/$ROUNDS"
+            npx -y tsx scripts/threads-letters.mjs || true
+            if [ "$(wc -l < "$STATE_FILE")" != "$before" ]; then save; fi
+            if [ "$i" -lt "$ROUNDS" ]; then sleep 300; fi
+          done
+          true
