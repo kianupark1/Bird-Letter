@@ -25,7 +25,7 @@ let SLOT = args.includes("--slot") ? args[args.indexOf("--slot") + 1] : "noon";
 // 8시 이후면 아침 글, 17시 30분 이후면 저녁 글 중 아직 안 올린 것 하나. 0~7시엔 아무것도 안 올려요. 올린 기록은 LOG_FILE(한 줄에 "날짜 slot")
 // 시각(2026-11-11 대표님: "아침 8:30·오후 5:30·밤 22:00 빼놓지 말고, 인스타·스레드·X 3개"): 아침 8시 30분·저녁 5시 30분·밤 10시(slot "night") 이후, 빠진 글은 다음 다시 시도 때 올림
 // talk1·talk2 = 스레드에만 올리는 대화형 글(낮 12:30·밤 8:30, 2026-11-17 대표님: "스레드가 반응이 와, 스레드 더 신경 쓰자"). 그날 글이 있을 때만(has).
-export const TALK = ["talk1", "talk2", "talk3"];
+export const TALK = ["talk1", "talk2", "talk3", "dev"];
 export function autoSlot(hm, done, has = new Set()) {
   if (hm < 830) return null;
   if (hm >= 2200 && !done.has("night")) return "night";
@@ -33,6 +33,7 @@ export function autoSlot(hm, done, has = new Set()) {
   if (!done.has("noon")) return "noon";
   if (hm >= 2030 && has.has("talk2") && !done.has("talk2")) return "talk2";
   if (hm >= 1530 && has.has("talk3") && !done.has("talk3")) return "talk3";
+  if (hm >= 1030 && has.has("dev") && !done.has("dev")) return "dev"; // 스레드 개발자 글(2026-11-18 대표님: "코딩하는 곳 곳곳에")
   if (hm >= 1230 && has.has("talk1") && !done.has("talk1")) return "talk1";
   return null;
 }
@@ -385,7 +386,7 @@ if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).
     if (!SLOT) { console.log(`지금(한국 ${String(hm).padStart(4, "0")})은 올릴 차례가 아니거나 이미 올렸어요`); process.exit(0); }
   } else if (SEND && fullDone(SLOT) && !ONLY.length) { console.log(`${today} ${SLOT} 글은 이미 올렸어요`); process.exit(0); }
   const todays = posts.filter((p) => dateOf(p) === today && slotOf(p) === SLOT).map((p) => storyfy(soonify(upgraded(p), stores.android)));
-  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : SLOT === "talk1" ? "스레드 낮" : SLOT === "talk2" ? "스레드 밤" : SLOT === "talk3" ? "스레드 오후" : SLOT.startsWith("special") ? SLOT : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
+  console.log(`${today} ${SLOT === "evening" ? "저녁" : SLOT === "night" ? "밤" : SLOT === "talk1" ? "스레드 낮" : SLOT === "talk2" ? "스레드 밤" : SLOT === "talk3" ? "스레드 오후" : SLOT === "dev" ? "스레드 개발 이야기" : SLOT.startsWith("special") ? SLOT : "아침"} 올릴 글: ${todays.length}개 ${SEND ? "(실제로 올림)" : "(미리보기: 올리지 않음)"}`);
   let failed = 0;
   for (const p of todays) {
     for (const to of targetsOf(p)) {
