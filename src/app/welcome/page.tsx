@@ -3,15 +3,17 @@ import { BIRDS_SLOW_TO_FAST, REFERENCE_KM } from "@/lib/birds";
 import { formatMinutes } from "@/lib/geo";
 import { Magpie } from "@/components/Illustrations";
 import BirdIcon from "@/components/BirdIcon";
-import { IS_BETA } from "@/lib/release";
 import { ROUTES } from "@/lib/routes";
+import { STORE } from "@/lib/release";
+
+const SLOGAN = "기다림도 소통의 일부입니다.";
 
 export const metadata = {
-  title: "새 편지 — 소식은 날아서 와요",
-  description: "실제 거리와 새의 비행 속도만큼 걸려 도착하는 한국형 슬로우 메시징. 체험판 공개 중.",
+  title: "새 편지 — 카톡 말고, 새가 물어다 주는 편지",
+  description: "실제 거리만큼 새가 날아가서 도착하는 메신저. 사진은 폴라로이드로, 도착하면 두루마리처럼 펼쳐져요. 무료. 기다림도 소통의 일부입니다.",
   openGraph: {
-    title: "새 편지 — 소식은 날아서 와요",
-    description: "실제 거리만큼 걸려 도착하는 느린 편지. 체험판 공개 중.",
+    title: "새 편지 — 카톡 말고, 새가 물어다 주는 편지",
+    description: "실제 거리만큼 새가 날아가서 도착하는 메신저. 무료 · 아이폰·안드로이드.",
     images: [{ url: "/og.png", width: 1200, height: 630 }],
     locale: "ko_KR",
     type: "website" as const,
@@ -28,15 +30,26 @@ const STEPS = [
 export default function Welcome() {
   return (
     <main className="app welcome">
-      {IS_BETA && <span className="beta beta-only">출시 준비 중 · 체험판</span>}
       <Magpie />
-      <h1>소식은 날아서 와요</h1>
-      <p className="proverb">“아침 까치가 울면 반가운 손님이 온다”</p>
+      <h1>카톡 말고, 새가 물어다 주는 편지</h1>
       <p className="sub">
-        새 편지는 실제 지리적 거리와 새의 비행 속도로 도착 시간이 정해지는 느린 편지 앱이에요.
-        바로 보내는 메신저와 달리, 기다리는 시간까지 편지의 일부가 돼요.
+        새편지는 실제 거리만큼 새가 날아가서 도착하는 메신저예요.
+        날아오는 동안 지도로 같이 지켜보고, 도착하면 편지가 두루마리처럼 펼쳐져요.
       </p>
-      <Link href="/" className="cta">먼저 체험해 보기</Link>
+      <p className="proverb">{SLOGAN}</p>
+      <div className="wl-cta">
+        <a href={STORE.iosUrl} className="cta">🍎 아이폰 · 앱스토어에서 받기</a>
+        <Link href="/" className="cta wl-android">🤖 안드로이드 · 지금 바로 시작</Link>
+        <p className="small">안드로이드는 크롬에서 열고 메뉴의 '앱 설치'를 한 번 누르면 앱처럼 써요 · 무료</p>
+      </div>
+
+      <h2>이런 게 달라요</h2>
+      <ul className="wl-feat">
+        <li><b>🕊 진짜 거리만큼 날아가요</b><span>서울→부산 매 3시간 37분, 참새 11시간 36분. 보낸 사람·받는 사람이 지도로 같이 기다려요.</span></li>
+        <li><b>📸 사진은 폴라로이드로</b><span>폴라로이드 틀에 담겨 가고, 도착하면 천천히 선명해져요. 폰에 저장도 돼요.</span></li>
+        <li><b>💌 앱이 없는 사람에게도</b><span>엄마·친구가 앱이 없어도 링크로 날아오는 걸 보고, 도착하면 바로 열어요.</span></li>
+        <li><b>🌏 모르는 누군가와 펜팔</b><span>진짜 이름 대신 펜팔 이름, 위치는 도시까지만. 만 14세 이상.</span></li>
+      </ul>
 
       <h2>이렇게 보내요</h2>
       <ol className="steplist">
@@ -52,7 +65,7 @@ export default function Welcome() {
       </ol>
 
       <h2>4종의 새</h2>
-      <p className="small" style={{ marginTop: 0 }}>실제 새의 비행 속도로 날아가요. 서울 → 부산({REFERENCE_KM}km) 기준 소요 시간이에요. 아주 가끔(새마다 50~100통에 1번) 길을 잃거나 나무에 걸려 늦어질 수 있고, 편지는 꼭 도착해요.</p>
+      <p className="small" style={{ marginTop: 0 }}>실제 새의 비행 속도를 바탕으로 날아가요. 서울 → 부산({REFERENCE_KM}km) 기준 소요 시간이에요. 아주 가끔(새마다 50~100통에 1번) 길을 잃거나 나무에 걸려 늦어질 수 있고, 편지는 꼭 도착해요.</p>
       <div className="birdgrid">
         {BIRDS_SLOW_TO_FAST.map((b) => (
           <div key={b.id} className="birdcell">
@@ -73,10 +86,11 @@ export default function Welcome() {
         ))}
       </div>
 
-      <Link href="/" className="cta" style={{ marginTop: 24 }}>첫 편지 보내 보기</Link>
-      <p className="small" style={{ textAlign: "center" }}>
-        {IS_BETA ? <span className="beta-only">지금은 체험판이에요. </span> : ""}편지는 서버에 저장되고, 받는 사람은 링크로 열어요.
-      </p>
+      <div className="wl-cta" style={{ marginTop: 24 }}>
+        <a href={STORE.iosUrl} className="cta">🍎 앱스토어에서 받기</a>
+        <Link href="/" className="cta wl-android">🤖 안드로이드 · 지금 바로 시작</Link>
+      </div>
+      <p className="small" style={{ textAlign: "center" }}>{SLOGAN}</p>
       <div className="legal-links">
         <Link href="/privacy">개인정보 처리방침</Link>
         <Link href="/terms">이용약관</Link>
