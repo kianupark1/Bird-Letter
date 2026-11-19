@@ -43,7 +43,7 @@ jobs:
             [ -s "$STATE_FILE" ] || return 0
             ( cd "$RUNNER_TEMP/c" && rm -rf .git && git init -q && git checkout -q -b campaign-log \
               && git config user.name autopost && git config user.email autopost@users.noreply.github.com \
-              && git add sent.txt && git commit -qm "보낸 기록" && git push -q -f "$REPO_URL" campaign-log ) || echo "기록 저장 실패"
+              && echo '{"git":{"deploymentEnabled":false}}' > vercel.json && git add sent.txt vercel.json && git commit -qm "보낸 기록" && git push -q -f "$REPO_URL" campaign-log ) || echo "기록 저장 실패"
           }
           for i in $(seq 1 "$ROUNDS"); do
             before=$(wc -l < "$STATE_FILE")

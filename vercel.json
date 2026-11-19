@@ -1,3 +1,11 @@
 {
-  "regions": ["icn1"]
+  "regions": [
+    "icn1"
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "autopost-log": false,
+      "campaign-log": false
+    }
+  }
 }
