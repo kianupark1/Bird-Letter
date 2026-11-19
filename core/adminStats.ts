@@ -57,6 +57,8 @@ export type UserCounts = {
   new7d: number;
   active1d: number; // 최근 24시간 안에 앱을 연 로그인 계정
   active7d: number;
+  /** 가입한 날(한국 날짜)·방법별 수 — 예: {"2026-11-13 google": 3}. 이름·아이디는 없음 */
+  joinedByDay?: Record<string, number>;
 };
 
 export function countUsers(users: AuthUser[], now: number, social?: SocialMap): UserCounts {
@@ -68,6 +70,7 @@ export function countUsers(users: AuthUser[], now: number, social?: SocialMap): 
     out.members++;
     out.byProvider[p]++;
     const made = social?.get(u.localId)?.at ?? Number(u.createdAt ?? 0); // 카카오·네이버는 연결(가입)한 시각
+    if (made) { const k = `${new Date(made + 9 * 3600_000).toISOString().slice(0, 10)} ${p}`; (out.joinedByDay ??= {})[k] = (out.joinedByDay[k] ?? 0) + 1; }
     if (made >= today) out.newToday++;
     if (made >= now - 7 * DAY) out.new7d++;
     const seen = lastSeen(u);
