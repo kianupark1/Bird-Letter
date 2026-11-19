@@ -2,7 +2,7 @@
  * "안드로이드는 곧 출시" 표시를 홍보 글의 첫 장에 붙인 사본을 만들어요(2026-11-10 대표님: "안드로이드는 아직 없으니 곧 출시된다고 첫장에").
  *   npx tsx promo/build-soon.mts
  * - 그림 카드: 원래 그림을 조금 줄이고 위에 다홍 띠 두 줄 "아이폰은 지금 앱스토어에서 바로 받기 / 안드로이드는 웹으로" → promo/cards/soon/이름.png·.jpg
- * - 영상: 처음 4초 동안 아래쪽에 같은 알약 → promo/video/soon/이름.mp4 (+표지 -cover.png)
+ * - 영상: 처음 3초 동안 새 영상 아래 빈자리(y=1340)에 같은 알약 — 2026-11-19 대표님 "처음 나오는 새 영상 살려야" → promo/video/soon/이름.mp4 (+표지 -cover.png)
  * 자동 게시(scripts/auto-post.mjs soonify)는 schedule.json stores.android가 비어 있는 동안만 이 사본을 써요.
  * 구글 플레이 주소를 넣는 날부터는 저절로 원래 그림으로 돌아가요(사본은 지워도 됨).
  */
@@ -67,8 +67,8 @@ for (const v of videos) {
   const src = resolve(root, "promo", v);
   const name = basename(v);
   const out = resolve(root, "promo/video/soon", name);
-  ff(["-i", src, "-i", pill, "-filter_complex", "[0:v][1:v]overlay=0:1100:enable='lt(t,4)'", "-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", out]);
+  ff(["-i", src, "-i", pill, "-filter_complex", "[0:v][1:v]overlay=0:1340:enable='lt(t,3)'", "-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", out]);
   const cover = src.replace(/\.mp4$/, "-cover.png");
-  if (existsSync(cover)) ff(["-i", cover, "-i", pill, "-filter_complex", "[0:v][1:v]overlay=0:1100", out.replace(/\.mp4$/, "-cover.png")]);
+  if (existsSync(cover)) ff(["-i", cover, "-i", pill, "-filter_complex", "[0:v][1:v]overlay=0:1340", out.replace(/\.mp4$/, "-cover.png")]);
   console.log("영상", v);
 }
