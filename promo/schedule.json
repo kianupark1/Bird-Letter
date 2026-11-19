@@ -564,7 +564,6 @@
       "day": 10,
       "slot": "night",
       "to": [
-        "instagram",
         "threads",
         "x"
       ],
@@ -2458,6 +2457,44 @@
         "이제 푹 쉬어"
       ],
       "xText": "수능 끝! 12년 동안 고생 많았어요 ✏️\n\n특별한 날엔, 특별한 메신저로 🕊\n새가 실제 거리만큼 날아서 편지를 전해 줘요.\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome"
+    },
+    {
+      "date": "2026-11-20",
+      "slot": "special14",
+      "to": [
+        "instagram",
+        "threads"
+      ],
+      "image": "c12-penpal-1.png",
+      "carousel": [
+        "c12-penpal-1.png",
+        "c12-penpal-2.png",
+        "c12-penpal-3.png",
+        "c12-penpal-4.png",
+        "c12-penpal-5.png",
+        "c12-penpal-6.png",
+        "c12-penpal-7.png",
+        "c12-penpal-8.png"
+      ],
+      "text": "펜팔, 기억나요? ✉️\n\n{{받기}}\n\n모르는 누군가에게 편지를 쓰고, 답장을 기다리던 그 설렘.\n새편지에서는 그 감성을 폰으로 다시 할 수 있어요.\n\n🕊 진짜 이름은 안 보이고 \"부산 사는 까치\"처럼 펜팔 이름·도시만\n📚 좋아하는 걸로 고르거나, 🎲 아무에게나 날려 보거나\n📜 편지는 새가 실제 거리만큼 날아서 전해 줘요\n\n펜팔은 만 14세 이상, \"펜팔 친구\"로만 이어져요.\n\n첫 펜팔 친구에게 뭐라고 쓸 거예요?\n\n#펜팔",
+      "poll": [
+        "안녕! 처음 인사해요",
+        "요즘 좋아하는 노래 있어요?",
+        "거기 날씨는 어때요?",
+        "답장 기다릴게요 🙂"
+      ]
+    },
+    {
+      "date": "2026-11-20",
+      "slot": "special15",
+      "to": [
+        "threads",
+        "x"
+      ],
+      "video": "video/reel-c12-penpal.mp4",
+      "cover": "video/reel-c12-penpal-cover.png",
+      "text": "카톡은 친구랑, 편지는 아직 모르는 펜팔 친구랑 🕊\n\n{{받기}}\n\n새편지 펜팔은 이름 대신 \"여수 사는 비둘기\"처럼 도시와 새로만 만나요.\n편지는 새가 실제 거리만큼 날아가서, 답장을 기다리는 하루까지 펜팔이 돼요.\n\n아이폰은 앱스토어에서 바로 받을 수 있어요. 무료예요.\n펜팔은 만 14세 이상.\n\n#펜팔",
+      "xText": "카톡은 친구랑, 편지는 아직 모르는 펜팔 친구랑 🕊\n\n이름 대신 도시와 새로만 만나는 펜팔. 편지는 새가 실제 거리만큼 날아가요. (만 14세 이상)\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome"
     }
   ]
 }
