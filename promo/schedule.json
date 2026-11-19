@@ -2430,6 +2430,34 @@
         "연인",
         "나 자신에게"
       ]
+    },
+    {
+      "date": "2026-11-19",
+      "slot": "special13",
+      "to": [
+        "instagram",
+        "threads",
+        "x"
+      ],
+      "image": "c11-suneung-1.png",
+      "carousel": [
+        "c11-suneung-1.png",
+        "c11-suneung-2.png",
+        "c11-suneung-3.png",
+        "c11-suneung-4.png",
+        "c11-suneung-5.png",
+        "c11-suneung-6.png",
+        "c11-suneung-7.png",
+        "c11-suneung-8.png"
+      ],
+      "text": "수능 끝! 12년 동안 정말 고생 많았어요 ✏️\n\n{{받기}}\n\n오늘 같은 날, \"수고했어\" 카톡 한 줄로 끝내기엔 아깝잖아요.\n\n뻔한 날엔 뻔한 메시지.\n특별한 날엔, 특별한 메신저로 🕊\n\n새편지는 새가 실제 거리만큼 날아서 편지를 전해 줘요.\n가끔은 길을 잃고, 감나무에 걸리기도 하지만… 편지는 꼭 도착해요 🍊\n\n오늘 수능 본 사람에게, 무슨 말을 보내고 싶어요?\n\n#수능끝",
+      "poll": [
+        "고생 많았어",
+        "결과보다 네가 자랑스러워",
+        "맛있는 거 먹으러 가자",
+        "이제 푹 쉬어"
+      ],
+      "xText": "수능 끝! 12년 동안 고생 많았어요 ✏️\n\n특별한 날엔, 특별한 메신저로 🕊\n새가 실제 거리만큼 날아서 편지를 전해 줘요.\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome"
     }
   ]
 }
