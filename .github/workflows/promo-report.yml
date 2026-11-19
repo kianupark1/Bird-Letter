@@ -37,4 +37,5 @@ jobs:
           git init -q && git checkout -q -b autopost-log
           git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" autopost-log && git reset -q --soft FETCH_HEAD && git checkout -q FETCH_HEAD -- posted.txt 2>/dev/null || true
           git config user.name "autopost" && git config user.email "autopost@users.noreply.github.com"
+          echo '{"git":{"deploymentEnabled":false}}' > vercel.json  # Vercel 미리보기 배포 끔
           git add -A && git commit -qm "홍보 성적표" && git push -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:autopost-log || echo "저장 실패"
