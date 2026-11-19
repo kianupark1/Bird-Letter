@@ -61,7 +61,7 @@ const end = (line: string) => `<body style="background:${C.dahong};color:#fff;te
      <div style="position:absolute;left:0;right:0;top:560px;font-size:120px;font-weight:900;letter-spacing:-5px">새 편지</div>
      <div style="position:absolute;left:0;right:0;top:730px;font-size:46px;font-weight:700;letter-spacing:-1.5px">${SLOGAN}</div>
      <div style="position:absolute;left:80px;right:80px;top:850px;font-size:36px;font-weight:600;letter-spacing:-1px;opacity:.92">${line}</div>
-     <div style="position:absolute;left:290px;right:290px;top:990px;padding:28px 0;border-radius:999px;background:#fff;color:${C.ink};font-size:38px;font-weight:800;letter-spacing:-1px">App Store · 무료</div>
+     <div style="position:absolute;left:170px;right:170px;top:990px;padding:28px 0;border-radius:999px;background:#fff;color:${C.ink};font-size:36px;font-weight:800;letter-spacing:-1px">아이폰은 앱스토어에서 바로 받기 · 무료</div>
      <div style="position:absolute;left:0;right:0;top:1130px;font-size:30px;font-weight:700;letter-spacing:-.5px">안드로이드는 지금 웹으로 · bird-letter.vercel.app</div>
      <div style="position:absolute;left:0;right:0;top:1190px;font-size:28px;font-weight:600;opacity:.85;letter-spacing:-.5px">링크는 프로필에 @saepyeonji</div></body>`;
 
@@ -72,7 +72,7 @@ const endCard = `<body style="background:${C.navy};color:#fff;text-align:center"
      <img src="${icon}" style="position:absolute;left:420px;top:470px;width:240px;height:240px;border-radius:56px;box-shadow:0 30px 60px rgba(0,0,0,.25)">
      <div style="position:absolute;left:0;right:0;top:750px;font-size:100px;font-weight:900;letter-spacing:-4px">새 편지</div>
      <div style="position:absolute;left:0;right:0;top:890px;font-size:44px;font-weight:700;letter-spacing:-1.5px">${SLOGAN}</div>
-     <div style="position:absolute;left:290px;right:290px;top:1010px;padding:26px 0;border-radius:999px;background:#fff;color:${C.ink};font-size:38px;font-weight:800;letter-spacing:-1px">App Store · 무료</div>
+     <div style="position:absolute;left:170px;right:170px;top:1010px;padding:26px 0;border-radius:999px;background:#fff;color:${C.ink};font-size:36px;font-weight:800;letter-spacing:-1px">아이폰은 앱스토어에서 바로 받기 · 무료</div>
      <div style="position:absolute;left:0;right:0;top:1140px;font-size:30px;font-weight:700;letter-spacing:-.5px">안드로이드는 지금 웹으로 · bird-letter.vercel.app</div>
      <div style="position:absolute;left:0;right:0;top:1196px;font-size:28px;font-weight:600;opacity:.85;letter-spacing:-.5px">링크는 프로필에 @saepyeonji</div></body>`;
 const slides = [

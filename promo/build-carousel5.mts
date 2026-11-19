@@ -73,7 +73,7 @@ const main: Set = {
        <img src="${icon}" style="position:absolute;left:390px;top:260px;width:300px;height:300px;border-radius:70px;box-shadow:0 30px 60px rgba(0,0,0,.25)">
        <div style="position:absolute;left:0;right:0;top:620px;font-size:120px;font-weight:900;letter-spacing:-5px">새 편지</div>
        <div style="position:absolute;left:0;right:0;top:790px;font-size:46px;font-weight:700;letter-spacing:-1.5px">${SLOGAN}</div>
-       <div style="position:absolute;left:290px;right:290px;top:1000px;padding:28px 0;border-radius:999px;background:#fff;color:${C.ink};font-size:38px;font-weight:800;letter-spacing:-1px">App Store · 무료</div>
+       <div style="position:absolute;left:170px;right:170px;top:1000px;padding:28px 0;border-radius:999px;background:#fff;color:${C.ink};font-size:36px;font-weight:800;letter-spacing:-1px">아이폰은 앱스토어에서 바로 받기 · 무료</div>
        <div style="position:absolute;left:0;right:0;top:1150px;font-size:28px;font-weight:600;opacity:.85;letter-spacing:-.5px">링크는 프로필에 @saepyeonji · 안드로이드는 곧</div></body>`,
   ],
 };
