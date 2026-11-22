@@ -135,8 +135,10 @@ service cloud.firestore {
         && request.resource.data.fromUid == request.auth.uid
         && request.resource.data.sentAt == request.time
         && request.resource.data.arriveAt > request.time
-        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt', 'replyTo', 'penpal'])
+        && request.resource.data.keys().hasOnly(['fromUid', 'fromName', 'toName', 'routeId', 'birdId', 'sentAt', 'arriveAt', 'recipientUid', 'departAt', 'replyTo', 'penpal', 'weather'])
         && (!('penpal' in request.resource.data) || request.resource.data.penpal == true)
+        // 보낼 때 출발·도착지에 비나 눈이 오면 새가 천천히 날아요(core/weather.ts). 예약 편지에는 붙이지 않아요
+        && (!('weather' in request.resource.data) || (request.resource.data.weather in ['rain', 'snow'] && !('departAt' in request.resource.data)))
         // 예약 발송: 출발 시각은 지금부터 최대 366일 뒤까지, 도착은 항상 출발보다 뒤(core/schedule.ts의 MAX_SCHEDULE_DAYS와 같아야 해요)
         && (!('departAt' in request.resource.data)
             || (request.resource.data.departAt is timestamp
