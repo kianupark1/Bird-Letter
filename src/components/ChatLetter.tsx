@@ -16,6 +16,7 @@ import ShareMap from "@/components/ShareMap";
 import { clockText, dateTimeText, isScheduled, whenText } from "../../core/schedule";
 import { withIGa } from "@/lib/korean";
 import { mishapMessage } from "@/lib/flight";
+import { weatherLabel, type Weather } from "../../core/weather";
 import { isUnnamed } from "../../core/threads";
 import { isWelcome } from "../../core/welcome";
 
@@ -70,10 +71,13 @@ export default function ChatLetter({ entry, name, now, isNew, onOpened, onResend
     : sched ? "곧 출발할 편지" : done ? (isNew ? "💌 편지가 도착했어요! 눌러서 열기" : "💌 편지 다시 읽기") : "🔒 도착하면 열어 볼 수 있어요";
   // 내 편지의 읽음 정보(앱으로 바로 보낸 편지만 알 수 있어요)
   const sent = mine ? (entry.item as { readAt?: number; toUid?: string }) : null;
+  // 보낼 때 비·눈이 왔던 편지(천천히 날아요)
+  const wx = (entry.item as { weather?: Weather }).weather;
   // 작은 상태 한 줄
   const status = sched ? `⏰ ${dateTimeText(entry.at)} 출발 예정`
     : done ? `${bird.name} · 도착 ✓ ${whenText(arriveAt)}${sent?.readAt ? " · 읽음" : sent?.toUid ? " · 안 읽음" : ""}`
     : pr.stalled && pr.mishap ? `${pr.mishap.kind === "tree" ? "🌳 나무에 걸림" : "🧭 길 잃음"} · 다시 찾으면 ${whenText(arriveAt)} 도착`
+    : wx ? `${weatherLabel(wx)}, 천천히 · ${whenText(arriveAt)} 도착 예정`
     : `${bird.name} 비행 중 · ${whenText(arriveAt)} 도착 예정`;
   // 카카오톡처럼 내 편지 옆에 읽음 표시: 도착했는데 안 읽었으면 노란 "1", 읽었으면 "읽음"(앱으로 바로 보낸 편지만)
   const receipt = !sent || !done ? null

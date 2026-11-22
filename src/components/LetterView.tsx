@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import JourneyMap from "@/components/JourneyMap";
 import { getBird, mishapText } from "@/lib/birds";
 import { elapsedAtFraction, mishapMessage } from "@/lib/flight";
+import { weatherFlying } from "../../core/weather";
 import { getRoute, routePosition } from "@/lib/routes";
 import { formatMinutes } from "@/lib/geo";
 import { announceReceived, letterProgress, markOpened, useLetters, useNow, type Letter } from "@/lib/letters";
@@ -101,7 +102,7 @@ export default function LetterView({ id }: { id: string }) {
   const view: (Letter & { fromName?: string; fromUid?: string }) | null = mine
     ? mine
     : meta
-      ? { id: meta.id, to: meta.toName, routeId: meta.routeId, birdId: meta.birdId, message: body ?? "", sentAt: meta.sentAt, arriveAt: meta.arriveAt, fromName: meta.fromName, fromUid: meta.fromUid }
+      ? { id: meta.id, to: meta.toName, routeId: meta.routeId, birdId: meta.birdId, message: body ?? "", sentAt: meta.sentAt, arriveAt: meta.arriveAt, fromName: meta.fromName, fromUid: meta.fromUid, ...(meta.weather ? { weather: meta.weather } : {}) }
       : null;
   const isRecipient = !mine && !!meta;
   const guest = incoming.state === "ok" && incoming.guest;
@@ -302,6 +303,9 @@ export default function LetterView({ id }: { id: string }) {
             )}
           </div>
         </div>
+        {view?.weather && !pr.stalled && (
+          <div className="small" style={{ textAlign: "center" }}>{weatherFlying(view.weather, bird.name)} · 편지는 꼭 도착해요</div>
+        )}
         {mishapDone && mishapMsg && (
           <div className="small" style={{ textAlign: "center" }}>
             {mishap!.kind === "tree" ? "가는 길에 나무에 걸렸다가 빠져나왔어요." : "가는 길에 길을 잃었다가 다시 찾았어요."}

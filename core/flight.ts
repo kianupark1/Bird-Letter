@@ -7,6 +7,7 @@
  */
 import { getBird, type MishapKind } from "./birds";
 import { MIN_FLIGHT_MIN, REST_FACTOR } from "./geo";
+import { weatherFactor, type Weather } from "./weather";
 
 /** 이 시각 이후에 보낸 편지부터 사고 규칙을 적용해요(그전에 보낸 시험 편지는 옛 계산 그대로) */
 export const MISHAP_SINCE = Date.parse("2026-10-08T00:00:00+09:00");
@@ -71,14 +72,14 @@ export function speedFactor(letterId: string, birdId: string, sentAt: number) {
 /** 사고 때문에 늘어나는 비율(없으면 0) */
 export const extraFrac = (m: Mishap | null) => (m ? m.delayFrac : 0);
 
-/** 보낼 때 쓰는 전체 비행 시간(분, 소수 포함). speed는 테스트 배속(평소 1) */
-export function totalMinutes(letterId: string, birdId: string, km: number, sentAt: number, speed = 1) {
+/** 보낼 때 쓰는 전체 비행 시간(분, 소수 포함). speed는 테스트 배속(평소 1), weather는 보낼 때 비·눈이면(core/weather.ts) 더 오래 */
+export function totalMinutes(letterId: string, birdId: string, km: number, sentAt: number, speed = 1, weather?: Weather | null) {
   const cruise = (km / (getBird(birdId).kmh * speedFactor(letterId, birdId, sentAt))) * 60;
   // 쉬어 가며 날기(core/geo.ts REST_FACTOR·MIN_FLIGHT_MIN): SLOW_SINCE 뒤에 보낸 편지부터
   // 새마다 다른 성격(TIER_SINCE 뒤): 매는 몇 분, 비둘기는 한 시간쯤, 까치는 아무리 가까워도 하루
   const b = getBird(birdId);
   const base = (sentAt >= REAL_SINCE ? Math.max(b.realMin, cruise) : sentAt >= TIER_SINCE ? Math.max(b.minMin, cruise * b.rest) : sentAt >= SLOW_SINCE ? Math.max(MIN_FLIGHT_MIN, cruise * REST_FACTOR) : cruise) / speed;
-  return base * (1 + extraFrac(rollMishap(letterId, birdId, sentAt)));
+  return base * weatherFactor(weather) * (1 + extraFrac(rollMishap(letterId, birdId, sentAt)));
 }
 
 export type Plan = {
