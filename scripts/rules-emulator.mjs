@@ -193,5 +193,13 @@ await ok("받는 사람이 도착한 편지를 열면 읽음 남기기", upd(doc
 await no("읽음은 한 번만(다시 바꾸기 불가)", upd(doc(B, "letters", "RD1"), { readAt: serverTimestamp() }));
 await ok("보낸 사람은 읽음 시각을 볼 수 있음", getDoc(doc(A, "letters", "RD1")).then((x) => { if (!x.data().readAt) throw new Error("no readAt"); }));
 
+console.log("[날씨(비·눈이면 천천히)]");
+const lk = (over = {}) => ({ fromUid: "uidA", fromName: "에이", toName: "비", routeId: "seoul-busan", birdId: "pigeon", sentAt: serverTimestamp(), arriveAt: Timestamp.fromMillis(Date.now() + 3600e3), recipientUid: null, ...over });
+await ok("날씨 없는 편지(지금처럼)", setDoc(doc(A, "letters", "W0"), lk()));
+await ok("비 오는 날 편지", setDoc(doc(A, "letters", "W1"), lk({ weather: "rain" })));
+await ok("눈 오는 날 편지", setDoc(doc(A, "letters", "W2"), lk({ weather: "snow" })));
+await no("모르는 날씨 값", setDoc(doc(A, "letters", "W3"), lk({ weather: "sunny" })));
+await no("예약 편지에 날씨", setDoc(doc(A, "letters", "W4"), lk({ weather: "rain", departAt: Timestamp.fromMillis(Date.now() + 86400e3), arriveAt: Timestamp.fromMillis(Date.now() + 2 * 86400e3) })));
+
 console.log(`\n통과 ${pass} / 실패 ${fail}`);
 await env.cleanup(); process.exit(fail ? 1 : 0);
