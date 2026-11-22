@@ -28,6 +28,8 @@ export type Letter = {
   photos?: string[];
   /** 펜팔(모르는 누군가에게 보낸) 편지 */
   penpal?: boolean;
+  /** 보낼 때 비·눈이 와서 천천히 나는 편지(core/weather.ts) */
+  weather?: "rain" | "snow";
   /** 받는 사람이 열어 본 시각(서버 편지만, 카카오톡 "읽음"처럼) */
   readAt?: number;
 };
@@ -181,6 +183,7 @@ function loadServer(): Promise<Snap> {
         ...(m.readAt ? { readAt: m.readAt } : {}),
         ...(known.get(m.id)?.photos ? { photos: known.get(m.id)!.photos } : {}),
         ...(m.penpal ? { penpal: true } : {}),
+        ...(m.weather ? { weather: m.weather } : {}),
       })),
     );
     const snap: Snap = { uid: user.uid, letters: mine, received: recv.filter((r) => !blocked.has(r.fromUid)), at: Date.now() };
@@ -321,6 +324,7 @@ export function useLetters() {
           id, to: l.to, routeId: l.routeId, birdId: l.birdId, message: l.message,
           sentAt: meta?.sentAt ?? l.departAt ?? Date.now(), arriveAt: meta?.arriveAt, toUid: l.toUid, photos: l.photos,
           ...(l.penpal ? { penpal: true } : {}),
+          ...(meta?.weather ? { weather: meta.weather } : {}),
         };
         setLetters((prev) => [letter, ...prev]);
         patchSnap((s) => ({ ...s, letters: [letter, ...s.letters.filter((x) => x.id !== letter.id)] }));

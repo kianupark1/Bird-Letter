@@ -1003,5 +1003,31 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("댓글 편지: 우리 계정 댓글은 안 보냄", shouldSend({ username: "saepyeonji", id: "3" }, "saepyeonji", done), false);
   eq("댓글 편지: 노선이 있음", getRoute(CAMPAIGN_ROUTE).km > 0, true);
 }
+
+// 비·눈 오는 날은 천천히(core/weather.ts, 2026-11-22 대표님)
+{
+  const W = await import("../core/weather.ts");
+  const { REAL_SINCE } = await import("../core/flight.ts");
+  eq("날씨: 비 코드 61 → 비", W.weatherFromCode(61), "rain");
+  eq("날씨: 소나기 81 → 비", W.weatherFromCode(81), "rain");
+  eq("날씨: 뇌우 95 → 비", W.weatherFromCode(95), "rain");
+  eq("날씨: 눈 73 → 눈", W.weatherFromCode(73), "snow");
+  eq("날씨: 맑음 0 → 없음", W.weatherFromCode(0), null);
+  eq("날씨: 흐림 3 → 없음", W.weatherFromCode(3), null);
+  eq("날씨: 한 곳이라도 비면 비", W.pickWeather([0, 61, 2]), "rain");
+  eq("날씨: 눈이 섞이면 눈", W.pickWeather([61, 71]), "snow");
+  eq("날씨: 코드 맑아도 내리는 양 있으면 비", W.pickWeather([2, 2], [0, 0.5]), "rain");
+  eq("날씨: 응답(여러 지점 배열)", W.weatherFromResponse([{ current: { weather_code: 1, precipitation: 0 } }, { current: { weather_code: 63, precipitation: 1.2 } }]), "rain");
+  eq("날씨: 응답(한 지점 객체)", W.weatherFromResponse({ current: { weather_code: 0, precipitation: 0 } }), null);
+  eq("날씨: 망가진 응답은 맑은 날처럼", W.weatherFromResponse(null), null);
+  eq("날씨: 주소는 소수 둘째 자리까지만", W.weatherUrl([{ lat: 37.56651, lng: 126.97812 }]).includes("latitude=37.57&longitude=126.98"), true);
+  const t = REAL_SINCE + 86400e3 * 30, id = "rain-test-1";
+  const sunny = totalMinutes(id, "pigeon", 325, t), rainy = totalMinutes(id, "pigeon", 325, t, 1, "rain"), snowy = totalMinutes(id, "pigeon", 325, t, 1, "snow");
+  near("비 오는 날 1.3배 오래", rainy / sunny, 1.3, 1e-9);
+  near("눈 오는 날 1.5배 오래", snowy / sunny, 1.5, 1e-9);
+  eq("날씨 없으면 그대로", totalMinutes(id, "pigeon", 325, t, 1, null), sunny);
+  const pl = planFor(id, "pigeon", t, t + rainy * 60000);
+  eq("비 오는 편지도 끝까지 도착", progressAt(pl, rainy * 60000 + 1).done, true);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

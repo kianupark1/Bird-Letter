@@ -7,6 +7,7 @@ import { deleteUser, signOut } from "firebase/auth";
 import { revokeAppleIfLinked } from "./link";
 import { getRoute } from "../routes";
 import { totalMinutes } from "../flight";
+import { weatherNow, type Weather } from "../weather";
 import { auth, db, ensureUser } from "./client";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "../limits";
 import { deleteFriendData } from "./friends";
@@ -31,6 +32,8 @@ export type Meta = {
   penpal?: boolean;
   /** 받는 사람이 편지를 열어 본 시각(카카오톡 "읽음"처럼 보낸 사람에게 보여요) */
   readAt?: number;
+  /** 보낼 때 비·눈이 와서 천천히 나는 편지(core/weather.ts) */
+  weather?: Weather;
 };
 
 function toMeta(id: string, d: DocumentData): Meta {
@@ -48,6 +51,7 @@ function toMeta(id: string, d: DocumentData): Meta {
     departAt,
     ...(d.penpal === true ? { penpal: true } : {}),
     ...(d.readAt?.toMillis ? { readAt: d.readAt.toMillis() } : {}),
+    ...(d.weather === "rain" || d.weather === "snow" ? { weather: d.weather as Weather } : {}),
   };
 }
 
@@ -66,7 +70,9 @@ export async function sendLetter(p: {
   // speed: 테스트용 배속(주소에 ?test=1을 붙였을 때만 600배). 평소에는 1
   // 길 잃음·나무 걸림 사고는 편지 ID로 정해져서, 도착 시각에 지연이 이미 포함돼요(core/flight.ts)
   const start = p.departAt ?? Date.now(); // 새가 출발하는 시각
-  const minutes = totalMinutes(ref.id, p.birdId, getRoute(p.routeId).km, start, p.speed ?? 1);
+  // 지금 보내는 편지만 출발지·도착지의 지금 날씨를 봐요(비·눈이면 천천히, 못 받으면 맑은 날처럼)
+  const weather = p.departAt ? null : await weatherNow(p.routeId);
+  const minutes = totalMinutes(ref.id, p.birdId, getRoute(p.routeId).km, start, p.speed ?? 1, weather);
   const batch = writeBatch(d);
   batch.set(ref, {
     fromUid: user.uid,
@@ -81,6 +87,7 @@ export async function sendLetter(p: {
     ...(p.departAt ? { departAt: Timestamp.fromMillis(p.departAt) } : {}),
     ...(p.replyTo ? { replyTo: p.replyTo } : {}),
     ...(p.penpal ? { penpal: true } : {}),
+    ...(weather ? { weather } : {}),
   });
   batch.set(doc(d, "letters", ref.id, "private", "body"), { message: p.message.trim().slice(0, MAX_LETTER_CHARS) });
   (p.photos ?? []).slice(0, MAX_PHOTOS).forEach((data, i) => batch.set(doc(d, "letters", ref.id, "private", `photo${i}`), { data }));
