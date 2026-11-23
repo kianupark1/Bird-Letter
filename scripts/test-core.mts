@@ -45,10 +45,10 @@ near("서울→제주 직선거리(km)", dist(jeju), jeju.km, 40);
 near("서울→독도 직선거리(km)", dist(dokdo), dokdo.km, 40);
 
 // 도착 시간: 실제 비행 속도(시속)로 계산한 서울-부산 시간(분), 거리에 비례
-const base: Record<string, number> = { hawk: 217, swallow: 488, pigeon: 300, magpie: 557, sparrow: 696, bungbungi: 325, crane: 355 };
+const base: Record<string, number> = { hawk: 217, swallow: 488, pigeon: 300, magpie: 557, sparrow: 696, owl: 433, bungbungi: 325, crane: 355 };
 for (const b of BIRDS) eq(`${b.name} 부산 순항 분`, cruiseMinutes(b, 325), base[b.id]);
 for (const b of BIRDS) eq(`${b.name} 부산은 진짜 새 속도 그대로`, travelMinutes(b, 325), Math.round(Math.max(b.realMin, (325 / b.kmh) * 60)));
-eq("고를 수 있는 새는 참새·까치·비둘기·매 4종", BIRDS.map((b) => b.id).sort().join(","), "hawk,magpie,pigeon,sparrow");
+eq("고를 수 있는 새는 참새·까치·부엉이·비둘기·매 5종(부엉이는 밤에만)", BIRDS.map((b) => b.id).sort().join(","), "hawk,magpie,owl,pigeon,sparrow");
 {
   const { totalMinutes, REAL_SINCE, TIER_SINCE } = await import("../core/flight.ts");
   const { getBird: gb } = await import("../core/birds.ts");
@@ -64,14 +64,14 @@ eq("고를 수 있는 새는 참새·까치·비둘기·매 4종", BIRDS.map((b)
   eq("가까운 곳: 까치는 2시간", travelMinutes(g("magpie"), 4), 120);
   eq("가까운 곳: 참새는 3시간", travelMinutes(g("sparrow"), 4), 180);
   eq("가까운 곳은 새마다 모두 다름", new Set(BIRDS.map((b) => travelMinutes(b, 4))).size, BIRDS.length);
-  eq("서울-부산도 매가 가장 빠르고 참새가 가장 느림", [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).map((b) => b.id).join(","), "hawk,pigeon,magpie,sparrow");
+  eq("서울-부산도 매가 가장 빠르고 참새가 가장 느림", [...BIRDS].sort((a, b) => travelMinutes(a, 325) - travelMinutes(b, 325)).map((b) => b.id).join(","), "hawk,pigeon,owl,magpie,sparrow");
 }
-{ const { BIRDS_SLOW_TO_FAST: SF } = await import("../core/birds.ts"); eq("빠른 순서: 매·비둘기·까치·참새", [...SF].reverse().map((b) => b.id).join(","), "hawk,pigeon,magpie,sparrow"); }
+{ const { BIRDS_SLOW_TO_FAST: SF } = await import("../core/birds.ts"); eq("빠른 순서: 매·비둘기·부엉이·까치·참새", [...SF].reverse().map((b) => b.id).join(","), "hawk,pigeon,owl,magpie,sparrow"); }
 eq("하루 넘으면 일로 표시", formatMinutes(1440 + 7 * 60 + 5), "1일 7시간");
 eq("딱 하루", formatMinutes(1440), "1일");
 eq("매 제주(452km) 순항 분", cruiseMinutes(BIRDS[0], 452), 301);
 eq("까치 제주(452km) 순항 분", cruiseMinutes(BIRDS.find((b) => b.id === "magpie")!, 452), 775);
-eq("새 4종", BIRDS.length, 4);
+eq("새 5종", BIRDS.length, 5);
 eq("노선 3개", ROUTES.length, 3);
 
 
@@ -1028,6 +1028,21 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("날씨 없으면 그대로", totalMinutes(id, "pigeon", 325, t, 1, null), sunny);
   const pl = planFor(id, "pigeon", t, t + rainy * 60000);
   eq("비 오는 편지도 끝까지 도착", progressAt(pl, rainy * 60000 + 1).done, true);
+}
+
+// 부엉이는 밤(한국 시각 19시~6시)에만 고를 수 있어요(2026-11-23 대표님)
+{
+  const B = await import("../core/birds.ts");
+  const kst = (h: number) => Date.parse(`2026-11-23T${String(h).padStart(2, "0")}:30:00+09:00`);
+  eq("부엉이: 밤 10시엔 고를 수 있음", B.pickableBirds(kst(22)).some((b) => b.id === "owl"), true);
+  eq("부엉이: 새벽 3시엔 고를 수 있음", B.pickableBirds(kst(3)).some((b) => b.id === "owl"), true);
+  eq("부엉이: 낮 2시엔 없음", B.pickableBirds(kst(14)).some((b) => b.id === "owl"), false);
+  eq("부엉이: 저녁 7시부터", B.isNight(Date.parse("2026-11-23T19:00:00+09:00")), true);
+  eq("부엉이: 새벽 6시엔 끝", B.isNight(Date.parse("2026-11-23T06:00:00+09:00")), false);
+  eq("낮에 부엉이를 골라 두었으면 비둘기로", B.usableBird("owl", kst(14)), "pigeon");
+  eq("밤엔 부엉이 그대로", B.usableBird("owl", kst(23)), "owl");
+  eq("다른 새는 낮에도 그대로", B.usableBird("magpie", kst(14)), "magpie");
+  eq("부엉이 서울→부산 약 7시간 13분", B.getBird("owl").minutesSeoulBusan, 433);
 }
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);

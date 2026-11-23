@@ -13,6 +13,8 @@ const PAL: Record<string, Pal> = {
   pigeon: { body: "#9AA8B8", belly: "#C9D3DE", wing: "#B5C1CE", tail: "#6F8094", beak: "#3A2E26", feet: "#E8683F" },
   sparrow: { body: "#C9844E", belly: "#ECE4D6", wing: "#8E5A35", tail: "#7A4C2E", beak: "#3A2E26", feet: "#D9A07E" },
   hawk: { body: "#8A5A3C", belly: "#FBF3E4", wing: "#5B3A29", tail: "#5B3A29", beak: "#E0A83C", feet: "#E0A83C" },
+  // 부엉이(2026-11-23): 갈색 몸, 귀깃, 둥근 얼굴판, 노란 눈
+  owl: { body: "#8B6A4A", belly: "#EAD9B8", wing: "#6B4E34", tail: "#6B4E34", beak: "#E0A83C", feet: "#E0A83C" },
 };
 
 const RIM: CSSProperties = { stroke: "var(--cb-rim, rgba(42,33,24,.2))", strokeWidth: 2.6, strokeLinejoin: "round" };
@@ -41,6 +43,15 @@ function HeadMark({ id, hx, hy, r }: { id: string; hx: number; hy: number; r: nu
       <path d={`M${hx + r * 0.55} ${hy + r * 0.72} Q${hx + r * 0.8} ${hy + r * 0.95} ${hx + r * 0.45} ${hy + r * 1.05}`} style={ln("#2A2118", r * 0.22)} />
     </>
   );
+  // 부엉이: 머리 위 귀깃 두 개 + 밝은 얼굴판 + 노란 눈 테두리
+  if (id === "owl") return (
+    <>
+      <path d={`M${hx - r * 0.75} ${hy - r * 0.55} L${hx - r * 0.55} ${hy - r * 1.45} L${hx - r * 0.1} ${hy - r * 0.8} Z`} style={f("#6B4E34")} />
+      <path d={`M${hx + r * 0.25} ${hy - r * 0.8} L${hx + r * 0.75} ${hy - r * 1.4} L${hx + r * 0.85} ${hy - r * 0.45} Z`} style={f("#6B4E34")} />
+      <ellipse cx={hx + r * 0.25} cy={hy + r * 0.05} rx={r * 0.78} ry={r * 0.72} fill="#EAD9B8" />
+      <ellipse cx={hx + r * 0.27} cy={hy - r * 0.05} rx={r * 0.42} ry={r * 0.44} fill="#F2C14E" />
+    </>
+  );
   if (id !== "hawk") return null;
   return (
     <>
@@ -51,7 +62,7 @@ function HeadMark({ id, hx, hy, r }: { id: string; hx: number; hy: number; r: nu
 }
 function Beak({ id, x, y, s }: { id: string; x: number; y: number; s: number }) {
   const p = PAL[id];
-  if (id === "hawk") return <path d={`M${x} ${y - 6 * s} Q${x + 16 * s} ${y - 6 * s} ${x + 16 * s} ${y + 7 * s} Q${x + 10 * s} ${y + 3 * s} ${x} ${y + 5 * s} Z`} style={f(p.beak)} />;
+  if (id === "hawk" || id === "owl") return <path d={`M${x} ${y - 6 * s} Q${x + 16 * s} ${y - 6 * s} ${x + 16 * s} ${y + 7 * s} Q${x + 10 * s} ${y + 3 * s} ${x} ${y + 5 * s} Z`} style={f(p.beak)} />;
   return (
     <>
       <path d={`M${x} ${y - 5 * s} L${x + 15 * s} ${y} L${x} ${y + 5 * s} Z`} style={f(p.beak)} />
