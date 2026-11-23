@@ -20,6 +20,8 @@ export type Bird = {
    * 걸리는 시간 = max(realMin, 순항 시간). 쉬는 배수 없이 실제 순항 속도 그대로, 아무리 가까워도 realMin분
    */
   realMin: number;
+  /** 밤(한국 시각 저녁 7시~새벽 6시)에만 고를 수 있는 새(부엉이). 보낸 편지는 언제든 보여요 */
+  nightOnly?: boolean;
   /** 새 고르기에서 뺀 새(2026-11-01 대표님: "새 종류가 많아, 느린·중간·빠른 3개만"). 예전 편지 그림·시간에만 써요 */
   retired?: boolean;
   /** 서울-부산(325km) 기준 소요 분. kmh에서 계산한 값 */
@@ -43,6 +45,8 @@ export const ALL_BIRDS: Bird[] = [
   make({ id: "bungbungi", name: "붕붕이", emoji: "🚁", badge: "재미", kmh: 60, rest: 2, minMin: 30, realMin: 30, retired: true, mishapOneIn: 50, note: "드론 새 마스코트", speedNote: "소형 드론 속도예요" }),
   // 2026-11-12 대표님: "제일 느린 새 하나 추가, 참새라던지" — 참새 순항 약 시속 30km 안팎(대략값), 가까워도 3시간
   make({ id: "sparrow", name: "참새", emoji: "🐤", badge: "제일 느림", kmh: 28, rest: 6, minMin: 1440, realMin: 180, mishapOneIn: 60, note: "가장 천천히, 가장 설레게", speedNote: "작은 날개로 쉬엄쉬엄 날아요" }),
+  // 2026-11-23 대표님: "부엉이 추가하자, 밤에 날릴 때 부엉이가 있어야 함" — 밤에만 고를 수 있어요. 수리부엉이 순항 약 시속 45km(대략값 「미확인」), 가까워도 1시간 반
+  make({ id: "owl", name: "부엉이", emoji: "🦉", badge: "밤 전용", kmh: 45, rest: 3, minMin: 90, realMin: 90, nightOnly: true, mishapOneIn: 70, note: "밤에만 날아요", speedNote: "밤눈이 밝아 어둠 속에서도 길을 찾아요" }),
   make({ id: "crane", name: "두루미", emoji: "🦢", badge: "귀한 소식", kmh: 55, rest: 5, minMin: 360, realMin: 360, retired: true, mishapOneIn: 100, note: "가장 귀한 소식용", speedNote: "느긋하지만 길을 잃지 않아요" }),
 ];
 
@@ -51,6 +55,17 @@ export const BIRDS: Bird[] = ALL_BIRDS.filter((b) => !b.retired);
 
 /** 느린 새부터(참새 → 까치 → 비둘기 → 매). 가까운 곳·먼 곳 모두 같은 순서예요 */
 export const BIRDS_SLOW_TO_FAST: Bird[] = [...BIRDS].sort((a, b) => b.minutesSeoulBusan - a.minutesSeoulBusan || a.kmh - b.kmh);
+
+/** 밤: 한국 시각 저녁 7시 ~ 새벽 6시(부엉이가 나는 시간) */
+export const NIGHT_FROM = 19, NIGHT_TO = 6;
+export function isNight(ts: number = Date.now()) {
+  const h = new Date(ts + 9 * 3600_000).getUTCHours();
+  return h >= NIGHT_FROM || h < NIGHT_TO;
+}
+/** 지금 고를 수 있는 새(느린 새부터). 낮에는 부엉이가 빠져요 */
+export const pickableBirds = (ts: number = Date.now()) => BIRDS_SLOW_TO_FAST.filter((b) => !b.nightOnly || isNight(ts));
+/** 지금 보낼 수 있는 새인지(낮에 부엉이를 골라 두었으면 비둘기로) */
+export const usableBird = (id: string, ts: number = Date.now()) => (pickableBirds(ts).some((b) => b.id === id) ? id : "pigeon");
 
 export const isRetired = (id: string) => !!ALL_BIRDS.find((b) => b.id === id)?.retired;
 export const getBird = (id: string) => ALL_BIRDS.find((b) => b.id === id) ?? ALL_BIRDS.find((b) => b.id === "pigeon")!;

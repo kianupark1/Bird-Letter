@@ -2,7 +2,7 @@
 import { quickPosition } from "@/lib/fastGeo";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { BIRDS, BIRDS_SLOW_TO_FAST, getBird, mishapShort, mishapText } from "@/lib/birds";
+import { BIRDS, getBird, mishapShort, mishapText, pickableBirds, usableBird } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { getPlace } from "../../../core/places";
 import { locate as findDistrict } from "../../../core/districts";
@@ -181,7 +181,7 @@ function SendForm() {
       // 이름만 적었어도 같은 이름의 친구가 있으면 그 친구에게 바로 보내요(같은 사람이 둘로 갈라지지 않게)
       const uid = toUid ?? friends.find((f) => f.name === to.trim())?.uid;
       const id = await add({
-        to: to.trim(), toUid: uid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed,
+        to: to.trim(), toUid: uid, routeId: routeIdOf(fromId, toId), birdId: usableBird(birdId), message: message.trim(), fromName: profile.nickname, speed,
         photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined, replyTo,
       });
       birdFx("depart", profile.chirp);
@@ -296,7 +296,7 @@ function SendForm() {
       {step === 2 && (
         <>
           <p className="sub big">어떤 새로 보낼까요?<br /><span>{to}에게 · {route.title} · {route.km}km</span></p>
-          {[...BIRDS_SLOW_TO_FAST].reverse().map((b, bi) => (
+          {[...pickableBirds()].reverse().map((b, bi) => (
             <button key={b.id} className={`card wrapfoot birdpick bp${bi % 6}`} aria-pressed={b.id === birdId} onClick={() => setBirdId(b.id)}>
               <div className="row">
                 <BirdIcon id={b.id} size={78} />

@@ -3,7 +3,7 @@ import { quickPosition } from "@/lib/fastGeo";
 import { useEffect, useRef, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
 import PlaceField from "@/components/PlaceField";
-import { BIRDS_SLOW_TO_FAST, getBird, isRetired, mishapShort } from "@/lib/birds";
+import { getBird, isRetired, mishapShort, pickableBirds, usableBird } from "@/lib/birds";
 import { getRoute, routeIdOf } from "@/lib/routes";
 import { formatMinutes, travelMinutes } from "@/lib/geo";
 import { useProfile } from "@/lib/settings";
@@ -85,7 +85,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
 
   useEffect(() => {
     const b = read(LAST_BIRD);
-    if (b && !isRetired(b)) setBirdId(b);
+    if (b && !isRetired(b)) setBirdId(usableBird(b)); // 낮에는 부엉이 대신 비둘기
     setToId(friendPlace && getPlace(friendPlace) ? friendPlace : read(placeKey(threadKey)) || guessPlace || "");
     if (!IS_TOSS && new URLSearchParams(window.location.search).get("test")) speed.current = 600; // 직접 써 보기용 빠른 속도
   }, [threadKey, guessPlace, friendPlace]);
@@ -144,9 +144,9 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (!penpal && !fromOk()) { setInfo(""); pendingSend.current = true; setSheet("from"); return; }
     setBusy(true); setInfo("");
     try {
-      const normal = (replyTo?: string) => add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId, message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined, replyTo });
+      const normal = (replyTo?: string) => add({ to: name, toUid, routeId: routeIdOf(fromId, toId), birdId: usableBird(birdId), message: message.trim(), fromName: profile.nickname, speed: speed.current, photos: photos.length ? photos : undefined, departAt: later && departMs ? departMs : undefined, replyTo });
       const sending = penpal
-        ? add({ to: name, toUid, routeId: routeIdOf(fromId, toPick), birdId, message: message.trim(), fromName: penpal.fromName, speed: speed.current, photos: photos.length ? photos : undefined, replyTo: penpal.replyTo, penpal: true })
+        ? add({ to: name, toUid, routeId: routeIdOf(fromId, toPick), birdId: usableBird(birdId), message: message.trim(), fromName: penpal.fromName, speed: speed.current, photos: photos.length ? photos : undefined, replyTo: penpal.replyTo, penpal: true })
         // 친구 연결이 끊긴 계정이라 서버가 막으면, 그 사람이 보낸 편지에 "답장"으로 한 번 더 보내 봐요
         : normal().catch((e) => { if (isDenied(e) && replyTo) return normal(replyTo); throw e; });
       // 인터넷이 끊기면 저장이 끝나지 않고 기다리기만 할 수 있어서, 20초가 지나면 알려 줘요
@@ -216,7 +216,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       {sheet === "bird" && (
         <div className="ch-sheet" role="dialog" aria-label="새 고르기">
           <h2>어떤 새로 보낼까요?</h2>
-          {[...BIRDS_SLOW_TO_FAST].reverse().map((b, i) => (
+          {[...pickableBirds()].reverse().map((b, i) => (
             <button key={b.id} type="button" className={`birdpick wrapfoot bp${i % 6}`} aria-pressed={b.id === birdId} onClick={() => pickBird(b.id)}>
               <span className="row"><BirdIcon id={b.id} size={62} /><span><span className="name">{b.name}</span><br /><span className="kmh">시속 {b.kmh}km</span></span></span>
               <span className="time">{route ? formatMinutes(Math.max(1, Math.round(travelMinutes(b, route.km) / speed.current))) : ""}</span>
@@ -294,7 +294,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       </button>
       {/* 새 고르기: 큰 새 그림을 옆으로 넘기며 바로 고를 수 있어요(누르면 바로 바뀜) */}
       <div className="ch-birds" role="radiogroup" aria-label="어떤 새로 보낼까요?">
-        {[...BIRDS_SLOW_TO_FAST].reverse().map((b) => (
+        {[...pickableBirds()].reverse().map((b) => (
           <button key={b.id} type="button" role="radio" aria-checked={b.id === birdId} className={`ch-bird ${b.id === birdId ? "on" : ""}`}
             onClick={() => { setBirdId(b.id); write(LAST_BIRD, b.id); }}>
             <BirdIcon id={b.id} size={54} letter={b.id === birdId} />
