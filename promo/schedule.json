@@ -725,7 +725,6 @@
       "day": 13,
       "slot": "night",
       "to": [
-        "instagram",
         "threads",
         "x"
       ],
@@ -2495,6 +2494,42 @@
       "cover": "video/reel-c12-penpal-cover.png",
       "text": "카톡은 친구랑, 편지는 아직 모르는 펜팔 친구랑 🕊\n\n{{받기}}\n\n새편지 펜팔은 이름 대신 \"여수 사는 비둘기\"처럼 도시와 새로만 만나요.\n편지는 새가 실제 거리만큼 날아가서, 답장을 기다리는 하루까지 펜팔이 돼요.\n\n아이폰은 앱스토어에서 바로 받을 수 있어요. 무료예요.\n펜팔은 만 14세 이상.\n\n#펜팔",
       "xText": "카톡은 친구랑, 편지는 아직 모르는 펜팔 친구랑 🕊\n\n이름 대신 도시와 새로만 만나는 펜팔. 편지는 새가 실제 거리만큼 날아가요. (만 14세 이상)\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome"
+    },
+    {
+      "date": "2026-11-23",
+      "slot": "special16",
+      "to": [
+        "instagram",
+        "threads"
+      ],
+      "carousel": [
+        "video/card/reel-master.mp4",
+        "c13-master-2.png",
+        "c13-master-3.png",
+        "c13-master-4.png",
+        "c13-master-5.png",
+        "c13-master-6.png",
+        "c13-master-7.png"
+      ],
+      "cover": "video/card/reel-master-cover.jpg",
+      "text": "카톡 말고, 새가 물어다 주는 편지 🕊\n\n{{받기}}\n\n보낸 편지가 실제 거리만큼 지도 위를 날아가요.\n비 오는 날엔 새도 천천히 🌧\n도착하면 두루마리처럼 펼쳐지고, 사진은 폴라로이드로 천천히 선명해져요 📸\n\n🍎 아이폰은 지금 앱스토어에서 \"새편지\" (링크는 프로필 @saepyeonji)\n▶ 구글 플레이는 11월 중 출시 예정이에요. 그전엔 웹으로 바로 써 보세요!\n\n당신은 누구에게 첫 편지를 보낼래요?\n\n#새편지",
+      "poll": [
+        "엄마·아빠",
+        "멀리 사는 친구",
+        "군대 간 동생·친구",
+        "아직 모르는 펜팔 친구"
+      ]
+    },
+    {
+      "date": "2026-11-23",
+      "slot": "special17",
+      "to": [
+        "x"
+      ],
+      "video": "video/reel-master.mp4",
+      "cover": "video/reel-master-cover.png",
+      "text": "카톡 말고, 새가 물어다 주는 편지 🕊\n\n{{받기}}\n\n보낸 편지가 실제 거리만큼 지도 위를 날아가요.\n비 오는 날엔 새도 천천히 🌧\n도착하면 두루마리처럼 펼쳐지고, 사진은 폴라로이드로 천천히 선명해져요 📸\n\n🍎 아이폰은 지금 앱스토어에서 \"새편지\" (링크는 프로필 @saepyeonji)\n▶ 구글 플레이는 11월 중 출시 예정이에요. 그전엔 웹으로 바로 써 보세요!\n\n당신은 누구에게 첫 편지를 보낼래요?\n\n#새편지",
+      "xText": "카톡 말고, 새가 물어다 주는 편지 🕊\n\n실제 거리만큼 날아가고, 비 오는 날엔 새도 천천히 🌧\n\n🍎 아이폰: 앱스토어 \"새편지\"\n▶ 구글 플레이 11월 중 출시 예정\n\n👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id6828785320\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome"
     }
   ]
 }
