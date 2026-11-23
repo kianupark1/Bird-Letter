@@ -137,8 +137,9 @@ const drops = []; for (let i = 0; i < 70; i++) { const d = document.createElemen
 const route = $("route"), RL = route.getTotalLength(), loop = $("loop"), LL = loop.getTotalLength();
 const PIG = ${pigeonMin};
 const fmt = (m) => { m = Math.max(0, Math.round(m)); const h = Math.floor(m / 60), mm = m % 60; return (h ? h + "시간 " : "") + mm + "분"; };
+// 첫 장면(i=0)은 처음부터 보이게: 인스타 넘겨 보기 썸네일이 첫 프레임이라서
 window.at = (t) => {
-  S.forEach(([a, b], i) => { const el = $("s" + i); const o = Math.min(1, (t - a) / 0.22, (b - t) / 0.22 + (i === S.length - 1 ? 9 : 0)); el.style.opacity = Math.max(0, o); });
+  S.forEach(([a, b], i) => { const el = $("s" + i); const o = Math.min(i === 0 ? 1 : (t - a) / 0.22, (b - t) / 0.22 + (i === S.length - 1 ? 9 : 0)); el.style.opacity = Math.max(0, o); });
   // 0 제목: 새가 살짝 둥실
   $("b0").style.transform = "translateY(" + Math.sin(t * 5) * 14 + "px) rotate(-6deg)";
   // 1 카톡 홍수
@@ -191,7 +192,7 @@ execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(FPS), "
 // 9:16(릴스·틱톡): 위아래를 황토로 채움
 const tall = resolve(root, "promo/video/reel-master.mp4");
 execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", card, "-vf", "pad=1080:1920:0:285:color=0xE0A83C", "-c:v", "libx264", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", tall]);
-execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", `${tmp}/f0010.jpg`, resolve(root, "promo/video/reel-master-cover.png")]);
-execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", `${tmp}/f0010.jpg`, resolve(root, "promo/video/card/reel-master-cover.jpg")]);
+execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", `${tmp}/f0000.jpg`, resolve(root, "promo/video/reel-master-cover.png")]);
+execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", `${tmp}/f0000.jpg`, resolve(root, "promo/video/card/reel-master-cover.jpg")]);
 rmSync(tmp, { recursive: true, force: true });
 console.log("master", card, tall);
