@@ -1053,5 +1053,19 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("스레드 글은 모두 500자 이하(넘으면 threadsText)", over.join(", "), "");
   eq("threadsText가 있으면 스레드엔 그 글", AP.fillText({ text: "긴 글\n\n{{받기}}", threadsText: "짧은 글\n\n{{받기}}", to: ["threads"] }, "threads").text.startsWith("짧은 글"), true);
 }
+// ── 들어온 사람 흐름 세기(core/funnel.ts, 2026-11-24) ──
+{
+  const { FUNNEL_STEPS, isFunnelStep, kstDate, funnelLine } = await import("../core/funnel.ts");
+  eq("흐름 단계는 7개", FUNNEL_STEPS.length, 7);
+  eq("모르는 단계는 안 받음", !isFunnelStep("hack") && !isFunnelStep(1) && isFunnelStep("trial_open"), true);
+  eq("한국 날짜: UTC 15시는 다음 날", kstDate(Date.UTC(2026, 10, 24, 15, 0)) === "2026-11-25" && kstDate(Date.UTC(2026, 10, 24, 14, 59)) === "2026-11-24", true);
+  const line = funnelLine({ start_view: 40, trial_open: 12, trial_ready: 6 });
+  eq("흐름 한 줄: 없는 단계는 0", line.startsWith("첫 화면 40 → 써 보기 12 → 맡기기 6 → 써 보고 가입 0") && line.includes("받은 링크 열기 0"), true);
+  const { dailyText } = await import("../core/adminStats.ts");
+  const t2 = dailyText({ users: { members: 1, anonymous: 0, byProvider: { kakao: 1, naver: 0, google: 0, apple: 0, other: 0 }, newToday: 0, new7d: 0, active1d: 1, active7d: 1 }, letters: { all: 1, today: 0 } }, line);
+  eq("매일 알림에 흐름 줄", t2.body.includes("\n흐름: 첫 화면 40"), true);
+}
+
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
+

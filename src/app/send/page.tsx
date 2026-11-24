@@ -27,6 +27,7 @@ import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
 import { clearTrialDraft, readTrialDraft } from "@/lib/trialDraft";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
+import { track } from "@/lib/funnel";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
 
 export default function Send() {
@@ -122,6 +123,7 @@ function SendForm() {
   useEffect(() => {
     const d = readTrialDraft();
     if (!d) return;
+    track("trial_join");
     if (d.to && !presetFriend && !presetName) setTo(d.to);
     setMessage((cur) => cur || d.message);
     setBirdId(usableBird(d.birdId));
@@ -197,6 +199,7 @@ function SendForm() {
         photos: photos.length ? photos : undefined, departAt: mode === "later" && departMs ? departMs : undefined, replyTo,
       });
       birdFx("depart", profile.chirp);
+      track("letter_sent");
       // 앱을 쓰는 친구가 아니면(이름만 적었으면) 문자로 "편지가 날아가요" 알릴 수 있게 한 번 물어봐요
       if (!uid && !IS_TOSS && !replyTo && firebaseEnabled) { setSent({ id, to: to.trim() }); setBusy(false); return; }
       router.push(IS_TOSS ? letterHref(id) : roomHref({ uid, name: to.trim() })); // 보낸 뒤에는 그 사람과의 대화방으로
@@ -218,7 +221,7 @@ function SendForm() {
           <p className="sub">{withIGa(sent.to)} 앱이 없어도 괜찮아요. 카카오톡으로 링크를 보내 주세요.<br />링크를 누르면 날아오는 모습을 보고, 도착하면 바로 열어 볼 수 있어요.</p>
           {/* 2026-11-24: 받는 사람에게 카카오톡으로 바로(가장 많이 쓰는 길), 문자는 그다음 */}
           {KAKAO_SHARE_READY && (
-            <button type="button" className="cta big kakaoshare" onClick={async () => { if (!(await shareToKakao(sent.id, b.name, profile.nickname || undefined))) setError("카카오톡을 열지 못했어요. 아래 ‘알림 글 복사하기’로 보내 주세요."); }}>💬 카카오톡으로 보내기</button>
+            <button type="button" className="cta big kakaoshare" onClick={async () => { track("kakao_share"); if (!(await shareToKakao(sent.id, b.name, profile.nickname || undefined))) setError("카카오톡을 열지 못했어요. 아래 ‘알림 글 복사하기’로 보내 주세요."); }}>💬 카카오톡으로 보내기</button>
           )}
           <a className={KAKAO_SHARE_READY ? "cta ghost" : "cta big"} href={smsHref(tel, body)}>✉️ 문자로 알려 주기</a>
           <button type="button" className="cta ghost" onClick={async () => { try { await navigator.clipboard.writeText(body); setError("알림 글을 복사했어요. 카카오톡 등에 붙여 넣어 보내세요."); } catch { setError("복사하지 못했어요."); } }}>📋 알림 글 복사하기(카카오톡용)</button>

@@ -9,6 +9,7 @@ import { computeStats } from "@/lib/server/stats";
 import { clientErrors, penpalReport, pushOps, pushSubList } from "@/lib/server/penpalReport";
 import { backfillPenpals } from "@/lib/server/penpalBackfill";
 import { sendPush } from "@/lib/server/sendPush";
+import { FUNNEL_STEPS, funnelLine, kstDate, type FunnelStep } from "../../../../../core/funnel";
 
 // 매일 저녁 7시 운영자 숫자 알림(2026-11-10 대표님: "앱으로 매일 7시마다 오늘 얼마나 들어왔는지").
 // 부를 수 있는 곳은 둘뿐: ①QStash 예약(매일 한국 19:00 = UTC 10:00, 서명 확인) ②GitHub 작업 daily-stats.yml
@@ -86,8 +87,17 @@ export async function POST(req: Request) {
     const penpalFill = await backfillPenpals(sa).catch((e) => ({ error: e instanceof Error ? e.message : "fail" }));
     const stats = await computeStats(sa);
     const penpal = await penpalReport(sa).catch((e) => ({ error: e instanceof Error ? e.message : "fail" }));
-    const text = dailyText(stats);
     const access = await googleToken(sa);
+    // 오늘 흐름(첫 화면 → 써 보기 → … , core/funnel.ts)과 지난 7일
+    const funnelDays: Record<string, Partial<Record<FunnelStep, number>>> = {};
+    for (let d = 0; d < 7; d++) {
+      const day = kstDate(Date.now() - d * 86_400_000);
+      const r = await fetch(`https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents/funnel/${day}`, { headers: { Authorization: `Bearer ${access}` } }).catch(() => null);
+      const f = r?.ok ? ((await r.json()).fields ?? {}) : {};
+      funnelDays[day] = Object.fromEntries(FUNNEL_STEPS.map((k) => [k, Number(f[k]?.integerValue ?? 0)]));
+    }
+    const funnel = funnelDays[kstDate(Date.now())];
+    const text = dailyText(stats, funnelLine(funnel));
     const admins = [...new Set([...ADMIN_UIDS, ...adminFromEnv(process.env.ADMIN_UIDS)])];
     const pushed: string[] = [];
     for (const uid of admins) {
@@ -97,7 +107,7 @@ export async function POST(req: Request) {
     const subs = await pushSubList(sa, admins).catch((e) => ({ error: e instanceof Error ? e.message : "fail" }));
     const ops = await pushOps(sa).catch(() => null);
     const errors = await clientErrors(sa).catch(() => []);
-    return NextResponse.json({ stats, text, pushed, schedule, penpalFill, penpal, subs, ops, errors });
+    return NextResponse.json({ stats, text, pushed, schedule, penpalFill, penpal, subs, ops, errors, funnel: funnelDays });
   } catch (e) {
     return NextResponse.json({ error: "server-error", detail: e instanceof Error ? e.message : "" }, { status: 502 });
   }
