@@ -17,9 +17,15 @@ const { chromium } = (() => { try { return req("playwright"); } catch { return r
 const { SLOGAN } = await import("./store.mts");
 const root = resolve(import.meta.dirname, "..");
 const f = (p: string) => "file://" + resolve(root, p);
-const STORY = process.argv[2] === "dad" ? "dad" : "kakao";
-const SRC = STORY === "dad" ? "promo/inbox/kakao-dad" : "promo/inbox/kakao-gone";
-const NAME = STORY === "dad" ? "reel-kakao-dad" : "reel-kakao";
+// 3탄(dad2, 2026-11-24 대표님 "저녁에 한 번 더, 캐릭터만 살짝 다르게, 마지막에 앱스토어 바로 다운·안드로이드는 링크로·12월 초 출시 예정"):
+// 같은 내레이션(kakao-dad/voice.mp3), 그림은 kakao-dad2(모자·콧수염 아빠, 안경 쓴 준호, 갈색 강아지)
+const STORY = (["dad", "dad2"] as const).find((x) => x === process.argv[2]) ?? "kakao";
+const SRC = STORY === "kakao" ? "promo/inbox/kakao-gone" : STORY === "dad2" ? "promo/inbox/kakao-dad2" : "promo/inbox/kakao-dad";
+const VOICE = STORY === "kakao" ? "promo/inbox/kakao-gone/voice.mp3" : "promo/inbox/kakao-dad/voice.mp3";
+const NAME = STORY === "kakao" ? "reel-kakao" : STORY === "dad2" ? "reel-kakao-dad2" : "reel-kakao-dad";
+const END = STORY === "dad2"
+  ? { ios: "🍎 아이폰 · 앱스토어에서 바로 다운로드", android: "▶ 안드로이드는 링크로 바로 사용 가능<br><span style='font-size:32px;font-weight:600;opacity:.85'>구글 플레이 <span style='color:#F0BC5C'>12월 초 출시 예정</span> · bird-letter.vercel.app</span>" }
+  : { ios: "🍎 아이폰 · 앱스토어 '새편지'", android: "▶ 구글 플레이 <span style='color:#F0BC5C'>11월 중 출시 예정</span><br><span style='font-size:32px;font-weight:600;opacity:.85'>안드로이드는 지금 웹으로 · bird-letter.vercel.app</span>" };
 const FPS = 30, W = 1080, H = 1350;
 
 // [시작, 끝, 그림, 초점 x(0~1) 시작→끝, 자막, 위쪽 칩]
@@ -60,7 +66,10 @@ const DAD: Sc[] = [
   { a: 47.5, b: 50.5, kind: "card", cap: "🌏 모르는 누군가와는 펜팔로." },
   { a: 50.5, b: 56, kind: "end" },
 ];
-const S: Sc[] = STORY === "dad" ? DAD : KAKAO;
+// 3탄 그림은 인물 위치가 조금 달라서 초점만 고쳐요(장면·자막은 2탄과 같음)
+const OV: Record<number, Partial<Sc>> = { 0: { fx: [0.3, 0.34] }, 4: { fx: [0.45, 0.3] }, 5: { fx: [0.62, 0.66] }, 6: { fx: [0.36, 0.44] }, 10: { fx: [0.52, 0.58] }, 11: { fx: [0.58, 0.62] } };
+const DAD2: Sc[] = DAD.map((x, i) => ({ ...x, ...(OV[i] ?? {}) }));
+const S: Sc[] = STORY === "kakao" ? KAKAO : STORY === "dad2" ? DAD2 : DAD;
 const T = S[S.length - 1].b;
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -91,15 +100,15 @@ ${S.map((s, i) => {
     <img src="${f("promo/store/play-icon-512.png")}" style="position:absolute;left:440px;top:150px;width:200px;height:200px;border-radius:48px;box-shadow:0 30px 60px rgba(0,0,0,.3)">
     <div style="position:absolute;left:0;right:0;top:380px;font-size:110px;font-weight:900;letter-spacing:-5px">새편지</div>
     <div style="position:absolute;left:0;right:0;top:530px;font-size:50px;font-weight:800;color:#F0BC5C">${SLOGAN}</div>
-    <div class="btn" style="top:680px;background:#fff;color:#16110E;padding:30px 0;font-size:44px">🍎 아이폰 · 앱스토어 '새편지'</div>
+    <div class="btn" style="top:680px;background:#fff;color:#16110E;padding:30px 0;font-size:${STORY === "dad2" ? 40 : 44}px">${END.ios}</div>
     <div class="btn" id="prof" style="top:820px;background:#F0BC5C;color:#16110E;padding:24px 0;font-size:40px">👆 링크는 프로필에 @saepyeonji</div>
-    <div style="position:absolute;left:60px;right:60px;top:970px;font-size:40px;font-weight:800;line-height:1.5">▶ 구글 플레이 <span style="color:#F0BC5C">11월 중 출시 예정</span><br><span style="font-size:32px;font-weight:600;opacity:.85">안드로이드는 지금 웹으로 · bird-letter.vercel.app</span></div>
+    <div style="position:absolute;left:60px;right:60px;top:970px;font-size:40px;font-weight:800;line-height:1.5">${END.android}</div>
     <div style="position:absolute;left:0;right:0;top:1200px;font-size:32px;font-weight:700;opacity:.75">무료로 시작해요</div></div>`;
   return `<div class="sc" id="s${i}"><img class="bg" id="i${i}" src="${f(s.img!.includes("/") ? `promo/inbox/${s.img}.png` : `${SRC}/${s.img}.png`)}">
     ${s.chip ? `<div class="chip"><span>${s.chip}</span></div>` : ""}<div class="cap${s.hook ? " hook" : ""}">${s.cap}</div></div>`;
 }).join("\n")}
 <script>
-const FIC_END = ${STORY === "dad" ? 37.6 : 37.4}, END_AT = ${S[S.length - 1].a};
+const FIC_END = ${STORY === "kakao" ? 37.4 : 37.6}, END_AT = ${S[S.length - 1].a};
 const S = ${JSON.stringify(S.map((s) => ({ a: s.a, b: s.b, fx: s.fx, z: s.z, img: !!s.img })))};
 const IW = ${H} * 1280 / 720; // 그림 높이를 화면에 맞췄을 때 너비
 const ease = (x) => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
@@ -138,7 +147,7 @@ await browser.close();
 
 mkdirSync(resolve(root, "promo/video/card"), { recursive: true });
 const card = resolve(root, `promo/video/card/${NAME}.mp4`);
-const voice = resolve(root, `${SRC}/voice.mp3`);
+const voice = resolve(root, VOICE);
 const music = resolve(root, "promo/video/saepyeonji-15s.mp4");
 // 목소리는 그대로, 음악은 작게 깔고 끝에서 줄여요
 execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-framerate", String(FPS), "-i", `${tmp}/f%04d.jpg`, "-i", voice, "-stream_loop", "-1", "-i", music,
