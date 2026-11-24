@@ -1044,5 +1044,14 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("다른 새는 낮에도 그대로", B.usableBird("magpie", kst(14)), "magpie");
   eq("부엉이 서울→부산 약 7시간 13분", B.getBird("owl").minutesSeoulBusan, 433);
 }
+
+// 스레드 본문은 500자까지(2026-11-24 special20이 400 오류) — 스레드로 가는 모든 글
+{
+  const AP = await import("../scripts/auto-post.mjs");
+  const sch = JSON.parse(readFileSync(new URL("../promo/schedule.json", import.meta.url), "utf8"));
+  const over = sch.posts.filter((q: any) => q.to?.includes("threads")).map((q: any) => [q, [...AP.fillText(AP.soonify(AP.upgraded(q), sch.stores?.android), "threads").text].length]).filter(([, n]: any) => n > 500).map(([q, n]: any) => `${q.date ?? q.day} ${q.slot} ${n}`);
+  eq("스레드 글은 모두 500자 이하(넘으면 threadsText)", over.join(", "), "");
+  eq("threadsText가 있으면 스레드엔 그 글", AP.fillText({ text: "긴 글\n\n{{받기}}", threadsText: "짧은 글\n\n{{받기}}", to: ["threads"] }, "threads").text.startsWith("짧은 글"), true);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
