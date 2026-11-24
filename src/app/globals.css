@@ -1289,3 +1289,26 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 @keyframes busyIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes busyBob { 50% { transform: translateY(-6px); } }
 @media (prefers-reduced-motion: reduce) { .busy, .busy-dot { animation: none; } }
+
+/* 가입 없이 편지 먼저 써 보기(2026-11-24, src/components/TrialLetter.tsx) */
+.sbtn.trial-go { background: var(--dahong); color: var(--on-dahong, #fff); font-size: 21px; height: 68px; box-shadow: 0 5px 0 rgba(0,0,0,.22), 0 10px 18px rgba(0,0,0,.12); }
+.sbtn.trial-go:disabled { opacity: .45; }
+.start-or { text-align: center; font-size: 14px; opacity: .65; margin: 6px 0 -2px; }
+.trial-ready { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; background: var(--card); border: 2px solid var(--hwangto); border-radius: 18px; padding: 14px 12px 4px; }
+.trial-ready b { font-size: 20px; }
+.trial-ready span { font-size: 15px; opacity: .8; }
+.start.trial { justify-content: flex-start; gap: 6px; position: relative; padding-top: calc(16px + env(safe-area-inset-top)); }
+.trial-back { align-self: flex-start; background: none; border: 0; color: inherit; font-size: 34px; line-height: 1; min-width: 44px; min-height: 44px; cursor: pointer; padding: 0; }
+.trial-h { font-size: 28px; margin: 0; }
+.trial-sub { margin: 0 0 8px; font-size: 16px; opacity: .75; }
+.trial-lbl { font-weight: 700; font-size: 16px; margin-top: 10px; }
+.trial-note { font-weight: 500; font-size: 13px; opacity: .6; }
+.trial .field { width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
+.trial .trial-msg { min-height: 150px; resize: vertical; line-height: 1.55; }
+.trial-birds { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 6px; }
+.trial-bird { flex: 0 0 auto; min-width: 84px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 6px; border-radius: 16px; border: 2px solid var(--line); background: var(--card); color: inherit; font: inherit; cursor: pointer; }
+.trial-bird b { font-size: 15px; }
+.trial-bird span { font-size: 12px; opacity: .7; }
+.trial-bird.on { border-color: var(--dahong); box-shadow: 0 0 0 2px color-mix(in srgb, var(--dahong) 25%, transparent); }
+.trial-wait { font-size: 14px; opacity: .75; margin: 6px 0 10px; }
+.trial-fine { text-align: center; font-size: 13px; opacity: .6; margin: 6px 0 0; }

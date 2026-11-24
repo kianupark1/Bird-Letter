@@ -25,6 +25,7 @@ import { todayLine } from "../../core/waiting";
 import InstallCard from "@/components/InstallCard";
 import LoginStart from "@/components/LoginStart";
 import { useSession } from "@/lib/session";
+import { readTrialDraft } from "@/lib/trialDraft";
 import { justJoined } from "@/lib/install";
 import NameStep, { needsName } from "@/components/NameStep";
 import { loadAccountName, markNameAsked, nameAskedHere, saveProfileRemote } from "@/lib/profileSync";
@@ -48,6 +49,8 @@ export default function Home() {
 }
 
 function Inbox() {
+  // 가입 없이 써 둔 편지가 있으면(어떤 방법으로 가입했든) 편지 쓰기 화면으로 가서 그대로 이어 써요
+  useEffect(() => { if (readTrialDraft()) window.location.replace("/send?draft=1"); }, []);
   const { profile, ready: profileReady, update } = useProfile();
   const [welcome, setWelcome] = useState("");
   // 프로필(사진·이름·내 동네) 화면은 계정마다 딱 한 번만(2026-11-01 대표님: "편지든 친구든 뒤로 가든 계속 떠, 처음에만")
