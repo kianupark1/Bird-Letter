@@ -26,6 +26,7 @@ import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvit
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
 import { clearTrialDraft, readTrialDraft } from "@/lib/trialDraft";
+import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
 
 export default function Send() {
@@ -214,8 +215,12 @@ function SendForm() {
         <div className="sentcard">
           <BirdIcon id={birdId} size={96} letter />
           <h1>{withIGa(b.name)} 날아올랐어요!</h1>
-          <p className="sub">{withIGa(sent.to)} 아직 새 편지 앱이 없다면, 문자로 알려 주세요.<br />링크를 누르면 날아오는 모습을 보고, 도착하면 바로 열어 볼 수 있어요.</p>
-          <a className="cta big" href={smsHref(tel, body)}>💬 문자로 알려 주기</a>
+          <p className="sub">{withIGa(sent.to)} 앱이 없어도 괜찮아요. 카카오톡으로 링크를 보내 주세요.<br />링크를 누르면 날아오는 모습을 보고, 도착하면 바로 열어 볼 수 있어요.</p>
+          {/* 2026-11-24: 받는 사람에게 카카오톡으로 바로(가장 많이 쓰는 길), 문자는 그다음 */}
+          {KAKAO_SHARE_READY && (
+            <button type="button" className="cta big kakaoshare" onClick={async () => { if (!(await shareToKakao(sent.id, b.name, profile.nickname || undefined))) setError("카카오톡을 열지 못했어요. 아래 ‘알림 글 복사하기’로 보내 주세요."); }}>💬 카카오톡으로 보내기</button>
+          )}
+          <a className={KAKAO_SHARE_READY ? "cta ghost" : "cta big"} href={smsHref(tel, body)}>✉️ 문자로 알려 주기</a>
           <button type="button" className="cta ghost" onClick={async () => { try { await navigator.clipboard.writeText(body); setError("알림 글을 복사했어요. 카카오톡 등에 붙여 넣어 보내세요."); } catch { setError("복사하지 못했어요."); } }}>📋 알림 글 복사하기(카카오톡용)</button>
           {error && <div className="small" role="status">{error}</div>}
           <button type="button" className="linkbtn" onClick={() => router.push(roomHref({ uid: sent.uid, name: sent.to }))}>건너뛰고 대화방으로 ›</button>
