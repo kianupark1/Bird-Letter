@@ -34,6 +34,7 @@ import { firebaseEnabled } from "@/lib/firebase/client";
 import { IS_TOSS, letterHref } from "@/lib/target";
 import { smsHref } from "@/lib/contactInvite";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
+import { track } from "@/lib/funnel";
 import { telFor } from "@/lib/pendingTel";
 import { euro, withIGa } from "@/lib/korean";
 import ProfileZoom from "@/components/ProfileZoom";
@@ -264,6 +265,7 @@ function Room() {
     const l = asLike(lastSent);
     const lp = letterProgress(l, now);
     const left = lp.done ? "벌써 도착했어요" : `도착까지 약 ${formatMinutes(Math.max(1, Math.ceil(lp.total - lp.elapsed)))}`;
+    track("kakao_share");
     if (KAKAO_SHARE_READY && (await shareToKakao(lastSent.item.id, getBird(l.birdId).name, profile.nickname || undefined, left, lp.done))) return;
     try {
       if (navigator.share) await navigator.share({ text: smsBody }); // 공유 창에서 카카오톡을 고르면 돼요

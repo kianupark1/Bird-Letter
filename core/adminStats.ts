@@ -109,10 +109,10 @@ export function lettersCountQuery(since?: number) {
 }
 
 /** 매일 저녁 7시 운영자 알림 글(2026-11-10 대표님: "앱으로 매일 7시마다 오늘 얼마나 들어왔는지") */
-export function dailyText(s: { users: UserCounts; letters: { all: number; today: number }; penpals?: number; push?: { all: number; app?: number } }) {
+export function dailyText(s: { users: UserCounts; letters: { all: number; today: number }; penpals?: number; push?: { all: number; app?: number } }, funnel?: string) {
   const u = s.users;
   return {
     title: `📊 오늘 새편지 · 새 가입 ${u.newToday}명`,
-    body: `들어온 사람 ${u.active1d}명 · 오늘 편지 ${s.letters.today}통\n전체 가입 ${u.members}명 · 전체 편지 ${s.letters.all}통${s.penpals !== undefined ? ` · 펜팔 받는 사람 ${s.penpals}명` : ""}${s.push ? `\n알림 켠 사람 ${s.push.all}명${s.push.app !== undefined ? `(앱 ${s.push.app}·웹 ${s.push.all - s.push.app})` : ""}` : ""}`,
+    body: `들어온 사람 ${u.active1d}명 · 오늘 편지 ${s.letters.today}통\n전체 가입 ${u.members}명 · 전체 편지 ${s.letters.all}통${s.penpals !== undefined ? ` · 펜팔 받는 사람 ${s.penpals}명` : ""}${s.push ? `\n알림 켠 사람 ${s.push.all}명${s.push.app !== undefined ? `(앱 ${s.push.app}·웹 ${s.push.all - s.push.app})` : ""}` : ""}${funnel ? `\n흐름: ${funnel}` : ""}`,
   };
 }

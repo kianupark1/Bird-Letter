@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@/lib/funnel";
 import { reportError } from "@/lib/reportError";
 import { openAppOrStore } from "@/lib/openApp";
 import Link from "next/link";
@@ -91,6 +92,7 @@ export default function LetterView({ id }: { id: string }) {
           } catch {}
         }
       }
+      if (guest && meta.fromUid !== user.uid) track("link_open");
       if (!off) setIncoming({ state: "ok", meta, guest: guest && meta.fromUid !== user.uid });
     })();
     return () => {
