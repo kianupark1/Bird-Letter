@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { IS_TOSS } from "@/lib/target";
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -19,13 +20,51 @@ const TABS = [
   { href: "/pen", label: "펜팔", icon: "pen" },
 ];
 
+/**
+ * 아이폰 앱(위·아래 여백을 앱이 따로 두는 화면)에서 "아래 고정" 메뉴가 화면 밑으로 밀려 안 보이던 문제(2026-11-24 대표님 실기기).
+ * 실제로 보이는 화면 바닥(visualViewport)보다 메뉴가 아래에 있으면 그만큼 올려요. 이미 보이면 아무것도 안 해요.
+ */
+function useKeepOnScreen(ref: React.RefObject<HTMLElement | null>, on: boolean) {
+  useEffect(() => {
+    const el = ref.current;
+    const vv = window.visualViewport;
+    if (!on || !el || !vv) return;
+    let lift = 0;
+    const fit = () => {
+      if (!el.isConnected) return;
+      const r = el.getBoundingClientRect();
+      const shown = vv.offsetTop + vv.height; // 지금 눈에 보이는 화면 바닥
+      const over = r.bottom - shown; // 메뉴가 바닥 밑으로 나간 만큼(+)
+      if (Math.abs(over) < 1) return;
+      const zoom = el.offsetHeight ? r.height / el.offsetHeight : 1; // 글씨 크기(zoom) 반영
+      lift = Math.max(0, lift + over / (zoom || 1));
+      el.style.bottom = lift ? `${Math.round(lift)}px` : "";
+    };
+    const tick = () => requestAnimationFrame(fit);
+    tick();
+    const t = window.setTimeout(tick, 600);
+    vv.addEventListener("resize", tick);
+    vv.addEventListener("scroll", tick);
+    window.addEventListener("orientationchange", tick);
+    return () => {
+      window.clearTimeout(t);
+      vv.removeEventListener("resize", tick);
+      vv.removeEventListener("scroll", tick);
+      window.removeEventListener("orientationchange", tick);
+      el.style.bottom = "";
+    };
+  }, [ref, on]);
+}
+
 export default function BottomNav() {
   const path = usePathname();
-  if (IS_TOSS) return null; // 토스 빌드는 토스 내비게이션 바를 쓴다
-  // 목록 화면(탭)에서만 보여요(대화방·편지 쓰기·편지 읽기에서는 숨겨서 화면을 넓게 써요)
-  if (!TABS.some((t) => t.href === path)) return null;
+  const ref = useRef<HTMLElement>(null);
+  const show = !IS_TOSS && TABS.some((t) => t.href === path);
+  useKeepOnScreen(ref, show);
+  // 토스 빌드는 토스 내비게이션 바를 쓰고, 목록 화면(탭)에서만 보여요(대화방·편지 쓰기·편지 읽기에서는 숨겨서 화면을 넓게 써요)
+  if (!show) return null;
   return (
-    <nav className="bottomnav" aria-label="메뉴">
+    <nav ref={ref} className="bottomnav" aria-label="메뉴">
       {TABS.map((t) => (
         <Link key={t.href} href={t.href} prefetch aria-current={path === t.href ? "page" : undefined}>
           <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden>{ICONS[t.icon]}</svg>
