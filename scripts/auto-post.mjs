@@ -219,10 +219,12 @@ async function postThreads(p) {
   }
   const media = p.video ? { media_type: "VIDEO", video_url: `${MEDIA_BASE}/${p.video}` }
     : p.image ? { media_type: "IMAGE", image_url: `${MEDIA_BASE}/cards/${p.image}` } : { media_type: "TEXT" };
-  const params = { text: p.text, access_token: token, ...media };
+  // 주제 태그(topicTag): 스레드 글 하나에 1개, 그 주제를 보는 사람에게 퍼져요. 안 받아 주면 태그 없이(본문 해시태그로) 다시 올려요
+  const params = { text: p.text, access_token: token, ...media, ...(p.topicTag ? { topic_tag: p.topicTag } : {}) };
   // 투표는 새 기능이라 안 되면(「미확인」) 투표 없이 그대로 올려요
   // 투표가 그림과 같이 안 되면 글+투표로, 그것도 안 되면 투표 없이(「미확인」 API 기능이라 단계별로 물러나요)
   const c = await call(`${base}/threads`, { params: { ...params, ...pollParams(p.poll) } })
+    .catch((e) => { if (!p.topicTag) throw e; console.log("  (주제 태그 안 됨 → 태그 없이: " + String(e.message).slice(0, 120) + ")"); delete params.topic_tag; return call(`${base}/threads`, { params: { ...params, ...pollParams(p.poll) } }); })
     .catch((e) => { if (!p.poll || !p.image) throw e; console.log("  (그림+투표 안 됨 → 글+투표로: " + String(e.message).slice(0, 120) + ")"); return call(`${base}/threads`, { params: { text: p.text, access_token: token, media_type: "TEXT", ...pollParams(p.poll) } }); })
     .catch((e) => { if (!p.poll) throw e; console.log("  (투표 없이 올림: " + String(e.message).slice(0, 120) + ")"); return call(`${base}/threads`, { params }); });
   if (p.video) await waitReady(`https://graph.threads.net/v1.0/${c.id}?fields=status&access_token=${encodeURIComponent(token)}`, "status");
