@@ -211,7 +211,9 @@ async function postThreads(p) {
       kids.push(k);
     }
     await sleep(10000);
-    const c = await call(`${base}/threads`, { params: { media_type: "CAROUSEL", children: kids.join(","), text: p.text, access_token: token } });
+    const cp = { media_type: "CAROUSEL", children: kids.join(","), text: p.text, access_token: token };
+    const c = await call(`${base}/threads`, { params: p.topicTag ? { ...cp, topic_tag: p.topicTag } : cp })
+      .catch((e) => { if (!p.topicTag) throw e; console.log("  (주제 태그 안 됨 → 태그 없이: " + String(e.message).slice(0, 120) + ")"); return call(`${base}/threads`, { params: cp }); });
     await waitReady(`https://graph.threads.net/v1.0/${c.id}?fields=status&access_token=${encodeURIComponent(token)}`, "status").catch(() => sleep(15000));
     const pub = await publishRetry(`${base}/threads_publish`, { creation_id: c.id, access_token: token });
     await threadsReply(base, token, pub?.id, p.reply);
