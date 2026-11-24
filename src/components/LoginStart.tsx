@@ -13,6 +13,8 @@ import { birdSlot, useRandomBird } from "@/lib/randomBird";
 import { addToHome, markJustJoined, useInstall } from "@/lib/install";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
+import TrialLetter from "@/components/TrialLetter";
+import { readTrialDraft } from "@/lib/trialDraft";
 
 /**
  * 처음 열었을 때의 화면(시안 ⑫). 버튼 한 번이 곧 가입이에요(2026-10-26 대표님: "카카오로 가입하기·구글로·애플로·휴대폰 번호로, 원클릭으로 쉽게"):
@@ -31,6 +33,10 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const [phone, setPhone] = useState<"ios" | "android" | null>(null);
   const [soon, setSoon] = useState(false);
   const [phoneOn, setPhoneOn] = useState(false);
+  // 가입 없이 먼저 써 보기(홈 첫 화면에서만, 초대받아 온 사람·다른 화면은 그대로): start → write(편지 쓰기) → join(가입하면 바로 날아가요)
+  const trialOk = !inviter && !next;
+  const [stage, setStage] = useState<"start" | "write" | "join">("start");
+  const afterJoin = () => (stage === "join" && readTrialDraft() ? "/send?draft=1" : undefined);
   useEffect(() => {
     const ua = navigator.userAgent;
     setStore(storeFor(ua, STORE, "start"));
@@ -50,19 +56,19 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
     if (kind === "kakao") {
       if (!KAKAO_LOGIN_READY) { setMsg("카카오 로그인이 아직 준비되지 않았어요."); return; }
       markJustJoined(); // 돌아오면 "홈 화면에 추가할까요?"를 한 번 물어요(취소하고 돌아오면 로그인 화면이라 안 보여요)
-      startKakaoLogin(next ?? "/"); // 카카오 화면으로 갔다가 돌아오면 홈으로
+      startKakaoLogin(afterJoin() ?? next ?? "/"); // 카카오 화면으로 갔다가 돌아오면 홈으로
       return;
     }
     if (kind === "naver") {
       if (!NAVER_LOGIN_READY) { setMsg("네이버 로그인이 아직 준비되지 않았어요."); return; }
       markJustJoined();
-      startNaverLogin(next ?? "/");
+      startNaverLogin(afterJoin() ?? next ?? "/");
       return;
     }
     setBusy(kind);
     const r = await linkAccount(kind);
     setBusy(null);
-    if (r.ok) { markJustJoined(); onDone(); }
+    if (r.ok) { markJustJoined(); const go2 = afterJoin(); if (go2) window.location.assign(go2); else onDone(); }
     else setMsg(r.message);
   }
 
@@ -70,6 +76,8 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const [last, setLast] = useState<LastKind | null>(null);
   useEffect(() => { setLast(lastLogin()?.kind ?? null); }, []);
   const badge = (k: LastKind) => (last === k ? <span className="lastbadge">지난번에 이걸로 들어왔어요</span> : null);
+
+  if (trialOk && stage === "write") return <TrialLetter onReady={() => setStage("join")} onBack={() => setStage("start")} />;
 
   return (
     <main className="start">
@@ -88,6 +96,19 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
         )}
       </div>
       <div className="start-btns">
+        {trialOk && stage === "start" && (
+          <>
+            <button type="button" className="sbtn trial-go" onClick={() => setStage("write")}>✉️ 가입 없이 편지 먼저 써 보기</button>
+            <p className="start-or">이미 가입했거나 바로 시작하려면</p>
+          </>
+        )}
+        {trialOk && stage === "join" && (
+          <div className="trial-ready" role="status">
+            <b>✉️ 편지가 준비됐어요!</b>
+            <span>1초 가입하면 바로 날아가요 · 쓴 편지는 그대로 남아요</span>
+            <button type="button" className="linkbtn" onClick={() => setStage("write")}>편지 고치기</button>
+          </div>
+        )}
         <button type="button" className="sbtn kakao" onClick={() => go("kakao")} disabled={busy !== null}>
           <span aria-hidden>💬</span> 카카오로 가입하기{badge("kakao")}
         </button>

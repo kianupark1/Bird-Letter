@@ -25,6 +25,7 @@ import { withIGa } from "@/lib/korean";
 import { contactPickerSupported, pickContact, smsHref } from "@/lib/contactInvite";
 import { MAX_LETTER_CHARS, MAX_PHOTOS } from "@/lib/limits";
 import { compressPhoto } from "@/lib/photo";
+import { clearTrialDraft, readTrialDraft } from "@/lib/trialDraft";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
 
 export default function Send() {
@@ -115,6 +116,16 @@ function SendForm() {
     })();
     return () => { off = true; };
   }, [replyId]);
+
+  // 첫 화면에서 가입 없이 써 둔 편지(src/lib/trialDraft.ts)를 그대로 채워요. 한 번 채우면 지워요
+  useEffect(() => {
+    const d = readTrialDraft();
+    if (!d) return;
+    if (d.to && !presetFriend && !presetName) setTo(d.to);
+    setMessage((cur) => cur || d.message);
+    setBirdId(usableBird(d.birdId));
+    clearTrialDraft();
+  }, [presetFriend, presetName]);
 
   // 이전에 정해 둔 "내가 있는 곳"을 보내는 곳 기본값으로
   useEffect(() => {
