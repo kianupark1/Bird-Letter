@@ -112,6 +112,8 @@ export function withSlogan(text) {
   return `${lines.join("\n")}\n\n${SLOGAN}`;
 }
 export const fillText = (p, to, st = stores) => {
+  // 스레드는 본문 500자까지(2026-11-24 400 오류) → 긴 글은 threadsText(스레드용 짧은 글)를 따로 둬요
+  if (to === "threads" && p.threadsText) p = { ...p, text: p.threadsText };
   // 모든 채널 본문에 앱스토어·안드로이드 링크(2026-11-18 대표님: "링크를 필히 넣어줘야 광고가 되지" → 스레드 첫 댓글 방식 취소)
   // 스레드는 긴 글이 "더 보기"로 접혀서, 링크를 첫 문단 바로 아래(접히기 전)에 둬요(같은 날 대표님: "더 좋은 곳에")
   if (to === "threads" && p.text.includes("{{받기}}")) {
