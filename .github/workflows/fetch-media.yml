@@ -1,0 +1,32 @@
+# 홍보 영상 재료(AI로 만든 그림·목소리) 내려받기: 작업 환경에서 막힌 주소의 파일을 GitHub 서버가 대신 받아
+# 지정한 브랜치의 promo/inbox/<폴더>/ 에 올려요(2026-11-24, 일레븐랩스 결과 파일용).
+# 입력 urls: 한 줄에 "파일이름 주소" (빈칸으로 구분). main 브랜치에는 올리지 않아요.
+name: 홍보 재료 내려받기
+on:
+  workflow_dispatch:
+    inputs:
+      branch: { description: "올릴 브랜치(main 금지)", required: true }
+      folder: { description: "promo/inbox 아래 폴더 이름", required: true }
+      urls: { description: "한 줄에 '파일이름 주소'", required: true }
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ inputs.branch }}" }
+      - name: 내려받기
+        env: { URLS: "${{ inputs.urls }}", FOLDER: "${{ inputs.folder }}", BRANCH: "${{ inputs.branch }}" }
+        run: |
+          [ "$BRANCH" != "main" ] || { echo "main에는 올리지 않아요"; exit 1; }
+          case "$FOLDER" in *[!a-z0-9-]*|"") echo "폴더 이름은 영문 소문자·숫자·-만"; exit 1;; esac
+          D="promo/inbox/$FOLDER"; mkdir -p "$D"
+          printf '%s\n' "$URLS" | tr ' ' '\n' | paste - - | while IFS=$'\t' read -r name url; do
+            [ -n "$name" ] || continue
+            case "$name" in *[!A-Za-z0-9._-]*) echo "파일 이름이 이상해요: $name"; exit 1;; esac
+            case "$url" in https://elevenlabsusercontent.com/*|https://*.elevenlabs.io/*) ;; *) echo "허용 안 된 주소: $url"; exit 1;; esac
+            curl -fsSL -m 120 -o "$D/$name" "$url" && echo "받음 $name $(stat -c%s "$D/$name")"
+          done
+          git config user.name "fetch-media" && git config user.email "fetch-media@users.noreply.github.com"
+          git add "$D" && git commit -qm "홍보 재료 받음: $FOLDER" && git push -q origin "HEAD:$BRANCH"
