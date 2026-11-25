@@ -37,7 +37,12 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   // 가입 없이 먼저 써 보기(홈 첫 화면에서만, 초대받아 온 사람·다른 화면은 그대로): start → write(편지 쓰기) → join(가입하면 바로 날아가요)
   const trialOk = !inviter && !next;
   const [stage, setStage] = useState<"start" | "write" | "join">("start");
-  useEffect(() => { if (trialOk) track("start_view"); }, [trialOk]);
+  useEffect(() => {
+    if (!trialOk) return;
+    track("start_view");
+    // 소개 페이지·광고의 [설치 없이 지금 편지 써 보기](/?try=1)는 편지 쓰기 화면으로 바로
+    if (new URLSearchParams(location.search).get("try") === "1") { track("trial_open"); setStage("write"); }
+  }, [trialOk]);
   const afterJoin = () => (stage === "join" && readTrialDraft() ? "/send?draft=1" : undefined);
   useEffect(() => {
     const ua = navigator.userAgent;

@@ -4,7 +4,7 @@ import { formatMinutes } from "@/lib/geo";
 import { Magpie } from "@/components/Illustrations";
 import BirdIcon from "@/components/BirdIcon";
 import { ROUTES } from "@/lib/routes";
-import { STORE } from "@/lib/release";
+import WelcomeCta from "@/components/WelcomeCta";
 
 const SLOGAN = "기다림도 소통의 일부입니다.";
 
@@ -37,11 +37,7 @@ export default function Welcome() {
         날아오는 동안 지도로 같이 지켜보고, 도착하면 편지가 두루마리처럼 펼쳐져요.
       </p>
       <p className="proverb">{SLOGAN}</p>
-      <div className="wl-cta">
-        <a href={STORE.iosUrl} className="cta">🍎 아이폰 · 앱스토어에서 받기</a>
-        <Link href="/" className="cta wl-android">🤖 안드로이드 · 지금 바로 시작</Link>
-        <p className="small">안드로이드는 크롬에서 열고 메뉴의 '앱 설치'를 한 번 누르면 앱처럼 써요 · 무료</p>
-      </div>
+      <WelcomeCta view />
 
       <h2>이런 게 달라요</h2>
       <ul className="wl-feat">
@@ -86,10 +82,7 @@ export default function Welcome() {
         ))}
       </div>
 
-      <div className="wl-cta" style={{ marginTop: 24 }}>
-        <a href={STORE.iosUrl} className="cta">🍎 앱스토어에서 받기</a>
-        <Link href="/" className="cta wl-android">🤖 안드로이드 · 지금 바로 시작</Link>
-      </div>
+      <WelcomeCta />
       <p className="small" style={{ textAlign: "center" }}>{SLOGAN}</p>
       <div className="legal-links">
         <Link href="/privacy">개인정보 처리방침</Link>
