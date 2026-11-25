@@ -89,13 +89,14 @@ export function storeLines(st, to) {
   if (!st.ios && !st.android) throw new Error("schedule.json의 stores에 스토어 주소가 없어요(출시 날 ios 주소를 넣어 주세요)");
   // 모든 채널 글에 스토어 바로 가기 주소(2026-11-10 대표님: "글에 앱스토어 바로 가기 넣어 줘야 함").
   // 인스타는 글 속 링크가 눌리지 않아서 프로필 링크 안내를 한 줄 더 붙여요(주소는 복사해 쓸 수 있게 그대로 둠).
-  const out = [];
-  if (st.ios) out.push(`👉 앱스토어 바로 가기 ${st.ios}`);
+  // 2026-11-24 대표님 "무조건 머무르게": 맨 위는 설치 없이 바로 써 보기(소개 페이지 → 편지 쓰기·카카오 1초 시작), 앱은 그 아래
+  const out = ["✉️ 설치 없이 바로 써 보기 👉 https://bird-letter.vercel.app/welcome"];
+  if (st.ios) out.push(`🍎 아이폰 앱 👉 ${st.ios}`);
   if (st.android) out.push(`👉 구글 플레이 바로 가기 ${st.android}`);
   // 플레이 전에는 갤럭시 스토어(삼성 폰)로, 플레이는 곧(2026-11-11 대표님)
   else if (st.galaxy) out.push(`👉 갤럭시 스토어 바로 가기 ${st.galaxy}`, "구글 플레이는 곧 출시돼요");
   // 2026-11-16 대표님: 플레이 출시(11/27 신청) 전까지 안드로이드는 웹으로 바로(크롬 설치 버튼 한 번·앱 꺼도 알림)
-  else out.push("👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome");
+  // 플레이 전 안드로이드는 맨 윗줄(설치 없이 바로)로 충분해요
   // 링크는 프로필에도 있다고 모든 채널에 한 줄(2026-11-11 대표님: "링크는 프로필에 있다는 내용을 넣어줘야 해")
   out.push(to === "instagram" ? "🔗 링크는 프로필에 있어요 (@saepyeonji) · 글 속 링크가 안 눌리면 프로필로 🕊" : "🔗 링크는 프로필에도 있어요 (@saepyeonji)");
   return out.join("\n");

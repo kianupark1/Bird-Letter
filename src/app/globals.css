@@ -1316,3 +1316,4 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 /* 소개 페이지: 설치 없이 바로 써 보기가 맨 위(2026-11-24) */
 .wl-cta .wl-try { background: var(--dahong); color: var(--on-dahong, #fff); font-size: 20px; min-height: 62px; display: flex; align-items: center; justify-content: center; }
 .wl-cta .wl-store { background: var(--card); color: var(--text); border: 1px solid var(--line); }
+.wl-cta .wl-kakao { background: #FEE500; color: #2A2118; border: 0; font: inherit; font-weight: 800; font-size: 18px; min-height: 56px; cursor: pointer; }

@@ -802,8 +802,8 @@ import { SLOGAN } from "../promo/store.mts";
   const ios = { ios: "https://apps.apple.com/kr/app/id1", android: null };
   const p = { text: "새 편지가 날아올랐어요!\n\n{{받기}}\n\n#새편지", to: ["threads"] };
   const th = ((q) => q.text + "\n" + (q.reply ?? ""))(fillText(p, "threads", ios));
-  eq("홍보 글: 아이폰 먼저면 앱스토어 바로 가기 주소", th.includes("👉 앱스토어 바로 가기 https://apps.apple.com/kr/app/id1"), true);
-  eq("홍보 글: 안드로이드는 지금 웹으로", th.includes("안드로이드 바로 가기 https://bird-letter.vercel.app/welcome") && !th.includes("play.google"), true);
+  eq("홍보 글: 아이폰 먼저면 앱스토어 바로 가기 주소", th.includes("🍎 아이폰 앱 👉 https://apps.apple.com/kr/app/id1"), true);
+  eq("홍보 글: 맨 위는 설치 없이 바로 써 보기(안드로이드도)", th.includes("✉️ 설치 없이 바로 써 보기 👉 https://bird-letter.vercel.app/welcome") && !th.includes("play.google"), true);
   eq("홍보 글: 인스타도 바로 가기 주소 + 프로필 링크 안내", fillText(p, "instagram", ios).text.includes("https://apps.apple.com/kr/app/id1") && fillText(p, "instagram", ios).text.includes("링크는 프로필에"), true);
   eq("홍보 글: 스레드·X에도 '링크는 프로필에'", ["threads", "x"].every((t) => ((q) => q.text + (q.reply ?? ""))(fillText(p, t, ios)).includes("링크는 프로필에")), true);
   eq("X 줄여도 '링크는 프로필에' 남음", xPost({ text: fillText(p, "x", ios).text }).includes("링크는 프로필에"), true);
@@ -812,8 +812,8 @@ import { SLOGAN } from "../promo/store.mts";
   const lx = xPost(fillText(longP, "x", ios));
   eq("X: 줄여도 바로 가기 주소·슬로건은 남음", lx.includes("https://apps.apple.com/kr/app/id1") && lx.includes(SLOGAN), true);
   let threw = false; try { storeLines({}, "threads"); } catch { threw = true; }
-  eq("X 받기 안내: 바로 가기 주소", storeLines({ ios: "https://a", android: null }, "x"), "👉 앱스토어 바로 가기 https://a\n👉 안드로이드 바로 가기 https://bird-letter.vercel.app/welcome\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
-  eq("받기 안내: 갤럭시 스토어·플레이는 곧", storeLines({ ios: "https://a", android: null, galaxy: "https://g" }, "x"), "👉 앱스토어 바로 가기 https://a\n👉 갤럭시 스토어 바로 가기 https://g\n구글 플레이는 곧 출시돼요\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
+  eq("X 받기 안내: 바로 가기 주소", storeLines({ ios: "https://a", android: null }, "x"), "✉️ 설치 없이 바로 써 보기 👉 https://bird-letter.vercel.app/welcome\n🍎 아이폰 앱 👉 https://a\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
+  eq("받기 안내: 갤럭시 스토어·플레이는 곧", storeLines({ ios: "https://a", android: null, galaxy: "https://g" }, "x"), "✉️ 설치 없이 바로 써 보기 👉 https://bird-letter.vercel.app/welcome\n🍎 아이폰 앱 👉 https://a\n👉 갤럭시 스토어 바로 가기 https://g\n구글 플레이는 곧 출시돼요\n🔗 링크는 프로필에도 있어요 (@saepyeonji)");
   eq("홍보 글: 스토어 주소가 없으면 올리지 않음", threw, true);
   const both = ((q) => q.text + (q.reply ?? ""))(fillText(p, "threads", { ios: "https://a", android: "https://g" }));
   eq("슬로건: 그림·영상과 글이 같은 글자", POST_SLOGAN, SLOGAN);
@@ -856,7 +856,7 @@ import { SLOGAN } from "../promo/store.mts";
   eq("스레드 대화 글 slot", slotOf({ slot: "talk2" }), "talk2");
   eq("스레드 오후 글은 3시 30분 뒤", autoSlot(1531, new Set(["noon", "talk1"]), new Set(["talk3"])), "talk3");
   { const st = { ios: "https://apps.apple.com/kr/app/id1" }; const q = fillText({ text: "안녕\n\n{{받기}}\n\n#새편지" }, "threads", st);
-    eq("스레드 본문에 앱스토어 링크", q.text.includes("apps.apple.com"), true); eq("스레드 본문에 안드로이드 링크", q.text.includes("bird-letter.vercel.app"), true); eq("스레드 링크는 첫 문단 바로 아래", q.text.split("\n\n")[1].startsWith("👉"), true);
+    eq("스레드 본문에 앱스토어 링크", q.text.includes("apps.apple.com"), true); eq("스레드 본문에 안드로이드 링크", q.text.includes("bird-letter.vercel.app"), true); eq("스레드 링크는 첫 문단 바로 아래", q.text.split("\n\n")[1].startsWith("✉️ 설치 없이 바로 써 보기"), true);
     eq("스레드 본문에도 슬로건", q.text.includes(POST_SLOGAN), true);
     eq("인스타는 본문에 링크 그대로", fillText({ text: "안녕\n{{받기}}" }, "instagram", st).text.includes("apps.apple.com"), true);
     eq("투표 보기 2개", JSON.parse(pollParams(["가", "나"]).poll_attachment).option_b, "나"); eq("투표 1개면 없음", pollParams(["가"]).poll_attachment, undefined); }
@@ -1056,11 +1056,11 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
 // ── 들어온 사람 흐름 세기(core/funnel.ts, 2026-11-24) ──
 {
   const { FUNNEL_STEPS, isFunnelStep, kstDate, funnelLine } = await import("../core/funnel.ts");
-  eq("흐름 단계는 10개", FUNNEL_STEPS.length, 10);
+  eq("흐름 단계는 11개", FUNNEL_STEPS.length, 11);
   eq("모르는 단계는 안 받음", !isFunnelStep("hack") && !isFunnelStep(1) && isFunnelStep("trial_open"), true);
   eq("한국 날짜: UTC 15시는 다음 날", kstDate(Date.UTC(2026, 10, 24, 15, 0)) === "2026-11-25" && kstDate(Date.UTC(2026, 10, 24, 14, 59)) === "2026-11-24", true);
   const line = funnelLine({ start_view: 40, trial_open: 12, trial_ready: 6 });
-  eq("흐름 한 줄: 없는 단계는 0", line.startsWith("소개 0 → 바로 써 보기 0·앱스토어로 0 | 첫 화면 40 → 써 보기 12 → 맡기기 6 → 써 보고 가입 0") && line.includes("받은 링크 열기 0"), true);
+  eq("흐름 한 줄: 없는 단계는 0", line.startsWith("소개 0 → 바로 써 보기 0·카카오 시작 0·앱스토어로 0 | 첫 화면 40 → 써 보기 12 → 맡기기 6 → 써 보고 가입 0") && line.includes("받은 링크 열기 0"), true);
   const { dailyText } = await import("../core/adminStats.ts");
   const t2 = dailyText({ users: { members: 1, anonymous: 0, byProvider: { kakao: 1, naver: 0, google: 0, apple: 0, other: 0 }, newToday: 0, new7d: 0, active1d: 1, active7d: 1 }, letters: { all: 1, today: 0 } }, line);
   eq("매일 알림에 흐름 줄", t2.body.includes("\n흐름: 소개 0 → 바로 써 보기 0"), true);
