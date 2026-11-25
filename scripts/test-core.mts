@@ -1083,6 +1083,15 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("지금 새가 하는 일: 구간이 바뀌면 바뀜", new Set([0.1, 0.3, 0.6, 0.9].map((p) => flightMood("abc", "sparrow", p))).size > 1, true);
   eq("첫 화면 한마디: 목록 안에서", START_LINES.includes(startLine(7.9)) && START_LINES.includes(startLine(-3)), true);
 }
+{
+  const { decideAutoHome, ASK_AGAIN_MS } = await import("../core/autoHome.ts");
+  const now = 1_800_000_000_000;
+  eq("위치로 동네: 정한 적 없으면 바로 정함", decideAutoHome({ homeSet: false, homePlace: "seoul", here: "busan", now }), "set");
+  eq("위치로 동네: 같은 동네면 아무것도 안 함", decideAutoHome({ homeSet: true, homePlace: "busan", here: "busan", now }), "none");
+  eq("위치로 동네: 바뀌면 물어봄", decideAutoHome({ homeSet: true, homePlace: "seoul", here: "busan", now }), "suggest");
+  eq("위치로 동네: 그대로 누른 동네는 사흘 동안 안 물음", decideAutoHome({ homeSet: true, homePlace: "seoul", here: "busan", dismissedAt: now - 3600000, now }), "none");
+  eq("위치로 동네: 사흘 지나면 다시 물음", decideAutoHome({ homeSet: true, homePlace: "seoul", here: "busan", dismissedAt: now - ASK_AGAIN_MS - 1, now }), "suggest");
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
 

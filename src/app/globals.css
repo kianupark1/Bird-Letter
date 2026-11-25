@@ -1326,3 +1326,7 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 /* 처음부터 재미있게(core/fun.ts): 새 성격 한 줄·지금 새가 하는 일 */
 .bfun { font-size: 13px; opacity: .78; margin-top: 2px; line-height: 1.35; }
 .hcount .hc-mood { display: block; font-size: 14px; font-weight: 600; opacity: .85; margin-top: 2px; }
+/* 위치가 바뀌었으면 묻기(src/lib/autoHome.ts) */
+.autohome { display: flex; flex-direction: column; gap: 6px; background: var(--card); border: 1px solid var(--hwangto); border-radius: 14px; padding: 10px 12px; margin: 6px 0 8px; font-size: 14px; }
+.autohome-btns { display: flex; gap: 8px; }
+.autohome .chip.on { background: var(--dahong); color: var(--on-dahong, #fff); border-color: var(--dahong); }

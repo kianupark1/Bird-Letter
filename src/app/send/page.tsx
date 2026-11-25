@@ -29,6 +29,7 @@ import { clearTrialDraft, readTrialDraft } from "@/lib/trialDraft";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { track } from "@/lib/funnel";
 import { birdFun } from "../../../core/fun";
+import { useAutoHome } from "@/lib/autoHome";
 import { announceSent } from "@/components/PushAsk";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
 
@@ -170,6 +171,7 @@ function SendForm() {
     setPhotos(next); setPhotoBusy(false);
   };
 
+  const auto = useAutoHome(profile, update, profileReady && !IS_TOSS && !replyId);
   const pickFrom = (id: string) => { setTouched(true); setFromId(id); update({ homePlace: id }); setGeoMsg(""); };
   const pickTo = (id: string) => { setTouched(true); setToId(id); };
   const swap = () => { setTouched(true); setFromId(toId); setToId(fromId); };
@@ -299,6 +301,12 @@ function SendForm() {
             {!IS_TOSS && <button type="button" className="chip locate" onClick={locate}>내 위치로</button>}
           </div>
           {geoMsg && <div className="small" role="status" style={{ marginTop: 0, marginBottom: 8 }}>{geoMsg}</div>}
+          {auto.suggest ? (
+        <div className="autohome" role="status">
+          <span>📍 지금 <b>{auto.suggest.label}</b> 근처에 계신 것 같아요. 출발하는 곳을 바꿀까요?{auto.fromName ? ` (지금: ${auto.fromName})` : ""}</span>
+          <span className="autohome-btns"><button type="button" className="chip on" onClick={auto.accept}>바꾸기</button><button type="button" className="chip" onClick={auto.dismiss}>그대로</button></span>
+        </div>
+      ) : auto.note ? <div className="small" role="status">{auto.note}</div> : null}
           <button type="button" className="swap" onClick={swap} aria-label="보내는 곳과 받는 곳 바꾸기">⇅ 서로 바꾸기</button>
           <PlaceField id="to-place" label="받는 사람이 있는 곳" value={toId} onChange={pickTo} />
 
