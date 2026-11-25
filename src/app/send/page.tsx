@@ -28,6 +28,7 @@ import { compressPhoto } from "@/lib/photo";
 import { clearTrialDraft, readTrialDraft } from "@/lib/trialDraft";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { track } from "@/lib/funnel";
+import { birdFun } from "../../../core/fun";
 import { announceSent } from "@/components/PushAsk";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
 
@@ -324,6 +325,7 @@ function SendForm() {
                 <div>
                   <div><span className="name">{b.name}</span></div>
                   <div className="kmh">시속 {b.kmh}km</div>
+                  <div className="bfun">{birdFun(b.id)}</div>
                 </div>
               </div>
               <div className="time">{formatMinutes(Math.max(1, travelMinutes(b, route.km)))}</div>

@@ -1074,6 +1074,15 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("만든 사람 편지: 이름·슬로건·답장 안내", t.startsWith("민지님,") && t.includes("기다림도 소통의 일부입니다.") && t.includes("답장"), true);
   eq("만든 사람 편지: 이름 없으면 반가운 분", helloText("새 친구").startsWith("반가운 분,"), true);
 }
+{
+  const { BIRD_FUN, birdFun, flightMood, startLine, START_LINES } = await import("../core/fun.ts");
+  const { BIRDS } = await import("../core/birds.ts");
+  eq("재미 한 줄: 고를 수 있는 새 모두에 성격", BIRDS.every((b) => !!BIRD_FUN[b.id]), true);
+  eq("재미 한 줄: 모르는 새도 기본 문구", birdFun("zzz").length > 0, true);
+  eq("지금 새가 하는 일: 같은 편지·같은 구간이면 같음", flightMood("abc", "pigeon", 0.3) === flightMood("abc", "pigeon", 0.4), true);
+  eq("지금 새가 하는 일: 구간이 바뀌면 바뀜", new Set([0.1, 0.3, 0.6, 0.9].map((p) => flightMood("abc", "sparrow", p))).size > 1, true);
+  eq("첫 화면 한마디: 목록 안에서", START_LINES.includes(startLine(7.9)) && START_LINES.includes(startLine(-3)), true);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
 

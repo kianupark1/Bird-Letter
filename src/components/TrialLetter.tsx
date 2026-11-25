@@ -5,6 +5,7 @@ import { pickableBirds, usableBird } from "@/lib/birds";
 import { formatMinutes } from "@/lib/geo";
 import { MAX_LETTER_CHARS } from "@/lib/limits";
 import { readTrialDraft, saveTrialDraft } from "@/lib/trialDraft";
+import { birdFun } from "../../core/fun";
 
 /**
  * 첫 화면의 "가입 없이 편지 먼저 써 보기"(2026-11-24). 서버에 아무것도 보내지 않고 이 폰에만 담아 둬요.
@@ -47,7 +48,7 @@ export default function TrialLetter({ onReady, onBack, presetTo, replyId }: { on
           </button>
         ))}
       </div>
-      <p className="trial-wait">🕊 {bird.name}가 날아가는 동안, 받는 사람도 지도에서 같이 기다려요</p>
+      <p className="trial-wait"><b>{bird.name}</b> · {birdFun(bird.id)}<br />날아가는 동안 받는 사람도 지도에서 같이 기다려요</p>
 
       <button type="button" className="sbtn trial-go" disabled={!ok}
         onClick={() => { saveTrialDraft({ to: to.trim(), message, birdId, ...(replyId ? { replyId } : {}) }); onReady(); }}>

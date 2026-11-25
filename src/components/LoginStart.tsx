@@ -16,6 +16,7 @@ import { storeFor, type StoreBtn } from "../../core/storeLinks";
 import TrialLetter from "@/components/TrialLetter";
 import { readTrialDraft } from "@/lib/trialDraft";
 import { track } from "@/lib/funnel";
+import { START_LINES, startLine } from "../../core/fun";
 
 /**
  * 처음 열었을 때의 화면(시안 ⑫). 버튼 한 번이 곧 가입이에요(2026-10-26 대표님: "카카오로 가입하기·구글로·애플로·휴대폰 번호로, 원클릭으로 쉽게"):
@@ -36,6 +37,9 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const [phoneOn, setPhoneOn] = useState(false);
   // 가입 없이 먼저 써 보기(홈 첫 화면에서만, 초대받아 온 사람·다른 화면은 그대로): start → write(편지 쓰기) → join(가입하면 바로 날아가요)
   const trialOk = !inviter && !next;
+  // 첫 화면 말풍선: 열 때마다 새 한마디(core/fun.ts)
+  const [bubble, setBubble] = useState(START_LINES[0]);
+  useEffect(() => { setBubble(startLine(Math.random() * 1000)); }, []);
   const [stage, setStage] = useState<"start" | "write" | "join">("start");
   useEffect(() => {
     if (!trialOk) return;
@@ -91,7 +95,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   return (
     <main className="start">
       <div className="start-hero">
-        <div className="bubble">짹짹! 반가워요 🌤</div>
+        <div className="bubble">{bubble}</div>
         {/* 첫 화면 새는 편지를 물고 날갯짓하는 모습(2026-11-02 대표님: "새가 날아가는 그림으로") */}
         {bird ? (
           <svg viewBox="0 0 200 160" width={200} height={160} className="bob" aria-hidden><CuteArt id={bird} variant="C" letter flap /></svg>
