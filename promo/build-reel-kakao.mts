@@ -21,12 +21,13 @@ const f = (p: string) => "file://" + resolve(root, p);
 // 같은 내레이션(kakao-dad/voice.mp3), 그림은 kakao-dad2(모자·콧수염 아빠, 안경 쓴 준호, 갈색 강아지)
 // 4탄(gone2, 2026-11-24 저녁 6시 대표님 "카카오톡과 문자가 사라진다면?, 스토리 정리, 쓰는 나·받는 사람의 감동, 카톡 링크로 앱 없이 바로,
 // 아이폰은 앱스토어도, 장면 10% 빠르게"): 새 내레이션 kakao-gone2/voice.mp3(1.12배 빠르게), 그림은 kakao-gone 그대로(엄마와 딸)
-const STORY = (["dad", "dad2", "gone2"] as const).find((x) => x === process.argv[2]) ?? "kakao";
+// 5탄(friend, 2026-11-25 점심 대표님 "카톡이 없어진다면, 재미있고 감동적이게"): 단짝 민지·하은, 참새가 은행나무에 걸리고 길을 잃어도 꼭 도착
+const STORY = (["dad", "dad2", "gone2", "friend"] as const).find((x) => x === process.argv[2]) ?? "kakao";
 const SPD = STORY === "gone2" ? 1.12 : 1; // 내레이션·장면을 이만큼 빠르게
-const SRC = STORY === "kakao" || STORY === "gone2" ? "promo/inbox/kakao-gone" : STORY === "dad2" ? "promo/inbox/kakao-dad2" : "promo/inbox/kakao-dad";
-const VOICE = STORY === "kakao" ? "promo/inbox/kakao-gone/voice.mp3" : STORY === "gone2" ? "promo/inbox/kakao-gone2/voice.mp3" : "promo/inbox/kakao-dad/voice.mp3";
-const NAME = STORY === "kakao" ? "reel-kakao" : STORY === "dad2" ? "reel-kakao-dad2" : STORY === "gone2" ? "reel-kakao-gone2" : "reel-kakao-dad";
-const END = STORY === "gone2"
+const SRC = STORY === "friend" ? "promo/inbox/kakao-friend" : STORY === "kakao" || STORY === "gone2" ? "promo/inbox/kakao-gone" : STORY === "dad2" ? "promo/inbox/kakao-dad2" : "promo/inbox/kakao-dad";
+const VOICE = STORY === "friend" ? "promo/inbox/kakao-friend/voice.mp3" : STORY === "kakao" ? "promo/inbox/kakao-gone/voice.mp3" : STORY === "gone2" ? "promo/inbox/kakao-gone2/voice.mp3" : "promo/inbox/kakao-dad/voice.mp3";
+const NAME = STORY === "friend" ? "reel-kakao-friend" : STORY === "kakao" ? "reel-kakao" : STORY === "dad2" ? "reel-kakao-dad2" : STORY === "gone2" ? "reel-kakao-gone2" : "reel-kakao-dad";
+const END = STORY === "gone2" || STORY === "friend"
   ? { ios: "🍎 아이폰 · 앱스토어에서 바로 다운로드", android: "💬 카톡으로 받은 편지는 <span style='color:#F0BC5C'>앱 없이 바로</span> 열려요<br><span style='font-size:32px;font-weight:600;opacity:.85'>▶ 안드로이드는 링크로 바로 시작 · bird-letter.vercel.app</span>" }
   : STORY === "dad2"
   ? { ios: "🍎 아이폰 · 앱스토어에서 바로 다운로드", android: "▶ 안드로이드는 링크로 바로 사용 가능<br><span style='font-size:32px;font-weight:600;opacity:.85'>구글 플레이 <span style='color:#F0BC5C'>12월 초 출시 예정</span> · bird-letter.vercel.app</span>" }
@@ -74,6 +75,23 @@ const DAD: Sc[] = [
 // 3탄 그림은 인물 위치가 조금 달라서 초점만 고쳐요(장면·자막은 2탄과 같음)
 const OV: Record<number, Partial<Sc>> = { 0: { fx: [0.3, 0.34] }, 4: { fx: [0.45, 0.3] }, 5: { fx: [0.62, 0.66] }, 6: { fx: [0.36, 0.44] }, 10: { fx: [0.52, 0.58] }, 11: { fx: [0.58, 0.62] } };
 const DAD2: Sc[] = DAD.map((x, i) => ({ ...x, ...(OV[i] ?? {}) }));
+const FRIEND: Sc[] = [
+  { a: 0, b: 2.62, img: "f1", fx: [0.45, 0.45], z: [1.18, 1.0], cap: "하루아침에<br>카카오톡이<br><span class='y'>사라진다면?</span>", hook: true },
+  { a: 2.62, b: 5.82, img: "f1", fx: [0.45, 0.5], z: [1.05, 1.15], cap: "단톡방 300개가<br>한순간에 조용해졌어요." },
+  { a: 5.82, b: 9.6, img: "f2", fx: [0.42, 0.5], z: [1.0, 1.08], cap: "부산 사는 단짝 하은이에게<br><span class='y'>편지를 쓰기로 했죠.</span>" },
+  { a: 9.6, b: 12.38, img: "f3", fx: [0.5, 0.5], z: [1.0, 1.12], cap: "그런데 참새가…<br><span class='y'>은행나무에 걸렸어요</span> 😂" },
+  { a: 12.38, b: 14.44, img: "f4", fx: [0.45, 0.55], z: [1.0, 1.08], cap: "대전 위에서는<br>길까지 잃었죠 🗺", chip: "대전 상공" },
+  { a: 14.44, b: 16.65, img: "f4", fx: [0.55, 0.58], z: [1.08, 1.16], cap: "그래도 편지는,<br><span class='y'>꼭 도착해요.</span>" },
+  { a: 16.65, b: 18.9, img: "f5", fx: [0.5, 0.6], z: [1.0, 1.08], cap: "반나절 넘게 날아<br>도착한 편지.", chip: "부산" },
+  { a: 18.9, b: 21.72, img: "f6", fx: [0.45, 0.5], z: [1.0, 1.08], cap: "\"우리 교복 입던 사진,<br>아직 갖고 있어.\"" },
+  { a: 21.72, b: 24.3, img: "f6", fx: [0.5, 0.52], z: [1.08, 1.18], cap: "하은이는 한참을 웃다가,<br><span class='y'>울었대요.</span>" },
+  { a: 24.3, b: 27.6, img: "f7", fx: [0.45, 0.55], z: [1.0, 1.08], cap: "그리고 날아온 답장.<br><span class='y'>\"보고 싶다, 내 단짝.\"</span>" },
+  { a: 27.6, b: 29.66, img: "f8", fx: [0.45, 0.45], z: [1.12, 1.0], cap: "카카오톡은<br>사라지지 않았어요." },
+  { a: 29.66, b: 33.82, img: "f8", fx: [0.45, 0.5], z: [1.0, 1.1], cap: "그래도 가끔은,<br><span class='y'>천천히 도착한 마음</span>이<br>더 오래 남아요." },
+  { a: 33.82, b: 34.7, kind: "title" },
+  { a: 34.7, b: 38.5, img: "kakao-gone/s09", fx: [0.45, 0.66], z: [1.0, 1.06], cap: "💬 카톡으로 링크만 보내면<br><span class='y'>앱 없이 바로</span> 열려요" },
+  { a: 38.5, b: 45, kind: "end" },
+];
 // 4탄 장면(내레이션 원래 속도의 초, 아래에서 SPD로 나눔)
 const GONE2: Sc[] = [
   { a: 0, b: 4.76, img: "s01", fx: [0.45, 0.45], z: [1.18, 1.0], cap: "하루아침에<br>카카오톡과 문자가<br><span class='y'>사라진다면?</span>", hook: true },
@@ -94,7 +112,7 @@ const GONE2: Sc[] = [
   { a: 49.65, b: 55.1, img: "s09", fx: [0.45, 0.66], z: [1.0, 1.06], cap: "💬 카톡으로 링크만 보내면<br>받는 사람은<br><span class='y'>앱 없이 바로</span> 열어 봐요" },
   { a: 55.1, b: 63.5, kind: "end" },
 ];
-const S: Sc[] = (STORY === "kakao" ? KAKAO : STORY === "dad2" ? DAD2 : STORY === "gone2" ? GONE2 : DAD).map((x) => ({ ...x, a: x.a / SPD, b: x.b / SPD }));
+const S: Sc[] = (STORY === "kakao" ? KAKAO : STORY === "dad2" ? DAD2 : STORY === "gone2" ? GONE2 : STORY === "friend" ? FRIEND : DAD).map((x) => ({ ...x, a: x.a / SPD, b: x.b / SPD }));
 const T = S[S.length - 1].b;
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
@@ -125,7 +143,7 @@ ${S.map((s, i) => {
     <img src="${f("promo/store/play-icon-512.png")}" style="position:absolute;left:440px;top:150px;width:200px;height:200px;border-radius:48px;box-shadow:0 30px 60px rgba(0,0,0,.3)">
     <div style="position:absolute;left:0;right:0;top:380px;font-size:110px;font-weight:900;letter-spacing:-5px">새편지</div>
     <div style="position:absolute;left:0;right:0;top:530px;font-size:50px;font-weight:800;color:#F0BC5C">${SLOGAN}</div>
-    <div class="btn" style="top:680px;background:#fff;color:#16110E;padding:30px 0;font-size:${STORY === "dad2" || STORY === "gone2" ? 40 : 44}px">${END.ios}</div>
+    <div class="btn" style="top:680px;background:#fff;color:#16110E;padding:30px 0;font-size:${STORY === "kakao" || STORY === "dad" ? 44 : 40}px">${END.ios}</div>
     <div class="btn" id="prof" style="top:820px;background:#F0BC5C;color:#16110E;padding:24px 0;font-size:40px">👆 링크는 프로필에 @saepyeonji</div>
     <div style="position:absolute;left:60px;right:60px;top:970px;font-size:40px;font-weight:800;line-height:1.5">${END.android}</div>
     <div style="position:absolute;left:0;right:0;top:1200px;font-size:32px;font-weight:700;opacity:.75">무료로 시작해요</div></div>`;
@@ -133,7 +151,7 @@ ${S.map((s, i) => {
     ${s.chip ? `<div class="chip"><span>${s.chip}</span></div>` : ""}<div class="cap${s.hook ? " hook" : ""}">${s.cap}</div></div>`;
 }).join("\n")}
 <script>
-const FIC_END = ${STORY === "kakao" ? 37.4 : STORY === "gone2" ? 44.95 / SPD : 37.6}, END_AT = ${S[S.length - 1].a};
+const FIC_END = ${STORY === "kakao" ? 37.4 : STORY === "gone2" ? 44.95 / SPD : STORY === "friend" ? 33.82 : 37.6}, END_AT = ${S[S.length - 1].a};
 const S = ${JSON.stringify(S.map((s) => ({ a: s.a, b: s.b, fx: s.fx, z: s.z, img: !!s.img })))};
 const IW = ${H} * 1280 / 720; // 그림 높이를 화면에 맞췄을 때 너비
 const ease = (x) => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
