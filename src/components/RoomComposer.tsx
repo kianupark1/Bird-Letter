@@ -1,6 +1,7 @@
 "use client";
 import { announceSent } from "@/components/PushAsk";
 import { birdFun } from "../../core/fun";
+import { useAutoHome } from "@/lib/autoHome";
 import { quickPosition } from "@/lib/fastGeo";
 import { useEffect, useRef, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
@@ -76,6 +77,8 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
     if (!r.ok) { setGeo(r.message); return false; }
     update({ homePlace: id, homeSet: true }); setGeo(""); return true;
   };
+  // 내 동네를 위치로 저절로 정하거나, 바뀌었으면 물어봐요(펜팔은 정해진 길이라 빼요)
+  const auto = useAutoHome(profile, update, ready && !penpal && !IS_TOSS);
   const speed = useRef(1);
   // 길 잃은 편지를 다시 보낼 때: 같은 글을 채우고 다른 새를 고르게 해요
   useEffect(() => {
@@ -288,6 +291,12 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <button type="button" className="chip" onClick={() => { setMessage(""); onResendDone?.(); }}>그만두기</button></div>
       )}
       {info && <div className="ch-info" role="alert">{info}</div>}
+      {auto.suggest ? (
+        <div className="autohome" role="status">
+          <span>📍 지금 <b>{auto.suggest.label}</b> 근처에 계신 것 같아요. 출발하는 곳을 바꿀까요?{auto.fromName ? ` (지금: ${auto.fromName})` : ""}</span>
+          <span className="autohome-btns"><button type="button" className="chip on" onClick={auto.accept}>바꾸기</button><button type="button" className="chip" onClick={auto.dismiss}>그대로</button></span>
+        </div>
+      ) : auto.note ? <div className="small" role="status">{auto.note}</div> : null}
       {sent && !info && <div className="ch-sent" role="status">{sent}</div>}
       <button type="button" className={`ch-set ${ok ? "" : "warn"}`} onClick={() => { if (!penpal) { setSeoulOpen(false); setSheet(ok ? "place" : "quick"); } }}>
         <span aria-hidden>📍</span>
