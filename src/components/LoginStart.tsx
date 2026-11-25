@@ -39,9 +39,11 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   const [stage, setStage] = useState<"start" | "write" | "join">("start");
   useEffect(() => {
     if (!trialOk) return;
-    track("start_view");
+    // 이미 로그인한 사람도 확인이 끝나기 전 잠깐 이 화면이 스쳐 가요 → 2.5초 넘게 머문 사람만 세요(2026-11-25: 첫 화면 49인데 써 보기 0이라 숫자가 부풀려짐)
+    const seen = window.setTimeout(() => track("start_view"), 2500);
     // 소개 페이지·광고의 [설치 없이 지금 편지 써 보기](/?try=1)는 편지 쓰기 화면으로 바로
     if (new URLSearchParams(location.search).get("try") === "1") { track("trial_open"); setStage("write"); }
+    return () => window.clearTimeout(seen);
   }, [trialOk]);
   const afterJoin = () => (stage === "join" && readTrialDraft() ? "/send?draft=1" : undefined);
   useEffect(() => {
