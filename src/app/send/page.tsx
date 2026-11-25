@@ -28,6 +28,7 @@ import { compressPhoto } from "@/lib/photo";
 import { clearTrialDraft, readTrialDraft } from "@/lib/trialDraft";
 import { KAKAO_SHARE_READY, shareToKakao } from "@/lib/kakaoShare";
 import { track } from "@/lib/funnel";
+import { announceSent } from "@/components/PushAsk";
 import { MAX_SCHEDULE_DAYS, dateTimeText, fromInputValue, toInputValue, validateDepart } from "../../../core/schedule";
 
 export default function Send() {
@@ -200,6 +201,7 @@ function SendForm() {
       });
       birdFx("depart", profile.chirp);
       track("letter_sent");
+      announceSent();
       // 앱을 쓰는 친구가 아니면(이름만 적었으면) 문자로 "편지가 날아가요" 알릴 수 있게 한 번 물어봐요
       if (!uid && !IS_TOSS && !replyTo && firebaseEnabled) { setSent({ id, to: to.trim() }); setBusy(false); return; }
       router.push(IS_TOSS ? letterHref(id) : roomHref({ uid, name: to.trim() })); // 보낸 뒤에는 그 사람과의 대화방으로

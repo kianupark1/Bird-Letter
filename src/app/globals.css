@@ -1317,3 +1317,9 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .wl-cta .wl-try { background: var(--dahong); color: var(--on-dahong, #fff); font-size: 20px; min-height: 62px; display: flex; align-items: center; justify-content: center; }
 .wl-cta .wl-store { background: var(--card); color: var(--text); border: 1px solid var(--line); }
 .wl-cta .wl-kakao { background: #FEE500; color: #2A2118; border: 0; font: inherit; font-weight: 800; font-size: 18px; min-height: 56px; cursor: pointer; }
+/* 보낸 직후 알림 묻기(src/components/PushAsk.tsx) */
+.pushask { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; display: flex; justify-content: center; padding: 0 12px calc(12px + env(safe-area-inset-bottom)); pointer-events: none; }
+.pushask-card { pointer-events: auto; width: 100%; max-width: 520px; background: var(--card); color: var(--text); border: 2px solid var(--hwangto); border-radius: 22px; padding: 16px 16px 6px; box-shadow: 0 -8px 28px rgba(0,0,0,.25); display: flex; flex-direction: column; gap: 8px; text-align: center; animation: popin .25s ease-out; }
+.pushask-card b { font-size: 19px; }
+.pushask-card span { font-size: 15px; opacity: .8; }
+.pushask-msg { margin: 4px 0 10px; font-weight: 700; }

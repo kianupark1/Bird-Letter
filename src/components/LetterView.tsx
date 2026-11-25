@@ -32,6 +32,8 @@ import { linkAccount, type LoginKind } from "@/lib/firebase/link";
 import { STORE } from "@/lib/release";
 import { storeFor, type StoreBtn } from "../../core/storeLinks";
 import { WELCOME_FROM } from "../../core/welcome";
+import TrialLetter from "@/components/TrialLetter";
+import { readTrialDraft } from "@/lib/trialDraft";
 
 const clock = (ms: number) => whenText(ms); // 오늘이 아니면 "내일"·날짜까지
 
@@ -49,6 +51,9 @@ export default function LetterView({ id }: { id: string }) {
   const [photos, setPhotos] = useState<string[]>([]);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [loginTick, setLoginTick] = useState(0); // 구글·애플로 받은 뒤 다시 확인
+  // 가입 없이 답장 먼저 쓰기(2026-11-24 대표님 "셋 다 해"): off → write(답장 쓰기) → ready(1초 가입하면 바로 날아가요)
+  const [replyStage, setReplyStage] = useState<"off" | "write" | "ready">("off");
+  useEffect(() => { if (readTrialDraft()?.replyId === id) setReplyStage("ready"); }, [id]);
   const [phoneOn, setPhoneOn] = useState(false); // 문자로 받기(휴대폰 번호 인증) 시트
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [store, setStore] = useState<StoreBtn | null>(null);
@@ -115,6 +120,12 @@ export default function LetterView({ id }: { id: string }) {
   // 앱 안·컴퓨터(스토어 버튼 없음)에서는 로그인만 하면 바로 열려요
   // 2026-11-16 성장 ③(대표님 "가자"): 도착한 편지는 가입 없이 바로 읽고, 답장할 때 카카오로 가입해요(가입부터 하라고 하면 많이 떠나요)
   const lockForApp = isRecipient && !IS_TOSS && ((guest && !arrivedNow) || (!guest && !!store && !webRead));
+  // 써 둔 답장을 들고 가입해서 돌아오면(내 편지함에 받아진 뒤) 답장 화면으로 가서 그대로 채워요
+  useEffect(() => {
+    if (!mineNow || readTrialDraft()?.replyId !== id) return;
+    track("reply_join");
+    window.location.assign(`/send?reply=${encodeURIComponent(id)}&draft=1`);
+  }, [mineNow, id]);
 
   // 받는 사람은 도착 시각이 지난 뒤에만 서버가 내용을 줌
   useEffect(() => {
@@ -255,10 +266,13 @@ export default function LetterView({ id }: { id: string }) {
 
   const recvCard = isRecipient && guest && !IS_TOSS ? (
         <div className="recvcard">
-          <b>{pr.done ? `💌 ${view.fromName || "보낸 사람"}님에게 답장하고 싶다면` : `💌 ${withIGa(view.fromName || "누군가")} 보낸 편지가 날아오고 있어요`}</b>
-          <span>{pr.done ? "카카오 버튼 한 번이면 가입 끝이에요. 이 편지가 내 편지함에 들어가고, 나도 새에게 답장을 맡길 수 있어요." : "도착하면 여기서 바로 열어 볼 수 있어요. 카카오로 받아 두면 내 편지함에 들어가고, 도착할 때 알림도 와요."}</span>
+          {pr.done && replyStage === "off" && (
+            <button type="button" className="sbtn trial-go" onClick={() => { track("reply_open"); setReplyStage("write"); }}>↩ 가입 없이 답장 먼저 쓰기</button>
+          )}
+          <b>{pr.done && replyStage === "ready" ? "✉️ 답장이 준비됐어요! 1초 가입하면 바로 날아가요" : pr.done ? `💌 ${view.fromName || "보낸 사람"}님에게 답장하고 싶다면` : `💌 ${withIGa(view.fromName || "누군가")} 보낸 편지가 날아오고 있어요`}</b>
+          <span>{pr.done && replyStage === "ready" ? "쓴 답장은 그대로 남아요 · 이 편지도 내 편지함에 들어가요" : pr.done ? "카카오 버튼 한 번이면 가입 끝이에요. 이 편지가 내 편지함에 들어가고, 나도 새에게 답장을 맡길 수 있어요." : "도착하면 여기서 바로 열어 볼 수 있어요. 카카오로 받아 두면 내 편지함에 들어가고, 도착할 때 알림도 와요."}</span>
           <button type="button" className="sbtn kakao" onClick={() => void receive("kakao")} disabled={busy !== null || !KAKAO_LOGIN_READY}>
-            <span aria-hidden>💬</span> {pr.done ? "카카오로 가입하고 답장하기" : "카카오로 받아 두기"}
+            <span aria-hidden>💬</span> {pr.done && replyStage === "ready" ? "카카오로 1초 가입하고 답장 날리기" : pr.done ? "카카오로 가입하고 답장하기" : "카카오로 받아 두기"}
           </button>
           <div className="recv-more">
             {NAVER_LOGIN_READY && <button type="button" className="linkbtn" onClick={() => void receive("naver")} disabled={busy !== null}>네이버로 받기</button>}
@@ -269,6 +283,11 @@ export default function LetterView({ id }: { id: string }) {
           {phoneOn && <PhoneLogin title="문자로 받기" onClose={() => setPhoneOn(false)} onDone={() => { setPhoneOn(false); setLoginTick((t) => t + 1); }} />}
         </div>
   ) : null;
+
+  if (replyStage === "write" && guest && view) {
+    return <TrialLetter presetTo={view.fromName || "보낸 사람"} replyId={id}
+      onBack={() => setReplyStage("off")} onReady={() => { track("reply_ready"); setReplyStage("ready"); window.scrollTo(0, 0); }} />;
+  }
 
   return (
     <main className="app">

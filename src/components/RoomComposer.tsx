@@ -1,4 +1,5 @@
 "use client";
+import { announceSent } from "@/components/PushAsk";
 import { quickPosition } from "@/lib/fastGeo";
 import { useEffect, useRef, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
@@ -153,6 +154,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
       await Promise.race([sending, new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 20000))]);
       write(LAST_BIRD, birdId);
       birdFx("depart", profile.chirp); // 출발: 푸드덕 + 짹 + 짧은 진동
+      announceSent(); // 처음이면 "도착하면 알려 드릴까요?"
       if (resend && cancel) { try { await cancel(resend.replaceId); } catch {} } // 다시 보냈으니 길 잃은 편지는 지워요
       if (resend) onResendDone?.();
       setMessage(""); setPhotos([]); setLater(""); setSheet("");
