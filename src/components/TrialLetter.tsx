@@ -10,26 +10,28 @@ import { readTrialDraft, saveTrialDraft } from "@/lib/trialDraft";
  * 첫 화면의 "가입 없이 편지 먼저 써 보기"(2026-11-24). 서버에 아무것도 보내지 않고 이 폰에만 담아 둬요.
  * [새에게 맡기기]를 누르면 onReady → 가입 버튼이 나오고, 가입하면 편지 쓰기 화면에 그대로 채워져요.
  */
-export default function TrialLetter({ onReady, onBack }: { onReady: () => void; onBack: () => void }) {
-  const [to, setTo] = useState("");
+export default function TrialLetter({ onReady, onBack, presetTo, replyId }: { onReady: () => void; onBack: () => void; /** 답장이면 받는 사람이 정해져 있어요 */ presetTo?: string; replyId?: string }) {
+  const [to, setTo] = useState(presetTo ?? "");
   const [message, setMessage] = useState("");
   const [birdId, setBirdId] = useState("pigeon");
   const birds = pickableBirds();
   useEffect(() => {
     const d = readTrialDraft();
-    if (d) { setTo(d.to); setMessage(d.message); setBirdId(usableBird(d.birdId)); }
-  }, []);
+    if (d && (d.replyId ?? "") === (replyId ?? "")) { if (!presetTo) setTo(d.to); setMessage(d.message); setBirdId(usableBird(d.birdId)); }
+  }, [presetTo, replyId]);
   const ok = message.trim().length > 0;
   const bird = birds.find((b) => b.id === birdId) ?? birds[0];
 
   return (
     <main className="start trial">
       <button type="button" className="trial-back" onClick={onBack} aria-label="뒤로">‹</button>
-      <h1 className="trial-h">누구에게 쓸까요? ✉️</h1>
+      <h1 className="trial-h">{presetTo ? `${presetTo}님에게 답장 ✉️` : "누구에게 쓸까요? ✉️"}</h1>
       <p className="trial-sub">가입 없이 먼저 써 보세요. 보낼 때만 1초 가입이에요.</p>
 
-      <label className="trial-lbl" htmlFor="trial-to">받는 사람</label>
-      <input id="trial-to" className="field trial-to" value={to} onChange={(e) => setTo(e.target.value.slice(0, 20))} placeholder="예: 엄마, 오랜 친구" autoComplete="off" />
+      {!presetTo && <>
+        <label className="trial-lbl" htmlFor="trial-to">받는 사람</label>
+        <input id="trial-to" className="field trial-to" value={to} onChange={(e) => setTo(e.target.value.slice(0, 20))} placeholder="예: 엄마, 오랜 친구" autoComplete="off" />
+      </>}
 
       <label className="trial-lbl" htmlFor="trial-msg">편지</label>
       <textarea id="trial-msg" className="field trial-msg" value={message} maxLength={MAX_LETTER_CHARS}
@@ -48,7 +50,7 @@ export default function TrialLetter({ onReady, onBack }: { onReady: () => void; 
       <p className="trial-wait">🕊 {bird.name}가 날아가는 동안, 받는 사람도 지도에서 같이 기다려요</p>
 
       <button type="button" className="sbtn trial-go" disabled={!ok}
-        onClick={() => { saveTrialDraft({ to: to.trim(), message, birdId }); onReady(); }}>
+        onClick={() => { saveTrialDraft({ to: to.trim(), message, birdId, ...(replyId ? { replyId } : {}) }); onReady(); }}>
         🕊 새에게 맡기기
       </button>
       {!ok && <p className="trial-fine">한 줄만 써도 괜찮아요</p>}

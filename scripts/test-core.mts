@@ -1056,16 +1056,24 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
 // ── 들어온 사람 흐름 세기(core/funnel.ts, 2026-11-24) ──
 {
   const { FUNNEL_STEPS, isFunnelStep, kstDate, funnelLine } = await import("../core/funnel.ts");
-  eq("흐름 단계는 11개", FUNNEL_STEPS.length, 11);
+  eq("흐름 단계는 16개", FUNNEL_STEPS.length, 16);
   eq("모르는 단계는 안 받음", !isFunnelStep("hack") && !isFunnelStep(1) && isFunnelStep("trial_open"), true);
   eq("한국 날짜: UTC 15시는 다음 날", kstDate(Date.UTC(2026, 10, 24, 15, 0)) === "2026-11-25" && kstDate(Date.UTC(2026, 10, 24, 14, 59)) === "2026-11-24", true);
   const line = funnelLine({ start_view: 40, trial_open: 12, trial_ready: 6 });
-  eq("흐름 한 줄: 없는 단계는 0", line.startsWith("소개 0 → 바로 써 보기 0·카카오 시작 0·앱스토어로 0 | 첫 화면 40 → 써 보기 12 → 맡기기 6 → 써 보고 가입 0") && line.includes("받은 링크 열기 0"), true);
+  eq("흐름 한 줄: 없는 단계는 0", line.startsWith("소개 0 → 바로 써 보기 0·카카오 시작 0·앱스토어로 0 | 첫 화면 40 → 써 보기 12 → 맡기기 6 → 써 보고 가입 0") && line.includes("받은 링크 열기 0 → 답장 써 보기 0 → 답장 맡기기 0 → 답장 가입 0"), true);
   const { dailyText } = await import("../core/adminStats.ts");
   const t2 = dailyText({ users: { members: 1, anonymous: 0, byProvider: { kakao: 1, naver: 0, google: 0, apple: 0, other: 0 }, newToday: 0, new7d: 0, active1d: 1, active7d: 1 }, letters: { all: 1, today: 0 } }, line);
   eq("매일 알림에 흐름 줄", t2.body.includes("\n흐름: 소개 0 → 바로 써 보기 0"), true);
 }
 
+{
+  const { helloId, helloToName, helloText } = await import("../core/hello.ts");
+  eq("만든 사람 편지 ID: 계정마다 하나·영문 숫자 10~40자", /^[A-Za-z0-9]{10,40}$/.test(helloId("abcDEF123_-xyz")) && helloId("u1") === helloId("u1") && helloId("a") !== helloId("b"), true);
+  eq("만든 사람 편지 받는 이름: 없으면 새 친구, 20자까지", [helloToName(""), helloToName("  민지 "), helloToName("가".repeat(30)).length].join(), "새 친구,민지,20");
+  const t = helloText("민지");
+  eq("만든 사람 편지: 이름·슬로건·답장 안내", t.startsWith("민지님,") && t.includes("기다림도 소통의 일부입니다.") && t.includes("답장"), true);
+  eq("만든 사람 편지: 이름 없으면 반가운 분", helloText("새 친구").startsWith("반가운 분,"), true);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
 

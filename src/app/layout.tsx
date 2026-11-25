@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import BottomNav from "@/components/BottomNav";
+import PushAsk from "@/components/PushAsk";
 import Notifier from "@/components/Notifier";
 import InstallGuide from "@/components/InstallGuide";
 import JoinInstall from "@/components/JoinInstall";
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <InstallGuide />
         <JoinInstall />
         <BottomNav />
+        <PushAsk />
       </body>
     </html>
   );
