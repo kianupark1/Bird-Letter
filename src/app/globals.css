@@ -1323,3 +1323,6 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .pushask-card b { font-size: 19px; }
 .pushask-card span { font-size: 15px; opacity: .8; }
 .pushask-msg { margin: 4px 0 10px; font-weight: 700; }
+/* 처음부터 재미있게(core/fun.ts): 새 성격 한 줄·지금 새가 하는 일 */
+.bfun { font-size: 13px; opacity: .78; margin-top: 2px; line-height: 1.35; }
+.hcount .hc-mood { display: block; font-size: 14px; font-weight: 600; opacity: .85; margin-top: 2px; }

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { flightMood } from "../../core/fun";
 import { getBird } from "@/lib/birds";
 import { getRoute, routePosition } from "@/lib/routes";
 import { letterProgress, useNow, type Letter } from "@/lib/letters";
@@ -53,6 +54,7 @@ export default function HomeCountdown({ threads }: { threads: Thread<Letter, Met
       <span className="hc-title">{title}</span>
       <span className="hc-n" role="timer">{countdownText(arriveAt - now)}</span>
       <span className="hc-sub">{bird.name} · 지금 {where} · {whenText(arriveAt, now)}쯤</span>
+      {!pr.stalled && <span className="hc-mood">“{flightMood(e.item.id, bird.id, pr.p)}”</span>}
       <span className="hc-track" aria-hidden><i style={{ width: `${Math.round(pr.p * 100)}%` }} /><span className="hc-bird" style={{ left: `${Math.round(pr.p * 100)}%` }}><BirdIcon id={bird.id} size={40} letter /></span></span>
     </Link>
   );

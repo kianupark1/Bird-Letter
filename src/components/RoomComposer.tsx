@@ -1,5 +1,6 @@
 "use client";
 import { announceSent } from "@/components/PushAsk";
+import { birdFun } from "../../core/fun";
 import { quickPosition } from "@/lib/fastGeo";
 import { useEffect, useRef, useState } from "react";
 import BirdIcon from "@/components/BirdIcon";
@@ -220,7 +221,7 @@ export default function RoomComposer({ threadKey, name, toUid, guessPlace, frien
           <h2>어떤 새로 보낼까요?</h2>
           {[...pickableBirds()].reverse().map((b, i) => (
             <button key={b.id} type="button" className={`birdpick wrapfoot bp${i % 6}`} aria-pressed={b.id === birdId} onClick={() => pickBird(b.id)}>
-              <span className="row"><BirdIcon id={b.id} size={62} /><span><span className="name">{b.name}</span><br /><span className="kmh">시속 {b.kmh}km</span></span></span>
+              <span className="row"><BirdIcon id={b.id} size={62} /><span><span className="name">{b.name}</span><br /><span className="kmh">시속 {b.kmh}km</span><br /><span className="bfun">{birdFun(b.id)}</span></span></span>
               <span className="time">{route ? formatMinutes(Math.max(1, Math.round(travelMinutes(b, route.km) / speed.current))) : ""}</span>
               <span className="risk">{mishapShort(b)}</span>
             </button>
