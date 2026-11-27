@@ -860,6 +860,7 @@ button.ch-map .map { width: 100%; height: 100%; aspect-ratio: auto; }
 .ppwarn { background: #FFF3C9; color: #5b4a1e; border-radius: 16px; padding: 10px 12px; font-size: 15px; line-height: 1.4; margin: 10px 0; }
 .pphead { font-size: 17px; font-weight: 700; opacity: .75; margin: 14px 4px 6px; }
 .trow.pen { background: linear-gradient(var(--card), rgba(30, 58, 92, .10)); }
+.roomflag { margin-left: auto; background: none; border: 0; font-size: 18px; opacity: .55; min-width: 44px; min-height: 44px; cursor: pointer; }
 .ppbar { display: flex; gap: 8px; align-items: center; margin: 4px 14px 6px; background: var(--card); border-radius: 18px; padding: 10px 12px; font-size: 15px; box-shadow: var(--raise); }
 .ppbar span { flex: 1; line-height: 1.35; }
 

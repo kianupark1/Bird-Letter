@@ -290,6 +290,8 @@ function Room() {
           ) : <div className="rname">{name}</div>}
           {(subtitle || pen) && <div className="rsub">{pen ? `펜팔 🌏${subtitle ? ` · ${subtitle}` : ""}` : subtitle}</div>}
         </div>
+        {/* 펜팔 신고·차단은 위 띠 대신 제목줄 오른쪽 작은 깃발로(2026-11-27 대표님: "거슬림"). 받은 편지마다 '신고·차단'도 그대로 */}
+        {pen && !askPen && <button type="button" className="roomflag" aria-label="신고·차단" title="신고·차단" onClick={() => void reportBlock()}>🚩</button>}
       </header>
       {map}
       </div>
@@ -306,13 +308,6 @@ function Room() {
             <button type="button" className="chip" onClick={declinePen}>안 받을래요</button>
             <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고</button>
           </div>
-        </div>
-      )}
-      {pen && !askPen && (
-        <div className="ppbar" role="note">
-          {/* 넘기기는 없앰(2026-11-17 대표님: 누르면 펜팔 방이 사라짐). 사진은 펜팔도 보낼 수 있어요 */}
-          <span>모르는 누군가와의 펜팔이에요. 연락처는 적지 않아요</span>
-          <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고·차단</button>
         </div>
       )}
       {!pen && thread.uid && isUnnamed(name) && (
