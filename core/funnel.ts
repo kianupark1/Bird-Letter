@@ -9,6 +9,7 @@ export const FUNNEL_STEPS = [
   "welcome_kakao", // 소개 페이지에서 [카카오로 1초 시작]
   "start_view", // 첫 화면(가입 버튼 화면)을 봄
   "trial_open", // [가입 없이 편지 먼저 써 보기]를 누름
+  "trial_auto", // 이 폰에서 처음 와서 편지 쓰기 화면이 바로 열림(2026-11-27)
   "trial_ready", // 편지를 써서 [새에게 맡기기]를 누름
   "trial_join", // 써 둔 편지를 들고 가입해서 편지 쓰기 화면에 옴
   "letter_sent", // 편지를 보냄(앱 쓰는 사람·앱 없는 사람 모두)
@@ -29,6 +30,7 @@ export const FUNNEL_LABEL: Record<FunnelStep, string> = {
   welcome_kakao: "카카오 시작",
   start_view: "첫 화면",
   trial_open: "써 보기",
+  trial_auto: "바로 쓰기 화면",
   trial_ready: "맡기기",
   trial_join: "써 보고 가입",
   letter_sent: "편지 보냄",
@@ -51,5 +53,5 @@ export function kstDate(ms: number) {
 /** 매일 숫자 알림에 붙일 한 줄: "첫 화면 40 → 써 보기 12 → 맡기기 6 → 써 보고 가입 2 · 편지 보냄 5 → 카톡 보냄 3 · 받은 링크 열기 4" */
 export function funnelLine(c: Partial<Record<FunnelStep, number>>) {
   const n = (k: FunnelStep) => `${FUNNEL_LABEL[k]} ${c[k] ?? 0}`;
-  return `${n("welcome_view")} → ${n("welcome_try")}·${n("welcome_kakao")}·${n("welcome_store")} | ${["start_view", "trial_open", "trial_ready", "trial_join"].map((k) => n(k as FunnelStep)).join(" → ")} · ${n("letter_sent")} → ${n("kakao_share")} · ${n("link_open")} → ${n("reply_open")} → ${n("reply_ready")} → ${n("reply_join")} · ${n("push_ask")} → ${n("push_on")}`;
+  return `${n("welcome_view")} → ${n("welcome_try")}·${n("welcome_kakao")}·${n("welcome_store")} | ${["start_view", "trial_auto", "trial_open", "trial_ready", "trial_join"].map((k) => n(k as FunnelStep)).join(" → ")} · ${n("letter_sent")} → ${n("kakao_share")} · ${n("link_open")} → ${n("reply_open")} → ${n("reply_ready")} → ${n("reply_join")} · ${n("push_ask")} → ${n("push_on")}`;
 }

@@ -25,9 +25,11 @@ export default function TrialLetter({ onReady, onBack, presetTo, replyId }: { on
 
   return (
     <main className="start trial">
-      <button type="button" className="trial-back" onClick={onBack} aria-label="뒤로">‹</button>
+      {presetTo
+        ? <button type="button" className="trial-back" onClick={onBack} aria-label="뒤로">‹</button>
+        : <button type="button" className="trial-login" onClick={onBack}>이미 가입했어요 · 로그인</button>}
       <h1 className="trial-h">{presetTo ? `${presetTo}님에게 답장 ✉️` : "누구에게 쓸까요? ✉️"}</h1>
-      <p className="trial-sub">가입 없이 먼저 써 보세요. 보낼 때만 1초 가입이에요.</p>
+      <p className="trial-sub">{presetTo ? "가입 없이 먼저 써 보세요. 보낼 때만 1초 가입이에요." : <>새가 실제 거리만큼 날아가 전해 주는 편지예요 🕊<br />가입 없이 먼저 써 보세요. 보낼 때만 1초 가입이에요.</>}</p>
 
       {!presetTo && <>
         <label className="trial-lbl" htmlFor="trial-to">받는 사람</label>

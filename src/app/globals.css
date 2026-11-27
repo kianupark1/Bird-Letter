@@ -1298,6 +1298,7 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .trial-ready b { font-size: 20px; }
 .trial-ready span { font-size: 15px; opacity: .8; }
 .start.trial { justify-content: flex-start; gap: 6px; position: relative; padding-top: calc(16px + env(safe-area-inset-top)); }
+.trial-login { align-self: flex-end; background: none; border: 0; color: inherit; opacity: .7; font-size: 14px; text-decoration: underline; min-height: 44px; cursor: pointer; padding: 0 4px; }
 .trial-back { align-self: flex-start; background: none; border: 0; color: inherit; font-size: 34px; line-height: 1; min-width: 44px; min-height: 44px; cursor: pointer; padding: 0; }
 .trial-h { font-size: 28px; margin: 0; }
 .trial-sub { margin: 0 0 8px; font-size: 16px; opacity: .75; }

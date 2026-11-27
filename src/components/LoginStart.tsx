@@ -23,6 +23,10 @@ import { START_LINES, startLine } from "../../core/fun";
  * 가입 양식·비밀번호 없음, 이름은 카카오·구글·애플에서 받아 와요. 이미 가입한 사람도 같은 버튼으로 바로 들어와요.
  * 네이버는 서버 연결이 끝나면 여기에 추가해요.
  */
+const SEEN_KEY = "saepyeonji.seenStart.v1";
+const isFirstVisit = () => { try { return !localStorage.getItem(SEEN_KEY); } catch { return false; } };
+const markVisited = () => { try { localStorage.setItem(SEEN_KEY, "1"); } catch {} };
+
 export default function LoginStart({ onDone, inviter, next }: { onDone: () => void; inviter?: string; /** 카카오 로그인이 끝난 뒤 돌아올 주소(기본은 홈) */ next?: string }) {
   const [busy, setBusy] = useState<LoginKind | null>(null);
   const [msg, setMsg] = useState("");
@@ -46,7 +50,9 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
     // 이미 로그인한 사람도 확인이 끝나기 전 잠깐 이 화면이 스쳐 가요 → 2.5초 넘게 머문 사람만 세요(2026-11-25: 첫 화면 49인데 써 보기 0이라 숫자가 부풀려짐)
     const seen = window.setTimeout(() => track("start_view"), 2500);
     // 소개 페이지·광고의 [설치 없이 지금 편지 써 보기](/?try=1)는 편지 쓰기 화면으로 바로
+    // 2026-11-27: 첫 화면 18명 중 [써 보기]를 누른 사람 0 → 이 폰에서 처음 온 사람은 버튼 없이 편지 쓰기 화면부터(가입·로그인은 '이미 가입했어요'로)
     if (new URLSearchParams(location.search).get("try") === "1") { track("trial_open"); setStage("write"); }
+    else if (isFirstVisit()) { track("trial_auto"); setStage("write"); }
     return () => window.clearTimeout(seen);
   }, [trialOk]);
   const afterJoin = () => (stage === "join" && readTrialDraft() ? "/send?draft=1" : undefined);
@@ -66,6 +72,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
 
   async function go(kind: LoginKind) {
     setMsg("");
+    markVisited();
     if (kind === "kakao") {
       if (!KAKAO_LOGIN_READY) { setMsg("카카오 로그인이 아직 준비되지 않았어요."); return; }
       markJustJoined(); // 돌아오면 "홈 화면에 추가할까요?"를 한 번 물어요(취소하고 돌아오면 로그인 화면이라 안 보여요)
@@ -90,7 +97,7 @@ export default function LoginStart({ onDone, inviter, next }: { onDone: () => vo
   useEffect(() => { setLast(lastLogin()?.kind ?? null); }, []);
   const badge = (k: LastKind) => (last === k ? <span className="lastbadge">지난번에 이걸로 들어왔어요</span> : null);
 
-  if (trialOk && stage === "write") return <TrialLetter onReady={() => { track("trial_ready"); setStage("join"); }} onBack={() => setStage("start")} />;
+  if (trialOk && stage === "write") return <TrialLetter onReady={() => { track("trial_ready"); setStage("join"); }} onBack={() => { markVisited(); setStage("start"); }} />;
 
   return (
     <main className="start">
