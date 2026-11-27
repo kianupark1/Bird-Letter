@@ -69,7 +69,7 @@ function PenList() {
           → 버튼 하나(펜팔 친구 찾기 → 카드 고르거나 🎲 아무에게나), 스위치는 모두 없앰(myPenpalDoc이 자동으로 켬, 끄기는 설정에만) */}
       <Link href={firebaseEnabled ? "/pen/browse" : "/penpal"} prefetch className="ppcard">
         <BirdIcon id={profile.avatarBird || "pigeon"} size={48} letter />
-        <div><b>펜팔 친구 찾기</b><span>카드를 보고 고르거나, 아무에게나 날려 보내요</span></div>
+        <div><b>펜팔 친구 찾기</b><span>펜팔 카드를 보고 골라서 편지를 보내요</span></div>
       </Link>
       {firebaseEnabled && (
         <button type="button" className="listrow" onClick={editIntro} style={{ width: "100%", textAlign: "left", font: "inherit", color: "inherit", border: 0, background: "none", cursor: "pointer" }}>
@@ -100,7 +100,7 @@ function PenList() {
         })}
       </ul>
 
-      <p className="sub" style={{ fontSize: 14, margin: "16px 4px" }}>진짜 이름·동네는 보이지 않고 펜팔 이름·도시만 보여요(프로필 사진이 있으면 카드에 보여요 · 펜팔을 안 받으려면 설정에서 끄기) · 만 14세 이상 · 이상한 편지는 대화방에서 🚩 신고·차단</p>
+      <p className="sub" style={{ fontSize: 14, margin: "16px 4px" }}>진짜 이름·동네는 보이지 않고 펜팔 이름·도시만 보여요(프로필 사진이 있으면 카드에 보여요 · 펜팔을 안 받으려면 설정에서 끄기) · 만 14세 이상 · 이상한 편지는 대화방에서 🚩 신고·차단(24시간 안에 처리)</p>
     </main>
   );
 }

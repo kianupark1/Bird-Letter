@@ -12,7 +12,8 @@ import type { Meta } from "@/lib/firebase/remote";
 import { isScheduled } from "../../../core/schedule";
 import { getPlace } from "../../../core/places";
 import { buildThreads, isPenpalThread, isUnnamed, keyFromParams, nameKey, type Thread } from "../../../core/threads";
-import { cityLabel, cityOf, penpalName, penpalRoute } from "../../../core/penpal";
+import { cityLabel, cityOf, penpalName, penpalRoute, tagLabel } from "../../../core/penpal";
+import PenpalPromise, { PENPAL_RULES_V, penpalOk } from "@/components/PenpalPromise";
 import { useProfile } from "@/lib/settings";
 import { blockSender, reportLetter } from "@/lib/firebase/remote";
 import Face from "@/components/Face";
@@ -38,7 +39,7 @@ import { track } from "@/lib/funnel";
 import { telFor } from "@/lib/pendingTel";
 import { euro, withIGa } from "@/lib/korean";
 import ProfileZoom from "@/components/ProfileZoom";
-import { saveMyPenpal } from "@/lib/firebase/penpal";
+import { readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
 import { myPenpalDoc } from "@/lib/penpalSync";
 
 // 받겠다고 한 펜팔(보낸 사람 uid). 2026-11-10 대표님: "누가 쓰면 펜팔 편지를 받을 거냐고 물어봐야"
@@ -79,6 +80,7 @@ function Room() {
   const { profile, update } = useProfile();
   const [okList, setOkList] = useState<string[]>([]);
   useEffect(() => setOkList(readOk()), []);
+  const [penInfo, setPenInfo] = useState<Awaited<ReturnType<typeof readPenpal>>>(null);
 
   useEffect(() => { if (state === "login") router.replace("/"); }, [state, router]);
   // 화면에 보이기 전에 지난번 친구 목록·읽은 표시를 먼저 넣고, 서버 목록은 뒤에서 받아요(빨리 뜨게)
@@ -156,6 +158,9 @@ function Room() {
     window.addEventListener("saepyeonji:friendpush", h);
     return () => window.removeEventListener("saepyeonji:friendpush", h);
   }, [thread]);
+  // 펜팔 방이면 상대 펜팔 카드(이름·도시·소개)를 읽어 둬요: 처음 온 편지를 받기 전에 보여 줘요(애플 1.2)
+  const penUid = thread && (thread.pen || isPenpalThread(thread)) ? thread.uid : undefined;
+  useEffect(() => { if (penUid) void readPenpal(penUid).then(setPenInfo).catch(() => {}); }, [penUid]);
   if (state !== "ready" || !ready) return <Busy />;
   if (!thread && key && backend === "firebase" && refetch !== "done") return <Busy />; // 방금 온 사람의 편지일 수 있어요 → 서버에서 한 번 새로 받아 봐요
   if (!thread && key && backend === "checking") return <Busy />; // 서버 목록을 받기 전에는 "찾을 수 없어요"를 띄우지 않아요
@@ -221,9 +226,9 @@ function Room() {
     penpal = { routeId: penpalRoute(myCity, theirCity), fromName: profile.penpalName?.trim() || penpalName(cityLabel(myCity), profile.avatarBird || "magpie"), replyTo: lastRecv?.item.id };
   }
   const skip = () => { hide(thread.key); router.replace("/"); };
-  // 펜팔은 모두 바로 받아요(2026-11-12 대표님: "답장을 안 하면 되니 모두가 자동으로 받게"). 싫으면 넘기기·신고·차단, 설정에서 받기 끄기.
-  // (예전 "받을게요/안 받을래요" 묻는 화면은 끔 — okList는 남겨 둠)
-  const askPen: boolean = false;
+  // 2026-11-27 애플 1.2 반려("모르는 사람과 대화 전에 상대 정보를 보여 주고 받기·안 받기·넘기기를 고르게") → 처음 온 펜팔 편지는 다시 물어요.
+  // 내가 먼저 보낸 방이거나 이미 받기로 한 사람은 묻지 않아요
+  const askPen = pen && !!thread.uid && !thread.entries.some((e) => e.dir === "sent") && !okList.includes(thread.uid);
   const acceptPen = () => { const n = Array.from(new Set([...readOk(), thread.uid!])); try { localStorage.setItem(PPOK, JSON.stringify(n)); } catch {} setOkList(n); };
   const declinePen = () => {
     if (window.confirm("앞으로 모르는 누군가의 펜팔 편지를 그만 받을까요?\n(취소를 누르면 이 편지만 넘겨요 · 설정에서 언제든 다시 켤 수 있어요)")) {
@@ -291,7 +296,7 @@ function Room() {
           {(subtitle || pen) && <div className="rsub">{pen ? `펜팔 🌏${subtitle ? ` · ${subtitle}` : ""}` : subtitle}</div>}
         </div>
         {/* 펜팔 신고·차단은 위 띠 대신 제목줄 오른쪽 작은 깃발로(2026-11-27 대표님: "거슬림"). 받은 편지마다 '신고·차단'도 그대로 */}
-        {pen && !askPen && <button type="button" className="roomflag" aria-label="신고·차단" title="신고·차단" onClick={() => void reportBlock()}>🚩</button>}
+        {pen && !askPen && <button type="button" className="roomflag" aria-label="신고·차단" title="신고·차단" onClick={() => void reportBlock()}>🚩 신고</button>}
       </header>
       {map}
       </div>
@@ -302,12 +307,30 @@ function Room() {
       )}
       {askPen && (
         <div className="mergecard ppask">
-          <div><b>💌 {name}님이 펜팔 편지를 보냈어요</b><span>모르는 누군가가 보낸 편지예요. 받으면 열어 보고 답장할 수 있어요. 진짜 이름·사진·연락처는 서로 보이지 않아요.</span></div>
-          <div className="mc-btns">
-            <button type="button" className="chip hot" onClick={acceptPen}>💌 받을게요</button>
-            <button type="button" className="chip" onClick={declinePen}>안 받을래요</button>
-            <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고</button>
+          <div><b>💌 처음 온 펜팔 편지예요</b><span>보낸 사람을 확인하고 받을지 골라 주세요. 받기 전에는 편지 내용이 열리지 않아요.</span></div>
+          <div className="ppcard-in">
+            {penInfo?.photo ? <img src={penInfo.photo} alt="" className="ppc-photo" /> : <BirdIcon id={penInfo?.bird || "pigeon"} size={48} />}
+            <div>
+              <b>{penInfo?.name || name}</b>
+              <span>{penInfo?.region ? cityLabel(cityOf(penInfo.region)) : "어딘가"}{penInfo?.tags?.length ? ` · ${penInfo.tags.map(tagLabel).join(" · ")}` : ""}</span>
+              {penInfo?.intro ? <q>{penInfo.intro}</q> : <span>한 줄 소개가 아직 없어요</span>}
+            </div>
           </div>
+          {penpalOk(profile) ? (
+            <div className="mc-btns">
+              <button type="button" className="chip hot" onClick={acceptPen}>💌 받을게요</button>
+              <button type="button" className="chip" onClick={declinePen}>안 받을래요</button>
+              <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고·차단</button>
+            </div>
+          ) : (
+            <>
+              <PenpalPromise compact onAgree={() => { update({ penpalAgreed: true, penpalRulesV: PENPAL_RULES_V }); acceptPen(); }} />
+              <div className="mc-btns">
+                <button type="button" className="chip" onClick={declinePen}>안 받을래요</button>
+                <button type="button" className="chip" onClick={() => void reportBlock()}>🚩 신고·차단</button>
+              </div>
+            </>
+          )}
         </div>
       )}
       {!pen && thread.uid && isUnnamed(name) && (

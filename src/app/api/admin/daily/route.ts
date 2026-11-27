@@ -98,6 +98,12 @@ export async function POST(req: Request) {
     }
     const funnel = funnelDays[kstDate(Date.now())];
     const text = dailyText(stats, funnelLine(funnel));
+    // 처리 안 한 신고(애플 1.2: 24시간 안에 처리) → 알림 맨 앞에
+    const openReports = await fetch(`https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents:runQuery`, {
+      method: "POST", headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ structuredQuery: { from: [{ collectionId: "reports" }], orderBy: [{ field: { fieldPath: "createdAt" }, direction: "DESCENDING" }], limit: 50 } }),
+    }).then(async (r) => (r.ok ? ((await r.json()) as { document?: { fields?: { handled?: { booleanValue?: boolean } } } }[]).filter((x) => x.document && x.document.fields?.handled?.booleanValue !== true).length : 0)).catch(() => 0);
+    if (openReports) text.body = `🚩 처리 안 한 신고 ${openReports}건 → /admin에서 처리\n${text.body}`;
     const admins = [...new Set([...ADMIN_UIDS, ...adminFromEnv(process.env.ADMIN_UIDS)])];
     const pushed: string[] = [];
     for (const uid of admins) {

@@ -29,7 +29,7 @@ export const cityLabel = (cityId: string) => (cityId === "seoul" ? "서울" : ge
 /** 펜팔 한 줄 소개: 한 줄·100자까지, 연락처처럼 보이는 글은 가려요 */
 export const INTRO_MAX = 100;
 export function cleanIntro(raw: string): string {
-  return maskContacts(raw.replace(/\s+/g, " ").trim()).text.slice(0, INTRO_MAX);
+  return maskBadWords(maskContacts(raw.replace(/\s+/g, " ").trim()).text).text.slice(0, INTRO_MAX);
 }
 
 /** 펜팔을 날려 보낼 수 있는 도시(보내는 사람이 "어디로"를 고를 때). 동네·구는 없고 도시까지만 */
@@ -58,6 +58,28 @@ export function maskContacts(text: string): { text: string; masked: number } {
   t = t.replace(/(?:^|\s)@[A-Za-z0-9_.]{3,}/g, (m) => (m.startsWith(" ") || m.startsWith("\n") ? m[0] : "") + hide(m));
   t = t.replace(/(카톡|카카오톡|인스타|인스타그램|insta|kakao|아이디|id|텔레그램|라인)\s*[:：은는]?\s*([A-Za-z0-9_.]{3,})/gi, (_m, k) => `${k} ${hide("xxxx")}`);
   return { text: t, masked };
+}
+
+/**
+ * 나쁜 말 가리기(2026-11-27, 애플 1.2 "불쾌한 글을 거르는 장치"): 욕설·성적인 말을 ●로 바꿔요.
+ * 띄어 쓰거나 기호를 끼워 넣어도 잡고("씨 발", "ㅅ.ㅂ"), 뜻이 다른 낱말("시발점")은 그대로 둬요. 완벽하지 않아서 신고·차단과 함께 써요.
+ */
+const BAD_WORDS = ["씨발", "시발(?!점)", "씨바", "씨팔", "시팔", "쓰발", "ㅅㅂ", "ㅆㅂ", "ㅄ", "ㅂㅅ", "병신", "븅신", "좆", "존나", "개새", "개색", "느금", "니미", "엠창", "썅", "미친놈", "미친년", "지랄", "ㅈㄹ", "염병", "fuck", "shit", "bitch", "섹스", "야동", "자위"];
+const sep = "[\\s.\\-_*~!·ㆍ]*";
+const BAD_RE = new RegExp(BAD_WORDS.map((w) => {
+  const m = w.match(/^(.*?)(\(\?!.*\))?$/)!;
+  return [...m[1]].join(sep) + (m[2] ?? "");
+}).join("|"), "gi");
+export function maskBadWords(text: string): { text: string; masked: number } {
+  let masked = 0;
+  const t = text.replace(BAD_RE, (s) => { masked++; return "●".repeat(Math.min(6, Math.max(2, s.replace(/[\s.\-_*~!·ㆍ]/g, "").length))); });
+  return { text: t, masked };
+}
+/** 펜팔 글 거르기: 연락처 + 나쁜 말 */
+export function cleanPenpalText(text: string): { text: string; masked: number; bad: number } {
+  const c = maskContacts(text);
+  const b = maskBadWords(c.text);
+  return { text: b.text, masked: c.masked, bad: b.masked };
 }
 
 export type PoolRow = { uid: string; tags: string[]; region: string; /** 마지막으로 앱을 연 때(ms, 서버가 매일 채움). 없으면 모름 */ at?: number };
