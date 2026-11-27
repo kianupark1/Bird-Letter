@@ -1332,3 +1332,20 @@ main.app.room.chat .roomtop button.ch-map { height: 132px; max-height: 132px; }
 .autohome { display: flex; flex-direction: column; gap: 6px; background: var(--card); border: 1px solid var(--hwangto); border-radius: 14px; padding: 10px 12px; margin: 6px 0 8px; font-size: 14px; }
 .autohome-btns { display: flex; gap: 8px; }
 .autohome .chip.on { background: var(--dahong); color: var(--on-dahong, #fff); border-color: var(--dahong); }
+
+/* 펜팔: 보내기 전·받기 전 상대 카드(2026-11-27, 애플 1.2) */
+.ppconfirm { position: fixed; left: 12px; right: 12px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 60; background: var(--card); border-radius: 22px; padding: 18px; box-shadow: 0 10px 40px rgba(0,0,0,.25); max-width: 520px; margin: 0 auto; }
+.ppc-head { font-weight: 800; font-size: 18px; margin-bottom: 12px; }
+.ppc-card { display: flex; gap: 14px; align-items: flex-start; background: var(--bg); border-radius: 16px; padding: 14px; }
+.ppc-card > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ppc-card b { font-size: 18px; }
+.ppc-card span { font-size: 14px; opacity: .75; }
+.ppc-card q { font-size: 15px; line-height: 1.4; margin-top: 4px; }
+.ppc-photo { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; }
+.ppc-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.ppc-btns .cta { width: 100%; }
+.pppromise .ppage { display: flex; gap: 8px; align-items: center; margin: 8px 4px; }
+.ppcard-in { display: flex; gap: 12px; align-items: flex-start; background: var(--bg); border-radius: 14px; padding: 12px; margin: 8px 0; }
+.ppcard-in > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ppcard-in span { font-size: 14px; opacity: .75; }
+.roomflag { display: inline-flex; align-items: center; gap: 2px; font-size: 13px; color: inherit; }

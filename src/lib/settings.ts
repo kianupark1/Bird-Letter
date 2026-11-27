@@ -34,6 +34,8 @@ export type Profile = {
   publicRank?: boolean;
   /** 펜팔 약속(만 14세 이상·규칙)에 동의했는지 */
   penpalAgreed?: boolean;
+  /** 펜팔 약속 판(2 = 2026-11-27 무관용·이용약관 동의 포함, 애플 1.2). 2보다 작으면 다시 동의받아요 */
+  penpalRulesV?: number;
   /** 펜팔 이름(비어 있으면 "서울 사는 까치"처럼 자동) */
   penpalName?: string;
   /** 펜팔 관심사(core/penpal.ts PENPAL_TAGS의 id) */

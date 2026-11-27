@@ -7,7 +7,7 @@ import { planFor, progressAt, totalMinutes, type Plan } from "./flight";
 import { ensureUser, firebaseEnabled } from "./firebase/client";
 import * as remote from "./firebase/remote";
 import { isScheduled } from "../../core/schedule";
-import { maskContacts } from "../../core/penpal";
+import { cleanPenpalText } from "../../core/penpal";
 import { isWelcome } from "../../core/welcome";
 import { hasWelcome, isNewAccount, readOnboard, saveOnboard, welcomeFor } from "./welcome";
 import { LETTERS_CACHE_KEY, onClearFastCache, readJson, useBeforePaint, writeJson } from "./fastStart";
@@ -312,7 +312,7 @@ export function useLetters() {
   const add = useCallback(
     async (l: Omit<Letter, "id" | "sentAt" | "arriveAt"> & { fromName?: string; speed?: number; departAt?: number; replyTo?: string }) => {
       // 펜팔 편지는 연락처처럼 보이는 글을 가린 뒤에 보내요
-      if (l.penpal) l = { ...l, message: maskContacts(l.message).text };
+      if (l.penpal) l = { ...l, message: cleanPenpalText(l.message).text };
       await settled.current!.promise; // 서버 연결 확인이 끝날 때까지 기다림
       if (backendRef.current === "firebase") {
         const id = await remote.sendLetter({

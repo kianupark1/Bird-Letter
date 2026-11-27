@@ -17,7 +17,8 @@ import { firebaseEnabled, ensureUser } from "@/lib/firebase/client";
 import { listBlocked } from "@/lib/firebase/remote";
 import { listPool, readPenpal, saveMyPenpal } from "@/lib/firebase/penpal";
 import { myPenpalDoc } from "@/lib/penpalSync";
-import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, maskContacts, penpalName, penpalRoute, pickPenpalFallback, poolIn } from "../../../core/penpal";
+import { PENPAL_CITIES, PENPAL_TAGS, cityLabel, cityOf, cleanPenpalText, penpalName, penpalRoute, pickPenpalFallback, poolIn, tagLabel } from "../../../core/penpal";
+import PenpalPromise, { PENPAL_RULES_V, penpalOk } from "@/components/PenpalPromise";
 
 /** 펜팔: 모르는 누군가에게 새 날려 보내기 (시안 v5-1·v5-2) */
 export default function PenpalPage() {
@@ -51,7 +52,10 @@ function Penpal() {
   const city = cityOf(profile.homePlace);
   const myName = profile.penpalName?.trim() || penpalName(cityLabel(city), profile.avatarBird || "magpie");
   const tags = profile.penpalTags ?? [];
-  const masked = useMemo(() => maskContacts(msg), [msg]);
+  const masked = useMemo(() => cleanPenpalText(msg), [msg]);
+  // 보내기 전에 받을 사람 카드를 먼저 보여 줘요(2026-11-27, 애플 1.2: 대화가 시작되기 전에 상대 정보를 보여 주고 고르게)
+  const [cand, setCand] = useState<{ uid: string; name: string; region: string; bird: string; intro: string; tags: string[]; photo?: string } | null>(null);
+  const [skipped, setSkipped] = useState<string[]>([]);
 
   // 약속한 사람은 펜팔 받기 명단에 내 줄을 최신으로 올려 둬요(이름·관심사·도시가 바뀌었을 때)
   useEffect(() => {
@@ -61,28 +65,17 @@ function Penpal() {
 
   if (!ready) return <Busy />;
 
-  if (!profile.penpalAgreed) {
+  if (!penpalOk(profile)) {
     return (
       <main className="app penpal">
         <header className="sendhead"><Link href="/pen" className="roomback" aria-label="뒤로">‹</Link><h1 style={{ margin: 0 }}>펜팔 친구 찾기</h1></header>
-        <div className="ppcard"><BirdIcon id="pigeon" size={64} letter /><div><b>어느 누군가에게 새 편지 보내기</b><span>모르는 누군가에게 편지가 날아가요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
-        <h2 className="friendh">펜팔 약속 (처음 한 번)</h2>
-        <ul className="pprules">
-          <li><span aria-hidden>🎂</span>만 14세 이상만 쓸 수 있어요</li>
-          <li><span aria-hidden>🙊</span><span>전화번호·주소·SNS 아이디는 적지 않아요<small>적으면 자동으로 가려져요</small></span></li>
-          <li><span aria-hidden>📷</span>펜팔 편지에는 사진을 담지 않아요</li>
-          <li><span aria-hidden>🚩</span>불쾌하면 길게 눌러 신고·차단해요</li>
-          <li><span aria-hidden>📍</span><span>상대에게는 &quot;{cityLabel(city)}&quot;까지만 보여요<small>펜팔 이름: {myName}</small></span></li>
-        </ul>
-        <label className="ppage"><input type="checkbox" checked={age} onChange={(e) => setAge(e.target.checked)} /> 저는 만 14세 이상이에요</label>
-        <div className="dock">
-          <button type="button" className="cta big" disabled={!age} onClick={() => update({ penpalAgreed: true })}>약속하고 시작하기</button>
-        </div>
+        <div className="ppcard"><BirdIcon id="pigeon" size={64} letter /><div><b>어느 누군가에게 새 편지 보내기</b><span>상대의 펜팔 카드를 보고 골라서 보내요. 답장이 오면 펜팔 친구가 돼요</span></div></div>
+        <PenpalPromise city={cityLabel(city)} myName={myName} onAgree={() => update({ penpalAgreed: true, penpalRulesV: PENPAL_RULES_V })} />
       </main>
     );
   }
 
-  const send = async () => {
+  const send = async (extraSkip: string[] = []) => {
     if (!msg.trim() || busy) return;
     setBusy(true); setNote("");
     try {
@@ -95,21 +88,36 @@ function Penpal() {
       const last = new Map<string, number>();
       for (const l of letters) if (l.toUid) { soft.add(l.toUid); last.set(l.toUid, Math.max(last.get(l.toUid) ?? 0, l.sentAt)); }
       for (const r of received) soft.add(r.fromUid);
+      for (const u of [...skipped, ...extraSkip]) hard.add(u);
       const picked = chosen && chosen !== "no" && chosen.uid !== me.uid ? chosen : null;
       const target = picked ?? pickPenpalFallback(poolIn(pool, where || null), me.uid, soft, hard, tags, Math.random, last);
       if (!target) {
-        setNote(where ? `지금 ${cityLabel(where)}에는 펜팔 편지를 기다리는 사람이 없어요. "어디든"으로 바꿔 보세요 🕊` : "지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊");
+        setNote(skipped.length || extraSkip.length ? "지금은 더 보여 드릴 펜팔 카드가 없어요. 조금 뒤에 다시 와 주세요 🕊" : where ? `지금 ${cityLabel(where)}에는 펜팔 편지를 기다리는 사람이 없어요. "어디든"으로 바꿔 보세요 🕊` : "지금은 펜팔 편지를 기다리는 사람이 없어요. 조금 뒤에 다시 날려 보세요 🕊");
         setBusy(false); return;
       }
-      const toName = (picked?.name ?? pool.find((p) => p.uid === target.uid)?.name ?? "어딘가의 새").slice(0, 20);
-      await add({ to: toName, toUid: target.uid, routeId: penpalRoute(city, target.region), birdId: bird, message: masked.text.trim(), fromName: myName, penpal: true });
-      birdFx("depart", profile.chirp !== false);
-      router.push(`/room?p=${encodeURIComponent(target.uid)}`);
+      const info = await readPenpal(target.uid).catch(() => null);
+      const name = (info?.name || picked?.name || pool.find((p) => p.uid === target.uid)?.name || "어딘가의 새").slice(0, 20);
+      setCand({ uid: target.uid, name, region: info?.region || target.region, bird: info?.bird || "pigeon", intro: info?.intro ?? "", tags: info?.tags ?? [], ...(info?.photo ? { photo: info.photo } : {}) });
+      setBusy(false);
     } catch {
       setNote("보내지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.");
       setBusy(false);
     }
   };
+
+  const confirmSend = async () => {
+    if (!cand || busy) return;
+    setBusy(true);
+    try {
+      await add({ to: cand.name, toUid: cand.uid, routeId: penpalRoute(city, cand.region), birdId: bird, message: masked.text.trim(), fromName: myName, penpal: true });
+      birdFx("depart", profile.chirp !== false);
+      router.push(`/room?p=${encodeURIComponent(cand.uid)}`);
+    } catch {
+      setNote("보내지 못했어요. 인터넷을 확인하고 다시 눌러 주세요.");
+      setBusy(false);
+    }
+  };
+  const otherOne = () => { if (!cand) return; const u = cand.uid; setSkipped((x) => [...x, u]); setCand(null); void send([...skipped, u]); };
 
   return (
     <main className="app penpal">
@@ -132,12 +140,33 @@ function Penpal() {
         })}
       </div>}
       <textarea className="pppaper" rows={8} value={msg} maxLength={MAX_PENPAL_CHARS} placeholder="안녕하세요, 처음 보는 누군가에게 편지를 써 보는 건 처음이에요…" aria-label="펜팔 편지 내용" onChange={(e) => setMsg(e.target.value)} />
-      <div className="ppwarn">{masked.masked ? `🙊 연락처처럼 보이는 글 ${masked.masked}곳을 가리고 보내요` : "🙊 전화번호·주소·아이디처럼 보이는 글은 보내기 전에 가려져요"} · 📷 펜팔 편지는 사진 없이</div>
+      <div className="ppwarn">{masked.masked || masked.bad ? `🙊 연락처·나쁜 말 ${masked.masked + masked.bad}곳을 가리고 보내요` : "🙊 연락처와 나쁜 말은 보내기 전에 가려져요"}</div>
       <button type="button" className="linkbtn" onClick={() => setPickBird((v) => !v)}>새 바꾸기 · 지금은 {getBird(bird).name} ›</button>
       {pickBird && <div style={{ display: "flex", justifyContent: "center" }}><BirdPicker value={bird} onChange={(id) => { setBird(id); setPickBird(false); }} /></div>}
       {note && <div className="small" role="status" style={{ textAlign: "center" }}>{note}</div>}
+      {cand && (
+        <div className="ch-dim" role="presentation" onClick={() => setCand(null)} />
+      )}
+      {cand && (
+        <div className="ppconfirm" role="dialog" aria-label="받을 사람 카드">
+          <div className="ppc-head">이 펜팔 친구에게 보낼까요?</div>
+          <div className="ppc-card">
+            {cand.photo ? <img src={cand.photo} alt="" className="ppc-photo" /> : <BirdIcon id={cand.bird} size={56} />}
+            <div>
+              <b>{cand.name}</b>
+              <span>{cityLabel(cityOf(cand.region))}{cand.tags.length ? ` · ${cand.tags.map(tagLabel).join(" · ")}` : ""}</span>
+              {cand.intro && <q>{cand.intro}</q>}
+            </div>
+          </div>
+          <div className="ppc-btns">
+            <button type="button" className="cta" disabled={busy} onClick={confirmSend}>{busy ? "날려 보내는 중…" : "💌 이 친구에게 보내기"}</button>
+            <button type="button" className="chip" disabled={busy} onClick={otherOne}>다른 사람 보기</button>
+            <button type="button" className="linkbtn" onClick={() => setCand(null)}>그만두기</button>
+          </div>
+        </div>
+      )}
       <div className="dock">
-        <button type="button" className="cta big" disabled={!msg.trim() || busy || (!!toUid && chosen === null)} onClick={send}><BirdIcon id={bird} size={34} /> {busy ? "날려 보내는 중…" : chosen && chosen !== "no" ? `${chosen.name}에게 날려 보내기` : where ? `${cityLabel(where)}의 누군가에게 날려 보내기` : "어딘가로 날려 보내기"}</button>
+        <button type="button" className="cta big" disabled={!msg.trim() || busy || (!!toUid && chosen === null)} onClick={() => void send()}><BirdIcon id={bird} size={34} /> {busy ? "날려 보내는 중…" : chosen && chosen !== "no" ? `${chosen.name} 카드 보기` : where ? `${cityLabel(where)}의 펜팔 카드 보기` : "받을 사람 카드 보기"}</button>
       </div>
     </main>
   );

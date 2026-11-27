@@ -1092,6 +1092,16 @@ import { welcomeMeta, welcomeRoute, welcomeText, isWelcome, WELCOME_FROM } from 
   eq("위치로 동네: 그대로 누른 동네는 사흘 동안 안 물음", decideAutoHome({ homeSet: true, homePlace: "seoul", here: "busan", dismissedAt: now - 3600000, now }), "none");
   eq("위치로 동네: 사흘 지나면 다시 물음", decideAutoHome({ homeSet: true, homePlace: "seoul", here: "busan", dismissedAt: now - ASK_AGAIN_MS - 1, now }), "suggest");
 }
+{
+  const { maskBadWords, cleanPenpalText, cleanIntro } = await import("../core/penpal.ts");
+  eq("나쁜 말: 욕은 가림", maskBadWords("이 씨발 뭐야").text.includes("씨발"), false);
+  eq("나쁜 말: 띄어 써도 가림", maskBadWords("씨 . 발").masked, 1);
+  eq("나쁜 말: 초성도 가림", maskBadWords("ㅅㅂ 진짜").masked, 1);
+  eq("나쁜 말: 시발점은 그대로", maskBadWords("여기가 시발점이야").masked, 0);
+  eq("나쁜 말: 보통 글은 그대로", maskBadWords("보지 마, 자지 말고 편지 써").masked, 0);
+  eq("펜팔 글: 연락처+욕 같이", cleanPenpalText("병신아 010-1234-5678").masked + cleanPenpalText("병신아 010-1234-5678").bad, 2);
+  eq("한 줄 소개도 욕 가림", cleanIntro("존나 좋아").includes("존나"), false);
+}
 console.log(`핵심 계산 시험: 통과 ${pass} / 실패 ${fail}`);
 process.exit(fail ? 1 : 0);
 
